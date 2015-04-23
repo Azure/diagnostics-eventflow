@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>d875e47f-986b-4bf1-89a9-312d0bb40348</ProjectGuid>
+    <ProjectVersion>0.5</ProjectVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="ApplicationManifest.xml" />
+    <None Include="Scripts\Create-FabricApplication.ps1" />
+    <None Include="Scripts\Deploy-FabricApplication.ps1" />
+    <None Include="Scripts\Get-FabricApplicationStatus.ps1" />
+    <None Include="Scripts\Remove-Deployment.ps1" />
+    <None Include="Scripts\Utilities.psm1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AirTrafficControl\AirTrafficControl.csproj" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.targets" />
+</Project>
