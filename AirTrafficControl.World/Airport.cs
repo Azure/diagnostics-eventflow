@@ -15,7 +15,7 @@ namespace AirTrafficControl.World
         {
         }
 
-        public ReadOnlyCollection<RouteFix> RouteConnections { get; set; }
+        public ReadOnlyCollection<Route> RouteConnections { get; set; }
 
         public override bool Equals(object obj)
         {
