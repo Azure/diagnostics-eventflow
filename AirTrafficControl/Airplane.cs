@@ -1,4 +1,6 @@
 ﻿using AirTrafficControl.Interfaces;
+
+using Microsoft.ServiceFabric.Actors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,21 +10,35 @@ using System.Threading.Tasks;
 
 namespace AirTrafficControl
 {
-    public class Airplane : IAirplane
+    public class Airplane : Actor<AirplaneActorState>, IAirplane
     {
+        public Task ReceiveInstruction(AtcInstruction instruction)
+        {
+            this.State.Instruction = instruction;
+            ActorEventSource.Current.ActorMessage(this, "Received ATC instruction '{0}'", instruction.ToString());
+            return Task.FromResult(true);
+        }
+
         public Task TimePassed()
         {
-            throw new NotImplementedException();
+            // TODO: implement
+            return Task.FromResult(true);
         }
     }
 
     [DataContract]
     public class AirplaneActorState
     {
+        [DataMember]
         public AirplaneState AirplaneState { get; set; }
 
+        [DataMember]
         public FlightPlan FlightPlan { get; set; }
 
-        public 
+        [DataMember]
+        public int DepartureTime { get; set; }
+
+        [DataMember]
+        public AtcInstruction Instruction { get; set; }
     }
 }

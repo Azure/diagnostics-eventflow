@@ -73,7 +73,6 @@
     <Compile Include="AirTrafficControlState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ActorEventSource.cs" />
-    <Compile Include="Universe.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PackageRoot\ServiceManifest.xml" />

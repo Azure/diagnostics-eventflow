@@ -4,6 +4,11 @@
     <ServiceManifestRef ServiceManifestName="AirTrafficControlPkg" ServiceManifestVersion="1.0.0.0" />
   </ServiceManifestImport>
   <DefaultServices>
+    <Service Name="AirplaneActorService">
+      <StatefulService ServiceTypeName="AirplaneActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
+        <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
     <Service Name="AirTrafficControlActorService">
       <StatefulService ServiceTypeName="AirTrafficControlActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
         <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />

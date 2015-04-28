@@ -15,6 +15,7 @@ namespace AirTrafficControl
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
                     fabricRuntime.RegisterActor(typeof(AirTrafficControl));
+                    fabricRuntime.RegisterActor(typeof(Airplane));
 
                     Thread.Sleep(Timeout.Infinite);
                 }

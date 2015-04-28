@@ -5,21 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 
-using AirTrafficControl.Interfaces;
-
-namespace AirTrafficControl
+namespace AirTrafficControl.Interfaces
 {
     public class Universe
     {
+        public static Universe Current = new Universe();
+
         public ReadOnlyCollection<Airport> Airports { get; private set; }
         public ReadOnlyCollection<Route> Routes { get; private set; }
-
-        public int CurrentTime { get; private set; }
 
         public Universe()
         {
             Initialize();
-            CurrentTime = 1;
         }
 
         public Route GetRouteBetween(Airport from, Airport destination)
