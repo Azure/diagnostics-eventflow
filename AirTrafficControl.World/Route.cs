@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.Runtime.Serialization;
 
 namespace AirTrafficControl.World
 {
+    [DataContract]
     public class Route
     {
         public Route(string name)
@@ -19,8 +21,10 @@ namespace AirTrafficControl.World
             Name = name;
         }
 
+        [DataMember]
         public string Name { get; private set; }
 
+        [DataMember]
         public ReadOnlyCollection<Fix> Fixes { get; set; }
 
         public Fix GetNextFix(Fix currentFix, Fix destinationFix)

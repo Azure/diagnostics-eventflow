@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
+using System.Runtime.Serialization;
 
 namespace AirTrafficControl.World
 {
     #pragma warning disable 0659
 
+    [DataContract]
     public class Airport: Fix
     {
         public Airport(string name, string displayName, Direction publishedHoldBearing): base(name, displayName)
@@ -16,7 +18,10 @@ namespace AirTrafficControl.World
             this.PublishedHoldBearing = publishedHoldBearing;
         }
 
+        [DataMember]
         public ReadOnlyCollection<Route> RouteConnections { get; set; }
+
+        [DataMember]
         public Direction PublishedHoldBearing { get; private set; }
 
         public override bool Equals(object obj)

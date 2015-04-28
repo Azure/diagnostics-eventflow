@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace AirTrafficControl.World
 {
+    [DataContract]
     public class Fix
     {
         public Fix(string name, string displayName)
@@ -19,7 +21,10 @@ namespace AirTrafficControl.World
             DisplayName = displayName;
         }
 
+        [DataMember]
         public string Name { get; private set; }
+
+        [DataMember]
         public string DisplayName { get; private set; }
 
         public override bool Equals(object obj)
