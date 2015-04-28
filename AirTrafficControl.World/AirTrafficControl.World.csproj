@@ -42,8 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Airport.cs" />
+    <Compile Include="Direction.cs" />
     <Compile Include="Fix.cs" />
-    <Compile Include="Map.cs" />
+    <Compile Include="World.cs" />
     <Compile Include="Route.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

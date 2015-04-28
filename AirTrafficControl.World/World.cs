@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace AirTrafficControl.World
 {
-    public class Map
+    public class World
     {
         public ReadOnlyCollection<Airport> Airports { get; private set; }
         public ReadOnlyCollection<Route> Routes { get; private set; }
@@ -36,9 +36,9 @@ namespace AirTrafficControl.World
         public void Initialize()
         {
 
-            var ksea = new Airport("KSEA", "Seattle-Tacoma International");
-            var kgeg = new Airport("KGEG", "Spokane International");
-            var kpdx = new Airport("KPDX", "Portland International");
+            var ksea = new Airport("KSEA", "Seattle-Tacoma International", Direction.West);
+            var kgeg = new Airport("KGEG", "Spokane International", Direction.North);
+            var kpdx = new Airport("KPDX", "Portland International", Direction.Southeast);
 
             var eph = new Fix("EPH", "Ephrata VORTAC");
             var mwh = new Fix("MWH", "Moses Lake VOR-DME");

@@ -11,11 +11,13 @@ namespace AirTrafficControl.World
 
     public class Airport: Fix
     {
-        public Airport(string name, string displayName): base(name, displayName)
+        public Airport(string name, string displayName, Direction publishedHoldBearing): base(name, displayName)
         {
+            this.PublishedHoldBearing = publishedHoldBearing;
         }
 
         public ReadOnlyCollection<Route> RouteConnections { get; set; }
+        public Direction PublishedHoldBearing { get; private set; }
 
         public override bool Equals(object obj)
         {
