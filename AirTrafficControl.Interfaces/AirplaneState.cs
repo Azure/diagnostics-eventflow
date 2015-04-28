@@ -9,6 +9,12 @@ using System.Threading.Tasks;
 namespace AirTrafficControl.Interfaces
 {
     [DataContract]
+    [KnownType(typeof(Taxiing))]
+    [KnownType(typeof(Departing))]
+    [KnownType(typeof(Holding))]
+    [KnownType(typeof(Approach))]
+    [KnownType(typeof(Landed))]
+    [KnownType(typeof(Enroute))]
     public abstract class AirplaneState
     {
     }

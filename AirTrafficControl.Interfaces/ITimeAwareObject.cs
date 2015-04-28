@@ -11,6 +11,6 @@ namespace AirTrafficControl.Interfaces
         /// <summary>
         /// The object should compute and apply new state, based on busines rules and instructions received.
         /// </summary>
-        void TimePassed();
+        Task TimePassed();
     }
 }

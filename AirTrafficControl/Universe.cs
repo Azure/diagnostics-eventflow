@@ -5,12 +5,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 
-namespace AirTrafficControl.World
+using AirTrafficControl.Interfaces;
+
+namespace AirTrafficControl
 {
-    public class World
+    public class Universe
     {
         public ReadOnlyCollection<Airport> Airports { get; private set; }
         public ReadOnlyCollection<Route> Routes { get; private set; }
+
+        public int CurrentTime { get; private set; }
+
+        public Universe()
+        {
+            Initialize();
+            CurrentTime = 1;
+        }
 
         public Route GetRouteBetween(Airport from, Airport destination)
         {
@@ -33,7 +43,7 @@ namespace AirTrafficControl.World
             return connectingRoute;
         }
 
-        public void Initialize()
+        private void Initialize()
         {
 
             var ksea = new Airport("KSEA", "Seattle-Tacoma International", Direction.West);
