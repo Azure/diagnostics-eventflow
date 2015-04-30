@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,24 +20,12 @@ namespace AirTrafficControl.Interfaces
             Initialize();
         }
 
-        public Route GetRouteBetween(Airport from, Airport destination)
+        public Route GetRouteBetween(Fix from, Fix to)
         {
-            // Assumption: there is a direct route between 'from' and 'to' airports
-            // Of course in real world it is rarely the case
+            Requires.NotNull(from, "from");
+            Requires.NotNull(to, "to");
 
-            if (from == null)
-            {
-                throw new ArgumentNullException("from");
-            }
-
-            if (destination == null)
-            {
-                throw new ArgumentNullException("destination");
-            }
-
-            Route connectingRoute = from.RouteConnections
-                .Where(fromRoute => destination.RouteConnections.Any(destRoute => destRoute == fromRoute))
-                .FirstOrDefault();
+            Route connectingRoute = Routes.Where(r => r.Fixes.Contains(from) && r.Fixes.Contains(to)).FirstOrDefault();
             return connectingRoute;
         }
 
@@ -60,10 +49,6 @@ namespace AirTrafficControl.Interfaces
 
             var v23 = new Route("V23");
             v23.Fixes = new ReadOnlyCollection<Fix>(new Fix[] { ksea, malay, kpdx });
-
-            ksea.RouteConnections = new ReadOnlyCollection<Route>(new Route[] { v120, v23 });
-            kgeg.RouteConnections = new ReadOnlyCollection<Route>(new Route[] { v120, v448 });
-            kpdx.RouteConnections = new ReadOnlyCollection<Route>(new Route[] { v448, v23 });
 
             this.Airports = new ReadOnlyCollection<Airport>(new Airport[] { ksea, kgeg, kpdx });
             this.Routes = new ReadOnlyCollection<Route>(new Route[] { v120, v23, v448 });

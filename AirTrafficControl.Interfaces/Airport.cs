@@ -19,9 +19,6 @@ namespace AirTrafficControl.Interfaces
         }
 
         [DataMember]
-        public ReadOnlyCollection<Route> RouteConnections { get; set; }
-
-        [DataMember]
         public Direction PublishedHoldBearing { get; private set; }
 
         public override bool Equals(object obj)

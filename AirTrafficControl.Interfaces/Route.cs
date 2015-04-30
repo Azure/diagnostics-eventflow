@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
+using Microsoft;
 
 namespace AirTrafficControl.Interfaces
 {
@@ -57,21 +58,15 @@ namespace AirTrafficControl.Interfaces
             }
         }
 
-        public int GetDistance(Fix from, Fix to)
+        public int GetDirectionalDistance(Fix from, Fix to)
         {
             int fromIndex = Fixes.IndexOf(from);
-            if (fromIndex < 0)
-            {
-                throw new ArgumentException("The 'from' fix is not part of the route", "from");
-            }
+            Assumes.True(fromIndex >= 0, "The 'from' fix is not part of the route");
 
             int toIndex = Fixes.IndexOf(to);
-            if (toIndex < 0)
-            {
-                throw new ArgumentException("The 'to' fix is not part of the route", "to");
-            }
+            Assumes.True(toIndex >= 0, "The 'to' fix is not part of the route");
 
-            return Math.Abs(toIndex - fromIndex);
+            return toIndex - fromIndex;
         }
 
         public override bool Equals(object obj)

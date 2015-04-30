@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,26 +10,19 @@ using System.Threading.Tasks;
 namespace AirTrafficControl.Interfaces
 {
     [DataContract]
-    [KnownType(typeof(Taxiing))]
-    [KnownType(typeof(Departing))]
-    [KnownType(typeof(Holding))]
-    [KnownType(typeof(Approach))]
-    [KnownType(typeof(Landed))]
-    [KnownType(typeof(Enroute))]
+    [KnownType(typeof(TaxiingState))]
+    [KnownType(typeof(DepartingState))]
+    [KnownType(typeof(HoldingState))]
+    [KnownType(typeof(ApproachState))]
+    [KnownType(typeof(LandedState))]
+    [KnownType(typeof(EnrouteState))]
     public abstract class AirplaneState
     {
         public abstract AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction);
         protected void ValidateComputeNextStateArgs(FlightPlan flightPlan, AtcInstruction instruction)
         {
-            if (flightPlan == null)
-            {
-                throw new ArgumentNullException("flightPlan");
-            }
-
-            if (flightPlan.DeparturePoint == flightPlan.Destination)
-            {
-                throw new ArgumentException("The flight plan is invalid, departure point and destination cannot be the same");
-            }
+            Requires.NotNull(flightPlan, "flightPlan");
+            Requires.Argument(flightPlan.DeparturePoint != flightPlan.Destination, "flightPlan", "The flight plan is invalid, departure point and destination cannot be the same");
 
             // It is OK for the instruction to be null, it just means we should proceed accorting to the plan and current state
         }
@@ -39,11 +33,7 @@ namespace AirTrafficControl.Interfaces
     {
         public AirportLocationState(Airport airport)
         {
-            if (airport == null)
-            {
-                throw new ArgumentNullException("airport");
-            }
-
+            Requires.NotNull(airport, "airport");
             this.Airport = airport;
         }
 
@@ -56,23 +46,18 @@ namespace AirTrafficControl.Interfaces
     {
         public FixLocationState(Fix fix)
         {
-            if (fix == null)
-            {
-                throw new ArgumentNullException("fix");
-            }
-
+            Requires.NotNull(fix, "fix");
             this.Fix = fix;
         }
-
 
         [DataMember]
         public Fix Fix { get; private set; }
     }
 
     [DataContract]
-    public class Taxiing : AirportLocationState
+    public class TaxiingState : AirportLocationState
     {
-        public Taxiing(Airport airport) : base(airport) { }
+        public TaxiingState(Airport airport) : base(airport) { }
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
@@ -86,7 +71,7 @@ namespace AirTrafficControl.Interfaces
             }
             else
             {
-                var newState = new Departing(this.Airport);
+                var newState = new DepartingState(this.Airport);
                 return newState;
             }
         }
@@ -98,9 +83,9 @@ namespace AirTrafficControl.Interfaces
     }
 
     [DataContract]
-    public class Departing : AirportLocationState
+    public class DepartingState : AirportLocationState
     {
-        public Departing(Airport airport) : base(airport) { }
+        public DepartingState(Airport airport) : base(airport) { }
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
@@ -110,7 +95,7 @@ namespace AirTrafficControl.Interfaces
             HoldInstruction holdInstruction = instruction as HoldInstruction;
             if (holdInstruction != null && holdInstruction.LocationOrLimit == this.Airport)
             {
-                return new Holding(this.Airport);
+                return new HoldingState(this.Airport);
             }
             else
             {
@@ -121,7 +106,7 @@ namespace AirTrafficControl.Interfaces
                 }
 
                 Fix next = route.GetNextFix(this.Airport, flightPlan.Destination);
-                return new 
+                return new EnrouteState(this.Airport, next, route);
             }
         }
 
@@ -132,9 +117,42 @@ namespace AirTrafficControl.Interfaces
     }
 
     [DataContract]
-    public class Holding : FixLocationState
+    public class HoldingState : FixLocationState
     {
-        public Holding(Fix fix) : base(fix) { }
+        public HoldingState(Fix fix) : base(fix) { }
+
+        public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
+        {
+            ValidateComputeNextStateArgs(flightPlan, instruction);
+
+            Route route = Universe.Current.GetRouteBetween(this.Fix, flightPlan.Destination);
+            if (route == null)
+            {
+                throw new ArgumentException("Cannot find route between " + this.Fix.DisplayName + " and " + flightPlan.Destination.DisplayName);
+            }
+            Fix next = route.GetNextFix(this.Fix, flightPlan.Destination);
+
+            EnrouteClearance enrouteClearance = instruction as EnrouteClearance;
+            if (enrouteClearance != null)
+            {
+                if (enrouteClearance.IsClearedTo(this.Fix, next, route))
+                {
+                    return new EnrouteState(this.Fix, next, route);
+                }
+            }
+
+            ApproachClearance approachClearance = null;
+            if (approachClearance != null)
+            {
+                if (next == approachClearance.LocationOrLimit)
+                {
+                    return new ApproachState(approachClearance.LocationOrLimit);
+                }
+            }
+
+            // By default continue holding
+            return this;
+        }
 
         public override string ToString()
         {
@@ -143,8 +161,15 @@ namespace AirTrafficControl.Interfaces
     }
 
     [DataContract]
-    public class Approach: AirportLocationState
+    public class ApproachState: AirportLocationState
     {
+        public ApproachState(Airport airport) : base(airport) { }
+
+        public override AirplaneState ComputeNextState(FlightPlan flightPlan, Interfaces.AtcInstruction instruction)
+        {
+            throw new NotImplementedException();
+        }
+
         public override string ToString()
         {
             return "Flying approach to " + Airport.DisplayName;
@@ -152,8 +177,15 @@ namespace AirTrafficControl.Interfaces
     }
 
     [DataContract]
-    public class Landed: AirportLocationState
+    public class LandedState: AirportLocationState
     {
+        public LandedState(Airport airport) : base(airport) { }
+
+        public override AirplaneState ComputeNextState(FlightPlan flightPlan, Interfaces.AtcInstruction instruction)
+        {
+            throw new NotImplementedException();
+        }
+
         public override string ToString()
         {
             return "Landed at " + Airport.DisplayName;
@@ -161,11 +193,19 @@ namespace AirTrafficControl.Interfaces
     }
 
     [DataContract]
-    public class Enroute: AirplaneState
+    public class EnrouteState: AirplaneState
     {
-        public Enroute(Fix from, Fix to, Route route)
+        public EnrouteState(Fix from, Fix to, Route route)
         {
-            if (route == null)
+            Requires.NotNull(from, "from");
+            Requires.NotNull(to, "to");
+            Requires.NotNull(route, "route");
+            Requires.Argument(route.Fixes.Contains(from), "from", "The 'from' Fix is not part of the passed Route");
+            Requires.Argument(route.Fixes.Contains(to), "to", "The 'to' Fix is not part of the passed Route");
+
+            this.From = from;
+            this.To = to;
+            this.Route = route;
         }
 
 
