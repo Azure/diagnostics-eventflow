@@ -167,7 +167,8 @@ namespace AirTrafficControl.Interfaces
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, Interfaces.AtcInstruction instruction)
         {
-            throw new NotImplementedException();
+            // Approaches are always successful, we never go missed :-)
+            return new LandedState(this.Airport);
         }
 
         public override string ToString()
@@ -183,7 +184,8 @@ namespace AirTrafficControl.Interfaces
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, Interfaces.AtcInstruction instruction)
         {
-            throw new NotImplementedException();
+            // After landing the airplane just disappears from the world
+            return null;
         }
 
         public override string ToString()
@@ -225,7 +227,25 @@ namespace AirTrafficControl.Interfaces
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
-            throw new NotImplementedException();
+            ValidateComputeNextStateArgs(flightPlan, instruction);
+
+            Fix next = Route.GetNextFix(this.To, flightPlan.Destination);
+            if (next == flightPlan.Destination)
+            {
+                ApproachClearance clearance = instruction as ApproachClearance;
+                if (clearance != null)
+                {
+                    return new ApproachState(flightPlan.Destination);
+                }
+                else
+                {
+                    return new HoldingState(flightPlan.Destination);
+                }
+            }
+            else
+            {
+                return new EnrouteState(this.To, next, this.Route);
+            }
         }
     }
 }
