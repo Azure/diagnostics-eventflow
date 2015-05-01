@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl", "AirTra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Interfaces", "AirTrafficControl.Interfaces\AirTrafficControl.Interfaces.csproj", "{E615A49E-4A25-4322-8317-33BC01130928}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Client", "AirTrafficControl.Client\AirTrafficControl.Client.csproj", "{9AD57735-1A70-403A-8E88-F27760180F02}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,12 +37,6 @@ Global
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|Any CPU.ActiveCfg = Release|x64
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|x64.ActiveCfg = Release|x64
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|x64.Build.0 = Release|x64
-		{9AD57735-1A70-403A-8E88-F27760180F02}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{9AD57735-1A70-403A-8E88-F27760180F02}.Debug|x64.ActiveCfg = Debug|x64
-		{9AD57735-1A70-403A-8E88-F27760180F02}.Debug|x64.Build.0 = Debug|x64
-		{9AD57735-1A70-403A-8E88-F27760180F02}.Release|Any CPU.ActiveCfg = Release|x64
-		{9AD57735-1A70-403A-8E88-F27760180F02}.Release|x64.ActiveCfg = Release|x64
-		{9AD57735-1A70-403A-8E88-F27760180F02}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

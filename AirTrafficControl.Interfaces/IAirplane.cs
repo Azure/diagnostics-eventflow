@@ -10,5 +10,6 @@ namespace AirTrafficControl.Interfaces
     public interface IAirplane: ITimeAwareObject, IActor
     {
         Task ReceiveInstruction(AtcInstruction instruction);
+        Task<AirplaneActorState> GetState();
     }
 }

@@ -9,8 +9,6 @@ namespace AirTrafficControl.Interfaces
 {
     public interface IAirTrafficControl : IActor
     {
-        Task<int> GetCountAsync();
-
-        Task SetCountAsync(int count);
+        
     }
 }

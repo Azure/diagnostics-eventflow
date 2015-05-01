@@ -64,6 +64,7 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AirplaneActorState.cs" />
     <Compile Include="AirplaneState.cs" />
     <Compile Include="Airport.cs" />
     <Compile Include="AtcInstruction.cs" />

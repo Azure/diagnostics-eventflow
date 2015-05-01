@@ -14,12 +14,6 @@ namespace AirTrafficControl
     [DataContract]
     public class AirTrafficControlState
     {
-        [DataMember]
-        public int Count;
-
-        public override string ToString()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "AirTrafficControlState[Count = {0}]", Count);
-        }
+        
     }
 }

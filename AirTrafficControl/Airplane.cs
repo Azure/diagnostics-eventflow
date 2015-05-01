@@ -12,33 +12,24 @@ namespace AirTrafficControl
 {
     public class Airplane : Actor<AirplaneActorState>, IAirplane
     {
+        public Task<AirplaneActorState> GetState()
+        {
+            return Task.FromResult(this.State);
+        }
+
         public Task ReceiveInstruction(AtcInstruction instruction)
         {
             this.State.Instruction = instruction;
-            ActorEventSource.Current.ActorMessage(this, "Received ATC instruction '{0}'", instruction.ToString());
+            ActorEventSource.Current.ActorMessage(this, "{0} received ATC instruction '{1}'", this.Id.ToString(), instruction.ToString());
             return Task.FromResult(true);
         }
 
         public Task TimePassed()
         {
-            // TODO: implement
+            AirplaneState newState = this.State.AirplaneState.ComputeNextState(this.State.FlightPlan, this.State.Instruction);
+            this.State.AirplaneState = newState;
+            ActorEventSource.Current.ActorMessage(this, "New state for {0} is {1}", this.Id.ToString(), newState);
             return Task.FromResult(true);
         }
-    }
-
-    [DataContract]
-    public class AirplaneActorState
-    {
-        [DataMember]
-        public AirplaneState AirplaneState { get; set; }
-
-        [DataMember]
-        public FlightPlan FlightPlan { get; set; }
-
-        [DataMember]
-        public int DepartureTime { get; set; }
-
-        [DataMember]
-        public AtcInstruction Instruction { get; set; }
     }
 }
