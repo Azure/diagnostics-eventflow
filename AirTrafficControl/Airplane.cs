@@ -41,6 +41,7 @@ namespace AirTrafficControl
         public Task StartFlight(FlightPlan flightPlan)
         {
             Requires.NotNull(flightPlan, "flightPlan");
+            Requires.Argument(flightPlan.AirplaneID == this.Id.ToString(), "flightPlan", "The passed flight plan is for a different airplane");
 
             this.State.AirplaneState = new TaxiingState(flightPlan.DeparturePoint);
             this.State.FlightPlan = flightPlan;

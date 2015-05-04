@@ -15,6 +15,9 @@ namespace AirTrafficControl
     public class AirTrafficControlState
     {
         [DataMember]
-        public List<string> FlyingAirplaneIDs;
+        public List<string> FlyingAirplaneIDs { get; set; }
+
+        [DataMember]
+        public int CurrentTime { get; set; }
     }
 }

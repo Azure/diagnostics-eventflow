@@ -11,6 +11,6 @@ namespace AirTrafficControl.Interfaces
     {
         Task<IEnumerable<string>> GetFlyingAirplaneIDs();
 
-        Task StartNewFlight(string airplaneID, FlightPlan flightPlan);
+        Task StartNewFlight(FlightPlan flightPlan);
     }
 }
