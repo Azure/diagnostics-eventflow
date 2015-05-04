@@ -9,6 +9,8 @@ namespace AirTrafficControl.Interfaces
 {
     public interface IAirTrafficControl : IActor
     {
-        
+        Task<IEnumerable<string>> GetFlyingAirplaneIDs();
+
+        Task StartNewFlight(string airplaneID, FlightPlan flightPlan);
     }
 }

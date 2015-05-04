@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -15,5 +16,14 @@ namespace AirTrafficControl.Interfaces
 
         [DataMember]
         public Airport Destination { get; set; }
+
+        public void Validate()
+        {
+            Verify.Operation(DeparturePoint != null, "Departure point must not be null");
+            Verify.Operation(Destination != null, "Destination must not be null");
+            Verify.Operation(DeparturePoint != Destination, "Departure point and destination cannot be the same");
+            Verify.Operation(Universe.Current.Airports.Contains(DeparturePoint), "Unknown departure point airport");
+            Verify.Operation(Universe.Current.Airports.Contains(Destination), "Unknown destination airport");
+        }
     }
 }

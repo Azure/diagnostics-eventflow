@@ -14,6 +14,7 @@ namespace AirTrafficControl
     [DataContract]
     public class AirTrafficControlState
     {
-        
+        [DataMember]
+        public List<string> FlyingAirplaneIDs;
     }
 }

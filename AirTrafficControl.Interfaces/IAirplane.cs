@@ -11,5 +11,6 @@ namespace AirTrafficControl.Interfaces
     {
         Task ReceiveInstruction(AtcInstruction instruction);
         Task<AirplaneActorState> GetState();
+        Task StartFlight(FlightPlan flightPlan);
     }
 }
