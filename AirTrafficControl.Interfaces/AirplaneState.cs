@@ -126,10 +126,7 @@ namespace AirTrafficControl.Interfaces
             ValidateComputeNextStateArgs(flightPlan, instruction);
 
             Route route = Universe.Current.GetRouteBetween(this.Fix, flightPlan.Destination);
-            if (route == null)
-            {
-                throw new ArgumentException("Cannot find route between " + this.Fix.DisplayName + " and " + flightPlan.Destination.DisplayName);
-            }
+            Assumes.NotNull(route);
             Fix next = route.GetNextFix(this.Fix, flightPlan.Destination);
 
             EnrouteClearance enrouteClearance = instruction as EnrouteClearance;
@@ -141,7 +138,7 @@ namespace AirTrafficControl.Interfaces
                 }
             }
 
-            ApproachClearance approachClearance = null;
+            ApproachClearance approachClearance = instruction as ApproachClearance;
             if (approachClearance != null)
             {
                 if (next == approachClearance.LocationOrLimit)
