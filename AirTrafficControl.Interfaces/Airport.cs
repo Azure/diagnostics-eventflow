@@ -20,17 +20,6 @@ namespace AirTrafficControl.Interfaces
 
         [DataMember]
         public Direction PublishedHoldBearing { get; private set; }
-
-        public override bool Equals(object obj)
-        {
-            Airport other = obj as Airport;
-            if (other == null)
-            {
-                return false;
-            }
-
-            return this.Name == other.Name;
-        }
     }
 
     #pragma warning restore 0659

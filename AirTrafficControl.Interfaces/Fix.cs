@@ -39,6 +39,26 @@ namespace AirTrafficControl.Interfaces
             return this.Name == other.Name;
         }
 
+        public static bool operator ==(Fix f1, Fix f2)
+        {
+            if (object.ReferenceEquals(f1, null))
+            {
+                return object.ReferenceEquals(f2, null);
+            }
+
+            return f1.Equals(f2);
+        }
+
+        public static bool operator !=(Fix f1, Fix f2)
+        {
+            if (object.ReferenceEquals(f1, null))
+            {
+                return !object.ReferenceEquals(f2, null);
+            }
+
+            return !f1.Equals(f2);
+        }
+
         public override int GetHashCode()
         {
             return Name.GetHashCode();
