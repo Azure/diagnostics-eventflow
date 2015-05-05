@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace AirTrafficControl.Interfaces
 {
     [DataContract]
+    [KnownType(typeof(Airport))]
     public class Fix
     {
         public Fix(string name, string displayName)
