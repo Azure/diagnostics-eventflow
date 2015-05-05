@@ -135,17 +135,16 @@ namespace AirTrafficControl
         {
             EnrouteState enrouteState = (EnrouteState)airplaneActorState.AirplaneState;
             FlightPlan flightPlan = airplaneActorState.FlightPlan;
-            Fix nextFix = enrouteState.Route.GetNextFix(enrouteState.To, flightPlan.Destination);
 
-            if (nextFix == flightPlan.Destination)
+            if (enrouteState.To == flightPlan.Destination)
             {
                 // Any other airplanes cleared for landing at this airport?
-                if (projectedAirplaneStates.Values.OfType<ApproachState>().Any(state => state.Airport == nextFix))
+                if (projectedAirplaneStates.Values.OfType<ApproachState>().Any(state => state.Airport == flightPlan.Destination))
                 {
-                    projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(nextFix);
-                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(nextFix));
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(flightPlan.Destination);
+                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(flightPlan.Destination));
                     ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because another airplane has been cleared for approach at the same airport", 
-                        flightPlan.AirplaneID, nextFix.DisplayName);
+                        flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
                 else
                 {
@@ -156,6 +155,8 @@ namespace AirTrafficControl
             }
             else
             {
+                Fix nextFix = enrouteState.Route.GetNextFix(enrouteState.To, flightPlan.Destination);
+
                 // Is another airplane destined to the same fix?
                 if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(state => state.To == nextFix))
                 {
