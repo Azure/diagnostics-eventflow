@@ -125,9 +125,18 @@ namespace AirTrafficControl.Interfaces
         {
             ValidateComputeNextStateArgs(flightPlan, instruction);
 
+            ApproachClearance approachClearance = instruction as ApproachClearance;
+            if (approachClearance != null)
+            {
+                if (this.Fix == approachClearance.LocationOrLimit)
+                {
+                    return new ApproachState(approachClearance.LocationOrLimit);
+                }
+            }
+
             Route route = Universe.Current.GetRouteBetween(this.Fix, flightPlan.Destination);
             Assumes.NotNull(route);
-            Fix next = route.GetNextFix(this.Fix, flightPlan.Destination);
+            Fix next = route.GetNextFix(this.Fix, flightPlan.Destination);            
 
             EnrouteClearance enrouteClearance = instruction as EnrouteClearance;
             if (enrouteClearance != null)
@@ -135,15 +144,6 @@ namespace AirTrafficControl.Interfaces
                 if (enrouteClearance.IsClearedTo(this.Fix, next, route))
                 {
                     return new EnrouteState(this.Fix, next, route);
-                }
-            }
-
-            ApproachClearance approachClearance = instruction as ApproachClearance;
-            if (approachClearance != null)
-            {
-                if (next == approachClearance.LocationOrLimit)
-                {
-                    return new ApproachState(approachClearance.LocationOrLimit);
                 }
             }
 
@@ -226,11 +226,10 @@ namespace AirTrafficControl.Interfaces
         {
             ValidateComputeNextStateArgs(flightPlan, instruction);
 
-            Fix next = Route.GetNextFix(this.To, flightPlan.Destination);
-            if (next == flightPlan.Destination)
+            if (this.To == flightPlan.Destination)
             {
                 ApproachClearance clearance = instruction as ApproachClearance;
-                if (clearance != null)
+                if (clearance != null && clearance.LocationOrLimit == flightPlan.Destination)
                 {
                     return new ApproachState(flightPlan.Destination);
                 }
@@ -241,6 +240,7 @@ namespace AirTrafficControl.Interfaces
             }
             else
             {
+                Fix next = Route.GetNextFix(this.To, flightPlan.Destination);
                 return new EnrouteState(this.To, next, this.Route);
             }
         }

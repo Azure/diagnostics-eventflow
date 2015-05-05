@@ -13,7 +13,7 @@ namespace AirTrafficControl
     public class AirTrafficControl : Actor<AirTrafficControlState>, IAirTrafficControl, IRemindable
     {
         private const string TimePassedReminder = "AirTrafficControl.TimePassedReminder";
-        private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates);
+        private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates);
 
         private readonly IDictionary<Type, AirplaneController> AirplaneControllers; 
     
@@ -61,6 +61,12 @@ namespace AirTrafficControl
             Requires.NotNull(flightPlan, "flightPlan");
             flightPlan.Validate();
 
+            if (this.State.FlyingAirplaneIDs.Contains(flightPlan.AirplaneID))
+            {
+                // In real life airplanes can have multiple flight plans filed, just for different times. But here we assume there can be only one flight plan per airplane
+                throw new InvalidOperationException("The airplane " + flightPlan.AirplaneID + " is already flying");
+            }
+
             ActorId actorID = new ActorId(flightPlan.AirplaneID);
             IAirplane airplane = ActorProxy.Create<IAirplane>(actorID);
             await airplane.StartFlight(flightPlan);
@@ -84,7 +90,7 @@ namespace AirTrafficControl
                 var controllerFunction = this.AirplaneControllers[currentState.GetType()];
                 Assumes.NotNull(controllerFunction);
 
-                controllerFunction(airplaneProxies[currentState.FlightPlan.AirplaneID], currentState, newAirplaneStates);
+                await controllerFunction(airplaneProxies[currentState.FlightPlan.AirplaneID], currentState, newAirplaneStates);
             }
 
             this.State.CurrentTime++;
@@ -102,56 +108,157 @@ namespace AirTrafficControl
             return retval;
         }
 
-        private Task HandleAirplaneLanded(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates)
+        private Task HandleAirplaneLanded(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
             // Just remove the airplane form the flying airplanes set
-            this.State.FlyingAirplaneIDs.Remove(currentState.FlightPlan.AirplaneID);
-            ActorEventSource.Current.ActorMessage(this, "Airplane {0} has landed and is no longer tracked by ATC", currentState.FlightPlan.AirplaneID);
+            this.State.FlyingAirplaneIDs.Remove(airplaneActorState.FlightPlan.AirplaneID);
+            ActorEventSource.Current.ActorMessage(this, "Airplane {0} has landed and is no longer tracked by ATC", airplaneActorState.FlightPlan.AirplaneID);
             return Task.FromResult(true);
         }
 
-        private Task HandleAirplaneApproaching(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates)
+        private Task HandleAirplaneApproaching(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
             // We assume that every approach is successful, so just make a note that the airplane will be in the Landed state
-            FlightPlan flightPlan = currentState.FlightPlan;
+            FlightPlan flightPlan = airplaneActorState.FlightPlan;
             Assumes.NotNull(flightPlan);
             projectedAirplaneStates[flightPlan.AirplaneID] = new LandedState(flightPlan.Destination);
             return Task.FromResult(true);
         }
 
-        private async Task HandleAirplaneEnroute(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates)
+        private async Task HandleAirplaneEnroute(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
-            EnrouteState enrouteState = (EnrouteState)currentState.AirplaneState;
-            FlightPlan flightPlan = currentState.FlightPlan;
+            EnrouteState enrouteState = (EnrouteState)airplaneActorState.AirplaneState;
+            FlightPlan flightPlan = airplaneActorState.FlightPlan;
             Fix nextFix = enrouteState.Route.GetNextFix(enrouteState.To, flightPlan.Destination);
 
             if (nextFix == flightPlan.Destination)
             {
                 // Any other airplanes cleared for landing at this airport?
-                if (projectedAirplaneStates.OfType<ApproachState>().Any(state => state.Airport == nextFix))
+                if (projectedAirplaneStates.Values.OfType<ApproachState>().Any(state => state.Airport == nextFix))
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(nextFix);
                     await airplaneProxy.ReceiveInstruction(new HoldInstruction(nextFix));
-                    ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because another airplane has been cleared for approach at the same airport", flightPlan.AirplaneID, nextFix.DisplayName);
+                    ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because another airplane has been cleared for approach at the same airport", 
+                        flightPlan.AirplaneID, nextFix.DisplayName);
                 }
-
-                // CONTINUE HERE
+                else
+                {
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new ApproachState(flightPlan.Destination);
+                    await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination));
+                    ActorEventSource.Current.ActorMessage(this, "Issued approach clearance for {0} at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
+                }
+            }
+            else
+            {
+                // Is another airplane destined to the same fix?
+                if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(state => state.To == nextFix))
+                {
+                    // Hold at the end of the current route leg
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(enrouteState.To);
+                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(enrouteState.To));
+                    ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because of traffic contention at {2}",
+                        flightPlan.AirplaneID, enrouteState.To.DisplayName, nextFix.DisplayName);
+                }
+                else
+                {
+                    // Just let it proceed to next fix, no instruction necessary
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(enrouteState.To, nextFix, enrouteState.Route);
+                    ActorEventSource.Current.ActorMessage(this, "Airplane {0} is flying from {1} to {2}, next fix {3}",
+                        flightPlan.AirplaneID, enrouteState.From.DisplayName, enrouteState.To.DisplayName, nextFix.DisplayName);
+                }
             }
         }
 
-        private Task HandleAirplaneHolding(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates)
+        private async Task HandleAirplaneHolding(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
-            throw new NotImplementedException();
+            HoldingState holdingState = (HoldingState)airplaneActorState.AirplaneState;
+            FlightPlan flightPlan = airplaneActorState.FlightPlan;            
+
+            // Case 1: airplane holding at destination airport
+            if (holdingState.Fix == flightPlan.Destination)
+            {
+                // Grant approach clearance if no other airplane is cleared for approach at the same airport.
+                if (!projectedAirplaneStates.Values.OfType<ApproachState>().Any(state => state.Airport == flightPlan.Destination))
+                {
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new ApproachState(flightPlan.Destination);
+                    await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination));
+                    ActorEventSource.Current.ActorMessage(this, "Airplane {0} has been cleared for approach at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
+                }
+                else
+                {
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(flightPlan.Destination);
+                    ActorEventSource.Current.ActorMessage(this, "Airplane {0} should continue holding at {1} because of other traffic landing", 
+                        flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
+                }
+
+                return;
+            }
+
+            // Case 2: holding at some point enroute
+            Route route = Universe.Current.GetRouteBetween(flightPlan.DeparturePoint, flightPlan.Destination);
+            Assumes.NotNull(route);
+            Fix nextFix = route.GetNextFix(holdingState.Fix, flightPlan.Destination);
+            Assumes.NotNull(nextFix);
+            
+            if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(enrouteState => enrouteState.To == nextFix))
+            {
+                projectedAirplaneStates[flightPlan.AirplaneID] = holdingState;
+                ActorEventSource.Current.ActorMessage(this, "Airplane {0} should continue holding at {1} because of traffic contention at {2}",
+                    flightPlan.AirplaneID, holdingState.Fix.DisplayName, nextFix.DisplayName);
+            }
+            else
+            {
+                projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(holdingState.Fix, nextFix, route);
+                // We always optmimistically give an enroute clearance all the way to the destination
+                await airplaneProxy.ReceiveInstruction(new EnrouteClearance(flightPlan.Destination));
+                ActorEventSource.Current.ActorMessage(this, "Airplane {0} should end holding at {1} and proceed to destination, next fix {2}",
+                    flightPlan.AirplaneID, holdingState.Fix.DisplayName, nextFix.DisplayName);
+            }
         }
 
-        private Task HandleAirplaneDeparting(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates)
+        private async Task HandleAirplaneDeparting(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
-            throw new NotImplementedException();
+            DepartingState departingState = (DepartingState)airplaneActorState.AirplaneState;
+            FlightPlan flightPlan = airplaneActorState.FlightPlan;
+
+            Route route = Universe.Current.GetRouteBetween(flightPlan.DeparturePoint, flightPlan.Destination);
+            Assumes.NotNull(route);
+            Fix nextFix = route.GetNextFix(departingState.Airport, flightPlan.Destination);
+            Assumes.NotNull(nextFix);
+
+            if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(enrouteState => enrouteState.To == nextFix))
+            {
+                projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(departingState.Airport);
+                await airplaneProxy.ReceiveInstruction(new HoldInstruction(departingState.Airport));
+                ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because of traffic contention at {2}",
+                    flightPlan.AirplaneID, departingState.Airport.DisplayName, nextFix.DisplayName);
+            }
+            else
+            {
+                projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(departingState.Airport, nextFix, route);
+                ActorEventSource.Current.ActorMessage(this, "Airplane {0} completed departure from {1} and proceeds enroute to destination, next fix {2}",
+                    flightPlan.AirplaneID, departingState.Airport.DisplayName, nextFix.DisplayName);
+            }
         }
 
-        private Task HandleAirplaneTaxiing(IAirplane airplaneProxy, AirplaneActorState currentState, IDictionary<string, AirplaneState> projectedAirplaneStates)
+        private async Task HandleAirplaneTaxiing(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
-            throw new NotImplementedException();
+            TaxiingState taxiingState = (TaxiingState)airplaneActorState.AirplaneState;
+            FlightPlan flightPlan = airplaneActorState.FlightPlan;
+
+            if (projectedAirplaneStates.Values.OfType<DepartingState>().Any(state => state.Airport == flightPlan.DeparturePoint))
+            {
+                projectedAirplaneStates[flightPlan.AirplaneID] = taxiingState;
+                ActorEventSource.Current.ActorMessage(this, "Airplane {0} continue taxi at {1}, another airplane departing", 
+                    flightPlan.AirplaneID, flightPlan.DeparturePoint.DisplayName);
+            }
+            else
+            {
+                projectedAirplaneStates[flightPlan.AirplaneID] = new DepartingState(flightPlan.DeparturePoint);
+                await airplaneProxy.ReceiveInstruction(new TakeoffClearance(flightPlan.DeparturePoint));
+                ActorEventSource.Current.ActorMessage(this, "Airplane {0} received takeoff clearance at {1}",
+                    flightPlan.AirplaneID, flightPlan.DeparturePoint);
+            }
         }
     }
 }

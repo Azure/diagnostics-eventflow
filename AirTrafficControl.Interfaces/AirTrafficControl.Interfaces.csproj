@@ -77,6 +77,7 @@
     <Compile Include="IAirTrafficControl.cs" />
     <Compile Include="Route.cs" />
     <Compile Include="Universe.cs" />
+    <Compile Include="WellKnownIdentifiers.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
