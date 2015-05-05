@@ -89,16 +89,16 @@ namespace AirTrafficControl
             }
 
             var airplaneProxies = CreateAirplaneProxies();
-            var currentAirplaneStatesByDepartureTime = (await Task.WhenAll(this.State.FlyingAirplaneIDs.Select(id => airplaneProxies[id].GetState())))
+            var airplaneActorStatesByDepartureTime = (await Task.WhenAll(this.State.FlyingAirplaneIDs.Select(id => airplaneProxies[id].GetState())))
                                                        .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
             var newAirplaneStates = new Dictionary<string, AirplaneState>();
 
-            foreach(var currentState in currentAirplaneStatesByDepartureTime)
+            foreach(var airplaneActorState in airplaneActorStatesByDepartureTime)
             {
-                var controllerFunction = this.AirplaneControllers[currentState.GetType()];
+                var controllerFunction = this.AirplaneControllers[airplaneActorState.AirplaneState.GetType()];
                 Assumes.NotNull(controllerFunction);
 
-                await controllerFunction(airplaneProxies[currentState.FlightPlan.AirplaneID], currentState, newAirplaneStates);
+                await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates);
             }            
 
             await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassed(this.State.CurrentTime)));
