@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl", "AirTra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Interfaces", "AirTrafficControl.Interfaces\AirTrafficControl.Interfaces.csproj", "{E615A49E-4A25-4322-8317-33BC01130928}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.TestClient", "AirTrafficControl.TestClient\AirTrafficControl.TestClient.csproj", "{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,14 @@ Global
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|Any CPU.ActiveCfg = Release|x64
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|x64.ActiveCfg = Release|x64
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|x64.Build.0 = Release|x64
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|x64.Build.0 = Debug|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Release|x64.ActiveCfg = Release|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

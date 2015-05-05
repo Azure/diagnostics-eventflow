@@ -34,7 +34,7 @@ namespace AirTrafficControl
             {
                 this.State.DepartureTime = currentTime;
             }
-            ActorEventSource.Current.ActorMessage(this, "Airplane {0} is now {1}", this.Id.ToString(), newState);
+            ActorEventSource.Current.ActorMessage(this, "Airplane {0} is now {1} Time is {2}", this.Id.ToString(), newState, currentTime);
             return Task.FromResult(true);
         }
 

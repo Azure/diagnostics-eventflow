@@ -80,6 +80,14 @@ namespace AirTrafficControl
                 return;
             }
 
+            this.State.CurrentTime++;
+
+            if (this.State.FlyingAirplaneIDs.Count == 0)
+            {
+                ActorEventSource.Current.ActorMessage(this, "Time is {0} No airplanes flying", this.State.CurrentTime);
+                return;
+            }
+
             var airplaneProxies = CreateAirplaneProxies();
             var currentAirplaneStatesByDepartureTime = (await Task.WhenAll(this.State.FlyingAirplaneIDs.Select(id => airplaneProxies[id].GetState())))
                                                        .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
@@ -91,9 +99,7 @@ namespace AirTrafficControl
                 Assumes.NotNull(controllerFunction);
 
                 await controllerFunction(airplaneProxies[currentState.FlightPlan.AirplaneID], currentState, newAirplaneStates);
-            }
-
-            this.State.CurrentTime++;
+            }            
 
             await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassed(this.State.CurrentTime)));
         }
