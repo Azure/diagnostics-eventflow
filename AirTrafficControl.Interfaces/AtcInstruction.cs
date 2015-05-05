@@ -29,7 +29,7 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public abstract class AirportFixAtcInstruction: AtcInstruction
     {
-        public AirportFixAtcInstruction(Airport airport) : base(null) { this.LocationOrLimit = airport; }
+        public AirportFixAtcInstruction(Airport airport) : base(airport) { this.LocationOrLimit = airport; }
 
         [DataMember]
         public new Airport LocationOrLimit { get; private set; }
