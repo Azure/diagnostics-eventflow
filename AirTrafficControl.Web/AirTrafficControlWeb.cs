@@ -12,7 +12,7 @@ namespace AirTrafficControl.Web
     {
         protected override ICommunicationListener CreateCommunicationListener()
         {
-            
+            return new OwinCommunicationListener(new OwinStartup());
         }        
     }
 }

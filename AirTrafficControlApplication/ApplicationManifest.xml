@@ -1,18 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="AirTrafficControlApplicationType" ApplicationTypeVersion="1.0.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="AirTrafficControlPkg" ServiceManifestVersion="1.0.0.0" />
+  </ServiceManifestImport>
+  <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="AirTrafficControl.WebPkg" ServiceManifestVersion="1.0.0.0" />
     <ConfigOverrides />
   </ServiceManifestImport>
-  <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="AirTrafficControlPkg" ServiceManifestVersion="1.0.0.0" />
-  </ServiceManifestImport>
   <DefaultServices>
-    <Service Name="AirTrafficControlWeb">
-      <StatelessService ServiceTypeName="AirTrafficControlWebType">
-        <SingletonPartition />
-      </StatelessService>
-    </Service>
     <Service Name="AirplaneActorService">
       <StatefulService ServiceTypeName="AirplaneActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
         <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
@@ -22,6 +17,11 @@
       <StatefulService ServiceTypeName="AirTrafficControlActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
         <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
+    </Service>
+    <Service Name="AirTrafficControlWeb">
+      <StatelessService ServiceTypeName="AirTrafficControlWebType">
+        <SingletonPartition />
+      </StatelessService>
     </Service>
   </DefaultServices>
 </ApplicationManifest>

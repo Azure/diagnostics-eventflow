@@ -6,19 +6,32 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Fabric;
 using System.Threading;
+using Microsoft;
+using System.Fabric.Description;
+using System.Globalization;
+using Microsoft.Owin.Hosting;
 
 namespace AirTrafficControl.Web
 {
-    internal class NancyCommunicationListener : ICommunicationListener
+    internal class OwinCommunicationListener : ICommunicationListener
     {
-        public void Abort()
+        private IDisposable serverHandle;
+
+        private IOwinAppBuilder startup;
+        private string publishAddress;
+        private string listeningAddress;
+        private string appRoot;
+
+        public OwinCommunicationListener(IOwinAppBuilder startup)
+            : this(null, startup)
         {
-            throw new NotImplementedException();
         }
 
-        public Task CloseAsync(CancellationToken cancellationToken)
+        public OwinCommunicationListener(string appRoot, IOwinAppBuilder startup)
         {
-            throw new NotImplementedException();
+            Requires.NotNull(startup, "startup");
+            this.startup = startup;
+            this.appRoot = appRoot;
         }
 
         public void Initialize(ServiceInitializationParameters serviceInitializationParameters)
@@ -58,7 +71,43 @@ namespace AirTrafficControl.Web
 
         public Task<string> OpenAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                this.serverHandle = WebApp.Start(this.listeningAddress, appBuilder => this.startup.Configuration(appBuilder));
+
+                return Task.FromResult(this.publishAddress);
+            }
+            catch (Exception ex)
+            {
+                ServiceEventSource.Current.ServiceHostInitializationFailed(ex);
+
+                this.StopWebServer();
+
+                throw;
+            }
+        }
+
+        public Task CloseAsync(CancellationToken cancellationToken)
+        {
+            this.StopWebServer();
+
+            return Task.FromResult(true);
+        }
+
+        public void Abort()
+        {
+            this.StopWebServer();
+        }
+
+        private void StopWebServer()
+        {
+            var tempHandle = this.serverHandle;
+            this.serverHandle = null;
+
+            if (tempHandle != null)
+            {
+                tempHandle.Dispose();
+            }
         }
     }
 }
