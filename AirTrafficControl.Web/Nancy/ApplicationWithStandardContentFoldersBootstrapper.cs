@@ -14,6 +14,7 @@ namespace AirTrafficControl.Web.Nancy
         {
             nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("fonts", "fonts"));
             nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Scripts", "Scripts"));
+            nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("App", "App"));
 
             // 'Content' and 'views' are handled by Nancy defaults
             base.ConfigureConventions(nancyConventions);

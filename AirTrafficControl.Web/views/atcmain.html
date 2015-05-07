@@ -1,14 +1,27 @@
 ﻿<!DOCTYPE html>
 
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:ng="http://angularjs.org" ng-app>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:ng="http://angularjs.org" ng-app="AtcApp">
 <head>
     <meta charset="utf-8" />
     <title>Air Traffic Control</title>
     <base href="@Model.ApplicationRoot" />
+    <link rel="stylesheet" type="text/css" href="Content/bootstrap.css" />
+
+    <!-- Application files -->
+    <script type="text/javascript" src="App/AirplaneState.js" defer></script>
+    <script type="text/javascript" src="App/MainController.js" defer></script>
+    <script type="text/javascript" src="App/AtcApp.js" defer></script>
 </head>
+
 <body>
-    Something great will show up here soon...
-    {{"Angular works!"}}
+    <div ng-controller="MainController as mainCtrl">
+        <table>
+            <tr ng-repeat="airplaneState in mainCtrl.AirplaneStates" >
+                <td>{{airplaneState.ID}}</td>
+                <td>{{airplaneState.StateDescription}}</td>
+            </tr>
+        </table>
+    </div>
     <script src="Scripts/angular.js"></script>
 </body>
 </html>
