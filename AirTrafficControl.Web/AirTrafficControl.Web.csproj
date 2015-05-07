@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IOwinAppBuilder.cs" />
+    <Compile Include="Nancy\BasicPageModel.cs" />
     <Compile Include="Nancy\MainModule.cs" />
     <Compile Include="OwinCommunicationListener.cs" />
     <Compile Include="OwinStartup.cs" />

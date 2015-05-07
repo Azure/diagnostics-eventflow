@@ -13,7 +13,7 @@ namespace AirTrafficControl.Web.Nancy
         {
             Get["/"] = parameters =>
             {
-                return View["atcmain.html"];
+                return View["atcmain.html", new BasicPageModel(Request)];
             };
         }
     }
