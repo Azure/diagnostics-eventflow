@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IOwinAppBuilder.cs" />
+    <Compile Include="Nancy\ApplicationWithStandardContentFoldersBootstrapper.cs" />
     <Compile Include="Nancy\BasicPageModel.cs" />
     <Compile Include="Nancy\MainModule.cs" />
     <Compile Include="OwinCommunicationListener.cs" />
@@ -120,7 +121,9 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Icon.png" />
     <Content Include="Scripts\angular-mocks.js" />
-    <Content Include="Scripts\angular.js" />
+    <Content Include="Scripts\angular.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\angular.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

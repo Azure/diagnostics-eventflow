@@ -23,7 +23,7 @@ namespace AirTrafficControl.Web.Nancy
             get
             {
                 var basePath = this.request.Url.BasePath;
-                return (basePath == null) ? string.Empty : basePath.TrimStart('/');
+                return (basePath == null) ? "/" : basePath.TrimStart('/');
             }
         }
     }
