@@ -1,6 +1,6 @@
 ﻿
 module AirTrafficControl {
     export class AirplaneState {
-        constructor(ID: string, StateDescription: string) { }
+        constructor(public ID: string, public StateDescription: string) { }
     }
 }
