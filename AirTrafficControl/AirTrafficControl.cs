@@ -163,14 +163,14 @@ namespace AirTrafficControl
                     // Hold at the end of the current route leg
                     projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(enrouteState.To);
                     await airplaneProxy.ReceiveInstruction(new HoldInstruction(enrouteState.To));
-                    ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because of traffic contention at {2}",
+                    ActorEventSource.Current.ActorMessage(this, "ATC: Issued holding instruction for {0} at {1} because of traffic contention at {2}",
                         flightPlan.AirplaneID, enrouteState.To.DisplayName, nextFix.DisplayName);
                 }
                 else
                 {
                     // Just let it proceed to next fix, no instruction necessary
                     projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(enrouteState.To, nextFix, enrouteState.Route);
-                    ActorEventSource.Current.ActorMessage(this, "Airplane {0} is flying from {1} to {2}, next fix {3}",
+                    ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} is flying from {1} to {2}, next fix {3}",
                         flightPlan.AirplaneID, enrouteState.From.DisplayName, enrouteState.To.DisplayName, nextFix.DisplayName);
                 }
             }
@@ -210,7 +210,7 @@ namespace AirTrafficControl
             if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(enrouteState => enrouteState.To == nextFix))
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = holdingState;
-                ActorEventSource.Current.ActorMessage(this, "Airplane {0} should continue holding at {1} because of traffic contention at {2}",
+                ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} should continue holding at {1} because of traffic contention at {2}. Assuming compliance with previous instruction, no new instructions issued.",
                     flightPlan.AirplaneID, holdingState.Fix.DisplayName, nextFix.DisplayName);
             }
             else
@@ -218,7 +218,7 @@ namespace AirTrafficControl
                 projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(holdingState.Fix, nextFix, route);
                 // We always optmimistically give an enroute clearance all the way to the destination
                 await airplaneProxy.ReceiveInstruction(new EnrouteClearance(flightPlan.Destination));
-                ActorEventSource.Current.ActorMessage(this, "Airplane {0} should end holding at {1} and proceed to destination, next fix {2}",
+                ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} should end holding at {1} and proceed to destination, next fix {2}. Issued new enroute clearance.",
                     flightPlan.AirplaneID, holdingState.Fix.DisplayName, nextFix.DisplayName);
             }
         }
