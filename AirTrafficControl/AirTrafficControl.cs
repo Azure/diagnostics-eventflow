@@ -28,26 +28,14 @@ namespace AirTrafficControl
                 { typeof(ApproachState), HandleAirplaneApproaching },
                 { typeof(LandedState), HandleAirplaneLanded }
             };
-        }   
+        }        
 
         public override Task OnActivateAsync()
         {
             if (this.State.FlyingAirplaneIDs == null)
             {
                 this.State.FlyingAirplaneIDs = new List<string>();
-            }
-
-            IActorReminder reminder = null;
-            try
-            {
-                reminder = this.GetReminder(TimePassedReminder);
-            }
-            catch { }
-            if (reminder == null)
-            {
-                this.RegisterReminder(TimePassedReminder, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), ActorReminderAttributes.None);
-                this.State.CurrentTime = 0;
-            }
+            }            
 
             return base.OnActivateAsync();
         }
@@ -67,10 +55,27 @@ namespace AirTrafficControl
                 throw new InvalidOperationException("The airplane " + flightPlan.AirplaneID + " is already flying");
             }
 
+            // Make sure we have a reminder set up so that we can simulate the flight
+            IActorReminder reminder = null;
+            try
+            {
+                reminder = this.GetReminder(TimePassedReminder);
+            }
+            catch { }
+            if (reminder == null)
+            {
+                ActorEventSource.Current.ActorMessage(this, "ATC: Starting the world timer, current time is {0}", this.State.CurrentTime);
+                await this.RegisterReminder(TimePassedReminder, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), ActorReminderAttributes.None);
+            }
+
             ActorId actorID = new ActorId(flightPlan.AirplaneID);
             IAirplane airplane = ActorProxy.Create<IAirplane>(actorID);
             await airplane.StartFlight(flightPlan);
             this.State.FlyingAirplaneIDs.Add(flightPlan.AirplaneID);
+            ActorEventSource.Current.ActorMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}.",
+                flightPlan.AirplaneID,
+                flightPlan.DeparturePoint.DisplayName,
+                flightPlan.Destination.DisplayName);
         }
 
         public async Task ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
@@ -84,7 +89,9 @@ namespace AirTrafficControl
 
             if (this.State.FlyingAirplaneIDs.Count == 0)
             {
-                ActorEventSource.Current.ActorMessage(this, "ATC: Time is {0} No airplanes flying", this.State.CurrentTime);
+                ActorEventSource.Current.ActorMessage(this, "ATC: Time is {0} No airplanes flying, shutting down the world timer", this.State.CurrentTime);
+                var reminder = this.GetReminder(TimePassedReminder);
+                await this.UnregisterReminder(reminder);
                 return;
             }
 
