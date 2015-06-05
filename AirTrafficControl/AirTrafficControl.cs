@@ -84,7 +84,7 @@ namespace AirTrafficControl
 
             if (this.State.FlyingAirplaneIDs.Count == 0)
             {
-                ActorEventSource.Current.ActorMessage(this, "Time is {0} No airplanes flying", this.State.CurrentTime);
+                ActorEventSource.Current.ActorMessage(this, "ATC: Time is {0} No airplanes flying", this.State.CurrentTime);
                 return;
             }
 
@@ -118,7 +118,7 @@ namespace AirTrafficControl
         {
             // Just remove the airplane form the flying airplanes set
             this.State.FlyingAirplaneIDs.Remove(airplaneActorState.FlightPlan.AirplaneID);
-            ActorEventSource.Current.ActorMessage(this, "Airplane {0} has landed and is no longer tracked by ATC", airplaneActorState.FlightPlan.AirplaneID);
+            ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} has landed and is no longer tracked", airplaneActorState.FlightPlan.AirplaneID);
             return Task.FromResult(true);
         }
 
@@ -143,14 +143,14 @@ namespace AirTrafficControl
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(flightPlan.Destination);
                     await airplaneProxy.ReceiveInstruction(new HoldInstruction(flightPlan.Destination));
-                    ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because another airplane has been cleared for approach at the same airport", 
+                    ActorEventSource.Current.ActorMessage(this, "ATC: Issued holding instruction for {0} at {1} because another airplane has been cleared for approach at the same airport", 
                         flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
                 else
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new ApproachState(flightPlan.Destination);
                     await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination));
-                    ActorEventSource.Current.ActorMessage(this, "Issued approach clearance for {0} at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
+                    ActorEventSource.Current.ActorMessage(this, "ATC: Issued approach clearance for {0} at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
             }
             else
@@ -189,12 +189,12 @@ namespace AirTrafficControl
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new ApproachState(flightPlan.Destination);
                     await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination));
-                    ActorEventSource.Current.ActorMessage(this, "Airplane {0} has been cleared for approach at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
+                    ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} has been cleared for approach at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
                 else
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(flightPlan.Destination);
-                    ActorEventSource.Current.ActorMessage(this, "Airplane {0} should continue holding at {1} because of other traffic landing", 
+                    ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} should continue holding at {1} because of other traffic landing", 
                         flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
 
@@ -237,13 +237,13 @@ namespace AirTrafficControl
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(departingState.Airport);
                 await airplaneProxy.ReceiveInstruction(new HoldInstruction(departingState.Airport));
-                ActorEventSource.Current.ActorMessage(this, "Issued holding instruction for {0} at {1} because of traffic contention at {2}",
+                ActorEventSource.Current.ActorMessage(this, "ATC: Issued holding instruction for {0} at {1} because of traffic contention at {2}",
                     flightPlan.AirplaneID, departingState.Airport.DisplayName, nextFix.DisplayName);
             }
             else
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(departingState.Airport, nextFix, route);
-                ActorEventSource.Current.ActorMessage(this, "Airplane {0} completed departure from {1} and proceeds enroute to destination, next fix {2}",
+                ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} completed departure from {1} and proceeds enroute to destination, next fix {2}",
                     flightPlan.AirplaneID, departingState.Airport.DisplayName, nextFix.DisplayName);
             }
         }
@@ -256,14 +256,14 @@ namespace AirTrafficControl
             if (projectedAirplaneStates.Values.OfType<DepartingState>().Any(state => state.Airport == flightPlan.DeparturePoint))
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = taxiingState;
-                ActorEventSource.Current.ActorMessage(this, "Airplane {0} continue taxi at {1}, another airplane departing", 
+                ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} continue taxi at {1}, another airplane departing", 
                     flightPlan.AirplaneID, flightPlan.DeparturePoint.DisplayName);
             }
             else
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = new DepartingState(flightPlan.DeparturePoint);
                 await airplaneProxy.ReceiveInstruction(new TakeoffClearance(flightPlan.DeparturePoint));
-                ActorEventSource.Current.ActorMessage(this, "Airplane {0} received takeoff clearance at {1}",
+                ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} received takeoff clearance at {1}",
                     flightPlan.AirplaneID, flightPlan.DeparturePoint);
             }
         }

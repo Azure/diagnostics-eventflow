@@ -22,7 +22,7 @@ namespace AirTrafficControl
             Requires.NotNull(instruction, "instruction");
 
             this.State.Instruction = instruction;
-            ActorEventSource.Current.ActorMessage(this, "{0} received ATC instruction '{1}'", this.Id.ToString(), instruction.ToString());
+            ActorEventSource.Current.ActorMessage(this, "{0}: Received ATC instruction '{1}'", this.Id.ToString(), instruction.ToString());
             return Task.FromResult(true);
         }
 
@@ -34,7 +34,7 @@ namespace AirTrafficControl
             {
                 this.State.DepartureTime = currentTime;
             }
-            ActorEventSource.Current.ActorMessage(this, "Airplane {0} is now {1} Time is {2}", this.Id.ToString(), newState, currentTime);
+            ActorEventSource.Current.ActorMessage(this, "{0}: Now {1} Time is {2}", this.Id.ToString(), newState, currentTime);
             return Task.FromResult(true);
         }
 
