@@ -8,6 +8,9 @@ This script deploys a Service Fabric application type to a cluster.  It is invok
 .NOTES
 WARNING: This script file is invoked by Visual Studio.  Its parameters must not be altered but its logic can be customized as necessary.
 
+.PARAMETER PublishProfileFile
+Path to the file containing the publish profile.
+
 .PARAMETER ApplicationPackagePath
 Path to the folder of the packaged Service Fabric application.
 
@@ -36,6 +39,9 @@ Deploy the application by providing values for parameters that are defined in th
 Param
 (
     [String]
+    $PublishProfileFile,
+
+    [String]
     $ApplicationPackagePath,
 
     [Switch]
@@ -49,6 +55,11 @@ $LocalFolder = (Split-Path $MyInvocation.MyCommand.Path)
 
 $UtilitiesModulePath = "$LocalFolder\Utilities.psm1"
 Import-Module $UtilitiesModulePath
+
+if (!$PublishProfileFile)
+{
+    $PublishProfileFile = "$LocalFolder\..\PublishProfiles\Local.xml"
+}
 
 if (!$ApplicationPackagePath)
 {
@@ -70,10 +81,13 @@ if (!$packageValidationSuccess)
 
 Write-Host 'Deploying application...'
 
+$PublishProfile = Read-PublishProfile $PublishProfileFile
+$ClusterConnectionParameters = $PublishProfile.ClusterConnectionParameters
+
 try
 {
     Write-Host 'Connecting to the cluster...'
-    [void](Connect-ServiceFabricCluster)
+    [void](Connect-ServiceFabricCluster @ClusterConnectionParameters)
 }
 catch [System.Fabric.FabricObjectClosedException]
 {
@@ -85,7 +99,7 @@ catch [System.Fabric.FabricObjectClosedException]
 $clusterManifestText = Get-ServiceFabricClusterManifest
 $imageStoreConnectionString = Get-ImageStoreConnectionString ([xml] $clusterManifestText)
 
-$names = Get-Names -ApplicationManifestPath $ApplicationManifestPath
+$names = Get-Names -ApplicationManifestPath $ApplicationManifestPath -PublishProfile $PublishProfile
 if (!$names)
 {
     return
@@ -118,6 +132,9 @@ Copy-ServiceFabricApplicationPackage -ApplicationPackagePath $tmpPackagePath -Im
 
 Write-Host 'Registering application type...'
 Register-ServiceFabricApplicationType -ApplicationPathInImageStore $applicationPackagePathInImageStore
+
+Write-Host 'Removing application package...'
+Remove-ServiceFabricApplicationPackage -ApplicationPackagePathInImageStore $applicationPackagePathInImageStore -ImageStoreConnectionString $imageStoreConnectionString
 
 if (!$DoNotCreateApplication)
 {

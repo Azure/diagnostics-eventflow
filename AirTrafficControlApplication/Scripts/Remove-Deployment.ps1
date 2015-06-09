@@ -19,6 +19,9 @@ Removes the deployment of the application described by the application manifest.
 
 Param
 (
+	[String]
+    $PublishProfileFile,
+
     [String]
     $ApplicationManifestPath
 )
@@ -35,14 +38,23 @@ if (!(Test-Path $ApplicationManifestPath))
     throw "$ApplicationManifestPath is not found."
 }
 
+if (!$PublishProfileFile)
+{
+    $PublishProfileFile = "$LocalFolder\..\PublishProfiles\Local.xml"
+}
+
 $UtilitiesModulePath = "$LocalFolder\Utilities.psm1"
 Import-Module $UtilitiesModulePath
 
 Write-Host "Removing deployment..."
 
+$PublishProfile = Read-PublishProfile $PublishProfileFile
+$ClusterConnectionParameters = $PublishProfile.ClusterConnectionParameters
+
 try
 {
-    [void](Connect-ServiceFabricCluster)
+	Write-Host 'Connecting to the cluster...'
+    [void](Connect-ServiceFabricCluster @ClusterConnectionParameters)
 }
 catch [System.Fabric.FabricObjectClosedException]
 {

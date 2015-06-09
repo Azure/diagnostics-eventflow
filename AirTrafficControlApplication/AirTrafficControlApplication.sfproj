@@ -18,5 +18,10 @@
     <ProjectReference Include="..\AirTrafficControl.Web\AirTrafficControl.Web.csproj" />
     <ProjectReference Include="..\AirTrafficControl\AirTrafficControl.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="ClusterConfig\FabricWadConfig.xml" />
+    <Content Include="PublishProfiles\Cloud.xml" />
+    <Content Include="PublishProfiles\Local.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.targets" />
 </Project>

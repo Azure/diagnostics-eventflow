@@ -8,6 +8,9 @@ This script outputs messages indicating the readiness of a Service Fabric applic
 .NOTES
 WARNING: This script file is invoked by Visual Studio.  Its parameters must not be altered but its logic can be customized as necessary.
 
+.PARAMETER PublishProfileFile
+Path to the file containing the publish profile.
+
 .PARAMETER ApplicationManifestPath
 Path to the application manifest of the Service Fabric application.
 
@@ -20,10 +23,18 @@ Get the status of a deployed application as described by the application manifes
 Param
 (
     [String]
+    $PublishProfileFile,
+
+    [String]
     $ApplicationManifestPath
 )
 
 $LocalFolder = (Split-Path $MyInvocation.MyCommand.Path)
+
+if (!$PublishProfileFile)
+{
+    $PublishProfileFile = "$LocalFolder\..\PublishProfiles\Local.xml"
+}
 
 if (!$ApplicationManifestPath)
 {
@@ -38,9 +49,12 @@ if (!(Test-Path $ApplicationManifestPath))
 $UtilitiesModulePath = "$LocalFolder\Utilities.psm1"
 Import-Module $UtilitiesModulePath
 
+$PublishProfile = Read-PublishProfile $PublishProfileFile
+$ClusterConnectionParameters = $PublishProfile.ClusterConnectionParameters
+
 try
 {
-    [void](Connect-ServiceFabricCluster)
+    [void](Connect-ServiceFabricCluster @ClusterConnectionParameters)
 }
 catch [System.Fabric.FabricObjectClosedException]
 {
@@ -48,7 +62,7 @@ catch [System.Fabric.FabricObjectClosedException]
     throw
 }
 
-$names = Get-Names -ApplicationManifestPath $ApplicationManifestPath
+$names = Get-Names -ApplicationManifestPath $ApplicationManifestPath -PublishProfile $PublishProfile
 if (!$names)
 {
     return
