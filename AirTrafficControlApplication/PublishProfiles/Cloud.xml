@@ -15,7 +15,13 @@
                                     StoreLocation="CurrentUser"
                                     StoreName="My" />
   -->
-  <ClusterConnectionParameters ConnectionEndpoint="** TODO: Define Connection Endpoint **" />
+  <ClusterConnectionParameters ConnectionEndpoint="karolzfab150605-01.westus.cloudapp.azure.com:19000" 
+                               X509Credential="true" 
+                               ServerCertThumbprint="FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5" 
+                               FindType="FindByThumbprint=" 
+                               FindValue="FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5" 
+                               StoreLocation="CurrentUser" 
+                               StoreName="My" />
 
   <!-- To override the default application name, provide a value for the ApplicationName element and uncomment.
   <ApplicationName>fabric:/MyAppName</ApplicationName>
