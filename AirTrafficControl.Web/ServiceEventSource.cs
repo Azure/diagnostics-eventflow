@@ -103,5 +103,11 @@ namespace AirTrafficControl.Web
         {
             WriteEvent(4, exception);
         }
+
+        [Event(5, Level =EventLevel.Error, Message = "Unexpected error from {0} REST API")]
+        public void RestApiFrontEndError(string apiName, string exception)
+        {
+            WriteEvent(5, apiName, exception);
+        }
     }
 }
