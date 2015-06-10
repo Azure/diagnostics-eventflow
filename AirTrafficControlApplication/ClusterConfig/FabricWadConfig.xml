@@ -3,19 +3,19 @@
     <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter="Verbose" />
     <EtwProviders>
       <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Actors">
-        <DefaultEvents eventDestination="WADAirTrafficControl" />
+        <DefaultEvents eventDestination="AirTrafficControl" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Services">
-        <DefaultEvents eventDestination="WADAirTrafficControl" />
+        <DefaultEvents eventDestination="AirTrafficControl" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="MyCompany-AirTrafficControlApplication-AirTrafficControlWeb">
-        <DefaultEvents eventDestination="WADAirTrafficControl" />
+        <DefaultEvents eventDestination="AirTrafficControl" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="MyCompany-AirTrafficControlApplication-AirTrafficControl">
-        <DefaultEvents eventDestination="WADAirTrafficControl" />
+        <DefaultEvents eventDestination="AirTrafficControl" />
       </EtwEventSourceProviderConfiguration>
       <EtwManifestProviderConfiguration provider="cbd93bc2-71e5-4566-b3a7-595d8eeca6e8" scheduledTransferKeywordFilter="4611686018427387904">
-        <DefaultEvents eventDestination="WADAirTrafficControl" />
+        <DefaultEvents eventDestination="AirTrafficControl" />
       </EtwManifestProviderConfiguration>
     </EtwProviders>
   </DiagnosticMonitorConfiguration>

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nancy.Conventions;
 
-namespace AirTrafficControl.Web.Nancy
+namespace AirTrafficControl.Web.WebSrv
 {
     public class ApplicationWithStandardContentFoldersBootstrapper: DefaultNancyBootstrapper
     {

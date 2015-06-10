@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AirTrafficControl.Web.Nancy
+namespace AirTrafficControl.Web.WebSrv
 {
     internal class BasicPageModel
     {

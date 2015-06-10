@@ -1,14 +1,13 @@
 ﻿using AirTrafficControl.Interfaces;
 using Nancy;
 using Nancy.ModelBinding;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AirTrafficControl.Web.Nancy
+namespace AirTrafficControl.Web.WebSrv
 {
     public class MainModule: NancyModule
     {
@@ -23,19 +22,24 @@ namespace AirTrafficControl.Web.Nancy
             {
                 var atc = new AtcController();
                 var airplaneIDs = await atc.GetFlyingAirplaneIDs();
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-                return JsonConvert.SerializeObject(airplaneIDs);
+                return Response.AsJson(airplaneIDs);
             };
 
-            Post["/api/newFlight", runAsync: true] = async (parameters, cancellationToken) =>
+            Get["/api/airplanes/{id}", runAsync: true] = async (parameters, cancellationToken) =>
             {
-                var requestModel = this.BindAndValidate<FlightPlanRequestModel>();
+                AtcController atc = new AtcController();
+                AirplaneActorState airplaneState = await atc.GetAirplaneState((string) parameters.id);
+                return Response.AsJson<AirplaneActorState>(airplaneState);
+            };
+
+            Post["/api/flights", runAsync: true] = async (parameters, cancellationToken) =>
+            {
+                var requestModel = this.Bind<FlightPlanRequestModel>();
                 var atc = new AtcController();
                 await atc.StartNewFlight(requestModel.airplaneID, requestModel.departurePoint, requestModel.destination);
                 return HttpStatusCode.Created;
+                // If the flight was addressable individually, we would return something like this:
+                // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
             };
         }
     }
