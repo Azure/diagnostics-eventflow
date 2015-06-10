@@ -14,9 +14,15 @@
 </head>
 
 <body>
-    <div ng-controller="MainController as mainCtrl">
-        <table>
-            <tr ng-repeat="airplaneState in mainCtrl.AirplaneStates" >
+    <div ng-controller="MainController">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="col-sm-1">Airplane ID</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tr ng-repeat="airplaneState in AirplaneStates" >
                 <td>{{airplaneState.ID}}</td>
                 <td>{{airplaneState.StateDescription}}</td>
             </tr>

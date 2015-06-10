@@ -6,7 +6,7 @@ module AirTrafficControl {
     (function () {
         var app = angular.module('AtcApp', []);
 
-        app.controller("MainController", ["$scope", MainController]);
+        app.controller("MainController", ["$scope", "$interval", MainController]);
     })();
 }
 
