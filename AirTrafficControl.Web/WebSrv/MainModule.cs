@@ -21,8 +21,8 @@ namespace AirTrafficControl.Web.WebSrv
             Get["/api/airplanes", runAsync:true] = async(parameters, cancellationToken) =>
             {
                 var atc = new AtcController();
-                var airplaneIDs = await atc.GetFlyingAirplaneIDs();
-                return Response.AsJson(airplaneIDs);
+                var airplaneStates = await atc.GetFlyingAirplaneStates();
+                return Response.AsJson<IEnumerable<AirplaneStateModel>>(airplaneStates);
             };
 
             Get["/api/airplanes/{id}", runAsync: true] = async (parameters, cancellationToken) =>

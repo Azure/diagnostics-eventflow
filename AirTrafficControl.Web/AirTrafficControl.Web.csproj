@@ -97,8 +97,9 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AtcController.cs" />
+    <Compile Include="WebSrv\AtcController.cs" />
     <Compile Include="IOwinAppBuilder.cs" />
+    <Compile Include="WebSrv\AirplaneStateModel.cs" />
     <Compile Include="WebSrv\ApplicationWithStandardContentFoldersBootstrapper.cs" />
     <Compile Include="WebSrv\BasicPageModel.cs" />
     <Compile Include="WebSrv\FlightPlanRequestModel.cs" />
