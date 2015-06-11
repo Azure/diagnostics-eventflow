@@ -13,11 +13,11 @@ namespace AirTrafficControl.Web.WebSrv
         {
             Requires.NotNullOrWhiteSpace(id, "id");
 
-            this.iD = id;
-            this.stateDescription = stateDescription;
+            this.ID = id;
+            this.StateDescription = stateDescription;
         }
 
-        public string iD { get; private set; }
-        public string stateDescription { get; private set; }
+        public string ID { get; private set; }
+        public string StateDescription { get; private set; }
     }
 }

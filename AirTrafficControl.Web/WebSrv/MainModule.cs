@@ -32,11 +32,18 @@ namespace AirTrafficControl.Web.WebSrv
                 return Response.AsJson<AirplaneActorState>(airplaneState);
             };
 
+            Get["/api/airports", runAsync: true] = async (parameters, cancellationToken) =>
+            {
+                var atc = new AtcController();
+                var airports = await atc.GetAirports();
+                return Response.AsJson<IEnumerable<Airport>>(airports);
+            };
+
             Post["/api/flights", runAsync: true] = async (parameters, cancellationToken) =>
             {
                 var requestModel = this.Bind<FlightPlanRequestModel>();
                 var atc = new AtcController();
-                await atc.StartNewFlight(requestModel.airplaneID, requestModel.departurePoint, requestModel.destination);
+                await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DeparturePoint, requestModel.Destination);
                 return HttpStatusCode.Created;
                 // If the flight was addressable individually, we would return something like this:
                 // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");

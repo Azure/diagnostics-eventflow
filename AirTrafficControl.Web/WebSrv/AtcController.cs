@@ -23,8 +23,8 @@ namespace AirTrafficControl.Web.WebSrv
                     foreach(string airplaneID in flyingAirplaneIDs)
                     {
                         var airplane = ActorProxy.Create<IAirplane>(new ActorId(airplaneID));
-                        var airplaneState = await airplane.GetState();
-                        var stateModel = new AirplaneStateModel(airplaneID, airplaneState.ToString());
+                        var airplaneActorState = await airplane.GetState();
+                        var stateModel = new AirplaneStateModel(airplaneID, airplaneActorState.AirplaneState.ToString());
                         retval.Add(stateModel);
                     }
                 }
@@ -75,6 +75,11 @@ namespace AirTrafficControl.Web.WebSrv
                 ServiceEventSource.Current.RestApiFrontEndError("StartNewFlight", e.ToString());
                 throw;
             }
+        }
+
+        public Task<IEnumerable<Airport>> GetAirports()
+        {
+            return Task.FromResult(Universe.Current.Airports.AsEnumerable());
         }
     }
 }

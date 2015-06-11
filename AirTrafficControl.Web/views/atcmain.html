@@ -9,12 +9,32 @@
 
     <!-- Application files -->
     <script type="text/javascript" src="App/AirplaneState.js" defer></script>
+    <script type="text/javascript" src="App/Airport.js" defer></script>
     <script type="text/javascript" src="App/MainController.js" defer></script>
     <script type="text/javascript" src="App/AtcApp.js" defer></script>
 </head>
 
 <body>
     <div ng-controller="MainController">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="inputAircraftID">Aircraft ID</label>
+                <input type="text" class="form-control" id="inputAircraftID" placeholder="N489Y" ng-model="NewFlightData.AirplaneID">
+            </div>
+            <div class="form-group">
+                <label for="inputDepartureAirport">Departure airport</label>
+                <select class="form-control" id="inputDepartureAirport" 
+                        ng-model="NewFlightData.DepartureAirport" ng-options="airport as airport.DisplayName for airport in Airports">
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="inputDestinationAirport">Destination airport</label>
+                <select class="form-control" id="inputDestinationAirport"
+                        ng-model="NewFlightData.DestinationAirport" ng-options="airport as airport.DisplayName for airport in Airports"></select>
+            </div>            
+            <button type="button" class="btn btn-default" ng-click="OnNewFlight()">Create new flight</button>
+        </form>
+
         <table class="table">
             <thead>
                 <tr>
@@ -23,8 +43,8 @@
                 </tr>
             </thead>
             <tr ng-repeat="airplaneState in AirplaneStates" >
-                <td>{{airplaneState.iD}}</td>
-                <td>{{airplaneState.stateDescription}}</td>
+                <td>{{airplaneState.ID}}</td>
+                <td>{{airplaneState.StateDescription}}</td>
             </tr>
         </table>
     </div>

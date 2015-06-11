@@ -3,8 +3,18 @@
 /// <reference path="AirplaneState.ts" />
 
 module AirTrafficControl {
+    class NewFlightData {
+        public AirplaneID: string;
+        public DepartureAirport: Airport;
+        public DestinationAirport: Airport;
+    }
+
     interface IMainControllerScope extends ng.IScope {
         AirplaneStates: AirplaneState[];
+        Airports: Airport[];
+
+        NewFlightData: NewFlightData;
+        OnNewFlight: () => void;
     }
 
     export class MainController {
@@ -16,6 +26,15 @@ module AirTrafficControl {
             this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
 
             $scope.$on('$destroy',() => $interval.cancel(this.updateInterval));
+
+            $scope.Airports = [];
+            this.$http.get("/api/airports").then((response: ng.IHttpPromiseCallbackArg<Airport[]>) => {
+                this.$scope.Airports = response.data;
+            });
+
+            $scope.NewFlightData = new NewFlightData();
+
+            $scope.OnNewFlight = () => this.onNewFlight();
         }
 
         private onUpdateAirplaneStates() {
@@ -24,6 +43,12 @@ module AirTrafficControl {
             });
             
             // TODO: some error indication if the data is stale and cannot be refreshed
+        }
+
+        private onNewFlight() {
+            // TODO: validate form parameters before poking the server
+            this.$http.post("/api/flights", this.$scope.NewFlightData);
+            // TODO: some error indication if the new flight was not created successfully
         }
     }
 }

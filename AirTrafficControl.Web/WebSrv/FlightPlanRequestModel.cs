@@ -8,8 +8,8 @@ namespace AirTrafficControl.Web.WebSrv
 {
     internal class FlightPlanRequestModel
     {
-        public string airplaneID { get; set; }
-        public string departurePoint { get; set; }
-        public string destination { get; set; }
+        public string AirplaneID { get; set; }
+        public string DeparturePoint { get; set; }
+        public string Destination { get; set; }
     }
 }

@@ -2,6 +2,11 @@
 /// <reference path="AirplaneState.ts" />
 var AirTrafficControl;
 (function (AirTrafficControl) {
+    var NewFlightData = (function () {
+        function NewFlightData() {
+        }
+        return NewFlightData;
+    })();
     var MainController = (function () {
         function MainController($scope, $interval, $http) {
             var _this = this;
@@ -11,6 +16,12 @@ var AirTrafficControl;
             $scope.AirplaneStates = [];
             this.updateInterval = $interval(function () { return _this.onUpdateAirplaneStates(); }, 2000);
             $scope.$on('$destroy', function () { return $interval.cancel(_this.updateInterval); });
+            $scope.Airports = [];
+            this.$http.get("/api/airports").then(function (response) {
+                _this.$scope.Airports = response.data;
+            });
+            $scope.NewFlightData = new NewFlightData();
+            $scope.OnNewFlight = function () { return _this.onNewFlight(); };
         }
         MainController.prototype.onUpdateAirplaneStates = function () {
             var _this = this;
@@ -18,6 +29,11 @@ var AirTrafficControl;
                 _this.$scope.AirplaneStates = response.data;
             });
             // TODO: some error indication if the data is stale and cannot be refreshed
+        };
+        MainController.prototype.onNewFlight = function () {
+            // TODO: validate form parameters before poking the server
+            this.$http.post("/api/flights", this.$scope.NewFlightData);
+            // TODO: some error indication if the new flight was not created successfully
         };
         return MainController;
     })();
