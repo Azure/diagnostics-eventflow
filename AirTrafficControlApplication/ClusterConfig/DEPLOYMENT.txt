@@ -1,0 +1,68 @@
+
+(in Azure PowerShell)
+Add-AzureAccount
+Switch-AzureMode -Name AzureResourceManager
+(to switch back to legacy "ServiceManagement" mode use Switch-AzureMode -Name AzureServiceManagement)
+
+New-SelfSignedCertificate -CertStoreLocation Cert:\CurrentUser\My -DnsName AzureFabricClusterCertificate | Export-PfxCertificate -FilePath d:\scratch\AzureFabricClusterCertificate.pfx -Password (Read-Host -AsSecureString -Prompt "Enter password")
+
+.\AddCertToKeyVault.ps1 -ResourceGroupName karolz-keyvault-resourcegroup -Location westus -VaultName karolz-keyvault -SecretName AzureFabricClusterCertificate -PfxFilePath d:\scratch\AzureFabricClusterCertificate.pfx -Password 'tc($PN[eFl0@'
+
+ResourceGroupName : karolz-keyvault-resourcegroup
+Location          : westus
+Permissions       :
+                    Actions  NotActions
+                    =======  ==========
+                    *
+ResourceId        : /subscriptions/705b289b-2315-4619-b552-8a9f0bc9118a/resourceGroups/karolz-keyvault-resourcegroup
+
+ProviderNamespace : Microsoft.KeyVaultfa
+RegistrationState : Registered
+ResourceTypes     : {vaults, vaults/secrets}
+Creating vault karolz-keyvault in westus (resource group karolz-keyvault-resourcegroup)
+ResourceId : /subscriptions/705b289b-2315-4619-b552-8a9f0bc9118a/resourceGroups/karolz-keyvault-resourcegroup/providers/Microsoft.KeyVault/vaults/karolz-keyvault
+Location   : westus
+
+Thumbprint : FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5
+Writing secret AzureFabricClusterCertificate to vault karolz-keyvault
+Id : https://karolz-keyvault.vault.azure.net:443/secrets/AzureFabricClusterCertificate/7b1253480b2b4003b127a60f30670eab
+
+karolzfab150605-01.westus.cloudapp.azure.com:19000
+karolzfab150605-01.westus.cloudapp.azure.com:8085
+
+Azure agent logs are available from C:\WindowsAzure\Logs\WaAppAgent.log and under C:\Packages\Plugins\Microsoft.Azure.Diagnostics.IaasDiagnostics\1.4.1.1\Logs
+
+Connect-ServiceFabricCluster -ConnectionEndpoint "karolzfab150605-01.westus.cloudapp.azure.com:19000" -X509Credential -ServerCertThumbprint "FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5" -FindType FindByThumbprint -FindValue "FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5" -StoreLocation CurrentUser -StoreName My
+cd C:\Code\AirTrafficControl\AirTrafficControlApplication\Scripts
+.\Deploy-FabricApplication.ps1 -PublishProfileFile '..\PublishProfiles\Cloud.xml' -ApplicationPackagePath '..\pkg\Debug'
+.\Remove-Deployment.ps1 -PublishProfileFile ..\PublishProfiles\Cloud.xml
+
+(Get-AzureServiceAvailableExtension -ExtensionName 'IaaSDiagnostics' -ProviderNamespace 'Microsoft.Azure.Diagnostics').PublicConfigurationSchema | Out-File -Encoding utf8 -FilePath 'WadConfig.xsd'
+
+$encodedWadCfg = [Convert]::ToBase64String((New-Object System.Text.UTF8Encoding($false)).GetBytes( [System.IO.File]::ReadAllText('C:\Code\AirTrafficControl\AirTrafficControlApplication\ClusterConfig\FabricWadConfig.xml')))
+$settingString = '{"xmlCfg":"' + $encodedWadCfg + '", "StorageAccount":"karolzdiag150608"}'
+$protectedSettingString='{"storageAccountName":"karolzdiag150608", "storageAccountKey":"5xez+2Q7QNlbge0RNUsFvwOgemGpjGJ0U152pFdIF70JkvQdbZrlkAKybtNJDzlJPiZgjPEzZJ+tCiYI4vKH0A==", "storageAccountEndPoint":"https://core.windows.net/"}'
+Set-AzureVMExtension -ResourceGroupName 'ResGroup-karolzfab150605-01' -Location 'West US' -Publisher 'Microsoft.Azure.Diagnostics' -ExtensionType 'IaasDiagnostics' -TypeHandlerVersion '1.4' -SettingString $settingString -ProtectedSettingString $protectedSettingString -VMName 'VM1' -Name 'VM1-WAD'
+
+Remove-AzureVMExtension -ResourceGroupName 'ResGroup-karolzfab150605-01' -VMName 'VM1' -Name 'VM1-WAD' -Force
+
+localhost:8085/api/airplanes
+karolzfab150605-01.westus.cloudapp.azure.com:8085/api/airplanes
+
+localhost:8085/api/flights?airplaneID=489Y&departurePoint=KSEA&destination=KPDX
+karolzfab150605-01.westus.cloudapp.azure.com:8085/api/flights?airplaneID=489Y&departurePoint=KSEA&destination=KPDX
+
+ProviderName%20eq%20'MyCompany-AirTrafficControlApplication-AirTrafficControlWeb'%20or%20ProviderName%20eq%20'MyCompany-AirTrafficControlApplication-AirTrafficControl'
+
+-----------------------------
+** ELK **
+
+$ENV:PATH="$ENV:PATH;c:\msysgit\bin;c:\msysgit\mingw\bin"
+$ENV:OPENSSL_CONF ="c:\msysgit\ssl\openssl.cnf"
+
+.\New-SampleLogstashConfigWithStorage.ps1 -StorageAccountName "karolzdiag150608" -TableName "WADWADAirTrafficControl"
+ .\New-SampleELKInstance.ps1 -VMName "karolz-elk" -Location "West US" -Username "karolz" -Password 'eU8#gH9Kq.4' -LogstashConfig "logstash.conf" -UseKibana4 
+
+ ssh -q -o StrictHostKeychecking=no -o UserKnownHostsFile=NUL -i id_rsa -p 50000 karolz@elksample1506110451.cloudapp.net
+VM/Kibana: elksample1506110451.cloudapp.net
+

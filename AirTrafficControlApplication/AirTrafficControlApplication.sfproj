@@ -19,6 +19,7 @@
     <ProjectReference Include="..\AirTrafficControl\AirTrafficControl.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ClusterConfig\DEPLOYMENT.txt" />
     <Content Include="ClusterConfig\FabricWadConfig.xml" />
     <Content Include="PublishProfiles\Cloud.xml" />
     <Content Include="PublishProfiles\Local.xml" />
