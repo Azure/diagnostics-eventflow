@@ -4,7 +4,7 @@
 module AirTrafficControl {
 
     (function () {
-        var app = angular.module('AtcApp', []);
+        var app = angular.module('AtcApp', ['AtcAppDirectives']);
 
         app.controller("MainController", ["$scope", "$interval", "$http", MainController]);
     })();

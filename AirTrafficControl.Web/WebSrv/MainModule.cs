@@ -3,6 +3,7 @@ using Nancy;
 using Nancy.ModelBinding;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,6 +48,11 @@ namespace AirTrafficControl.Web.WebSrv
                 return HttpStatusCode.Created;
                 // If the flight was addressable individually, we would return something like this:
                 // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
+            };
+
+            Get["/api/bingmapskey"] = (parameters) =>
+            {
+                return Response.AsJson<string>(ConfigurationManager.AppSettings["BingMapsKey"]);
             };
         }
     }

@@ -1,4 +1,5 @@
 /// <reference path="../Scripts/Typings/angularjs/angularjs.d.ts" /> 
+/// <reference path="../Scripts/Typings/bingmaps/Microsoft.Maps.d.ts" />
 /// <reference path="AirplaneState.ts" />
 var AirTrafficControl;
 (function (AirTrafficControl) {
@@ -22,6 +23,7 @@ var AirTrafficControl;
             });
             $scope.NewFlightData = new NewFlightData();
             $scope.OnNewFlight = function () { return _this.onNewFlight(); };
+            $scope.GetBingMapsKey = function () { return _this.getBingMapsKey(); };
         }
         MainController.prototype.onUpdateAirplaneStates = function () {
             var _this = this;
@@ -34,6 +36,11 @@ var AirTrafficControl;
             // TODO: validate form parameters before poking the server
             this.$http.post("/api/flights", this.$scope.NewFlightData);
             // TODO: some error indication if the new flight was not created successfully
+        };
+        MainController.prototype.getBingMapsKey = function () {
+            return this.$http.get("/api/bingmapskey").then(function (response) {
+                return response.data;
+            });
         };
         return MainController;
     })();

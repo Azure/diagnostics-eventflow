@@ -83,6 +83,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Fabric, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64" />
     <Reference Include="System.Fabric.Common.Internal, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
@@ -194,7 +195,15 @@
     <TypeScriptCompile Include="App\Airport.ts" />
     <TypeScriptCompile Include="App\AtcApp.ts" />
     <TypeScriptCompile Include="App\MainController.ts" />
+    <TypeScriptCompile Include="App\MapDirectives.ts" />
     <TypeScriptCompile Include="Scripts\Typings\angularjs\angularjs.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.AdvancedShapes.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.Directions.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.Search.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.Themes.BingTheme.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.Traffic.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.VenueMaps.d.ts" />
     <TypeScriptCompile Include="Scripts\Typings\jquery\jquery.d.ts" />
   </ItemGroup>
   <ItemGroup>

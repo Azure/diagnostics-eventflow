@@ -1,5 +1,6 @@
 ﻿
 /// <reference path="../Scripts/Typings/angularjs/angularjs.d.ts" /> 
+/// <reference path="../Scripts/Typings/bingmaps/Microsoft.Maps.d.ts" />
 /// <reference path="AirplaneState.ts" />
 
 module AirTrafficControl {
@@ -9,12 +10,14 @@ module AirTrafficControl {
         public DestinationAirport: Airport;
     }
 
-    interface IMainControllerScope extends ng.IScope {
+    export interface IMainControllerScope extends ng.IScope {
         AirplaneStates: AirplaneState[];
         Airports: Airport[];
 
         NewFlightData: NewFlightData;
+        Map: Microsoft.Maps.Map;
         OnNewFlight: () => void;
+        GetBingMapsKey: () => ng.IPromise<string>;
     }
 
     export class MainController {
@@ -35,6 +38,8 @@ module AirTrafficControl {
             $scope.NewFlightData = new NewFlightData();
 
             $scope.OnNewFlight = () => this.onNewFlight();
+
+            $scope.GetBingMapsKey = () => this.getBingMapsKey();
         }
 
         private onUpdateAirplaneStates() {
@@ -49,6 +54,12 @@ module AirTrafficControl {
             // TODO: validate form parameters before poking the server
             this.$http.post("/api/flights", this.$scope.NewFlightData);
             // TODO: some error indication if the new flight was not created successfully
+        }
+
+        private getBingMapsKey(): ng.IPromise<string> {
+            return this.$http.get("/api/bingmapskey").then((response: ng.IHttpPromiseCallbackArg<string>) => {
+                return response.data;
+            });
         }
     }
 }

@@ -7,10 +7,14 @@
     <base href="@Model.ApplicationRoot" />
     <link rel="stylesheet" type="text/css" href="Content/bootstrap.css" />
 
+    <!-- The Bing map control -->
+    <script charset="UTF-8" type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+
     <!-- Application files -->
     <script type="text/javascript" src="App/AirplaneState.js" defer></script>
     <script type="text/javascript" src="App/Airport.js" defer></script>
     <script type="text/javascript" src="App/MainController.js" defer></script>
+    <script type="text/javascript" src="App/MapDirectives.js" defer></script>
     <script type="text/javascript" src="App/AtcApp.js" defer></script>
 </head>
 
@@ -35,18 +39,29 @@
             <button type="button" class="btn btn-default" ng-click="OnNewFlight()">Create new flight</button>
         </form>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="col-sm-1">Airplane ID</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tr ng-repeat="airplaneState in AirplaneStates" >
-                <td>{{airplaneState.ID}}</td>
-                <td>{{airplaneState.StateDescription}}</td>
-            </tr>
-        </table>
+
+        <div class="row">
+
+            <div class="col-md-6">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-1">Airplane ID</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tr ng-repeat="airplaneState in AirplaneStates">
+                        <td>{{airplaneState.ID}}</td>
+                        <td>{{airplaneState.StateDescription}}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <div bing-map />
+            </div>
+        </div>
+        
     </div>
     <script src="Scripts/angular.js"></script>
 </body>
