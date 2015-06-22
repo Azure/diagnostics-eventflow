@@ -18,6 +18,9 @@ namespace AirTrafficControl.Interfaces
             this.PublishedHoldBearing = publishedHoldBearing;
         }
 
+        public Airport(string name, string displayName, Direction publishedHoldBearing, double latitude, double longitude) : base(name, displayName, latitude, longitude)
+        { }
+
         [DataMember]
         public Direction PublishedHoldBearing { get; private set; }
     }
