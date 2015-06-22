@@ -7,7 +7,7 @@ var AirTrafficControl;
         var app = angular.module('AtcAppDirectives', []);
         app.directive('bingMap', function () {
             return {
-                restrict: 'A',
+                restrict: 'AC',
                 link: function (scope, instanceElement, instanceAttributes, controller, transclude) {
                     scope.GetBingMapsKey().then(function (key) {
                         scope.Map = new Microsoft.Maps.Map(instanceElement[0], {

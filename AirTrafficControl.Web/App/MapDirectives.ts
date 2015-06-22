@@ -9,7 +9,7 @@ module AirTrafficControl {
 
         app.directive('bingMap',(): ng.IDirective => {
             return {
-                restrict: 'A',
+                restrict: 'AC',
 
                 link: (
                     scope: IMainControllerScope,

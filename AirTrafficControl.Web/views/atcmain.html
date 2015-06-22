@@ -6,6 +6,7 @@
     <title>Air Traffic Control</title>
     <base href="@Model.ApplicationRoot" />
     <link rel="stylesheet" type="text/css" href="Content/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="Content/atcmain.css" />
 
     <!-- The Bing map control -->
     <script charset="UTF-8" type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
@@ -20,29 +21,29 @@
 
 <body>
     <div ng-controller="MainController">
-        <form class="form-inline">
-            <div class="form-group">
-                <label for="inputAircraftID">Aircraft ID</label>
-                <input type="text" class="form-control" id="inputAircraftID" placeholder="N489Y" ng-model="NewFlightData.AirplaneID">
-            </div>
-            <div class="form-group">
-                <label for="inputDepartureAirport">Departure airport</label>
-                <select class="form-control" id="inputDepartureAirport" 
-                        ng-model="NewFlightData.DepartureAirport" ng-options="airport as airport.DisplayName for airport in Airports">
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="inputDestinationAirport">Destination airport</label>
-                <select class="form-control" id="inputDestinationAirport"
-                        ng-model="NewFlightData.DestinationAirport" ng-options="airport as airport.DisplayName for airport in Airports"></select>
-            </div>            
-            <button type="button" class="btn btn-default" ng-click="OnNewFlight()">Create new flight</button>
-        </form>
-
-
         <div class="row">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="inputAircraftID">Aircraft ID</label>
+                    <input type="text" class="form-control" id="inputAircraftID" placeholder="N489Y" ng-model="NewFlightData.AirplaneID">
+                </div>
+                <div class="form-group">
+                    <label for="inputDepartureAirport">Departure airport</label>
+                    <select class="form-control" id="inputDepartureAirport" 
+                            ng-model="NewFlightData.DepartureAirport" ng-options="airport as airport.DisplayName for airport in Airports">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inputDestinationAirport">Destination airport</label>
+                    <select class="form-control" id="inputDestinationAirport"
+                            ng-model="NewFlightData.DestinationAirport" ng-options="airport as airport.DisplayName for airport in Airports"></select>
+                </div>            
+                <button type="button" class="btn btn-default" ng-click="OnNewFlight()">Create new flight</button>
+            </form>
+        </div>
 
-            <div class="col-md-6">
+        <div class="row bottom-row">
+            <div class="col-md-3">
                 <table class="table">
                     <thead>
                         <tr>
@@ -58,7 +59,7 @@
             </div>
 
             <div class="col-md-6">
-                <div bing-map />
+                <div class="bing-map" />
             </div>
         </div>
         

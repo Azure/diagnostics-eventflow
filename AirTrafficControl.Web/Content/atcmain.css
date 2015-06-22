@@ -1,0 +1,10 @@
+﻿
+.bing-map {
+    position: absolute; 
+    width: 700px; 
+    height: 700px;
+}
+
+.bottom-row {
+    margin-top: 10px;
+}
