@@ -104,6 +104,7 @@
     <Compile Include="WebSrv\ApplicationWithStandardContentFoldersBootstrapper.cs" />
     <Compile Include="WebSrv\BasicPageModel.cs" />
     <Compile Include="WebSrv\FlightPlanRequestModel.cs" />
+    <Compile Include="WebSrv\Location.cs" />
     <Compile Include="WebSrv\MainModule.cs" />
     <Compile Include="OwinCommunicationListener.cs" />
     <Compile Include="OwinStartup.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="AirTrafficControlWeb.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ServiceEventSource.cs" />
+    <Compile Include="WebSrv\MainPageModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\bootstrap-theme.css.map">

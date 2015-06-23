@@ -9,10 +9,11 @@ var AirTrafficControl;
             return {
                 restrict: 'AC',
                 link: function (scope, instanceElement, instanceAttributes, controller, transclude) {
-                    scope.GetBingMapsKey().then(function (key) {
-                        scope.Map = new Microsoft.Maps.Map(instanceElement[0], {
-                            credentials: key
-                        });
+                    scope.Map = new Microsoft.Maps.Map(instanceElement[0], {
+                        credentials: instanceAttributes["bing-maps-key"],
+                        zoom: 8,
+                        disableZooming: true,
+                        center: new Microsoft.Maps.Location(47.610, -122.232)
                     });
                 }
             };

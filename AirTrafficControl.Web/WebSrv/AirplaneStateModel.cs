@@ -19,5 +19,7 @@ namespace AirTrafficControl.Web.WebSrv
 
         public string ID { get; private set; }
         public string StateDescription { get; private set; }
+
+        public 
     }
 }

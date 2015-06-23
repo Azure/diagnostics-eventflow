@@ -13,11 +13,10 @@ module AirTrafficControl {
     export interface IMainControllerScope extends ng.IScope {
         AirplaneStates: AirplaneState[];
         Airports: Airport[];
-
         NewFlightData: NewFlightData;
         Map: Microsoft.Maps.Map;
+
         OnNewFlight: () => void;
-        GetBingMapsKey: () => ng.IPromise<string>;
     }
 
     export class MainController {
@@ -28,7 +27,7 @@ module AirTrafficControl {
 
             this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
 
-            $scope.$on('$destroy',() => $interval.cancel(this.updateInterval));
+            $scope.$on('$destroy',() => this.onScopeDestroy());
 
             $scope.Airports = [];
             this.$http.get("/api/airports").then((response: ng.IHttpPromiseCallbackArg<Airport[]>) => {
@@ -38,8 +37,6 @@ module AirTrafficControl {
             $scope.NewFlightData = new NewFlightData();
 
             $scope.OnNewFlight = () => this.onNewFlight();
-
-            $scope.GetBingMapsKey = () => this.getBingMapsKey();
         }
 
         private onUpdateAirplaneStates() {
@@ -56,10 +53,12 @@ module AirTrafficControl {
             // TODO: some error indication if the new flight was not created successfully
         }
 
-        private getBingMapsKey(): ng.IPromise<string> {
-            return this.$http.get("/api/bingmapskey").then((response: ng.IHttpPromiseCallbackArg<string>) => {
-                return response.data;
-            });
+        private onScopeDestroy() {
+            this.$interval.cancel(this.updateInterval);
+
+            if (this.$scope.Map) {
+                this.$scope.Map.dispose();
+            }
         }
     }
 }

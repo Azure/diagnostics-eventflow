@@ -16,7 +16,7 @@ namespace AirTrafficControl.Web.WebSrv
         {
             Get["/"] = parameters =>
             {
-                return View["atcmain.html", new BasicPageModel(Request)];
+                return View["atcmain.html", new MainPageModel(Request)];
             };
 
             Get["/api/airplanes", runAsync:true] = async(parameters, cancellationToken) =>
@@ -48,11 +48,6 @@ namespace AirTrafficControl.Web.WebSrv
                 return HttpStatusCode.Created;
                 // If the flight was addressable individually, we would return something like this:
                 // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
-            };
-
-            Get["/api/bingmapskey"] = (parameters) =>
-            {
-                return Response.AsJson<string>(ConfigurationManager.AppSettings["BingMapsKey"]);
             };
         }
     }

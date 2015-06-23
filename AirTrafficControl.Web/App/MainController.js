@@ -16,14 +16,13 @@ var AirTrafficControl;
             this.$http = $http;
             $scope.AirplaneStates = [];
             this.updateInterval = $interval(function () { return _this.onUpdateAirplaneStates(); }, 2000);
-            $scope.$on('$destroy', function () { return $interval.cancel(_this.updateInterval); });
+            $scope.$on('$destroy', function () { return _this.onScopeDestroy(); });
             $scope.Airports = [];
             this.$http.get("/api/airports").then(function (response) {
                 _this.$scope.Airports = response.data;
             });
             $scope.NewFlightData = new NewFlightData();
             $scope.OnNewFlight = function () { return _this.onNewFlight(); };
-            $scope.GetBingMapsKey = function () { return _this.getBingMapsKey(); };
         }
         MainController.prototype.onUpdateAirplaneStates = function () {
             var _this = this;
@@ -37,10 +36,11 @@ var AirTrafficControl;
             this.$http.post("/api/flights", this.$scope.NewFlightData);
             // TODO: some error indication if the new flight was not created successfully
         };
-        MainController.prototype.getBingMapsKey = function () {
-            return this.$http.get("/api/bingmapskey").then(function (response) {
-                return response.data;
-            });
+        MainController.prototype.onScopeDestroy = function () {
+            this.$interval.cancel(this.updateInterval);
+            if (this.$scope.Map) {
+                this.$scope.Map.dispose();
+            }
         };
         return MainController;
     })();
