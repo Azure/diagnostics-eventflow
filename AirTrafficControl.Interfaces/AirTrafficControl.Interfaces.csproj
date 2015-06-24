@@ -75,6 +75,7 @@
     <Compile Include="FlightPlan.cs" />
     <Compile Include="IAirplane.cs" />
     <Compile Include="ITimeAwareObject.cs" />
+    <Compile Include="Location.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IAirTrafficControl.cs" />
     <Compile Include="Route.cs" />

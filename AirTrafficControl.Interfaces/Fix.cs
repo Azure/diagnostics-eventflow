@@ -22,20 +22,9 @@ namespace AirTrafficControl.Interfaces
             DisplayName = displayName;
         }
 
-        public Fix(string name, string displayName, double latitude, double longitude): this(name, displayName)
+        public Fix(string name, string displayName, Location location): this(name, displayName)
         {
-            if (latitude < -90.0 || latitude > 90.0)
-            {
-                throw new ArgumentOutOfRangeException("latitude");
-            }
-
-            if (longitude < -180.0 || longitude > 180.0)
-            {
-                throw new ArgumentOutOfRangeException("longitude");
-            }
-
-            this.Latitude = latitude;
-            this.Longitude = longitude;
+            this.Location = location;
         }
 
         [DataMember]
@@ -45,10 +34,7 @@ namespace AirTrafficControl.Interfaces
         public string DisplayName { get; private set; }
 
         [DataMember]
-        public double Latitude { get; private set; }
-
-        [DataMember]
-        public double Longitude { get; private set; }
+        public Location Location { get; private set; }
 
         public override bool Equals(object obj)
         {

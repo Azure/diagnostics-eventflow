@@ -24,6 +24,14 @@ namespace AirTrafficControl.Web.WebSrv
                     {
                         var airplane = ActorProxy.Create<IAirplane>(new ActorId(airplaneID));
                         var airplaneActorState = await airplane.GetState();
+
+                        AirplaneState airplaneState = airplaneActorState.AirplaneState;
+                        Location airplaneLocation = null;
+
+                        if (airplaneState is AirportLocationState)
+                        {
+                            airplaneLocation = ((AirportLocationState) airplaneState).Airport.Lo
+                        }
                         var stateModel = new AirplaneStateModel(airplaneID, airplaneActorState.AirplaneState.ToString());
                         retval.Add(stateModel);
                     }

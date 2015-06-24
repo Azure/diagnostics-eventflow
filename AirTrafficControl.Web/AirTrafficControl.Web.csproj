@@ -104,7 +104,6 @@
     <Compile Include="WebSrv\ApplicationWithStandardContentFoldersBootstrapper.cs" />
     <Compile Include="WebSrv\BasicPageModel.cs" />
     <Compile Include="WebSrv\FlightPlanRequestModel.cs" />
-    <Compile Include="WebSrv\Location.cs" />
     <Compile Include="WebSrv\MainModule.cs" />
     <Compile Include="OwinCommunicationListener.cs" />
     <Compile Include="OwinStartup.cs" />
