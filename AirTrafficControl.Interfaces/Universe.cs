@@ -32,14 +32,14 @@ namespace AirTrafficControl.Interfaces
         private void Initialize()
         {
 
-            var ksea = new Airport("KSEA", "Seattle-Tacoma International", Direction.West, 47.4505, -122.3074);
-            var kgeg = new Airport("KGEG", "Spokane International", Direction.North, 47.6249, -117.5364);
-            var kpdx = new Airport("KPDX", "Portland International", Direction.Southeast, 45.5887, -122.5924);
+            var ksea = new Airport("KSEA", "Seattle-Tacoma International", Direction.West, new Location(47.4505, -122.3074));
+            var kgeg = new Airport("KGEG", "Spokane International", Direction.North, new Location(47.6249, -117.5364));
+            var kpdx = new Airport("KPDX", "Portland International", Direction.Southeast, new Location(45.5887, -122.5924));
 
-            var eph = new Fix("EPH", "Ephrata VORTAC", 47.3779, -119.4240);
-            var mwh = new Fix("MWH", "Moses Lake VOR-DME", 47.2109, -119.3168);
-            var ykm = new Fix("YKM", "Yakima VORTAC", 46.5702, -120.4446);
-            var malay = new Fix("MALAY", "MALAY intersection", 46.4228, -122.7609);
+            var eph = new Fix("EPH", "Ephrata VORTAC", new Location(47.3779, -119.4240));
+            var mwh = new Fix("MWH", "Moses Lake VOR-DME", new Location(47.2109, -119.3168));
+            var ykm = new Fix("YKM", "Yakima VORTAC", new Location(46.5702, -120.4446));
+            var malay = new Fix("MALAY", "MALAY intersection", new Location(46.4228, -122.7609));
 
             var v120 = new Route("V120");
             v120.Fixes = new ReadOnlyCollection<Fix>(new Fix[] { ksea, eph, kgeg });

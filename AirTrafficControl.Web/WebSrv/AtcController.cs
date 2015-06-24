@@ -30,9 +30,26 @@ namespace AirTrafficControl.Web.WebSrv
 
                         if (airplaneState is AirportLocationState)
                         {
-                            airplaneLocation = ((AirportLocationState) airplaneState).Airport.Lo
+                            airplaneLocation = ((AirportLocationState)airplaneState).Airport.Location;
                         }
-                        var stateModel = new AirplaneStateModel(airplaneID, airplaneActorState.AirplaneState.ToString());
+                        else if (airplaneState is FixLocationState)
+                        {
+                            airplaneLocation = ((FixLocationState) airplaneState).Fix.Location;
+                        }
+                        else if (airplaneState is EnrouteState)
+                        {
+                            EnrouteState enrouteState = (EnrouteState) airplaneState;
+                            airplaneLocation = new Location(
+                                (enrouteState.To.Location.Latitude + enrouteState.From.Location.Latitude) / 2.0,
+                                (enrouteState.To.Location.Longitude + enrouteState.From.Location.Longitude) / 2.0
+                            );
+                        }
+                        else
+                        {
+                            throw new Exception("Unexpected airplane state, cannot determine location");
+                        }
+
+                        var stateModel = new AirplaneStateModel(airplaneID, airplaneActorState.AirplaneState.ToString(), airplaneLocation);
                         retval.Add(stateModel);
                     }
                 }
