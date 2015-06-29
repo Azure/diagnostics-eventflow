@@ -7,8 +7,5 @@
          For example: <ClusterConnectionParameters />
   -->
   <ClusterConnectionParameters />
-
-  <!-- To override the default application name, provide a value for the ApplicationName element and uncomment.
-  <ApplicationName>fabric:/MyAppName</ApplicationName>
-  -->
+  <ApplicationInstanceDefinition Path="..\AppInstanceDefinition.Local.xml" />  
 </PublishProfile>

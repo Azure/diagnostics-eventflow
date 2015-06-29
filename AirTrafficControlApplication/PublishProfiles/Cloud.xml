@@ -24,9 +24,7 @@
                                StoreLocation="CurrentUser" 
                                StoreName="My" />
   -->
-  <ClusterConnectionParameters ConnectionEndpoint="karolzfab150615-01.westus.cloudapp.azure.com:19000" /> 
+  <ClusterConnectionParameters ConnectionEndpoint="karolzfab150615-01.westus.cloudapp.azure.com:19000" />
 
-  <!-- To override the default application name, provide a value for the ApplicationName element and uncomment.
-  <ApplicationName>fabric:/MyAppName</ApplicationName>
-  -->
+  <ApplicationInstanceDefinition Path="..\AppInstanceDefinition.Cloud.xml" />
 </PublishProfile>

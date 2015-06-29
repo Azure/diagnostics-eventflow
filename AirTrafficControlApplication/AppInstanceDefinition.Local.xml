@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application Name="fabric:/Application2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+  </Parameters>
+</Application>
