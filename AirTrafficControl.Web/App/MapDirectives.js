@@ -1,6 +1,7 @@
 /// <reference path="../Scripts/Typings/angularjs/angularjs.d.ts" /> 
 /// <reference path="../Scripts/Typings/bingmaps/Microsoft.Maps.d.ts" />
 /// <reference path="MainController.ts" />
+/// <reference path="AirplaneDepictionFactory.ts" />
 var AirTrafficControl;
 (function (AirTrafficControl) {
     (function () {
@@ -10,24 +11,20 @@ var AirTrafficControl;
             return {
                 restrict: 'AC',
                 link: function (scope, instanceElement, instanceAttributes, controller, transclude) {
-                    var onAirplaneStateChanged = function () {
-                    };
+                    function onViewChanged() {
+                        var currentZoom = scope.Map.getZoom();
+                        console.log("Current zoom is %f", currentZoom);
+                        scope.Map.entities.clear();
+                        var airplaneDepiction = AirTrafficControl.AirplaneDepictionFactory.GetAirplaneDepiction(seattleLocation, new AirTrafficControl.Direction(0, 1), currentZoom);
+                        scope.Map.entities.push(airplaneDepiction);
+                    }
                     scope.Map = new Microsoft.Maps.Map(instanceElement[0], {
                         credentials: instanceAttributes["bingMapsKey"],
                         zoom: 10,
                         disableZooming: true,
                         center: seattleLocation
                     });
-                    var options = { strokeColor: new Microsoft.Maps.Color(255, 0, 0, 255), strokeThickness: 3 };
-                    var polyline = new Microsoft.Maps.Polyline([
-                        new Microsoft.Maps.Location(seattleLocation.latitude - 0.1, seattleLocation.longitude - 0.1),
-                        new Microsoft.Maps.Location(seattleLocation.latitude + 0.1, seattleLocation.longitude - 0.1),
-                        new Microsoft.Maps.Location(seattleLocation.latitude + 0.1, seattleLocation.longitude),
-                        new Microsoft.Maps.Location(seattleLocation.latitude - 0.1, seattleLocation.longitude),
-                        new Microsoft.Maps.Location(seattleLocation.latitude - 0.1, seattleLocation.longitude + 0.1),
-                        new Microsoft.Maps.Location(seattleLocation.latitude + 0.1, seattleLocation.longitude + 0.1)
-                    ], options);
-                    scope.Map.entities.push(polyline);
+                    Microsoft.Maps.Events.addHandler(scope.Map, 'viewchangeend', onViewChanged);
                     scope.$watch("AirplaneStates", function (newAirplaneStates, oldAirplaneStates, scope) {
                         var map = scope.Map;
                         // map.entities.clear();
