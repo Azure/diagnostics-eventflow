@@ -1,4 +1,8 @@
 ﻿
+.main-page-body {
+    margin-left: 24px;
+}
+
 .bing-map {
     position: absolute; 
     width: 700px; 

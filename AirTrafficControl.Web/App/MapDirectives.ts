@@ -9,7 +9,7 @@ module AirTrafficControl {
 
     (function () {
         var app = angular.module('AtcAppDirectives', []);
-        var seattleLocation = new Microsoft.Maps.Location(47.610, -122.232)
+        var seattleLocation = new Microsoft.Maps.Location(47.0, -120.5)
 
         app.directive('bingMap',(): ng.IDirective => {
 
@@ -38,7 +38,7 @@ module AirTrafficControl {
 
                     scope.Map = new Maps.Map(instanceElement[0], {
                         credentials: instanceAttributes["bingMapsKey"],
-                        zoom: 10,
+                        zoom: 7,
                         disableZooming: true,
                         center: seattleLocation
                     });
