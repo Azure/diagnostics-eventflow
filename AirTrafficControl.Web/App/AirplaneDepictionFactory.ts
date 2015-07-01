@@ -5,8 +5,8 @@ module AirTrafficControl {
     import Maps = Microsoft.Maps;
 
     export class AirplaneDepictionFactory {
-        private static ScalingLattitudeFactor: number = 5000.0;
-        private static ScalingLongitudeFactor: number = 4000.0;
+        private static ScalingLattitudeFactor: number = 6000.0;
+        private static ScalingLongitudeFactor: number = 6000.0;
 
         private static GetAirplaneOutline(): Maps.Point[]{
             var retval: Maps.Point[] = [];
@@ -53,7 +53,9 @@ module AirTrafficControl {
             retval.push(lWingRoot);
             
             var lCockpit = new Maps.Point(-20, 140);
-            retval.push(lCockpit);            
+            retval.push(lCockpit);
+            
+            retval.push(nose);      
 
             return retval;
         }
@@ -68,9 +70,18 @@ module AirTrafficControl {
             var scalingLonFactor = map.getBounds().width / AirplaneDepictionFactory.ScalingLongitudeFactor;
             var scalingLatFactor = map.getBounds().height / AirplaneDepictionFactory.ScalingLattitudeFactor;
 
-            // TODO: rotate the airplane to point in "direction" direction
+            var cosh = Math.cos(heading);
+            var sinh = Math.sin(heading);
+
             for (var i = 0; i < airplaneOutlinePoints.length; i++) {
-                vertices.push(new Maps.Location(location.latitude + airplaneOutlinePoints[i].y * scalingLatFactor, location.longitude + airplaneOutlinePoints[i].x * scalingLonFactor));
+                var point = airplaneOutlinePoints[i];                
+                
+                // We will interpret the heading as in aviation (45 degrees, or PI/4 radians is northeast), and not like the standard mathematical convention
+                // where a positive turn is counterclockwise. Thus the formula computing rotated vertice coordinates is a bit different from the "book formula".
+                // See http://stackoverflow.com/questions/3162643/proper-trigonometry-for-rotating-a-point-around-the-origin
+                var rotatedPoint = new Maps.Point(point.x * cosh + point.y * sinh, point.y * cosh - point.x * sinh);
+
+                vertices.push(new Maps.Location(location.latitude + rotatedPoint.y * scalingLatFactor, location.longitude + rotatedPoint.x * scalingLonFactor));
             }
 
             var options = { strokeColor: new Microsoft.Maps.Color(255, 0, 0, 255), strokeThickness: 3 };

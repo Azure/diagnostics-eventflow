@@ -27,7 +27,7 @@ module AirTrafficControl {
                         console.log("Current zoom is %f", currentZoom);
 
                         scope.Map.entities.clear();
-                        var airplaneDepiction = AirplaneDepictionFactory.GetAirplaneDepiction(scope.Map, seattleLocation, 0.0, currentZoom);
+                        var airplaneDepiction = AirplaneDepictionFactory.GetAirplaneDepiction(scope.Map, seattleLocation, 1.0, currentZoom);
                         scope.Map.entities.push(airplaneDepiction);
                     }
 
