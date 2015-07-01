@@ -10,10 +10,11 @@ var AirTrafficControl;
     })();
     AirTrafficControl.Position = Position;
     var AirplaneState = (function () {
-        function AirplaneState(ID, StateDescription, Location) {
+        function AirplaneState(ID, StateDescription, Location, Heading) {
             this.ID = ID;
             this.StateDescription = StateDescription;
             this.Location = Location;
+            this.Heading = Heading;
         }
         return AirplaneState;
     })();

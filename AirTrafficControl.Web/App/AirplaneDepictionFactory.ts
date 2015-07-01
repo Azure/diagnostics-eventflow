@@ -60,7 +60,7 @@ module AirTrafficControl {
             return retval;
         }
 
-        static GetAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number, currentMapZoom: number): Maps.EntityCollection {
+        static GetAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number): Maps.EntityCollection {
             var collectionOptions: Maps.EntityCollectionOptions = {bubble: true, visible:true, zIndex:100};
             var collection = new Maps.EntityCollection(collectionOptions);
 

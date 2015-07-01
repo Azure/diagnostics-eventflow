@@ -12,7 +12,8 @@ module AirTrafficControl {
         constructor(
             public ID: string,
             public StateDescription: string,
-            public Location: Position
+            public Location: Position,
+            public Heading: number
         ) { }
     }
 }

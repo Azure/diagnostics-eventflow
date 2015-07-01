@@ -37,5 +37,19 @@ namespace AirTrafficControl.Interfaces
 
         [DataMember]
         public double? Altitude { get; private set; }
+
+        public double GetDirectHeadingTo(Location another)
+        {
+            if (another == null) { throw new ArgumentNullException("another"); }
+
+            double dLon = another.Longitude - this.Longitude;
+            double dLat = another.Latitude - this.Latitude;
+            double heading = Math.PI / 2.0 - Math.Atan2(dLat, dLon);
+            if (heading < 0)
+            {
+                heading += 2 * Math.PI;
+            }
+            return heading;
+        }
     }
 }

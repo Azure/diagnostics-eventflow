@@ -18,7 +18,11 @@ namespace AirTrafficControl.Interfaces
     [KnownType(typeof(EnrouteState))]
     public abstract class AirplaneState
     {
+        public abstract Location Location { get; }        
+
         public abstract AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction);
+        public abstract double GetHeading(FlightPlan flightPlan);
+
         protected void ValidateComputeNextStateArgs(FlightPlan flightPlan, AtcInstruction instruction)
         {
             Requires.NotNull(flightPlan, "flightPlan");
@@ -39,6 +43,8 @@ namespace AirTrafficControl.Interfaces
 
         [DataMember]
         public Airport Airport { get; private set; }
+
+        public override Location Location { get { return Airport.Location; } }
     }
 
     [DataContract]
@@ -52,6 +58,8 @@ namespace AirTrafficControl.Interfaces
 
         [DataMember]
         public Fix Fix { get; private set; }
+
+        public override Location Location { get { return Fix.Location; } }
     }
 
     [DataContract]
@@ -79,6 +87,11 @@ namespace AirTrafficControl.Interfaces
         public override string ToString()
         {
             return "Taxiing at " + Airport.DisplayName;
+        }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return 0.0; // We do not track heading changes while taxiing.
         }
     }
 
@@ -113,6 +126,11 @@ namespace AirTrafficControl.Interfaces
         public override string ToString()
         {
             return "Departing from " + Airport.DisplayName;
+        }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return this.Airport.Location.GetDirectHeadingTo(flightPlan.Destination.Location);
         }
     }
 
@@ -155,6 +173,11 @@ namespace AirTrafficControl.Interfaces
         {
             return "Holding at " + Fix.DisplayName;
         }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return flightPlan.DeparturePoint.Location.GetDirectHeadingTo(flightPlan.Destination.Location);
+        }
     }
 
     [DataContract]
@@ -172,6 +195,11 @@ namespace AirTrafficControl.Interfaces
         {
             return "Flying approach to " + Airport.DisplayName;
         }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return flightPlan.DeparturePoint.Location.GetDirectHeadingTo(flightPlan.Destination.Location);
+        }
     }
 
     [DataContract]
@@ -188,6 +216,11 @@ namespace AirTrafficControl.Interfaces
         public override string ToString()
         {
             return "Landed at " + Airport.DisplayName;
+        }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return 0.0;
         }
     }
 
@@ -217,6 +250,18 @@ namespace AirTrafficControl.Interfaces
         [DataMember]
         public Route Route { get; private set; }
 
+        public override Location Location
+        {
+            get
+            {
+                // Just an aproximation
+                return new Location(
+                    (this.To.Location.Latitude + this.From.Location.Latitude) / 2.0,
+                    (this.To.Location.Longitude + this.From.Location.Longitude) / 2.0
+                );
+            }
+        }
+
         public override string ToString()
         {
             return "Flying on route " + Route.Name + " from " + From.DisplayName + " to " + To.DisplayName;
@@ -243,6 +288,11 @@ namespace AirTrafficControl.Interfaces
                 Fix next = Route.GetNextFix(this.To, flightPlan.Destination);
                 return new EnrouteState(this.To, next, this.Route);
             }
+        }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return From.Location.GetDirectHeadingTo(To.Location);
         }
     }
 }

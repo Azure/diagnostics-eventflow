@@ -46,7 +46,7 @@ var AirTrafficControl;
             retval.push(nose);
             return retval;
         };
-        AirplaneDepictionFactory.GetAirplaneDepiction = function (map, location, heading, currentMapZoom) {
+        AirplaneDepictionFactory.GetAirplaneDepiction = function (map, location, heading) {
             var collectionOptions = { bubble: true, visible: true, zIndex: 100 };
             var collection = new Maps.EntityCollection(collectionOptions);
             var airplaneOutlinePoints = AirplaneDepictionFactory.GetAirplaneOutline();

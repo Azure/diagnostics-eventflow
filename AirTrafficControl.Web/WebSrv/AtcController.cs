@@ -24,32 +24,9 @@ namespace AirTrafficControl.Web.WebSrv
                     {
                         var airplane = ActorProxy.Create<IAirplane>(new ActorId(airplaneID));
                         var airplaneActorState = await airplane.GetState();
+                        var airplaneState = airplaneActorState.AirplaneState;
 
-                        AirplaneState airplaneState = airplaneActorState.AirplaneState;
-                        Location airplaneLocation = null;
-
-                        if (airplaneState is AirportLocationState)
-                        {
-                            airplaneLocation = ((AirportLocationState)airplaneState).Airport.Location;
-                        }
-                        else if (airplaneState is FixLocationState)
-                        {
-                            airplaneLocation = ((FixLocationState) airplaneState).Fix.Location;
-                        }
-                        else if (airplaneState is EnrouteState)
-                        {
-                            EnrouteState enrouteState = (EnrouteState) airplaneState;
-                            airplaneLocation = new Location(
-                                (enrouteState.To.Location.Latitude + enrouteState.From.Location.Latitude) / 2.0,
-                                (enrouteState.To.Location.Longitude + enrouteState.From.Location.Longitude) / 2.0
-                            );
-                        }
-                        else
-                        {
-                            throw new Exception("Unexpected airplane state, cannot determine location");
-                        }
-
-                        var stateModel = new AirplaneStateModel(airplaneID, airplaneActorState.AirplaneState.ToString(), airplaneLocation);
+                        var stateModel = new AirplaneStateModel(airplaneID, airplaneState.ToString(), airplaneState.Location, airplaneState.GetHeading(airplaneActorState.FlightPlan));
                         retval.Add(stateModel);
                     }
                 }
