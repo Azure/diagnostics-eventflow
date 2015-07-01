@@ -4,50 +4,9 @@
 module AirTrafficControl {
     import Maps = Microsoft.Maps;
 
-    export class Direction {
-        public XComponent: number;
-        public YComponent: number;
-
-        constructor(private x: number, private y: number) {
-            // Normalize x and y components, so that the length of the 'Direction' vector is one.
-            var len = Math.sqrt(x * x + y * y);
-            this.XComponent = x / len;
-            this.YComponent = y / len;
-        }
-    }
-
     export class AirplaneDepictionFactory {
-        private static ScalingFactors: number[] = [
-            0.08,
-            0.04,
-            0.02,
-
-            0.016,
-            0.008,
-            0.004,
-            0.002,
-            0.001,
-            0.0005,
-            0.0002,
-            0.0001,
-            0.00005,
-
-            0.000024,
-            0.000014,
-            0.000007,
-
-            0.0000030,
-            0.0000016,
-            0.0000008,
-            0.0000004,
-            0.0000002
-        ];
-
-        private static GetScalingFactor(currentMapZoom: number): number {
-            var bigger = AirplaneDepictionFactory.ScalingFactors[Math.ceil(currentMapZoom)];
-            var smaller = AirplaneDepictionFactory.ScalingFactors[Math.floor(currentMapZoom)];
-            return (bigger + smaller) / 2.0;
-        }
+        private static ScalingLattitudeFactor: number = 5000.0;
+        private static ScalingLongitudeFactor: number = 4000.0;
 
         private static GetAirplaneOutline(): Maps.Point[]{
             var retval: Maps.Point[] = [];
@@ -74,7 +33,7 @@ module AirTrafficControl {
             var rHorizontalStabilizerBackTip = new Maps.Point(100, -170);
             retval.push(rHorizontalStabilizerBackTip);
 
-            var tail = new Maps.Point(0, -165);
+            var tail = new Maps.Point(0, -160);
             retval.push(tail);
 
             var lHorizontalStabilizerBackTip = new Maps.Point(-100, -170);
@@ -99,18 +58,19 @@ module AirTrafficControl {
             return retval;
         }
 
-        static GetAirplaneDepiction(location: Maps.Location, direction: Direction, currentMapZoom: number): Maps.EntityCollection {
+        static GetAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number, currentMapZoom: number): Maps.EntityCollection {
             var collectionOptions: Maps.EntityCollectionOptions = {bubble: true, visible:true, zIndex:100};
             var collection = new Maps.EntityCollection(collectionOptions);
 
             var airplaneOutlinePoints = AirplaneDepictionFactory.GetAirplaneOutline();
             var vertices: Maps.Location[] = [];
-            var scalingFactor = AirplaneDepictionFactory.GetScalingFactor(currentMapZoom);
-            console.log("Scaling factor is %f", scalingFactor); 
+
+            var scalingLonFactor = map.getBounds().width / AirplaneDepictionFactory.ScalingLongitudeFactor;
+            var scalingLatFactor = map.getBounds().height / AirplaneDepictionFactory.ScalingLattitudeFactor;
 
             // TODO: rotate the airplane to point in "direction" direction
             for (var i = 0; i < airplaneOutlinePoints.length; i++) {
-                vertices.push(new Maps.Location(location.latitude + airplaneOutlinePoints[i].y * scalingFactor, location.longitude + airplaneOutlinePoints[i].x * scalingFactor));
+                vertices.push(new Maps.Location(location.latitude + airplaneOutlinePoints[i].y * scalingLatFactor, location.longitude + airplaneOutlinePoints[i].x * scalingLonFactor));
             }
 
             var options = { strokeColor: new Microsoft.Maps.Color(255, 0, 0, 255), strokeThickness: 3 };

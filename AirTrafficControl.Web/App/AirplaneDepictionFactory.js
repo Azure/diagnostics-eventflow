@@ -2,26 +2,9 @@
 var AirTrafficControl;
 (function (AirTrafficControl) {
     var Maps = Microsoft.Maps;
-    var Direction = (function () {
-        function Direction(x, y) {
-            this.x = x;
-            this.y = y;
-            // Normalize x and y components, so that the length of the 'Direction' vector is one.
-            var len = Math.sqrt(x * x + y * y);
-            this.XComponent = x / len;
-            this.YComponent = y / len;
-        }
-        return Direction;
-    })();
-    AirTrafficControl.Direction = Direction;
     var AirplaneDepictionFactory = (function () {
         function AirplaneDepictionFactory() {
         }
-        AirplaneDepictionFactory.GetScalingFactor = function (currentMapZoom) {
-            var bigger = AirplaneDepictionFactory.ScalingFactors[Math.ceil(currentMapZoom)];
-            var smaller = AirplaneDepictionFactory.ScalingFactors[Math.floor(currentMapZoom)];
-            return (bigger + smaller) / 2.0;
-        };
         AirplaneDepictionFactory.GetAirplaneOutline = function () {
             var retval = [];
             var nose = new Maps.Point(0, 180);
@@ -42,7 +25,7 @@ var AirTrafficControl;
             retval.push(rHorizontalStabilizerFwdTip);
             var rHorizontalStabilizerBackTip = new Maps.Point(100, -170);
             retval.push(rHorizontalStabilizerBackTip);
-            var tail = new Maps.Point(0, -165);
+            var tail = new Maps.Point(0, -160);
             retval.push(tail);
             var lHorizontalStabilizerBackTip = new Maps.Point(-100, -170);
             retval.push(lHorizontalStabilizerBackTip);
@@ -62,15 +45,15 @@ var AirTrafficControl;
             retval.push(lCockpit);
             return retval;
         };
-        AirplaneDepictionFactory.GetAirplaneDepiction = function (location, direction, currentMapZoom) {
+        AirplaneDepictionFactory.GetAirplaneDepiction = function (map, location, heading, currentMapZoom) {
             var collectionOptions = { bubble: true, visible: true, zIndex: 100 };
             var collection = new Maps.EntityCollection(collectionOptions);
             var airplaneOutlinePoints = AirplaneDepictionFactory.GetAirplaneOutline();
             var vertices = [];
-            var scalingFactor = AirplaneDepictionFactory.GetScalingFactor(currentMapZoom);
-            console.log("Scaling factor is %f", scalingFactor);
+            var scalingLonFactor = map.getBounds().width / AirplaneDepictionFactory.ScalingLongitudeFactor;
+            var scalingLatFactor = map.getBounds().height / AirplaneDepictionFactory.ScalingLattitudeFactor;
             for (var i = 0; i < airplaneOutlinePoints.length; i++) {
-                vertices.push(new Maps.Location(location.latitude + airplaneOutlinePoints[i].y * scalingFactor, location.longitude + airplaneOutlinePoints[i].x * scalingFactor));
+                vertices.push(new Maps.Location(location.latitude + airplaneOutlinePoints[i].y * scalingLatFactor, location.longitude + airplaneOutlinePoints[i].x * scalingLonFactor));
             }
             var options = { strokeColor: new Microsoft.Maps.Color(255, 0, 0, 255), strokeThickness: 3 };
             var polygon = new Maps.Polygon(vertices, options);
@@ -78,28 +61,8 @@ var AirTrafficControl;
             collection.push(polygon);
             return collection;
         };
-        AirplaneDepictionFactory.ScalingFactors = [
-            0.08,
-            0.04,
-            0.02,
-            0.016,
-            0.008,
-            0.004,
-            0.002,
-            0.001,
-            0.0005,
-            0.0002,
-            0.0001,
-            0.00005,
-            0.000024,
-            0.000014,
-            0.000007,
-            0.0000030,
-            0.0000016,
-            0.0000008,
-            0.0000004,
-            0.0000002
-        ];
+        AirplaneDepictionFactory.ScalingLattitudeFactor = 5000.0;
+        AirplaneDepictionFactory.ScalingLongitudeFactor = 4000.0;
         return AirplaneDepictionFactory;
     })();
     AirTrafficControl.AirplaneDepictionFactory = AirplaneDepictionFactory;

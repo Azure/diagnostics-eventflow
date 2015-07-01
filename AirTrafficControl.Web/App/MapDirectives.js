@@ -15,7 +15,7 @@ var AirTrafficControl;
                         var currentZoom = scope.Map.getZoom();
                         console.log("Current zoom is %f", currentZoom);
                         scope.Map.entities.clear();
-                        var airplaneDepiction = AirTrafficControl.AirplaneDepictionFactory.GetAirplaneDepiction(seattleLocation, new AirTrafficControl.Direction(0, 1), currentZoom);
+                        var airplaneDepiction = AirTrafficControl.AirplaneDepictionFactory.GetAirplaneDepiction(scope.Map, seattleLocation, 0.0, currentZoom);
                         scope.Map.entities.push(airplaneDepiction);
                     }
                     scope.Map = new Microsoft.Maps.Map(instanceElement[0], {
