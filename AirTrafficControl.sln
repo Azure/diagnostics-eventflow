@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "AirTrafficControlApplication", "AirTrafficControlApplication\AirTrafficControlApplication.sfproj", "{D875E47F-986B-4BF1-89A9-312D0BB40348}"
 EndProject
@@ -43,8 +43,7 @@ Global
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|Any CPU.ActiveCfg = Release|x64
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|x64.ActiveCfg = Release|x64
 		{E615A49E-4A25-4322-8317-33BC01130928}.Release|x64.Build.0 = Release|x64
-		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Debug|x64.Build.0 = Debug|Any CPU
 		{AA18B08D-FA38-4FE8-A7AA-577D6C35D648}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -57,8 +56,7 @@ Global
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|Any CPU.ActiveCfg = Release|x64
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|x64.ActiveCfg = Release|x64
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|x64.Build.0 = Release|x64
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|x64.Build.0 = Debug|Any CPU
 		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Release|Any CPU.ActiveCfg = Release|Any CPU
