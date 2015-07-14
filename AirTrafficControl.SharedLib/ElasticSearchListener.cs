@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
+using Microsoft.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
-using Elasticsearch.Net;
-using Elasticsearch.Net.Connection;
+using Nest;
 
 namespace AirTrafficControl.SharedLib
 {
@@ -13,8 +12,11 @@ namespace AirTrafficControl.SharedLib
         private const string Dot = ".";
         private const string Dash = "-";
 
+        // TODO: consider making it a (configuration) property of the listener
+        private const string EventDocumentTypeName = "event";
+
         private ConcurrentEventSender<EventWrittenEventArgs> sender;
-        private ElasticsearchClient esClient;
+        private ElasticClient esClient;
         private string indexNamePrefix;
         private string lastIndexName;
 
@@ -41,8 +43,8 @@ namespace AirTrafficControl.SharedLib
             this.indexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
             this.lastIndexName = null;
 
-            var config = new ConnectionConfiguration(serverUri).SetBasicAuthentication(userName, password);
-            this.esClient = new ElasticsearchClient(config);
+            var config = new ConnectionSettings(serverUri).SetBasicAuthentication(userName, password);
+            this.esClient = new ElasticClient(config);
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -55,15 +57,39 @@ namespace AirTrafficControl.SharedLib
             this.sender.SubmitEvent(eventData);
         }
 
-        private Task SendEventsAsync(IEnumerable<EventWrittenEventArgs> events, CancellationToken cancellationToken)
+        private async Task SendEventsAsync(IEnumerable<EventWrittenEventArgs> events, CancellationToken cancellationToken)
         {
+            if (events == null)
+            {
+                return;
+            }
+
             try
             {
                 string currentIndexName = GetIndexName();
                 if (!string.Equals(currentIndexName, this.lastIndexName, StringComparison.Ordinal))
                 {
-                    EnsureIndexExists(currentIndexName);
+                    await EnsureIndexExists(currentIndexName);
+                    this.lastIndexName = currentIndexName;
                 }
+
+                var request = new BulkRequest();
+                request.Refresh = true;
+
+                var operations = new List<IBulkCreateOperation<EventData>>();
+                foreach(EventWrittenEventArgs eventSourceEvent in events)
+                {
+                    EventData eventData = eventSourceEvent.ToEventData();
+                    var operation = new BulkCreateOperation<EventData>(eventData);
+                    operation.Index = currentIndexName;
+                    operation.Type = EventDocumentTypeName;
+                    operations.Add(operation);
+                }
+
+                request.Operations = (IList<IBulkOperation>) operations;
+
+                IBulkResponse response = await this.esClient.BulkAsync(request);
+                // TODO: handle errors when response.IsValid is false
             }
             catch
             {
@@ -73,15 +99,15 @@ namespace AirTrafficControl.SharedLib
 
         private async Task EnsureIndexExists(string currentIndexName)
         {
-            var result = await this.esClient.IndicesExistsAsync(currentIndexName);
-            if ((bool) result.Response["Exists"])
+            var result = await this.esClient.IndexExistsAsync(currentIndexName);
+            if (result.Exists)
             {
                 return;
             }
 
-            // TODO: explicitly check and ignore 
-            var settings = 
-            await this.esClient.IndicesCreateAsync(currentIndexName);
+            // TODO: explicitly check for and ignore "index already exists" error
+            var request = new CreateIndexRequest(currentIndexName);
+            await this.esClient.CreateIndexAsync(request);
         }
 
         private string GetIndexName()
