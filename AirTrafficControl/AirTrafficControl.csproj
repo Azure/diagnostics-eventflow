@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AirTrafficControl</RootNamespace>
     <AssemblyName>AirTrafficControl</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
@@ -94,6 +94,10 @@
     <ProjectReference Include="..\AirTrafficControl.Interfaces\AirTrafficControl.Interfaces.csproj">
       <Project>{E615A49E-4A25-4322-8317-33BC01130928}</Project>
       <Name>AirTrafficControl.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AirTrafficControl.SharedLib\AirTrafficControl.SharedLib.csproj">
+      <Project>{08462a6a-4ff5-4cef-b8b5-29a05ff91303}</Project>
+      <Name>AirTrafficControl.SharedLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
