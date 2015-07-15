@@ -76,7 +76,7 @@ namespace AirTrafficControl.SharedLib
                 var request = new BulkRequest();
                 request.Refresh = true;
 
-                var operations = new List<IBulkCreateOperation<EventData>>();
+                var operations = new List<IBulkOperation>();
                 foreach(EventWrittenEventArgs eventSourceEvent in events)
                 {
                     EventData eventData = eventSourceEvent.ToEventData();
@@ -86,7 +86,7 @@ namespace AirTrafficControl.SharedLib
                     operations.Add(operation);
                 }
 
-                request.Operations = (IList<IBulkOperation>) operations;
+                request.Operations = operations;
 
                 IBulkResponse response = await this.esClient.BulkAsync(request);
                 // TODO: handle errors when response.IsValid is false
@@ -99,15 +99,14 @@ namespace AirTrafficControl.SharedLib
 
         private async Task EnsureIndexExists(string currentIndexName)
         {
-            var result = await this.esClient.IndexExistsAsync(currentIndexName);
-            if (result.Exists)
+            var existsResult = await this.esClient.IndexExistsAsync(currentIndexName);
+            if (existsResult.Exists)
             {
                 return;
             }
-
+            
+            var createIndexResult = await this.esClient.CreateIndexAsync(c => c.Index(currentIndexName));
             // TODO: explicitly check for and ignore "index already exists" error
-            var request = new CreateIndexRequest(currentIndexName);
-            await this.esClient.CreateIndexAsync(request);
         }
 
         private string GetIndexName()

@@ -14,7 +14,7 @@ namespace AirTrafficControl.SharedLib
 
         public string ProviderName { get; set; }
 
-        public int Id { get; set; }
+        public int EventId { get; set; }
 
         public string Message { get; set; }
 
@@ -48,7 +48,7 @@ namespace AirTrafficControl.SharedLib
             {
                 ProviderName = eventSourceEvent.EventSource.GetType().FullName,
                 Timestamp = DateTimeOffset.UtcNow,
-                Id = eventSourceEvent.EventId,
+                EventId = eventSourceEvent.EventId,
                 Level = EventLevelNames[(int)eventSourceEvent.Level],
                 Keywords = HexadecimalNumberPrefix + ((ulong)eventSourceEvent.Keywords).ToString("X16", CultureInfo.InvariantCulture),
                 EventName = eventSourceEvent.EventName,
