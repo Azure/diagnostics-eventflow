@@ -4,6 +4,7 @@ using Microsoft.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
 using Nest;
+using System.Diagnostics;
 
 namespace AirTrafficControl.SharedLib
 {
@@ -93,24 +94,41 @@ namespace AirTrafficControl.SharedLib
                 request.Operations = operations;
 
                 IBulkResponse response = await this.esClient.BulkAsync(request);
-                // TODO: handle errors when response.IsValid is false
+                if (!response.IsValid)
+                {
+                    ReportEsRequestError(response, "Bulk upload");
+                }
             }
             catch(Exception e)
             {
-                // TODO: a strategy for handling errors from sending to ES
+                DiagnosticChannelEventSource.Current.EventUploadFailed(this.contextInfo, e.ToString());
             }
         }
 
         private async Task EnsureIndexExists(string currentIndexName)
         {
             var existsResult = await this.esClient.IndexExistsAsync(currentIndexName);
+            if (!existsResult.IsValid)
+            {
+                ReportEsRequestError(existsResult, "Index exists check");
+                return;
+            }
+
             if (existsResult.Exists)
             {
                 return;
             }
             
             var createIndexResult = await this.esClient.CreateIndexAsync(c => c.Index(currentIndexName));
-            // TODO: explicitly check for and ignore "index already exists" error
+            if (!createIndexResult.IsValid)
+            {
+                if (createIndexResult.ServerError != null && string.Equals(createIndexResult.ServerError.ExceptionType, "IndexAlreadyExistsException", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                ReportEsRequestError(createIndexResult, "Create index");
+            }
         }
 
         private string GetIndexName()
@@ -118,6 +136,21 @@ namespace AirTrafficControl.SharedLib
             var now = DateTimeOffset.UtcNow;
             var retval = this.indexNamePrefix + now.Year.ToString() + Dot + now.Month.ToString() + Dot + now.Day.ToString();
             return retval;
+        }
+
+        private void ReportEsRequestError(IResponse response, string request)
+        {
+            Debug.Assert(!response.IsValid);
+
+            if (response.ServerError != null)
+            {
+                DiagnosticChannelEventSource.Current.EsRequestError(this.contextInfo, request, 
+                    response.ServerError.Error, response.ServerError.ExceptionType, response.ServerError.Status);
+            }
+            else
+            {
+                DiagnosticChannelEventSource.Current.EsRequestError(this.contextInfo, request, "(unknown)", "(unknown)", 0);
+            }
         }
     }
 }
