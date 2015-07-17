@@ -22,12 +22,21 @@ namespace AirTrafficControl.SharedLib
             }
         }
 
-        [Event(2, Level = EventLevel.Error)]
-        public void EventUploadFailed(string exception)
+        [Event(2, Level = EventLevel.Error, Message ="Unexpected exception ocurred during event upload")]
+        public void EventUploadFailed(string contextInfo, string exception)
         {
             if (this.IsEnabled())
             {
                 WriteEvent(2, exception);
+            }
+        }
+
+        [Event(3, Level = EventLevel.Error, Message ="ES returned an error for a request")]
+        public void EsRequestError(string contextInfo, string request, string error, string exception, int status)
+        {
+            if (this.IsEnabled())
+            {
+                WriteEvent(3, request, error, exception, status);
             }
         }
     }
