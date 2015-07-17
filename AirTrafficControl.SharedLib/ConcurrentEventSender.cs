@@ -16,9 +16,9 @@ namespace AirTrafficControl.SharedLib
         private int maxConcurrency;
         private int batchSize;
         private TimeSpan noEventsDelay;
-        private Func<IEnumerable<EventDataType>, CancellationToken, Task> TransmitterProc;
-        private DateTimeOffset? lastEventLossReportTimeUtc = null;
+        private Func<IEnumerable<EventDataType>, CancellationToken, Task> TransmitterProc;        
         private string contextInfo;
+        private TimeSpanThrottle eventLossThrottle;
 
         public ConcurrentEventSender(string contextInfo, int eventBufferSize, int maxConcurrency, int batchSize, TimeSpan noEventsDelay,
             Func<IEnumerable<EventDataType>, CancellationToken, Task> transmitterProc)
@@ -32,6 +32,9 @@ namespace AirTrafficControl.SharedLib
             this.TransmitterProc = transmitterProc;
             this.contextInfo = contextInfo;
 
+            // Probably does not make sense to report event loss more often than once per second.
+            this.eventLossThrottle = new TimeSpanThrottle(TimeSpan.FromSeconds(1));
+
             this.cts = new CancellationTokenSource();
             Task.Run(() => EventConsumerAsync(this.cts.Token));
         }
@@ -41,14 +44,7 @@ namespace AirTrafficControl.SharedLib
             if (!this.events.TryAdd(eData))
             {
                 // Just drop the event. 
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                if (lastEventLossReportTimeUtc != null && (now - lastEventLossReportTimeUtc) < EventLossReportInterval)
-                {
-                    return;
-                }
-
-                lastEventLossReportTimeUtc = now;
-                DiagnosticChannelEventSource.Current.EventsLost(this.contextInfo);
+                this.eventLossThrottle.Execute(() => DiagnosticChannelEventSource.Current.EventsLost(this.contextInfo));
             }
         }
 
