@@ -84,6 +84,7 @@
     <Compile Include="EventData.cs" />
     <Compile Include="EventHubListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimeSpanThrottle.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

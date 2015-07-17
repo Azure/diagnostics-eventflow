@@ -54,6 +54,11 @@ namespace AirTrafficControl.SharedLib
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
+            if (eventSource is DiagnosticChannelEventSource)
+            {
+                return;
+            }
+
             EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)~0);
         }
 
@@ -93,6 +98,9 @@ namespace AirTrafficControl.SharedLib
 
                 request.Operations = operations;
 
+                // Note: the NEST client is documented to be thread-safe so it should be OK to just reuse the this.esClient instance
+                // between different SendEventsAsync callbacks.
+                // Reference: https://www.elastic.co/blog/nest-and-elasticsearch-net-1-3
                 IBulkResponse response = await this.esClient.BulkAsync(request);
                 if (!response.IsValid)
                 {
@@ -111,7 +119,6 @@ namespace AirTrafficControl.SharedLib
             if (!existsResult.IsValid)
             {
                 ReportEsRequestError(existsResult, "Index exists check");
-                return;
             }
 
             if (existsResult.Exists)
@@ -124,6 +131,7 @@ namespace AirTrafficControl.SharedLib
             {
                 if (createIndexResult.ServerError != null && string.Equals(createIndexResult.ServerError.ExceptionType, "IndexAlreadyExistsException", StringComparison.OrdinalIgnoreCase))
                 {
+                    // This is fine, someone just beat us to create a new index.
                     return;
                 }
 
