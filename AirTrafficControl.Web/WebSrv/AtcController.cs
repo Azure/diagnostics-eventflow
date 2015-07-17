@@ -65,8 +65,8 @@ namespace AirTrafficControl.Web.WebSrv
             {
                 FlightPlan flightPlan = new FlightPlan();
                 flightPlan.AirplaneID = airplaneID;
-                flightPlan.DeparturePoint = Universe.Current.Airports.Where(a => a.Name == "KSEA").First();
-                flightPlan.Destination = Universe.Current.Airports.Where(a => a.Name == "KPDX").First();
+                flightPlan.DeparturePoint = Universe.Current.Airports.Where(a => a.Name == departurePoint).First();
+                flightPlan.Destination = Universe.Current.Airports.Where(a => a.Name == destination).First();
                 flightPlan.Validate();
 
                 IAirTrafficControl atc = ActorProxy.Create<IAirTrafficControl>(new ActorId(WellKnownIdentifiers.SeattleCenter));

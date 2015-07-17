@@ -44,7 +44,7 @@ namespace AirTrafficControl.Web.WebSrv
             {
                 var requestModel = this.Bind<FlightPlanRequestModel>();
                 var atc = new AtcController();
-                await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DeparturePoint, requestModel.Destination);
+                await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name);
                 return HttpStatusCode.Created;
                 // If the flight was addressable individually, we would return something like this:
                 // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
