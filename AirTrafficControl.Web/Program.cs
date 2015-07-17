@@ -1,9 +1,11 @@
-﻿using System;
+﻿using AirTrafficControl.Interfaces;
+using AirTrafficControl.SharedLib;
+
+using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.Fabric;
 using System.Threading;
-
-using AirTrafficControl.SharedLib;
 
 namespace AirTrafficControl.Web
 {
@@ -15,7 +17,12 @@ namespace AirTrafficControl.Web
             {
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
-                    ElasticSearchListener listener = new ElasticSearchListener(new Uri("http://kzelk03.cloudapp.net/es", UriKind.Absolute), "kzadora", "w13XP287!", "atc");
+                    ElasticSearchListener listener = new ElasticSearchListener(
+                        (new FabricDiagnosticChannelContext()).ToString(),
+                        new Uri("http://kzelk03.cloudapp.net/es", UriKind.Absolute),
+                        ConfigurationManager.AppSettings["EsUserName"],
+                        ConfigurationManager.AppSettings["EsUserPassword"],
+                        "atc");
 
                     // This is the name of the ServiceType that is registered with FabricRuntime. 
                     // This name must match the name defined in the ServiceManifest. If you change
@@ -35,5 +42,7 @@ namespace AirTrafficControl.Web
                 throw;
             }
         }
+
+        
     }
 }

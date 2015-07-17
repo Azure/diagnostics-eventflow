@@ -1,10 +1,11 @@
-﻿using System;
-using System.Diagnostics;
+﻿using AirTrafficControl.Interfaces;
+using AirTrafficControl.SharedLib;
+
+using Microsoft.ServiceFabric.Actors;
+using System;
+using System.Configuration;
 using System.Fabric;
 using System.Threading;
-using Microsoft.ServiceFabric.Actors;
-
-using AirTrafficControl.SharedLib;
 
 namespace AirTrafficControl
 {
@@ -16,8 +17,13 @@ namespace AirTrafficControl
             {
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
-                    ElasticSearchListener listener = new ElasticSearchListener(new Uri("http://kzelk03.cloudapp.net/es", UriKind.Absolute), "kzadora", "w13XP287!", "atc");
-                    
+                    ElasticSearchListener listener = new ElasticSearchListener(
+                        (new FabricDiagnosticChannelContext()).ToString(),
+                        new Uri("http://kzelk03.cloudapp.net/es", UriKind.Absolute),
+                        ConfigurationManager.AppSettings["EsUserName"],
+                        ConfigurationManager.AppSettings["EsUserPassword"],
+                        "atc");
+
                     fabricRuntime.RegisterActor(typeof(AirTrafficControl));
                     fabricRuntime.RegisterActor(typeof(Airplane));
 

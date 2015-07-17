@@ -9,14 +9,18 @@ namespace AirTrafficControl.SharedLib
 {
     public class ConcurrentEventSender<EventDataType> : IDisposable
     {
+        private static readonly TimeSpan EventLossReportInterval = TimeSpan.FromSeconds(5);
+
         private BlockingCollection<EventDataType> events;
         private CancellationTokenSource cts;
         private int maxConcurrency;
         private int batchSize;
         private TimeSpan noEventsDelay;
         private Func<IEnumerable<EventDataType>, CancellationToken, Task> TransmitterProc;
+        private DateTimeOffset? lastEventLossReportTimeUtc = null;
+        private string contextInfo;
 
-        public ConcurrentEventSender(int eventBufferSize, int maxConcurrency, int batchSize, TimeSpan noEventsDelay,
+        public ConcurrentEventSender(string contextInfo, int eventBufferSize, int maxConcurrency, int batchSize, TimeSpan noEventsDelay,
             Func<IEnumerable<EventDataType>, CancellationToken, Task> transmitterProc)
         {
             this.events = new BlockingCollection<EventDataType>(eventBufferSize);
@@ -26,6 +30,7 @@ namespace AirTrafficControl.SharedLib
             this.batchSize = batchSize;
             this.noEventsDelay = noEventsDelay;
             this.TransmitterProc = transmitterProc;
+            this.contextInfo = contextInfo;
 
             this.cts = new CancellationTokenSource();
             Task.Run(() => EventConsumerAsync(this.cts.Token));
@@ -36,7 +41,14 @@ namespace AirTrafficControl.SharedLib
             if (!this.events.TryAdd(eData))
             {
                 // Just drop the event. 
-                // TODO: there should be a way to indicate that event loss is occurring.
+                DateTimeOffset now = DateTimeOffset.UtcNow;
+                if (lastEventLossReportTimeUtc != null && (now - lastEventLossReportTimeUtc) < EventLossReportInterval)
+                {
+                    return;
+                }
+
+                lastEventLossReportTimeUtc = now;
+                DiagnosticChannelEventSource.Current.EventsLost(this.contextInfo);
             }
         }
 
