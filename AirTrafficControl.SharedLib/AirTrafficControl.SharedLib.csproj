@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConcurrentEventSender.cs" />
+    <Compile Include="DiagnosticChannelEventSource.cs" />
     <Compile Include="ElasticSearchListener.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventHubListener.cs" />

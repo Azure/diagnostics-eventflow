@@ -19,11 +19,13 @@ namespace AirTrafficControl.SharedLib
         private ElasticClient esClient;
         private string indexNamePrefix;
         private string lastIndexName;
+        private string contextInfo;
 
         // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing
-        public ElasticSearchListener(Uri serverUri, string userName, string password, string indexNamePrefix)
+        public ElasticSearchListener(string contextInfo, Uri serverUri, string userName, string password, string indexNamePrefix)
         {
             this.sender = new ConcurrentEventSender<EventWrittenEventArgs>(
+                contextInfo: contextInfo,
                 eventBufferSize: 1000, 
                 maxConcurrency: 5, 
                 batchSize: 50, 
@@ -39,6 +41,8 @@ namespace AirTrafficControl.SharedLib
             {
                 throw new ArgumentException("Invalid Elastic Search credentials");
             }
+
+            this.contextInfo = contextInfo;
 
             this.indexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
             this.lastIndexName = null;
@@ -91,7 +95,7 @@ namespace AirTrafficControl.SharedLib
                 IBulkResponse response = await this.esClient.BulkAsync(request);
                 // TODO: handle errors when response.IsValid is false
             }
-            catch
+            catch(Exception e)
             {
                 // TODO: a strategy for handling errors from sending to ES
             }
