@@ -23,14 +23,14 @@ namespace AirTrafficControl.Web.WebSrv
             {
                 var atc = new AtcController();
                 var airplaneStates = await atc.GetFlyingAirplaneStates();
-                return Response.AsJson<IEnumerable<AirplaneStateModel>>(airplaneStates);
+                return Response.AsJson<IEnumerable<AirplaneStateModel>>(airplaneStates).WithHeaders(PublicShortLived());
             };
 
             Get["/api/airplanes/{id}", runAsync: true] = async (parameters, cancellationToken) =>
             {
                 AtcController atc = new AtcController();
                 AirplaneActorState airplaneState = await atc.GetAirplaneState((string) parameters.id);
-                return Response.AsJson<AirplaneActorState>(airplaneState);
+                return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
             };
 
             Get["/api/airports", runAsync: true] = async (parameters, cancellationToken) =>
@@ -49,6 +49,11 @@ namespace AirTrafficControl.Web.WebSrv
                 // If the flight was addressable individually, we would return something like this:
                 // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
             };
+        }
+
+        private object[] PublicShortLived()
+        {
+            return new[] { new { Header = "Cache-Control", Value = "public,max-age=1"} };
         }
     }
 }
