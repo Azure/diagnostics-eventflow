@@ -21,6 +21,11 @@ namespace AirTrafficControl
         {
             Requires.NotNull(instruction, "instruction");
 
+            if (this.State.AirplaneState is UnknownLocationState)
+            {
+                throw new InvalidOperationException("Cannot receive ATC instruction if the airplane location is unknown. The airplane needs to start the flight first.");
+            }
+
             this.State.Instruction = instruction;
             ActorEventSource.Current.ActorMessage(this, "{0}: Received ATC instruction '{1}'", this.Id.ToString(), instruction.ToString());
             return Task.FromResult(true);
@@ -28,6 +33,11 @@ namespace AirTrafficControl
 
         public Task TimePassed(int currentTime)
         {
+            if (this.State.AirplaneState is UnknownLocationState)
+            {
+                return Task.FromResult(true);
+            }
+
             AirplaneState newState = this.State.AirplaneState.ComputeNextState(this.State.FlightPlan, this.State.Instruction);
             this.State.AirplaneState = newState;
             if (newState is DepartingState)
@@ -46,6 +56,16 @@ namespace AirTrafficControl
             this.State.AirplaneState = new TaxiingState(flightPlan.DeparturePoint);
             this.State.FlightPlan = flightPlan;
             return Task.FromResult(true);
+        }
+
+        public override Task OnActivateAsync()
+        {
+            if (this.State.AirplaneState == null)
+            {
+                this.State.AirplaneState = new UnknownLocationState();
+            }
+
+            return base.OnActivateAsync();
         }
     }
 }

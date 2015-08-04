@@ -97,6 +97,7 @@ namespace AirTrafficControl
 
             var airplaneProxies = CreateAirplaneProxies();
             var airplaneActorStatesByDepartureTime = (await Task.WhenAll(this.State.FlyingAirplaneIDs.Select(id => airplaneProxies[id].GetState())))
+                                                       .Where(state => !(state.AirplaneState is UnknownLocationState))
                                                        .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
             var newAirplaneStates = new Dictionary<string, AirplaneState>();
 

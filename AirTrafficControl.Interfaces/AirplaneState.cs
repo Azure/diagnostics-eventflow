@@ -16,9 +16,10 @@ namespace AirTrafficControl.Interfaces
     [KnownType(typeof(ApproachState))]
     [KnownType(typeof(LandedState))]
     [KnownType(typeof(EnrouteState))]
+    [KnownType(typeof(UnknownLocationState))]
     public abstract class AirplaneState
     {
-        public abstract Location Location { get; }        
+        public abstract Location Location { get; }
 
         public abstract AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction);
         public abstract double GetHeading(FlightPlan flightPlan);
@@ -29,6 +30,30 @@ namespace AirTrafficControl.Interfaces
             Requires.Argument(flightPlan.DeparturePoint != flightPlan.Destination, "flightPlan", "The flight plan is invalid, departure point and destination cannot be the same");
 
             // It is OK for the instruction to be null, it just means we should proceed accorting to the plan and current state
+        }
+    }
+
+    [DataContract]
+    public class UnknownLocationState : AirplaneState
+    {
+        public override Location Location
+        {
+            get { return null; }
+        }
+
+        public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
+        {
+            throw new InvalidOperationException("Cannot compute next airplane state from UnknownLocationState");
+        }
+
+        public override double GetHeading(FlightPlan flightPlan)
+        {
+            return 0.0;
+        }
+
+        public override string ToString()
+        {
+            return "Unknown location";
         }
     }
 
