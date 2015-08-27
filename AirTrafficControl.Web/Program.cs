@@ -1,5 +1,5 @@
 ﻿using AirTrafficControl.Interfaces;
-using AirTrafficControl.SharedLib;
+using Microsoft.Diagnostics.EventListeners;
 
 using System;
 using System.Configuration;
@@ -17,12 +17,17 @@ namespace AirTrafficControl.Web
             {
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
-                    ElasticSearchListener listener = new ElasticSearchListener(
-                        (new FabricDiagnosticChannelContext()).ToString(),
-                        new Uri("http://kzelk03.cloudapp.net/es", UriKind.Absolute),
-                        ConfigurationManager.AppSettings["EsUserName"],
-                        ConfigurationManager.AppSettings["EsUserPassword"],
-                        "atc");
+                    BufferingEventListener listener = null;
+
+                    if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["EsUserName"]))
+                    {
+                        listener = new ElasticSearchListener(
+                            (new FabricDiagnosticChannelContext()).ToString(),
+                            new Uri(ConfigurationManager.AppSettings["EsUrl"], UriKind.Absolute),
+                            ConfigurationManager.AppSettings["EsUserName"],
+                            ConfigurationManager.AppSettings["EsUserPassword"],
+                            "atc");
+                    }
 
                     // This is the name of the ServiceType that is registered with FabricRuntime. 
                     // This name must match the name defined in the ServiceManifest. If you change

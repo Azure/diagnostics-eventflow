@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.TestClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Web", "AirTrafficControl.Web\AirTrafficControl.Web.csproj", "{0BB29190-3F29-4431-A8C7-EFEBD3E24042}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.SharedLib", "AirTrafficControl.SharedLib\AirTrafficControl.SharedLib.csproj", "{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,13 +54,6 @@ Global
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|Any CPU.ActiveCfg = Release|x64
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|x64.ActiveCfg = Release|x64
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|x64.Build.0 = Release|x64
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Debug|x64.Build.0 = Debug|Any CPU
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Release|Any CPU.Build.0 = Release|Any CPU
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Release|x64.ActiveCfg = Release|Any CPU
-		{08462A6A-4FF5-4CEF-B8B5-29A05FF91303}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 ﻿using AirTrafficControl.Interfaces;
-using AirTrafficControl.SharedLib;
 
+using Microsoft.Diagnostics.EventListeners;
 using Microsoft.ServiceFabric.Actors;
 using System;
 using System.Configuration;
@@ -17,12 +17,16 @@ namespace AirTrafficControl
             {
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
-                    ElasticSearchListener listener = new ElasticSearchListener(
-                        (new FabricDiagnosticChannelContext()).ToString(),
-                        new Uri("http://kzelk03.cloudapp.net/es", UriKind.Absolute),
-                        ConfigurationManager.AppSettings["EsUserName"],
-                        ConfigurationManager.AppSettings["EsUserPassword"],
-                        "atc");
+                    BufferingEventListener listener = null;
+                    if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["EsUserName"]))
+                    {
+                        listener = new ElasticSearchListener(
+                            (new FabricDiagnosticChannelContext()).ToString(),
+                            new Uri(ConfigurationManager.AppSettings["EsUrl"], UriKind.Absolute),
+                            ConfigurationManager.AppSettings["EsUserName"],
+                            ConfigurationManager.AppSettings["EsUserPassword"],
+                            "atc");
+                    }
 
                     fabricRuntime.RegisterActor(typeof(AirTrafficControl));
                     fabricRuntime.RegisterActor(typeof(Airplane));
