@@ -46,7 +46,7 @@
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Diagnostics.EventListeners">
-      <HintPath>..\lib\Microsoft.Diagnostics.EventListeners\Debug\Microsoft.Diagnostics.EventListeners.dll</HintPath>
+      <HintPath>..\externals\Microsoft.Diagnostcs.EventListeners\Microsoft.Diagnostics.EventListeners.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.25.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.25\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
