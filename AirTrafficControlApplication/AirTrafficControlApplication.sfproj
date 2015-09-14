@@ -8,11 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="ApplicationManifest.xml" />
-    <None Include="Scripts\Create-FabricApplication.ps1" />
     <None Include="Scripts\Deploy-FabricApplication.ps1" />
-    <None Include="Scripts\Get-FabricApplicationStatus.ps1" />
-    <None Include="Scripts\Remove-Deployment.ps1" />
-    <None Include="Scripts\Utilities.psm1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AirTrafficControl.Web\AirTrafficControl.Web.csproj" />
