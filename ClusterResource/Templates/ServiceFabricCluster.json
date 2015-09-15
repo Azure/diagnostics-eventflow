@@ -2,9 +2,6 @@
     "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "clusterLocation": {
-            "type": "string"
-        },
         "clusterName": {
             "type": "string",
             "defaultValue": "Cluster"
@@ -779,7 +776,7 @@
             "apiVersion": "2015-01-01-alpha",
             "type": "Microsoft.ServiceFabric/clusters",
             "name": "[parameters('clusterName')]",
-            "location": "[parameters('clusterLocation')]",
+            "location": "[parameters('computeLocation')]",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('diagnosticStorageAccountName'))]"
             ],
