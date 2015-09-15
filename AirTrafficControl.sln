@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.TestClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Web", "AirTrafficControl.Web\AirTrafficControl.Web.csproj", "{0BB29190-3F29-4431-A8C7-EFEBD3E24042}"
 EndProject
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ClusterResource", "ClusterResource\ClusterResource.deployproj", "{B247729F-DAD4-4529-ADF5-98071E975007}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,14 @@ Global
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|Any CPU.ActiveCfg = Release|x64
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|x64.ActiveCfg = Release|x64
 		{0BB29190-3F29-4431-A8C7-EFEBD3E24042}.Release|x64.Build.0 = Release|x64
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Debug|x64.Build.0 = Debug|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|x64.ActiveCfg = Release|Any CPU
+		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

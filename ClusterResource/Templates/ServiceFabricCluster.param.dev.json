@@ -1,0 +1,30 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterLocation": {
+            "value": null
+        },
+        "computeLocation": {
+            "value": null
+        },
+        "vmStorageAccountName": {
+            "value": null
+        },
+        "dnsName": {
+            "value": null
+        },
+        "certificateThumbprint": {
+            "value": null
+        },
+        "sourceVaultValue": {
+            "value": null
+        },
+        "certificateUrlValue": {
+            "value": null
+        },
+        "diagnosticStorageAccountName": {
+            "value": null
+        }
+    }
+}

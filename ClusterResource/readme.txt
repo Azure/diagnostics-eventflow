@@ -1,0 +1,1 @@
+﻿place holder for readme.txt, explaining how to configure the param file and set up certs for a cluster connection.
