@@ -25,6 +25,9 @@
         },
         "diagnosticStorageAccountName": {
             "value": null
+        },
+        "wadConfig": {
+            "value":  null
         }
     }
 }

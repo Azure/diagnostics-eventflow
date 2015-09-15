@@ -1,9 +1,4 @@
 ﻿{
-
-    TODO UPDATE
-    WAD CONFIG
-
-
     "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -247,6 +242,9 @@
         "diagnosticStorageAccountName": {
             "type": "string",
             "defaultValue": "diag635732888924437667"
+        },
+        "wadConfig": {
+            "type": "string"
         }
     },
     "variables": {
@@ -405,7 +403,7 @@
                 },
                 "publisher": "Microsoft.Azure.Diagnostics",
                 "settings": {
-                    "xmlCfg": "DQo8V2FkQ2ZnPg0KICAgIDxEaWFnbm9zdGljTW9uaXRvckNvbmZpZ3VyYXRpb24gb3ZlcmFsbFF1b3RhSW5NQj0iNTAwMDAiPiAgICAgICAgICAgDQogICAgICAgIDxFdHdQcm92aWRlcnM+ICAgICAgICAgICANCiAgICAgICAgICAgIDxFdHdNYW5pZmVzdFByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iY2JkOTNiYzItNzFlNS00NTY2LWIzYTctNTk1ZDhlZWNhNmU4IiBzY2hlZHVsZWRUcmFuc2ZlcktleXdvcmRGaWx0ZXI9IjQ2MTE2ODYwMTg0MjczODc5MDQiIHNjaGVkdWxlZFRyYW5zZmVyUGVyaW9kPSJQVDVNIj4gICAgICAgICAgDQogICAgICAgICAgICAgICAgPERlZmF1bHRFdmVudHMgZXZlbnREZXN0aW5hdGlvbj0iU2VydmljZUZhYnJpY1N5c3RlbUV2ZW50VGFibGUiLz4NCiAgICAgICAgICAgIDwvRXR3TWFuaWZlc3RQcm92aWRlckNvbmZpZ3VyYXRpb24+ICANCiAgICAgICAgICAgIDxFdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iTWljcm9zb2Z0LVNlcnZpY2VGYWJyaWMtQWN0b3JzIiBzY2hlZHVsZWRUcmFuc2ZlcktleXdvcmRGaWx0ZXI9IjEiIHNjaGVkdWxlZFRyYW5zZmVyUGVyaW9kPSJQVDVNIj4NCiAgICAgIAkgICAgICAgIDxEZWZhdWx0RXZlbnRzIGV2ZW50RGVzdGluYXRpb249IlNlcnZpY2VGYWJyaWNSZWxpYWJsZUFjdG9yRXZlbnRUYWJsZSIvPg0KICAgICAgICAgICAgPC9FdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbj4NCiAgICAgICAgICAgIDxFdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iTWljcm9zb2Z0LVNlcnZpY2VGYWJyaWMtU2VydmljZXMiIHNjaGVkdWxlZFRyYW5zZmVyUGVyaW9kPSJQVDVNIj4NCiAgICAgIAkgICAgICAgIDxEZWZhdWx0RXZlbnRzIGV2ZW50RGVzdGluYXRpb249IlNlcnZpY2VGYWJyaWNSZWxpYWJsZVNlcnZpY2VFdmVudFRhYmxlIi8+DQogICAgICAgICAgICA8L0V0d0V2ZW50U291cmNlUHJvdmlkZXJDb25maWd1cmF0aW9uPiAgICAgIA0KICAgICAgICA8L0V0d1Byb3ZpZGVycz4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICA8L0RpYWdub3N0aWNNb25pdG9yQ29uZmlndXJhdGlvbj4NCjwvV2FkQ2ZnPg0K",
+                    "xmlCfg": "[parameters('wadConfig')]",
                     "StorageAccount": "[parameters('vmStorageAccountName')]",
                     "certificate": {
                         "thumbprint": "[parameters('certificateThumbprint')]",

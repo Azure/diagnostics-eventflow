@@ -66,3 +66,8 @@ $ENV:OPENSSL_CONF ="c:\msysgit\ssl\openssl.cnf"
  ssh -q -o StrictHostKeychecking=no -o UserKnownHostsFile=NUL -i id_rsa -p 50000 karolz@elksample1506110451.cloudapp.net
 VM/Kibana: elksample1506110451.cloudapp.net
 
+-------------------------------------------
+
+$wadConfig = get-content -Path .\FabricWadConfig.xml
+$wadConfigBytes = [System.Text.Encoding]::UTF8.GetBytes($wadConfig)
+$wadConfigBase64 = [System.Convert]::ToBase64String($wadConfigBytes)
