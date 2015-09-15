@@ -2,20 +2,20 @@
   <DiagnosticMonitorConfiguration overallQuotaInMB="4096">
     <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter="Verbose" />
     <EtwProviders>
-      <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Actors">
-        <DefaultEvents eventDestination="AirTrafficControl" />
+      <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Actors" scheduledTransferKeywordFilter="1">
+        <DefaultEvents eventDestination="ServiceFabricReliableActorEventTable" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Services">
-        <DefaultEvents eventDestination="AirTrafficControl" />
+        <DefaultEvents eventDestination="ServiceFabricReliableServiceEventTable" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="MyCompany-AirTrafficControlApplication-AirTrafficControlWeb">
-        <DefaultEvents eventDestination="AirTrafficControl" />
+        <DefaultEvents eventDestination="ETWEventTable" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="MyCompany-AirTrafficControlApplication-AirTrafficControl">
-        <DefaultEvents eventDestination="AirTrafficControl" />
+        <DefaultEvents eventDestination="ETWEventTable" />
       </EtwEventSourceProviderConfiguration>
       <EtwManifestProviderConfiguration provider="cbd93bc2-71e5-4566-b3a7-595d8eeca6e8" scheduledTransferKeywordFilter="4611686018427387904">
-        <DefaultEvents eventDestination="AirTrafficControl" />
+        <DefaultEvents eventDestination="ServiceFabricSystemEventTable" />
       </EtwManifestProviderConfiguration>
     </EtwProviders>
   </DiagnosticMonitorConfiguration>
