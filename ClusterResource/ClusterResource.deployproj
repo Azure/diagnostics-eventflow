@@ -26,7 +26,6 @@
   <!-- vertag<:>end -->
   <ItemGroup>
     <Folder Include="Scripts\" />
-    <Folder Include="Templates\" />
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +35,9 @@
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
     <Content Include="Templates\ServiceFabricCluster.json" />
     <None Include="readme.txt" />
+    <None Include="Templates\OpsInsightsStorageConfiguration.json" />
+    <None Include="Templates\OpsInsightsWorkspace.json" />
+    <None Include="Templates\OpsInsightsWorkspace.param.json" />
     <None Include="Templates\ServiceFabricCluster.param.dev.json" />
   </ItemGroup>
   <ItemGroup>

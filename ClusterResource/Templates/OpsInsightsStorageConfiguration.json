@@ -1,0 +1,13 @@
+﻿{
+    'properties': {
+        'containers': [ ],
+        'tables': [
+            'WADETWEventTable',
+            'WADServiceFabric*EventTable'
+        ],
+        'storageAccount': {
+            'id': '/subscriptions/705b289b-2315-4619-b552-8a9f0bc9118a/resourceGroups/rg-kzfab0915/providers/Microsoft.Storage/storageAccounts/sakzfab0915d',
+            'key': 'storageAccountKey’
+        }
+    } 
+}
