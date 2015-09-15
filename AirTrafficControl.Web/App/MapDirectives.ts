@@ -10,6 +10,7 @@ module AirTrafficControl {
     (function () {
         var app = angular.module('AtcAppDirectives', []);
         var seattleLocation = new Microsoft.Maps.Location(47.0, -120.5)
+        var airplaneDepictionFactory = new AirplaneDepictionFactory();
 
         app.directive('bingMap',(): ng.IDirective => {
 
@@ -31,7 +32,7 @@ module AirTrafficControl {
                             var airplaneState = scope.AirplaneStates[i];
                             var location = new Maps.Location(airplaneState.Location.Latitude, airplaneState.Location.Longitude, airplaneState.Location.Altitude);
                             
-                            var airplaneDepiction = AirplaneDepictionFactory.GetAirplaneDepiction(scope.Map, location, airplaneState.Heading);
+                            var airplaneDepiction = airplaneDepictionFactory.GetAirplaneDepiction(scope.Map, location, airplaneState.Heading);
                             scope.Map.entities.push(airplaneDepiction);
                         }                        
                     }

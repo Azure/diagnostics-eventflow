@@ -1,6 +1,8 @@
 ﻿
 .main-page-body {
     margin-left: 24px;
+    margin-top: 12px;
+    padding-bottom: 70px;
 }
 
 .bing-map {
@@ -11,4 +13,8 @@
 
 .bottom-row {
     margin-top: 10px;
+}
+
+.navbar-fixed-bottm {
+    margin-left: 24px;
 }
