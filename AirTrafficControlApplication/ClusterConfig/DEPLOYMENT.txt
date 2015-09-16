@@ -71,3 +71,7 @@ VM/Kibana: elksample1506110451.cloudapp.net
 $wadConfig = get-content -Path .\FabricWadConfig.xml
 $wadConfigBytes = [System.Text.Encoding]::UTF8.GetBytes($wadConfig)
 $wadConfigBase64 = [System.Convert]::ToBase64String($wadConfigBytes)
+
+------------------------------------------
+
+armclient put /subscriptions/705b289b-2315-4619-b552-8a9f0bc9118a/resourceGroups/rg-kzfab0915-oi/providers/Microsoft.OperationalInsights/workspaces/kzfab0915/storageInsightConfigs/kzfab0915_config?api-version=2015-03-20 `@OpsInsigthsStorageConfiguration.json
