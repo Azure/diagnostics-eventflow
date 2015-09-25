@@ -407,7 +407,7 @@
                         "x509StoreName": "[parameters('certificateStoreValue')]"
                     }
                 },
-                "typeHandlerVersion": "1.2"
+                "typeHandlerVersion": "1.4"
             },
             "copy": {
                 "name": "vmExtensionLoop",

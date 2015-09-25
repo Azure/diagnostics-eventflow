@@ -41,6 +41,7 @@
     <None Include="Templates\ServiceFabricCluster.param.dev.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Templates\WadConfigUpdate.json" />
     <None Include="Tools\AzCopy.exe" />
     <None Include="Tools\Microsoft.Data.Edm.dll">
       <Visible>False</Visible>
