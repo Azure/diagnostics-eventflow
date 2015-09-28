@@ -1,0 +1,15 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmNamePrefix": {
+            "value": "VM"
+        },
+        "vmStorageAccountName": {
+            "value": "sakzfab0915"
+        },
+        "certificateThumbprint": {
+            "value": "FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5"
+        },
+    }
+}

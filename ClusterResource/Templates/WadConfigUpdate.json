@@ -22,17 +22,11 @@
 
     "variables": {
         "wadconfig": {
-            63
             "DiagnosticMonitorConfiguration": {
-                64
                 "overallQuotaInMB": "4096",
-                65
                 "DiagnosticInfrastructureLogs": {
-                    66
                     "scheduledTransferLogLevelFilter": "Warning"
-                    67
                 },
-                82
                 "EtwProviders": {
                     "EtwEventSourceProviderConfiguration": [
                         {
