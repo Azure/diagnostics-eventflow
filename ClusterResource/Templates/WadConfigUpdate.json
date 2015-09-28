@@ -25,7 +25,7 @@
             "DiagnosticMonitorConfiguration": {
                 "overallQuotaInMB": "4096",
                 "DiagnosticInfrastructureLogs": {
-                    "scheduledTransferLogLevelFilter": "Warning"
+                    "scheduledTransferLogLevelFilter": "Verbose"
                 },
                 "EtwProviders": {
                     "EtwEventSourceProviderConfiguration": [
@@ -37,7 +37,6 @@
                         {
                             "provider": "Microsoft-ServiceFabric-Services",
                             "DefaultEvents": { "eventDestination": "ServiceFabricReliableServiceEventTable" },
-                            "scheduledTransferLogLevelFilter": "Warning",
                             "scheduledTransferPeriod": "PT1M"
                         },
                         {
@@ -63,17 +62,13 @@
 
     "resources": [
         {
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "name": "[concat(parameters('vmNamePrefix'),copyIndex(0),'/AzureDiagnostics')]",
             "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmNamePrefix'), copyIndex(0))]",
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('vmStorageAccountName'))]"                
-            ],
             "properties": {
                 "type": "IaaSDiagnostics",
-                "typeHandlerVersion": "1.4",
+                "typeHandlerVersion": "0.5",
                 "publisher": "WAD2AI.Diagnostics.Test",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
