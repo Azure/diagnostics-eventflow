@@ -72,7 +72,7 @@
                 "publisher": "WAD2AI.Diagnostics.Test",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "xmlCfg": "[variables('wadConfig')]",
+                    "WadCfg": "[variables('wadConfig')]",
                     "StorageAccount": "[parameters('vmStorageAccountName')]",
                     "certificate": {
                         "thumbprint": "[parameters('certificateThumbprint')]",
