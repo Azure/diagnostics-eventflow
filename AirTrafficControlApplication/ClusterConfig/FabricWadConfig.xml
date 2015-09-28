@@ -1,11 +1,11 @@
 ﻿<WadCfg>
   <DiagnosticMonitorConfiguration overallQuotaInMB="4096">
-    <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter="Verbose" />
+    <DiagnosticInfrastructureLogs scheduledTransferLogLevelFilter="Warning" />
     <EtwProviders>
       <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Actors" scheduledTransferKeywordFilter="1">
         <DefaultEvents eventDestination="ServiceFabricReliableActorEventTable" />
       </EtwEventSourceProviderConfiguration>
-      <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Services">
+      <EtwEventSourceProviderConfiguration provider="Microsoft-ServiceFabric-Services" scheduledTransferLogLevelFilter="Warning" scheduledTransferPeriod="PT1M">
         <DefaultEvents eventDestination="ServiceFabricReliableServiceEventTable" />
       </EtwEventSourceProviderConfiguration>
       <EtwEventSourceProviderConfiguration provider="MyCompany-AirTrafficControlApplication-AirTrafficControlWeb">

@@ -67,10 +67,6 @@
             "type": "string",
             "defaultValue": "vhds"
         },
-        "vmName": {
-            "type": "string",
-            "defaultValue": "VM"
-        },
         "adminUserName": {
             "type": "string",
             "defaultValue": "testadm"
@@ -251,7 +247,8 @@
         "lbIPConfig": "[concat(variables('lbID'),'/frontendIPConfigurations/LoadBalancerIPConfig')]",
         "lbPoolID": "[concat(variables('lbID'),'/backendAddressPools/LoadBalancerBEAddressPool')]",
         "lbProbeID": "[concat(variables('lbID'),'/probes/FabricGatewayProbe')]",
-        "lbHttpProbeID": "[concat(variables('lbID'),'/probes/FabricHttpGatewayProbe')]"
+        "lbHttpProbeID": "[concat(variables('lbID'),'/probes/FabricHttpGatewayProbe')]",
+        "vmName":  "[parameters('clusterName')]"
     },
     "resources": [
         {
@@ -357,10 +354,10 @@
         {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'),copyIndex(0),'/ServiceFabricNode')]",
+            "name": "[concat(variables('vmName'),copyIndex(0),'/ServiceFabricNode')]",
             "location": "[parameters('computeLocation')]",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), copyIndex(0))]"
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), copyIndex(0))]"
             ],
             "properties": {
                 "type": "ServiceFabricNode",
@@ -384,12 +381,12 @@
         {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'),copyIndex(0),'/AzureDiagnostics')]",
+            "name": "[concat(variables('vmName'),copyIndex(0),'/AzureDiagnostics')]",
             "location": "[parameters('computeLocation')]",
             "dependsOn": [
-                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'), copyIndex(0))]",
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), copyIndex(0))]",
                 "[concat('Microsoft.Storage/storageAccounts/', parameters('vmStorageAccountName'))]",
-                "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'),copyIndex(0),'/extensions/ServiceFabricNode')]"
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'),copyIndex(0),'/extensions/ServiceFabricNode')]"
             ],
             "properties": {
                 "type": "IaaSDiagnostics",
@@ -417,7 +414,7 @@
         {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[concat(parameters('vmName'),copyIndex(0))]",
+            "name": "[concat(variables('vmName'),copyIndex(0))]",
             "location": "[parameters('computeLocation')]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/availabilitySets/', parameters('availSetName'))]",
@@ -441,7 +438,7 @@
                 "osProfile": {
                     "adminPassword": "[parameters('adminPassword')]",
                     "adminUsername": "[parameters('adminUsername')]",
-                    "computername": "[concat(parameters('vmName'),copyIndex(0))]",
+                    "computername": "[concat(variables('vmName'),copyIndex(0))]",
                     "secrets": [
                         {
                             "sourceVault": {
@@ -470,7 +467,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',parameters('vmStorageAccountName'),'.blob.core.windows.net/',parameters('vmStorageAccountContainerName'),'/',resourcegroup().name,'-',parameters('vmName'),copyIndex(0),'.vhd')]"
+                            "uri": "[concat('http://',parameters('vmStorageAccountName'),'.blob.core.windows.net/',parameters('vmStorageAccountContainerName'),'/',resourcegroup().name,'-',variables('vmName'),copyIndex(0),'.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"

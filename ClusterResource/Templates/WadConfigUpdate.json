@@ -2,10 +2,105 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "vmNamePrefix": {
+            "type": "string"
+        },
+        "vmStorageAccountName": {
+            "type": "string"
+        },
+        "certificateStoreValue": {
+            "type": "string",
+            "allowedValues": [
+                "My"
+            ],
+            "defaultValue": "My"
+        },
+        "certificateThumbprint": {
+            "type": "string"
+        },
     },
+
     "variables": {
+        "wadconfig": {
+            63
+            "DiagnosticMonitorConfiguration": {
+                64
+                "overallQuotaInMB": "4096",
+                65
+                "DiagnosticInfrastructureLogs": {
+                    66
+                    "scheduledTransferLogLevelFilter": "Warning"
+                    67
+                },
+                82
+                "EtwProviders": {
+                    "EtwEventSourceProviderConfiguration": [
+                        {
+                            "provider": "Microsoft-ServiceFabric-Actors",
+                            "scheduledTransferKeywordFilter": "1",
+                            "DefaultEvents": { "eventDestination": "ServiceFabricReliableActorEventTable" }
+                        },
+                        {
+                            "provider": "Microsoft-ServiceFabric-Services",
+                            "DefaultEvents": { "eventDestination": "ServiceFabricReliableServiceEventTable" },
+                            "scheduledTransferLogLevelFilter": "Warning",
+                            "scheduledTransferPeriod": "PT1M"
+                        },
+                        {
+                            "provider": "MyCompany-AirTrafficControlApplication-AirTrafficControlWeb",
+                            "DefaultEvents": { "eventDestination": "ETWEventTable" }
+                        },
+                        {
+                            "provider": "MyCompany-AirTrafficControlApplication-AirTrafficControl",
+                            "DefaultEvents": { "eventDestination": "ETWEventTable" }
+                        }
+                    ],
+                    "EtwManifestProviderConfiguration": [
+                        {
+                            "provider": "cbd93bc2-71e5-4566-b3a7-595d8eeca6e8",
+                            "scheduledTransferKeywordFilter": "4611686018427387904",
+                            "DefaultEvents": { "eventDestination": "ServiceFabricSystemEventTable" }
+                        }
+                    ]
+                }
+            }
+        }
     },
+
     "resources": [
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmNamePrefix'),copyIndex(0),'/AzureDiagnostics')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('vmNamePrefix'), copyIndex(0))]",
+                "[concat('Microsoft.Storage/storageAccounts/', parameters('vmStorageAccountName'))]"                
+            ],
+            "properties": {
+                "type": "IaaSDiagnostics",
+                "typeHandlerVersion": "1.4",
+                "publisher": "WAD2AI.Diagnostics.Test",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "xmlCfg": "[variables('wadConfig')]",
+                    "StorageAccount": "[parameters('vmStorageAccountName')]",
+                    "certificate": {
+                        "thumbprint": "[parameters('certificateThumbprint')]",
+                        "x509StoreName": "[parameters('certificateStoreValue')]"
+                    }
+                },
+                "protectedSettings": {
+                    "storageAccountName": "[parameters('vmStorageAccountName')]",
+                    "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('vmStorageAccountName')),'2015-05-01-preview').key1]",
+                    "storageAccountEndPoint": "https://core.windows.net/"
+                }
+            },
+            "copy": {
+                "name": "vmExtensionLoop",
+                "count": 3
+            }
+        }
     ],
     "outputs": {
     }
