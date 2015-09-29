@@ -22,5 +22,5 @@
                                StoreLocation="CurrentUser"
                                StoreName="My" />
 
-  <ApplicationInstanceDefinition Path="..\AppInstanceDefinition.Cloud.xml" />
+  <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
 </PublishProfile>

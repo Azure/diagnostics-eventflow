@@ -15,10 +15,19 @@ Path to the file containing the publish profile.
 Path to the folder of the packaged Service Fabric application.
 
 .PARAMETER DeloyOnly
-Indicates that the Service Fabric application should not be created or upgrade after registering the application type.
+Indicates that the Service Fabric application should not be created or upgraded after registering the application type.
 
 .PARAMETER ApplicationParameter
 Hashtable of the Service Fabric application parameters to be used for the application.
+
+.PARAMETER UnregisterUnusedApplicationVersionsAfterUpgrade
+Indicates whether to unregister any unused application versions that exist after an upgrade is finished.
+
+.PARAMETER ForceUpgrade
+Indicates whether to force an upgrade to occur with hard-coded settings, ignoring any of the upgrade settings in the publish profile.
+
+.PARAMETER UseExistingClusterConnection
+Indicates that the script should make use of an existing cluster connection that has already been established in the PowerShell session.  The cluster connection parameters configured in the publish profile are ignored.
 
 .EXAMPLE
 . Scripts\Deploy-FabricApplication.ps1 -ApplicationPackagePath 'pkg\Debug'
@@ -48,7 +57,16 @@ Param
     $DeployOnly,
 
     [Hashtable]
-    $ApplicationParameter
+    $ApplicationParameter,
+
+    [Boolean]
+    $UnregisterUnusedApplicationVersionsAfterUpgrade,
+
+    [Boolean]
+    $ForceUpgrade,
+
+    [Switch]
+    $UseExistingClusterConnection
 )
 
 function Read-XmlElementAsHashtable
@@ -100,7 +118,7 @@ function Read-PublishProfile
     }
 
     $publishProfileFolder = (Split-Path $PublishProfileFile)
-    $publishProfile.ApplicationInstanceDefinitionPath = [System.IO.Path]::Combine($PublishProfileFolder, $publishProfileXml.PublishProfile.ApplicationInstanceDefinition.Path)
+    $publishProfile.ApplicationParameterFile = [System.IO.Path]::Combine($PublishProfileFolder, $publishProfileXml.PublishProfile.ApplicationParameterFile.Path)
 
     return $publishProfile
 }
@@ -119,25 +137,29 @@ if (!$ApplicationPackagePath)
 
 $ApplicationPackagePath = Resolve-Path $ApplicationPackagePath
 
-# Get the path to the application instance definition file
 $publishProfile = Read-PublishProfile $PublishProfileFile
 
-$ClusterConnectionParameters = $publishProfile.ClusterConnectionParameters
+if (-not $UseExistingClusterConnection)
+{
+    $ClusterConnectionParameters = $publishProfile.ClusterConnectionParameters
 
-try
-{
-    [void](Connect-ServiceFabricCluster @ClusterConnectionParameters)
-}
-catch [System.Fabric.FabricObjectClosedException]
-{
-    Write-Warning "Service Fabric cluster may not be connected."
-    throw
+    try
+    {
+        [void](Connect-ServiceFabricCluster @ClusterConnectionParameters)
+    }
+    catch [System.Fabric.FabricObjectClosedException]
+    {
+        Write-Warning "Service Fabric cluster may not be connected."
+        throw
+    }
 }
 
 $RegKey = "HKLM:\SOFTWARE\Microsoft\Service Fabric SDK"
-$ScriptFolderPath = (Get-ItemProperty -Path $RegKey -Name FabricSDKInstallPath).FabricSDKInstallPath + "Tools\Scripts"
+$ScriptFolderPath = (Get-ItemProperty -Path $RegKey -Name FabricSDKScriptsPath).FabricSDKScriptsPath
 
-if ($publishProfile.UpgradeDeployment -and $publishProfile.UpgradeDeployment.Enabled)
+$IsUpgrade = ($publishProfile.UpgradeDeployment -and $publishProfile.UpgradeDeployment.Enabled) -or $ForceUpgrade
+
+if ($IsUpgrade)
 {
     $Action = "DeployAndUpgrade"
     if ($DeployOnly)
@@ -147,7 +169,15 @@ if ($publishProfile.UpgradeDeployment -and $publishProfile.UpgradeDeployment.Ena
     
     $UpgradeScriptPath = "$ScriptFolderPath\Upgrade-FabricApplication.ps1"
 
-    . $UpgradeScriptPath -ApplicationPackagePath $ApplicationPackagePath -ApplicationDefinitionFilePath $publishProfile.ApplicationInstanceDefinitionPath -Action $Action -UpgradeParameters $publishProfile.UpgradeDeployment.Parameters -ApplicationParameter $ApplicationParameter -ErrorAction Stop
+    $UpgradeParameters = $publishProfile.UpgradeDeployment.Parameters
+
+    if ($ForceUpgrade)
+    {
+        # Warning: Do not alter these upgrade parameters. It will create an inconsistency with Visual Studio's behavior.
+        $UpgradeParameters = @{ UnmonitoredAuto = $true; Force = $true }
+    }
+
+    . $UpgradeScriptPath -ApplicationPackagePath $ApplicationPackagePath -ApplicationParameterFilePath $publishProfile.ApplicationParameterFile -Action $Action -UpgradeParameters $UpgradeParameters -ApplicationParameter $ApplicationParameter -UnregisterOtherVersions $UnregisterUnusedApplicationVersionsAfterUpgrade -ErrorAction Stop
 }
 else
 {
@@ -159,5 +189,5 @@ else
     
     $DeployScriptPath = "$ScriptFolderPath\DeployCreate-FabricApplication.ps1"
 
-    . $DeployScriptPath -ApplicationPackagePath $ApplicationPackagePath -ApplicationDefinitionFilePath $publishProfile.ApplicationInstanceDefinitionPath -Action $Action -ApplicationParameter $ApplicationParameter -ErrorAction Stop
+    . $DeployScriptPath -ApplicationPackagePath $ApplicationPackagePath -ApplicationParameterFilePath $publishProfile.ApplicationParameterFile -Action $Action -ApplicationParameter $ApplicationParameter -ErrorAction Stop
 }
