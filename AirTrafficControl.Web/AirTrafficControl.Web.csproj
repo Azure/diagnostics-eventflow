@@ -126,6 +126,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FabricContext.cs" />
     <Compile Include="WebSrv\AtcController.cs" />
     <Compile Include="IOwinAppBuilder.cs" />
     <Compile Include="WebSrv\AirplaneStateModel.cs" />

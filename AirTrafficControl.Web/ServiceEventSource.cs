@@ -6,6 +6,7 @@ using System.Fabric;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace AirTrafficControl.Web
 {
@@ -108,6 +109,68 @@ namespace AirTrafficControl.Web
         public void RestApiFrontEndError(string apiName, string exception)
         {
             WriteEvent(5, apiName, exception);
+        }
+
+
+        [NonEvent]
+        public void RestApiOperationStart(StatelessService service, [CallerMemberName] string operationName="")
+        {
+            if (this.IsEnabled())
+            {
+                
+                RestApiOperationStart(
+                    service.ServiceInitializationParameters.ServiceName.ToString(),
+                    service.ServiceInitializationParameters.ServiceTypeName,
+                    service.ServiceInitializationParameters.InstanceId,
+                    service.ServiceInitializationParameters.PartitionId,
+                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName,
+                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    FabricRuntime.GetNodeContext().NodeName,
+                    operationName);
+            }
+        }
+
+        [NonEvent]
+        public void RestApiOperationStart(StatefulService service, [CallerMemberName] string operationName = "")
+        {
+            if (this.IsEnabled())
+            {
+                RestApiOperationStart(
+                    service.ServiceInitializationParameters.ServiceName.ToString(),
+                    service.ServiceInitializationParameters.ServiceTypeName,
+                    service.ServiceInitializationParameters.ReplicaId,
+                    service.ServiceInitializationParameters.PartitionId,
+                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName,
+                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    FabricRuntime.GetNodeContext().NodeName,
+                    operationName);
+            }
+        }
+
+        [Event(6, Level = EventLevel.Informational, Message = "REST operation {7} started")]
+        private void RestApiOperationStart(
+            string serviceName,
+            string serviceTypeName,
+            long replicaOrInstanceId,
+            Guid partitionId,
+            string applicationName,
+            string applicationTypeName,
+            string nodeName,
+            string operationName)
+        {
+            if (this.IsEnabled())
+            {
+                WriteEvent(2, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, applicationName, applicationTypeName, nodeName, operationName);
+            }
+        }
+
+        [Event(7, Level = EventLevel.Informational, Message = "REST operation {7} ended")]
+        public void RestApiOperationStop([CallerMemberName] string operationName = "")
+        {
+            if (this.IsEnabled())
+            {
+                WriteEvent(7, operationName);
+            }
         }
     }
 }

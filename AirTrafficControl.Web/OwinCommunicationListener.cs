@@ -1,15 +1,13 @@
-﻿using Microsoft.ServiceFabric.Services;
+﻿using Microsoft;
+using Microsoft.Owin.Hosting;
+using Microsoft.ServiceFabric.Services;
+using Nancy.TinyIoc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Fabric;
-using System.Threading;
-using Microsoft;
 using System.Fabric.Description;
 using System.Globalization;
-using Microsoft.Owin.Hosting;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AirTrafficControl.Web
 {
@@ -42,6 +40,9 @@ namespace AirTrafficControl.Web
             if (serviceInitializationParameters is StatefulServiceInitializationParameters)
             {
                 StatefulServiceInitializationParameters statefulInitParams = (StatefulServiceInitializationParameters)serviceInitializationParameters;
+
+                var fabricContext = new FabricContext<StatefulServiceInitializationParameters>(statefulInitParams);
+                TinyIoCContainer.Current.Register<FabricContext<StatefulServiceInitializationParameters>>(fabricContext).AsSingleton();
 
                 this.listeningAddress = String.Format(
                     CultureInfo.InvariantCulture,
