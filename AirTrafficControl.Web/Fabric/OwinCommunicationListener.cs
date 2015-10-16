@@ -9,9 +9,9 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AirTrafficControl.Web
+namespace AirTrafficControl.Web.Fabric
 {
-    internal class OwinCommunicationListener : ICommunicationListener
+    internal class OwinCommunicationListener : ICommunicationListener, INotifyServiceInitialized
     {
         private IDisposable serverHandle;
 
@@ -19,6 +19,8 @@ namespace AirTrafficControl.Web
         private string publishAddress;
         private string listeningAddress;
         private string appRoot;
+
+        public event EventHandler<ServiceInitializedEventArgs> ServiceInitialized;
 
         public OwinCommunicationListener(IOwinAppBuilder startup)
             : this(null, startup)
@@ -40,9 +42,6 @@ namespace AirTrafficControl.Web
             if (serviceInitializationParameters is StatefulServiceInitializationParameters)
             {
                 StatefulServiceInitializationParameters statefulInitParams = (StatefulServiceInitializationParameters)serviceInitializationParameters;
-
-                var fabricContext = new FabricContext<StatefulServiceInitializationParameters>(statefulInitParams);
-                TinyIoCContainer.Current.Register<FabricContext<StatefulServiceInitializationParameters>>(fabricContext).AsSingleton();
 
                 this.listeningAddress = String.Format(
                     CultureInfo.InvariantCulture,
@@ -68,6 +67,13 @@ namespace AirTrafficControl.Web
             }
 
             this.publishAddress = this.listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
+            var subscribers = this.ServiceInitialized;
+            if (subscribers != null)
+            {
+                var eventArgs = new ServiceInitializedEventArgs();
+                eventArgs.InitializationParameters = serviceInitializationParameters;
+                subscribers(this, eventArgs);
+            }
         }
 
         public Task<string> OpenAsync(CancellationToken cancellationToken)

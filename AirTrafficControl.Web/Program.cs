@@ -1,4 +1,5 @@
 ﻿using AirTrafficControl.Interfaces;
+using AirTrafficControl.Web.Fabric;
 using Microsoft.Diagnostics.EventListeners;
 
 using System;

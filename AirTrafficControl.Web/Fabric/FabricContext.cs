@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Fabric;
 
-namespace AirTrafficControl.Web
+namespace AirTrafficControl.Web.Fabric
 {
     internal class FabricContext<T> where T : ServiceInitializationParameters
     {

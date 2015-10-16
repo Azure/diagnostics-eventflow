@@ -113,35 +113,35 @@ namespace AirTrafficControl.Web
 
 
         [NonEvent]
-        public void RestApiOperationStart(StatelessService service, [CallerMemberName] string operationName="")
+        public void RestApiOperationStart(StatelessServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName="")
         {
             if (this.IsEnabled())
             {
                 
                 RestApiOperationStart(
-                    service.ServiceInitializationParameters.ServiceName.ToString(),
-                    service.ServiceInitializationParameters.ServiceTypeName,
-                    service.ServiceInitializationParameters.InstanceId,
-                    service.ServiceInitializationParameters.PartitionId,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    serviceInitializationParameters.ServiceName.ToString(),
+                    serviceInitializationParameters.ServiceTypeName,
+                    serviceInitializationParameters.InstanceId,
+                    serviceInitializationParameters.PartitionId,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationName,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
                     FabricRuntime.GetNodeContext().NodeName,
                     operationName);
             }
         }
 
         [NonEvent]
-        public void RestApiOperationStart(StatefulService service, [CallerMemberName] string operationName = "")
+        public void RestApiOperationStart(StatefulServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName = "")
         {
             if (this.IsEnabled())
             {
                 RestApiOperationStart(
-                    service.ServiceInitializationParameters.ServiceName.ToString(),
-                    service.ServiceInitializationParameters.ServiceTypeName,
-                    service.ServiceInitializationParameters.ReplicaId,
-                    service.ServiceInitializationParameters.PartitionId,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    serviceInitializationParameters.ServiceName.ToString(),
+                    serviceInitializationParameters.ServiceTypeName,
+                    serviceInitializationParameters.ReplicaId,
+                    serviceInitializationParameters.PartitionId,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationName,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
                     FabricRuntime.GetNodeContext().NodeName,
                     operationName);
             }
@@ -160,7 +160,7 @@ namespace AirTrafficControl.Web
         {
             if (this.IsEnabled())
             {
-                WriteEvent(2, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, applicationName, applicationTypeName, nodeName, operationName);
+                WriteEvent(6, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, applicationName, applicationTypeName, nodeName, operationName);
             }
         }
 
@@ -171,6 +171,12 @@ namespace AirTrafficControl.Web
             {
                 WriteEvent(7, operationName);
             }
+        }
+
+        [Event(8, Level = EventLevel.Error, Message = "Unexpected Nancy main module initialization error. The service won't be able to process any requests.")]
+        public void RestApiInitializationError(string exception)
+        {
+            WriteEvent(8, exception);
         }
     }
 }

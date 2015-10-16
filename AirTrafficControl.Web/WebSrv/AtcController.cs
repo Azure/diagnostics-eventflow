@@ -14,8 +14,6 @@ namespace AirTrafficControl.Web.WebSrv
         {
             try
             {
-                ServiceEventSource.Current.RestApiOperationStart(this);
-
                 var retval = new List<AirplaneStateModel>();
                 IAirTrafficControl atc = ActorProxy.Create<IAirTrafficControl>(new ActorId(WellKnownIdentifiers.SeattleCenter));
                 var flyingAirplaneIDs = await atc.GetFlyingAirplaneIDs();

@@ -126,18 +126,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FabricContext.cs" />
+    <Compile Include="Fabric\FabricContext.cs" />
+    <Compile Include="Fabric\INotifyServiceInitialized.cs" />
     <Compile Include="WebSrv\AtcController.cs" />
-    <Compile Include="IOwinAppBuilder.cs" />
+    <Compile Include="Fabric\IOwinAppBuilder.cs" />
     <Compile Include="WebSrv\AirplaneStateModel.cs" />
     <Compile Include="WebSrv\ApplicationWithStandardContentFoldersBootstrapper.cs" />
     <Compile Include="WebSrv\BasicPageModel.cs" />
     <Compile Include="WebSrv\FlightPlanRequestModel.cs" />
     <Compile Include="WebSrv\MainModule.cs" />
-    <Compile Include="OwinCommunicationListener.cs" />
-    <Compile Include="OwinStartup.cs" />
+    <Compile Include="Fabric\OwinCommunicationListener.cs" />
+    <Compile Include="Fabric\OwinStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AirTrafficControlWeb.cs" />
+    <Compile Include="Fabric\AirTrafficControlWeb.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ServiceEventSource.cs" />
     <Compile Include="WebSrv\MainPageModel.cs" />
