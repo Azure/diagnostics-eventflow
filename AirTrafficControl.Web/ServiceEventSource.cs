@@ -164,7 +164,7 @@ namespace AirTrafficControl.Web
             }
         }
 
-        [Event(7, Level = EventLevel.Informational, Message = "REST operation {7} ended")]
+        [Event(7, Level = EventLevel.Informational, Message = "REST operation {0} ended")]
         public void RestApiOperationStop([CallerMemberName] string operationName = "")
         {
             if (this.IsEnabled())
