@@ -15,7 +15,7 @@ namespace AirTrafficControl.Web.WebSrv
 {
     public class MainModule: NancyModule
     {
-        private FabricContext<StatelessServiceInitializationParameters> fabricContext;
+        private StatelessServiceInitializationParameters serviceInitializationParameters;
 
         private const string GetAirplanesOperation = "GetAirplanes";
         private const string GetAirplaneStateOperation = "GetAirplaneState";
@@ -27,7 +27,7 @@ namespace AirTrafficControl.Web.WebSrv
         {
             try
             {
-                this.fabricContext = TinyIoCContainer.Current.Resolve<FabricContext<StatelessServiceInitializationParameters>>();
+                this.serviceInitializationParameters = FabricContext<StatelessServiceInitializationParameters>.Current.InitializationParameters;
 
                 Get["/"] = parameters =>
                 {
@@ -36,7 +36,7 @@ namespace AirTrafficControl.Web.WebSrv
 
                 Get["/api/airplanes", runAsync: true] = async (parameters, cancellationToken) =>
                  {
-                     ServiceEventSource.Current.RestApiOperationStart(this.fabricContext.InitializationParameters, GetAirplanesOperation);
+                     ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirplanesOperation);
                      var atc = new AtcController();
                      var airplaneStates = await atc.GetFlyingAirplaneStates();
                      ServiceEventSource.Current.RestApiOperationStop(GetAirplanesOperation);
@@ -45,7 +45,7 @@ namespace AirTrafficControl.Web.WebSrv
 
                 Get["/api/airplanes/{id}", runAsync: true] = async (parameters, cancellationToken) =>
                 {
-                    ServiceEventSource.Current.RestApiOperationStart(this.fabricContext.InitializationParameters, GetAirplaneStateOperation);
+                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirplaneStateOperation);
                     AtcController atc = new AtcController();
                     AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id);
                     ServiceEventSource.Current.RestApiOperationStop(GetAirplaneStateOperation);
@@ -54,7 +54,7 @@ namespace AirTrafficControl.Web.WebSrv
 
                 Get["/api/airports", runAsync: true] = async (parameters, cancellationToken) =>
                 {
-                    ServiceEventSource.Current.RestApiOperationStart(this.fabricContext.InitializationParameters, GetAirportsOperation);
+                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirportsOperation);
                     var atc = new AtcController();
                     var airports = await atc.GetAirports();
                     ServiceEventSource.Current.RestApiOperationStop(GetAirportsOperation);
@@ -63,7 +63,7 @@ namespace AirTrafficControl.Web.WebSrv
 
                 Post["/api/flights", runAsync: true] = async (parameters, cancellationToken) =>
                 {
-                    ServiceEventSource.Current.RestApiOperationStart(this.fabricContext.InitializationParameters, StartNewFlightOperation);
+                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, StartNewFlightOperation);
                     var requestModel = this.Bind<FlightPlanRequestModel>();
                     var atc = new AtcController();
                     await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name);

@@ -1,5 +1,4 @@
 ﻿using Microsoft.ServiceFabric.Services;
-using Nancy.TinyIoc;
 using System.Fabric;
 
 namespace AirTrafficControl.Web.Fabric
@@ -15,18 +14,9 @@ namespace AirTrafficControl.Web.Fabric
 
         private void OnServiceInitialized(object sender, ServiceInitializedEventArgs e)
         {
-            if (e.InitializationParameters is StatefulServiceInitializationParameters)
-            {
-                StatefulServiceInitializationParameters statefulInitParams = (StatefulServiceInitializationParameters)e.InitializationParameters;
-                var fabricContext = new FabricContext<StatefulServiceInitializationParameters>(statefulInitParams);
-                TinyIoCContainer.Current.Register<FabricContext<StatefulServiceInitializationParameters>>(fabricContext).AsSingleton();
-            }
-            else if (e.InitializationParameters is StatelessServiceInitializationParameters)
-            {
-                StatelessServiceInitializationParameters statelessInitParams = (StatelessServiceInitializationParameters)e.InitializationParameters;
-                var fabricContext = new FabricContext<StatelessServiceInitializationParameters>(statelessInitParams);
-                TinyIoCContainer.Current.Register<FabricContext<StatelessServiceInitializationParameters>>(fabricContext).AsSingleton();
-            }
+            StatelessServiceInitializationParameters statelessInitParams = (StatelessServiceInitializationParameters)e.InitializationParameters;
+            var fabricContext = new FabricContext<StatelessServiceInitializationParameters>(statelessInitParams);
+            FabricContext<StatelessServiceInitializationParameters>.Current = fabricContext;
         }
     }
 }

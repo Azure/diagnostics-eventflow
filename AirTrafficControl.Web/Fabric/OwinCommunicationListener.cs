@@ -67,6 +67,7 @@ namespace AirTrafficControl.Web.Fabric
             }
 
             this.publishAddress = this.listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
+
             var subscribers = this.ServiceInitialized;
             if (subscribers != null)
             {

@@ -5,6 +5,8 @@ namespace AirTrafficControl.Web.Fabric
 {
     internal class FabricContext<T> where T : ServiceInitializationParameters
     {
+        public static FabricContext<T> Current { get; set; }
+
         public FabricContext(T parameters)
         {
             if (parameters == null)
@@ -15,6 +17,6 @@ namespace AirTrafficControl.Web.Fabric
             this.InitializationParameters = parameters;
         }
 
-        public T InitializationParameters { get; private set; }
+        public T InitializationParameters { get; private set; }        
     }
 }
