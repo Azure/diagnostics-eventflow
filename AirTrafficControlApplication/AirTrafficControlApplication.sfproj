@@ -16,9 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ApplicationParameters\Cloud.xml" />
-     <Content Include="ApplicationParameters\Local.xml" />
-     <Content Include="ClusterConfig\DEPLOYMENT.txt" />
+    <Content Include="ApplicationParameters\Local.xml" />
+    <Content Include="ClusterConfig\DEPLOYMENT.txt" />
     <Content Include="ClusterConfig\FabricWadConfig.xml" />
+    <Content Include="ClusterConfig\serviceprofilersettings.json" />
     <Content Include="PublishProfiles\Cloud.xml" />
     <Content Include="PublishProfiles\Local.xml" />
   </ItemGroup>
