@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace AirTrafficControl.Web
 {
@@ -15,76 +16,53 @@ namespace AirTrafficControl.Web
     {
         public static ServiceEventSource Current = new ServiceEventSource();
 
+        static ServiceEventSource()
+        {
+            // A workaround for the problem where ETW activities do not get tracked until Tasks infrastructure is initialized.
+            Task.Run(() => { }).Wait();
+        }
+
+        public const long InvalidExecutionId = -1;
+
+        private long serviceExecutionId = InvalidExecutionId;
+
+        // Constructor is private to enforce singleton semantics
+        private ServiceEventSource() : base() { }
+
         [NonEvent]
         public void Message(string message, params object[] args)
         {
             if (this.IsEnabled())
             {
                 string finalMessage = string.Format(message, args);
-                Message(finalMessage);
+                Message(finalMessage, this.serviceExecutionId);
             }
         }
 
-        [Event(1, Level = EventLevel.Informational, Message = "{0}")]
-        public void Message(string message)
+        // For very high-frequency events it might be advantageous to raise events using WriteEventCore API.
+        // This results in more efficient parameter handling, but requires explicit allocation of EventData structure and unsafe code.
+        // To enable this code path, define UNSAFE conditional compilation symbol and turn on unsafe code support in project properties.
+        private const int MessageEventId = 1;
+        [Event(MessageEventId, Level = EventLevel.Informational, Message = "{0}")]
+        private
+#if UNSAFE
+        unsafe
+#endif
+        void Message(string message, long serviceExecutionId)
         {
-            if (this.IsEnabled())
+#if !UNSAFE
+            WriteEvent(MessageEventId, message, serviceExecutionId);
+#else
+            const int numArgs = 2;
+            fixed (char* pMessage = message)
             {
-                WriteEvent(1, message);
-            }
-        }
+                EventData* eventData = stackalloc EventData[numArgs];
+                eventData[0] = new EventData { DataPointer = (IntPtr) pMessage, Size = SizeInBytes(message) };
+                eventData[1] = new EventData { DataPointer = (IntPtr) (&serviceExecutionId), Size = sizeof(long) };
 
-        [NonEvent]
-        public void ServiceMessage(StatelessService service, string message, params object[] args)
-        {
-            if (this.IsEnabled())
-            {
-                string finalMessage = string.Format(message, args);
-                ServiceMessage(
-                    service.ServiceInitializationParameters.ServiceName.ToString(),
-                    service.ServiceInitializationParameters.ServiceTypeName,
-                    service.ServiceInitializationParameters.InstanceId,
-                    service.ServiceInitializationParameters.PartitionId,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
-                    FabricRuntime.GetNodeContext().NodeName,
-                    finalMessage);
+                WriteEventCore(MessageEventId, numArgs, eventData);
             }
-        }
-
-        [NonEvent]
-        public void ServiceMessage(StatefulService service, string message, params object[] args)
-        {
-            if (this.IsEnabled())
-            {
-                string finalMessage = string.Format(message, args);
-                ServiceMessage(
-                    service.ServiceInitializationParameters.ServiceName.ToString(),
-                    service.ServiceInitializationParameters.ServiceTypeName,
-                    service.ServiceInitializationParameters.ReplicaId,
-                    service.ServiceInitializationParameters.PartitionId,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationName,
-                    service.ServiceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
-                    FabricRuntime.GetNodeContext().NodeName,
-                    finalMessage);
-            }
-        }
-
-        [Event(2, Level = EventLevel.Informational, Message = "{7}")]
-        private void ServiceMessage(
-            string serviceName,
-            string serviceTypeName,
-            long replicaOrInstanceId,
-            Guid partitionId,
-            string applicationName,
-            string applicationTypeName,
-            string nodeName,
-            string message)
-        {
-            if (this.IsEnabled())
-            {
-                WriteEvent(2, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, applicationName, applicationTypeName, nodeName, message);
-            }
+#endif
         }
 
         [Event(3, Level = EventLevel.Informational, Message = "Service host process {0} registered service type {1}")]
@@ -113,7 +91,7 @@ namespace AirTrafficControl.Web
 
 
         [NonEvent]
-        public void RestApiOperationStart(StatelessServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName="")
+        public void RestApiOperationStart(StatelessServiceInitializationParameters serviceInitializationParameters, string operationName="")
         {
             if (this.IsEnabled())
             {
@@ -131,7 +109,7 @@ namespace AirTrafficControl.Web
         }
 
         [NonEvent]
-        public void RestApiOperationStart(StatefulServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName = "")
+        public void RestApiOperationStart(StatefulServiceInitializationParameters serviceInitializationParameters, string operationName = "")
         {
             if (this.IsEnabled())
             {
@@ -178,5 +156,86 @@ namespace AirTrafficControl.Web
         {
             WriteEvent(8, exception);
         }
+
+        [NonEvent]
+        public void ServiceExecutionStarted(StatelessServiceInitializationParameters serviceInitializationParameters)
+        {
+            if (this.IsEnabled())
+            {
+                GenerateExecutionId();
+
+                ServiceExecutionStarted(
+                    serviceInitializationParameters.ServiceName.ToString(),
+                    serviceInitializationParameters.ServiceTypeName,
+                    serviceInitializationParameters.InstanceId,
+                    serviceInitializationParameters.PartitionId,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationName,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    FabricRuntime.GetNodeContext().NodeName,
+                    this.serviceExecutionId);
+            }
+        }
+
+        [NonEvent]
+        public void ServiceExecutionStarted(StatefulServiceInitializationParameters serviceInitializationParameters)
+        {
+            if (this.IsEnabled())
+            {
+                GenerateExecutionId();
+
+                ServiceExecutionStarted(
+                    serviceInitializationParameters.ServiceName.ToString(),
+                    serviceInitializationParameters.ServiceTypeName,
+                    serviceInitializationParameters.ReplicaId,
+                    serviceInitializationParameters.PartitionId,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationName,
+                    serviceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    FabricRuntime.GetNodeContext().NodeName,
+                    this.serviceExecutionId);
+            }
+        }
+
+        private const int ServiceExecutionStartedEventId = 9;
+        [Event(ServiceExecutionStartedEventId, Level = EventLevel.Informational, Message = "Service execution started (execution id: {7})")]
+        private void ServiceExecutionStarted(
+            string serviceName,
+            string serviceTypeName,
+            long replicaOrInstanceId,
+            Guid partitionId,
+            string applicationName,
+            string applicationTypeName,
+            string nodeName,
+            long serviceExecutionId)
+        {
+            WriteEvent(ServiceExecutionStartedEventId, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, applicationName, applicationTypeName, nodeName, serviceExecutionId);
+        }
+
+        #region Private methods
+        [NonEvent]
+        private void GenerateExecutionId()
+        {
+            while (this.serviceExecutionId == InvalidExecutionId)
+            {
+                var bytes = new byte[sizeof(Int64)];
+                RNGCryptoServiceProvider Gen = new RNGCryptoServiceProvider();
+                Gen.GetBytes(bytes);
+                this.serviceExecutionId = BitConverter.ToInt64(bytes, 0);
+            }
+        }
+
+#if UNSAFE
+        private int SizeInBytes(string s)
+        {
+            if (s == null)
+            {
+                return 0;
+            }
+            else
+            {
+                return (s.Length + 1) * sizeof(char);
+            }
+        }
+#endif
+        #endregion
     }
 }

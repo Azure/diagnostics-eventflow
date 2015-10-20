@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AirTrafficControl.Web.Fabric
 {
-    internal class OwinCommunicationListener : ICommunicationListener, INotifyServiceInitialized
+    internal class OwinCommunicationListener : ICommunicationListener
     {
         private IDisposable serverHandle;
 
@@ -19,8 +19,6 @@ namespace AirTrafficControl.Web.Fabric
         private string publishAddress;
         private string listeningAddress;
         private string appRoot;
-
-        public event EventHandler<ServiceInitializedEventArgs> ServiceInitialized;
 
         public OwinCommunicationListener(IOwinAppBuilder startup)
             : this(null, startup)
@@ -67,14 +65,6 @@ namespace AirTrafficControl.Web.Fabric
             }
 
             this.publishAddress = this.listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
-
-            var subscribers = this.ServiceInitialized;
-            if (subscribers != null)
-            {
-                var eventArgs = new ServiceInitializedEventArgs();
-                eventArgs.InitializationParameters = serviceInitializationParameters;
-                subscribers(this, eventArgs);
-            }
         }
 
         public Task<string> OpenAsync(CancellationToken cancellationToken)
