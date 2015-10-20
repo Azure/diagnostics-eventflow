@@ -91,7 +91,7 @@ namespace AirTrafficControl.Web
 
 
         [NonEvent]
-        public void RestApiOperationStart(StatelessServiceInitializationParameters serviceInitializationParameters, string operationName="")
+        public void RestApiOperationStart(StatelessServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName="")
         {
             if (this.IsEnabled())
             {
@@ -109,7 +109,7 @@ namespace AirTrafficControl.Web
         }
 
         [NonEvent]
-        public void RestApiOperationStart(StatefulServiceInitializationParameters serviceInitializationParameters, string operationName = "")
+        public void RestApiOperationStart(StatefulServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName = "")
         {
             if (this.IsEnabled())
             {
