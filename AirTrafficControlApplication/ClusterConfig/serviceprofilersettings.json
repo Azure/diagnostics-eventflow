@@ -3,7 +3,7 @@
   "CircularEtlBufferMB": 200, /* ETL trace circular buffer size in MB */
   "LocalEtlFileFolder": "", /* If the folder is not specified, the agent will use temp folder */
   "AzureStorageConnection": "DefaultEndpointsProtocol=https;AccountName=karolz;AccountKey=THy5UgZ8a6+7MSYre2RcmU5TWMm7s20XsUJHYCD3GuayU5M8TOG8OuUGOl0jgdNIytogrzIUzDNxmZATXfGWwA==",
-  "SamplingRate": 0.2, /* The value controls the frequency of collecting etw events. The value should be in the range of [0,1]. Setting the value to 1 will enable collection full time, 0 to disable collection. */
+  "SamplingRate": 1, /* The value controls the frequency of collecting etw events. The value should be in the range of [0,1]. Setting the value to 1 will enable collection full time, 0 to disable collection. */
   "AgentLogFilter": "Warning", /* The value controls the verbosity of the agent logs. The value can be Error, Warning, Information */
   "CollectMemorySummary": true, /* true to enable capturing memory summary, false to disable it (default is false). */
   "CollectGCDump": true, /* true to enable capturing gcdump, false to disable it (default is false). */
