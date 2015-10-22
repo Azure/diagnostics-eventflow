@@ -25,7 +25,6 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
-    <Folder Include="Scripts\" />
     <Folder Include="Tools\" />
   </ItemGroup>
   <ItemGroup>
@@ -35,6 +34,8 @@
     <Content Include="Scripts\Deploy-AzureResourceGroup.ps1" />
     <Content Include="Templates\ServiceFabricCluster.json" />
     <None Include="readme.txt" />
+    <None Include="Scripts\AddServiceProfilerExtensionOnVirtualMachine.ps1" />
+    <None Include="Scripts\InstallNetFx46OnVirtualMachine.ps1" />
     <None Include="Templates\OpsInsightsStorageConfiguration.json" />
     <None Include="Templates\OpsInsightsWorkspace.json" />
     <None Include="Templates\OpsInsightsWorkspace.param.json" />
