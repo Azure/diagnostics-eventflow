@@ -1,7 +1,7 @@
 ﻿using Microsoft.ServiceFabric.Actors;
 using System;
 using System.Collections.Generic;
-using Microsoft.Diagnostics.Tracing;
+using System.Diagnostics.Tracing;
 using System.Fabric;
 using System.Linq;
 using System.Text;

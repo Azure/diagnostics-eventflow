@@ -38,9 +38,6 @@ namespace AirTrafficControl.Web.WebSrv
                 ServiceEventSource.Current.RestApiFrontEndError("GetFlyingAirplaneIDs", e.ToString());
                 throw;
             }
-            finally {
-                ServiceEventSource.Current.RestApiOperationStop();
-            }
         }
 
         public async Task<AirplaneActorState> GetAirplaneState(string id)
