@@ -68,7 +68,7 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "type": "IaaSDiagnostics",
-                "typeHandlerVersion": "0.5",
+                "typeHandlerVersion": "0.8",
                 "publisher": "WAD2AI.Diagnostics.Test",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
