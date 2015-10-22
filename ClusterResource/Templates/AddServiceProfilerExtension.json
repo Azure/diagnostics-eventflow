@@ -124,7 +124,7 @@
             },
             "copy": {
                 "name": "vmExtensionLoop",
-                "count": 3
+                "count": 5
             }
         }
     ],
