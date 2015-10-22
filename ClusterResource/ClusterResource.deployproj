@@ -36,6 +36,8 @@
     <None Include="readme.txt" />
     <None Include="Scripts\AddServiceProfilerExtensionOnVirtualMachine.ps1" />
     <None Include="Scripts\InstallNetFx46OnVirtualMachine.ps1" />
+    <None Include="Templates\AddServiceProfilerExtension.json" />
+    <None Include="Templates\AddServiceProfilerExtension.params.json" />
     <None Include="Templates\OpsInsightsStorageConfiguration.json" />
     <None Include="Templates\OpsInsightsWorkspace.json" />
     <None Include="Templates\OpsInsightsWorkspace.param.json" />

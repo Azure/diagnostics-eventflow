@@ -1,0 +1,133 @@
+﻿{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmNamePrefix": {
+            "type": "string"
+        },
+        "serviceProfilerStorageAccountName": {
+            "type": "string"
+        },
+        "serviceProfilerStorageAccountKey": {
+            "type": "string"
+        }
+    },
+
+    "variables": {
+        "serviceProfilerConfig": {
+                "ServiceName": "karolz", /* A string that uniquely identifies the application. */
+                "CircularEtlBufferMB": 200, /* ETL trace circular buffer size in MB */
+                "LocalEtlFileFolder": "", /* If the folder is not specified, the agent will use temp folder */
+                "AzureStorageConnection": "DefaultEndpointsProtocol=https;AccountName=karolz;AccountKey=THy5UgZ8a6+7MSYre2RcmU5TWMm7s20XsUJHYCD3GuayU5M8TOG8OuUGOl0jgdNIytogrzIUzDNxmZATXfGWwA==",
+                "SamplingRate": 1, /* The value controls the frequency of collecting etw events. The value should be in the range of [0,1]. Setting the value to 1 will enable collection full time, 0 to disable collection. */
+                "AgentLogFilter": "Warning", /* The value controls the verbosity of the agent logs. The value can be Error, Warning, Information */
+                "CollectMemorySummary": true, /* true to enable capturing memory summary, false to disable it (default is false). */
+                "CollectGCDump": true, /* true to enable capturing gcdump, false to disable it (default is false). */
+                "MemoryDumpPriority": "Normal", /* Process priority at which memory dumps are collected. Normal, Low or High (default is Normal) */
+                "EnableAutoUpdate": true, /* true to allow dynamically update agent executable and setting file from the cloud (default is false) */
+                /*"HistogramNameTokenizationRegexPattern" :  "[a-zA-Z0-9-.@=(),'_<>\n ]+",*/ /*Controls how the histogram will tokenize names in order to build the histogram graph*/
+                "EtwMetrics": [ /* Defines ETW events to monitor. Both start/stop duration and single event with a metric are supported. */
+                    {
+                        "ProviderName": "Microsoft-ServiceFabric-Actors",
+                        "ProviderKeywords": 0,
+                        "ProviderLevel": "Verbose",
+                        "Event": "ActorMethod/Start",
+                        "EventStop": "ActorMethod/Stop",
+                        "Name": "methodName"
+                    },
+                    {
+                        "ProviderName": "Microsoft-ServiceFabric-Actors",
+                        "ProviderKeywords": 0,
+                        "ProviderLevel": "Verbose",
+                        "Event": "ActorSaveState/Start",
+                        "EventStop": "ActorSaveState/Stop",
+                        "Name": "actorType"
+                    },
+                    {
+                        "ProviderName": "MyCompany-AirTrafficControlApplication-AirTrafficControlWeb",
+                        "ProviderKeywords": 0,
+                        "ProviderLevel": "Verbose",
+                        "Event": "RestApiOperation/Start",
+                        "EventStop": "RestApiOperation/Stop",
+                        "Name": "operationName"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Type": "Performance",
+                        "Settings": {
+                            "SampleIntervalInSeconds": "5",
+                            "SamplesToConsider": "6",
+                            "Triggers": [
+                                {
+                                    "Name": "High CPU",
+                                    "Description": "High CPU usage",
+                                    "PerfCounter": "Processor Information\\% Processor Time\\_Total",
+                                    "Operator": ">",
+                                    "Metric": "50"
+                                },
+                                {
+                                    "Name": "Busy Disk",
+                                    "Description": "High disk usage",
+                                    "PerfCounter": "PhysicalDisk\\% Disk Time\\_Total",
+                                    "Operator": ">",
+                                    "Metric": "10"
+                                },
+                                {
+                                    "Name": "Memory Pressure",
+                                    "Description": "High memory usage",
+                                    "PerfCounter": "Memory\\Available MBytes",
+                                    "Operator": "<",
+                                    "Metric": "4000"
+                                },
+                                {
+                                    "Name": "High GC",
+                                    "Description": "High GC time",
+                                    "PerfCounter": ".NET CLR Memory\\% Time in GC\\_Global_",
+                                    "Operator": ">",
+                                    "Metric": "10"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "Type": "Version",
+                        "Settings": {
+                            "Source": {
+                                "Type": "ServiceFabric"
+                            }
+                        }
+                    }
+                ]
+        }
+    },
+
+    "resources": [
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmNamePrefix'),copyIndex(0),'/ServiceProfiler')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "type": "ServiceProfilerAgent",
+                "typeHandlerVersion": "0.1",
+                "publisher": "Microsoft.VisualStudio.ServiceProfiler",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "config": "[variables('serviceProfilerConfig')]"
+                },
+                "protectedSettings": {
+                    "storageAccountName": "[parameters('serviceProfilerStorageAccountName')]",
+                    "storageAccountKey": "[parameters('serviceProfilerStorageAccountKey')]",
+                    "storageAccountEndPoint": "https://core.windows.net/"
+                }
+            },
+            "copy": {
+                "name": "vmExtensionLoop",
+                "count": 3
+            }
+        }
+    ],
+            "outputs": {
+            }
+        }
