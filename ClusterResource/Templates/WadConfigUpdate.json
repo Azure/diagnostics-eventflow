@@ -21,7 +21,7 @@
     },
 
     "variables": {
-        "wadconfig": {
+        "wadConfig": {
             "DiagnosticMonitorConfiguration": {
                 "overallQuotaInMB": "4096",
                 "DiagnosticInfrastructureLogs": {
@@ -64,12 +64,12 @@
         {
             "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmNamePrefix'),copyIndex(0),'/AzureDiagnostics')]",
+            "name": "[concat(parameters('vmNamePrefix'),copyIndex(0),'/Microsoft.Insights.VMDiagnosticsSettings')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "type": "IaaSDiagnostics",
-                "typeHandlerVersion": "0.8",
-                "publisher": "WAD2AI.Diagnostics.Test",
+                "typeHandlerVersion": "1.5",
+                "publisher": "Microsoft.Azure.Diagnostics",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                     "WadCfg": "[variables('wadConfig')]",
