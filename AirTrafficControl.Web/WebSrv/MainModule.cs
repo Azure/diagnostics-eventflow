@@ -38,7 +38,7 @@ namespace AirTrafficControl.Web.WebSrv
                  {
                      ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirplanesOperation);
                      var atc = new AtcController();
-                     var airplaneStates = await atc.GetFlyingAirplaneStates();
+                     var airplaneStates = await atc.GetFlyingAirplaneStates().ConfigureAwait(false);
                      ServiceEventSource.Current.RestApiOperationStop(GetAirplanesOperation);
                      return Response.AsJson<IEnumerable<AirplaneStateModel>>(airplaneStates).WithHeaders(PublicShortLived());
                  };
@@ -47,7 +47,7 @@ namespace AirTrafficControl.Web.WebSrv
                 {
                     ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirplaneStateOperation);
                     AtcController atc = new AtcController();
-                    AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id);
+                    AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id).ConfigureAwait(false);
                     ServiceEventSource.Current.RestApiOperationStop(GetAirplaneStateOperation);
                     return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
                 };
@@ -56,7 +56,7 @@ namespace AirTrafficControl.Web.WebSrv
                 {
                     ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirportsOperation);
                     var atc = new AtcController();
-                    var airports = await atc.GetAirports();
+                    var airports = await atc.GetAirports().ConfigureAwait(false);
                     ServiceEventSource.Current.RestApiOperationStop(GetAirportsOperation);
                     return Response.AsJson<IEnumerable<Airport>>(airports);
                 };
@@ -66,7 +66,7 @@ namespace AirTrafficControl.Web.WebSrv
                     ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, StartNewFlightOperation);
                     var requestModel = this.Bind<FlightPlanRequestModel>();
                     var atc = new AtcController();
-                    await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name);
+                    await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name).ConfigureAwait(false);
                     ServiceEventSource.Current.RestApiOperationStop(StartNewFlightOperation);
                     return HttpStatusCode.Created;
                 // If the flight was addressable individually, we would return something like this:

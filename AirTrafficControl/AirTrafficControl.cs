@@ -65,12 +65,12 @@ namespace AirTrafficControl
             if (reminder == null)
             {
                 ActorEventSource.Current.ActorMessage(this, "ATC: Starting the world timer, current time is {0}", this.State.CurrentTime);
-                await this.RegisterReminder(TimePassedReminder, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), ActorReminderAttributes.None);
+                await this.RegisterReminder(TimePassedReminder, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), ActorReminderAttributes.None).ConfigureAwait(false);
             }
 
             ActorId actorID = new ActorId(flightPlan.AirplaneID);
             IAirplane airplane = ActorProxy.Create<IAirplane>(actorID);
-            await airplane.StartFlight(flightPlan);
+            await airplane.StartFlight(flightPlan).ConfigureAwait(false);
             this.State.FlyingAirplaneIDs.Add(flightPlan.AirplaneID);
             ActorEventSource.Current.ActorMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}.",
                 flightPlan.AirplaneID,
@@ -91,12 +91,12 @@ namespace AirTrafficControl
             {
                 ActorEventSource.Current.ActorMessage(this, "ATC: Time is {0} No airplanes flying, shutting down the world timer", this.State.CurrentTime);
                 var reminder = this.GetReminder(TimePassedReminder);
-                await this.UnregisterReminder(reminder);
+                await this.UnregisterReminder(reminder).ConfigureAwait(false);
                 return;
             }
 
             var airplaneProxies = CreateAirplaneProxies();
-            var airplaneActorStatesByDepartureTime = (await Task.WhenAll(this.State.FlyingAirplaneIDs.Select(id => airplaneProxies[id].GetState())))
+            var airplaneActorStatesByDepartureTime = (await Task.WhenAll(this.State.FlyingAirplaneIDs.Select(id => airplaneProxies[id].GetState())).ConfigureAwait(false))
                                                        .Where(state => !(state.AirplaneState is UnknownLocationState))
                                                        .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
             var newAirplaneStates = new Dictionary<string, AirplaneState>();
@@ -106,10 +106,10 @@ namespace AirTrafficControl
                 var controllerFunction = this.AirplaneControllers[airplaneActorState.AirplaneState.GetType()];
                 Assumes.NotNull(controllerFunction);
 
-                await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates);
+                await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates).ConfigureAwait(false);
             }            
 
-            await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassed(this.State.CurrentTime)));
+            await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassed(this.State.CurrentTime))).ConfigureAwait(false);
         }
 
         private Dictionary<string, IAirplane> CreateAirplaneProxies()
@@ -150,14 +150,14 @@ namespace AirTrafficControl
                 if (projectedAirplaneStates.Values.OfType<ApproachState>().Any(state => state.Airport == flightPlan.Destination))
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(flightPlan.Destination);
-                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(flightPlan.Destination));
+                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(flightPlan.Destination)).ConfigureAwait(false);
                     ActorEventSource.Current.ActorMessage(this, "ATC: Issued holding instruction for {0} at {1} because another airplane has been cleared for approach at the same airport", 
                         flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
                 else
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new ApproachState(flightPlan.Destination);
-                    await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination));
+                    await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination)).ConfigureAwait(false);
                     ActorEventSource.Current.ActorMessage(this, "ATC: Issued approach clearance for {0} at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
             }
@@ -170,7 +170,7 @@ namespace AirTrafficControl
                 {
                     // Hold at the end of the current route leg
                     projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(enrouteState.To);
-                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(enrouteState.To));
+                    await airplaneProxy.ReceiveInstruction(new HoldInstruction(enrouteState.To)).ConfigureAwait(false);
                     ActorEventSource.Current.ActorMessage(this, "ATC: Issued holding instruction for {0} at {1} because of traffic contention at {2}",
                         flightPlan.AirplaneID, enrouteState.To.DisplayName, nextFix.DisplayName);
                 }
@@ -196,7 +196,7 @@ namespace AirTrafficControl
                 if (!projectedAirplaneStates.Values.OfType<ApproachState>().Any(state => state.Airport == flightPlan.Destination))
                 {
                     projectedAirplaneStates[flightPlan.AirplaneID] = new ApproachState(flightPlan.Destination);
-                    await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination));
+                    await airplaneProxy.ReceiveInstruction(new ApproachClearance(flightPlan.Destination)).ConfigureAwait(false);
                     ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} has been cleared for approach at {1}", flightPlan.AirplaneID, flightPlan.Destination.DisplayName);
                 }
                 else
@@ -225,7 +225,7 @@ namespace AirTrafficControl
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(holdingState.Fix, nextFix, route);
                 // We always optmimistically give an enroute clearance all the way to the destination
-                await airplaneProxy.ReceiveInstruction(new EnrouteClearance(flightPlan.Destination));
+                await airplaneProxy.ReceiveInstruction(new EnrouteClearance(flightPlan.Destination)).ConfigureAwait(false);
                 ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} should end holding at {1} and proceed to destination, next fix {2}. Issued new enroute clearance.",
                     flightPlan.AirplaneID, holdingState.Fix.DisplayName, nextFix.DisplayName);
             }
@@ -244,7 +244,7 @@ namespace AirTrafficControl
             if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(enrouteState => enrouteState.To == nextFix))
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = new HoldingState(departingState.Airport);
-                await airplaneProxy.ReceiveInstruction(new HoldInstruction(departingState.Airport));
+                await airplaneProxy.ReceiveInstruction(new HoldInstruction(departingState.Airport)).ConfigureAwait(false);
                 ActorEventSource.Current.ActorMessage(this, "ATC: Issued holding instruction for {0} at {1} because of traffic contention at {2}",
                     flightPlan.AirplaneID, departingState.Airport.DisplayName, nextFix.DisplayName);
             }
@@ -270,7 +270,7 @@ namespace AirTrafficControl
             else
             {
                 projectedAirplaneStates[flightPlan.AirplaneID] = new DepartingState(flightPlan.DeparturePoint);
-                await airplaneProxy.ReceiveInstruction(new TakeoffClearance(flightPlan.DeparturePoint));
+                await airplaneProxy.ReceiveInstruction(new TakeoffClearance(flightPlan.DeparturePoint)).ConfigureAwait(false);
                 ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} received takeoff clearance at {1}",
                     flightPlan.AirplaneID, flightPlan.DeparturePoint);
             }
