@@ -16,14 +16,14 @@ namespace AirTrafficControl.Web.WebSrv
             {
                 var retval = new List<AirplaneStateModel>();
                 IAirTrafficControl atc = ActorProxy.Create<IAirTrafficControl>(new ActorId(WellKnownIdentifiers.SeattleCenter));
-                var flyingAirplaneIDs = await atc.GetFlyingAirplaneIDs();
+                var flyingAirplaneIDs = await atc.GetFlyingAirplaneIDs().ConfigureAwait(false);
 
                 if (flyingAirplaneIDs != null)
                 {
                     foreach(string airplaneID in flyingAirplaneIDs)
                     {
                         var airplane = ActorProxy.Create<IAirplane>(new ActorId(airplaneID));
-                        var airplaneActorState = await airplane.GetState();
+                        var airplaneActorState = await airplane.GetState().ConfigureAwait(false);
                         var airplaneState = airplaneActorState.AirplaneState;
 
                         var stateModel = new AirplaneStateModel(airplaneID, airplaneState.ToString(), airplaneState.Location, airplaneState.GetHeading(airplaneActorState.FlightPlan));
@@ -50,7 +50,7 @@ namespace AirTrafficControl.Web.WebSrv
                 }
 
                 var airplane = ActorProxy.Create<IAirplane>(new ActorId(id));
-                return await airplane.GetState();
+                return await airplane.GetState().ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -70,7 +70,7 @@ namespace AirTrafficControl.Web.WebSrv
                 flightPlan.Validate();
 
                 IAirTrafficControl atc = ActorProxy.Create<IAirTrafficControl>(new ActorId(WellKnownIdentifiers.SeattleCenter));
-                await atc.StartNewFlight(flightPlan);
+                await atc.StartNewFlight(flightPlan).ConfigureAwait(false);
             }
             catch (Exception e)
             {
