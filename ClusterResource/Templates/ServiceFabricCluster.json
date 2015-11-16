@@ -42,7 +42,7 @@
     },
     "loadBalancedAppPort2": {
       "type": "int",
-      "defaultValue": 8081
+      "defaultValue": 8506
     },
     "certificateStoreValue": {
       "type": "string",
