@@ -5,7 +5,7 @@
         "vmNamePrefix": {
             "type": "string"
         },
-        "vmStorageAccountName": {
+        "diagnosticsStorageAccountName": {
             "type": "string"
         },
         "vmCount": {
@@ -62,11 +62,11 @@
                             }
                         }
                     },
-                    "StorageAccount": "[parameters('vmStorageAccountName')]"                    
+                    "StorageAccount": "[parameters('diagnosticsStorageAccountName')]"                    
                 },
                 "protectedSettings": {
-                    "storageAccountName": "[parameters('vmStorageAccountName')]",
-                    "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('vmStorageAccountName')),'2015-05-01-preview').key1]",
+                    "storageAccountName": "[parameters('diagnosticsStorageAccountName')]",
+                    "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName')),'2015-05-01-preview').key1]",
                     "storageAccountEndPoint": "https://core.windows.net/"
                 }
             },

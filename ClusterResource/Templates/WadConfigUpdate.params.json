@@ -5,8 +5,8 @@
         "vmNamePrefix": {
             "value": "VM"
         },
-        "vmStorageAccountName": {
-            "value": ""
+        "diagnosticsStorageAccountName": {
+            "value": "kzfab11163"
         },
         "vmCount": {
             "value": 5
