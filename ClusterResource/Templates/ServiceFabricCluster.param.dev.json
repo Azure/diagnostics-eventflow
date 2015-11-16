@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "clusterName": {
-            "value": "kzfab1110" 
+            "value": "kzfab1116" 
         },
         "clusterLocation": {
             "value": "West US"
