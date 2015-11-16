@@ -6,10 +6,10 @@
             "value": "VM"
         },
         "vmStorageAccountName": {
-            "value": "sakzfab0915"
+            "value": ""
         },
-        "certificateThumbprint": {
-            "value": "FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5"
-        },
+        "vmCount": {
+            "value": 5
+        }
     }
 }

@@ -8,55 +8,8 @@
         "vmStorageAccountName": {
             "type": "string"
         },
-        "certificateStoreValue": {
-            "type": "string",
-            "allowedValues": [
-                "My"
-            ],
-            "defaultValue": "My"
-        },
-        "certificateThumbprint": {
-            "type": "string"
-        },
-    },
-
-    "variables": {
-        "wadConfig": {
-            "DiagnosticMonitorConfiguration": {
-                "overallQuotaInMB": "4096",
-                "DiagnosticInfrastructureLogs": {
-                    "scheduledTransferLogLevelFilter": "Verbose"
-                },
-                "EtwProviders": {
-                    "EtwEventSourceProviderConfiguration": [
-                        {
-                            "provider": "Microsoft-ServiceFabric-Actors",
-                            "scheduledTransferKeywordFilter": "1",
-                            "DefaultEvents": { "eventDestination": "ServiceFabricReliableActorEventTable" }
-                        },
-                        {
-                            "provider": "Microsoft-ServiceFabric-Services",
-                            "DefaultEvents": { "eventDestination": "ServiceFabricReliableServiceEventTable" },
-                            "scheduledTransferPeriod": "PT1M"
-                        },
-                        {
-                            "provider": "MyCompany-AirTrafficControlApplication-AirTrafficControlWeb",
-                            "DefaultEvents": { "eventDestination": "ETWEventTable" }
-                        },
-                        {
-                            "provider": "MyCompany-AirTrafficControlApplication-AirTrafficControl",
-                            "DefaultEvents": { "eventDestination": "ETWEventTable" }
-                        }
-                    ],
-                    "EtwManifestProviderConfiguration": [
-                        {
-                            "provider": "cbd93bc2-71e5-4566-b3a7-595d8eeca6e8",
-                            "scheduledTransferKeywordFilter": "4611686018427387904",
-                            "DefaultEvents": { "eventDestination": "ServiceFabricSystemEventTable" }
-                        }
-                    ]
-                }
-            }
+        "vmCount": {
+            "type": "int"
         }
     },
 
@@ -72,12 +25,44 @@
                 "publisher": "Microsoft.Azure.Diagnostics",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                    "WadCfg": "[variables('wadConfig')]",
-                    "StorageAccount": "[parameters('vmStorageAccountName')]",
-                    "certificate": {
-                        "thumbprint": "[parameters('certificateThumbprint')]",
-                        "x509StoreName": "[parameters('certificateStoreValue')]"
-                    }
+                    "WadCfg": {
+                        "DiagnosticMonitorConfiguration": {
+                            "overallQuotaInMB": "50000",                            
+                            "EtwProviders": {
+                                "EtwEventSourceProviderConfiguration": [
+                                    {
+                                        "provider": "Microsoft-ServiceFabric-Actors",
+                                        "scheduledTransferKeywordFilter": "1",
+                                        "scheduledTransferPeriod": "PT5M",
+                                        "DefaultEvents": { "eventDestination": "ServiceFabricReliableActorEventTable" }
+                                    },
+                                    {
+                                        "provider": "Microsoft-ServiceFabric-Services",
+                                        "DefaultEvents": { "eventDestination": "ServiceFabricReliableServiceEventTable" },
+                                        "scheduledTransferPeriod": "PT5M"
+                                    },
+                                    {
+                                        "provider": "MyCompany-AirTrafficControlApplication-AirTrafficControlWeb",
+                                        "DefaultEvents": { "eventDestination": "ETWEventTable" }
+                                    },
+                                    {
+                                        "provider": "MyCompany-AirTrafficControlApplication-AirTrafficControl",
+                                        "DefaultEvents": { "eventDestination": "ETWEventTable" }
+                                    }
+                                ],
+                                "EtwManifestProviderConfiguration": [
+                                    {
+                                        "provider": "cbd93bc2-71e5-4566-b3a7-595d8eeca6e8",
+                                        "scheduledTransferKeywordFilter": "4611686018427387904",
+                                        "scheduledTransferLogLevelFilter": "Information",
+                                        "scheduledTransferPeriod": "PT5M",
+                                        "DefaultEvents": { "eventDestination": "ServiceFabricSystemEventTable" }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "StorageAccount": "[parameters('vmStorageAccountName')]"                    
                 },
                 "protectedSettings": {
                     "storageAccountName": "[parameters('vmStorageAccountName')]",
@@ -87,7 +72,7 @@
             },
             "copy": {
                 "name": "vmExtensionLoop",
-                "count": 3
+                "count": "[parameters('vmCount')]"
             }
         }
     ],
