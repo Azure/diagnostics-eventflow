@@ -2,17 +2,11 @@
     "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "computeLocation": {
-            "value": "West US"
-        },
         "clusterName": {
-            "value":  "kzfab0915"
+            "value": "kzfab1110" 
         },
-        "vmStorageAccountName": {
-            "value": "sakzfab0915"
-        },
-        "dnsName": {
-            "value": "kzfab0915"
+        "clusterLocation": {
+            "value": "West US"
         },
         "certificateThumbprint": {
             "value": "FE100E0A65E7E7EEFE55824EA9B46C32214A3DC5"
@@ -22,15 +16,6 @@
         },
         "certificateUrlValue": {
             "value": "https://karolz-keyvault.vault.azure.net:443/secrets/AzureFabricClusterCertificate/7b1253480b2b4003b127a60f30670eab"
-        },
-        "diagnosticStorageAccountName": {
-            "value": "sakzfab0915d"
-        },
-        "wadConfig": {
-            "value": "PFdhZENmZz4gICA8RGlhZ25vc3RpY01vbml0b3JDb25maWd1cmF0aW9uIG92ZXJhbGxRdW90YUluTUI9IjQwOTYiPiAgICAgPERpYWdub3N0aWNJbmZyYXN0cnVjdHVyZUxvZ3Mgc2NoZWR1bGVkVHJhbnNmZXJMb2dMZXZlbEZpbHRlcj0iVmVyYm9zZSIgLz4gICAgIDxFdHdQcm92aWRlcnM+ICAgICAgIDxFdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iTWljcm9zb2Z0LVNlcnZpY2VGYWJyaWMtQWN0b3JzIiBzY2hlZHVsZWRUcmFuc2ZlcktleXdvcmRGaWx0ZXI9IjEiPiAgICAgICAgIDxEZWZhdWx0RXZlbnRzIGV2ZW50RGVzdGluYXRpb249IlNlcnZpY2VGYWJyaWNSZWxpYWJsZUFjdG9yRXZlbnRUYWJsZSIgLz4gICAgICAgPC9FdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbj4gICAgICAgPEV0d0V2ZW50U291cmNlUHJvdmlkZXJDb25maWd1cmF0aW9uIHByb3ZpZGVyPSJNaWNyb3NvZnQtU2VydmljZUZhYnJpYy1TZXJ2aWNlcyI+ICAgICAgICAgPERlZmF1bHRFdmVudHMgZXZlbnREZXN0aW5hdGlvbj0iU2VydmljZUZhYnJpY1JlbGlhYmxlU2VydmljZUV2ZW50VGFibGUiIC8+ICAgICAgIDwvRXR3RXZlbnRTb3VyY2VQcm92aWRlckNvbmZpZ3VyYXRpb24+ICAgICAgIDxFdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iTXlDb21wYW55LUFpclRyYWZmaWNDb250cm9sQXBwbGljYXRpb24tQWlyVHJhZmZpY0NvbnRyb2xXZWIiPiAgICAgICAgIDxEZWZhdWx0RXZlbnRzIGV2ZW50RGVzdGluYXRpb249IkVUV0V2ZW50VGFibGUiIC8+ICAgICAgIDwvRXR3RXZlbnRTb3VyY2VQcm92aWRlckNvbmZpZ3VyYXRpb24+ICAgICAgIDxFdHdFdmVudFNvdXJjZVByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iTXlDb21wYW55LUFpclRyYWZmaWNDb250cm9sQXBwbGljYXRpb24tQWlyVHJhZmZpY0NvbnRyb2wiPiAgICAgICAgIDxEZWZhdWx0RXZlbnRzIGV2ZW50RGVzdGluYXRpb249IkVUV0V2ZW50VGFibGUiIC8+ICAgICAgIDwvRXR3RXZlbnRTb3VyY2VQcm92aWRlckNvbmZpZ3VyYXRpb24+ICAgICAgIDxFdHdNYW5pZmVzdFByb3ZpZGVyQ29uZmlndXJhdGlvbiBwcm92aWRlcj0iY2JkOTNiYzItNzFlNS00NTY2LWIzYTctNTk1ZDhlZWNhNmU4IiBzY2hlZHVsZWRUcmFuc2ZlcktleXdvcmRGaWx0ZXI9IjQ2MTE2ODYwMTg0MjczODc5MDQiPiAgICAgICAgIDxEZWZhdWx0RXZlbnRzIGV2ZW50RGVzdGluYXRpb249IlNlcnZpY2VGYWJyaWNTeXN0ZW1FdmVudFRhYmxlIiAvPiAgICAgICA8L0V0d01hbmlmZXN0UHJvdmlkZXJDb25maWd1cmF0aW9uPiAgICAgPC9FdHdQcm92aWRlcnM+ICAgPC9EaWFnbm9zdGljTW9uaXRvckNvbmZpZ3VyYXRpb24+IDwvV2FkQ2ZnPg=="
-        },
-        "adminUserName": {
-            "value": "kzadora"
         }
     }
 }
