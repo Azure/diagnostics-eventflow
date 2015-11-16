@@ -1,6 +1,7 @@
 ﻿{
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+
     "parameters": {
         "vmNamePrefix": {
             "type": "string"
@@ -27,7 +28,7 @@
                 "settings": {
                     "WadCfg": {
                         "DiagnosticMonitorConfiguration": {
-                            "overallQuotaInMB": "50000",                            
+                            "overallQuotaInMB": "50000",
                             "EtwProviders": {
                                 "EtwEventSourceProviderConfiguration": [
                                     {
@@ -62,7 +63,7 @@
                             }
                         }
                     },
-                    "StorageAccount": "[parameters('diagnosticsStorageAccountName')]"                    
+                    "StorageAccount": "[parameters('diagnosticsStorageAccountName')]"
                 },
                 "protectedSettings": {
                     "storageAccountName": "[parameters('diagnosticsStorageAccountName')]",
@@ -76,6 +77,7 @@
             }
         }
     ],
+
     "outputs": {
     }
 }
