@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "AirTrafficControlApplication", "AirTrafficControlApplication\AirTrafficControlApplication.sfproj", "{D875E47F-986B-4BF1-89A9-312D0BB40348}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Web", "AirTrafficControl.Web\AirTrafficControl.Web.csproj", "{0BB29190-3F29-4431-A8C7-EFEBD3E24042}"
 EndProject
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ClusterResource", "ClusterResource\ClusterResource.deployproj", "{B247729F-DAD4-4529-ADF5-98071E975007}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventListeners", "Microsoft.Diagnostics.EventListeners\Microsoft.Diagnostics.EventListeners.csproj", "{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventListeners.Fabric", "Microsoft.Diagnostics.EventListeners.Fabric\Microsoft.Diagnostics.EventListeners.Fabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,6 +68,18 @@ Global
 		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|x64.ActiveCfg = Release|Any CPU
 		{B247729F-DAD4-4529-ADF5-98071E975007}.Release|x64.Build.0 = Release|Any CPU
+		{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}.Debug|x64.ActiveCfg = Debug|x64
+		{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}.Debug|x64.Build.0 = Debug|x64
+		{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}.Release|Any CPU.ActiveCfg = Release|x64
+		{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}.Release|x64.ActiveCfg = Release|x64
+		{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}.Release|x64.Build.0 = Release|x64
+		{2D19BF76-04E1-4969-AD66-984160D38E2C}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{2D19BF76-04E1-4969-AD66-984160D38E2C}.Debug|x64.ActiveCfg = Debug|x64
+		{2D19BF76-04E1-4969-AD66-984160D38E2C}.Debug|x64.Build.0 = Debug|x64
+		{2D19BF76-04E1-4969-AD66-984160D38E2C}.Release|Any CPU.ActiveCfg = Release|x64
+		{2D19BF76-04E1-4969-AD66-984160D38E2C}.Release|x64.ActiveCfg = Release|x64
+		{2D19BF76-04E1-4969-AD66-984160D38E2C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
