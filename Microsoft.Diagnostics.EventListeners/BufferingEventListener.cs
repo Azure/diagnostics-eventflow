@@ -6,7 +6,7 @@
 namespace Microsoft.Diagnostics.EventListeners
 {
     using System;
-    using Microsoft.Diagnostics.Tracing;
+    using System.Diagnostics.Tracing;
 
     public abstract class BufferingEventListener : EventListener
     {

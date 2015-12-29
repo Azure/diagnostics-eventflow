@@ -7,10 +7,11 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using Validation;
 
 namespace AirTrafficControl
 {
-    public class Airplane : Actor<AirplaneActorState>, IAirplane
+    public class Airplane : StatefulActor<AirplaneActorState>, IAirplane
     {
         public Task<AirplaneActorState> GetState()
         {
@@ -58,7 +59,7 @@ namespace AirTrafficControl
             return Task.FromResult(true);
         }
 
-        public override Task OnActivateAsync()
+        protected override Task OnActivateAsync()
         {
             if (this.State.AirplaneState == null)
             {

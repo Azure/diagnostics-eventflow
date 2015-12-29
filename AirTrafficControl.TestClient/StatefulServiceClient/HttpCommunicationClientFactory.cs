@@ -1,4 +1,5 @@
 ﻿using Microsoft.ServiceFabric.Services;
+using Microsoft.ServiceFabric.Services.Communication.Client;
 using System;
 using System.Collections.Generic;
 using System.Fabric;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Validation;
 
 namespace AirTrafficControl.TestClient.StatefulServiceClient
 {
@@ -24,10 +26,11 @@ namespace AirTrafficControl.TestClient.StatefulServiceClient
             catch { }
         }
 
-        protected override Task<HttpCommunicationClient> CreateClientAsync(ResolvedServiceEndpoint endpoint, CancellationToken cancellationToken)
+        protected override Task<HttpCommunicationClient> CreateClientAsync(string endpoint, CancellationToken cancellationToken)
         {
+            Requires.NotNullOrWhiteSpace(endpoint, "endpoint");
             HttpCommunicationClient client = new HttpCommunicationClient();
-            string baseServiceAddress = endpoint.Address;
+            string baseServiceAddress = endpoint;
             if (!baseServiceAddress.EndsWith("/", StringComparison.Ordinal))
             {
                 baseServiceAddress += "/";
@@ -41,7 +44,7 @@ namespace AirTrafficControl.TestClient.StatefulServiceClient
             return true;
         }
 
-        protected override bool ValidateClient(ResolvedServiceEndpoint endpoint, HttpCommunicationClient client)
+        protected override bool ValidateClient(string endpoint, HttpCommunicationClient client)
         {
             return true;
         }

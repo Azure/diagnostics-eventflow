@@ -6,6 +6,7 @@ using System;
 using System.Configuration;
 using System.Fabric;
 using System.Threading;
+using FabricEventListeners = Microsoft.Diagnostics.EventListeners.Fabric;
 
 namespace AirTrafficControl
 {
@@ -17,19 +18,16 @@ namespace AirTrafficControl
             {
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
-                    BufferingEventListener listener = null;
-                    if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["EsUserName"]))
+                    const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
+                    FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
+                    ElasticSearchListener listener = null;
+                    if (configProvider.HasConfiguration)
                     {
-                        listener = new ElasticSearchListener(
-                            (new FabricDiagnosticChannelContext()).ToString(),
-                            new Uri(ConfigurationManager.AppSettings["EsUrl"], UriKind.Absolute),
-                            ConfigurationManager.AppSettings["EsUserName"],
-                            ConfigurationManager.AppSettings["EsUserPassword"],
-                            "atc");
+                        listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
                     }
 
-                    fabricRuntime.RegisterActor(typeof(AirTrafficControl));
-                    fabricRuntime.RegisterActor(typeof(Airplane));
+                    fabricRuntime.RegisterActor<AirTrafficControl>();
+                    fabricRuntime.RegisterActor<Airplane>();
 
                     Thread.Sleep(Timeout.Infinite);
 
@@ -38,7 +36,7 @@ namespace AirTrafficControl
             }
             catch (Exception e)
             {
-                ActorEventSource.Current.ActorHostInitializationFailed(e);
+                ActorEventSource.Current.ActorHostInitializationFailed(e.ToString());
                 throw;
             }
         }

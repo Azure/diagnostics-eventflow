@@ -1,4 +1,5 @@
 ﻿using Microsoft.ServiceFabric.Services;
+using Microsoft.ServiceFabric.Services.Communication.Client;
 using System;
 using System.Collections.Generic;
 using System.Fabric;

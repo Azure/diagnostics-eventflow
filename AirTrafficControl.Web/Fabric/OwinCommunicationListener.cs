@@ -1,6 +1,7 @@
 ﻿using Microsoft;
 using Microsoft.Owin.Hosting;
 using Microsoft.ServiceFabric.Services;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Nancy.TinyIoc;
 using System;
 using System.Fabric;
@@ -8,6 +9,7 @@ using System.Fabric.Description;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Validation;
 
 namespace AirTrafficControl.Web.Fabric
 {
@@ -19,20 +21,23 @@ namespace AirTrafficControl.Web.Fabric
         private string publishAddress;
         private string listeningAddress;
         private string appRoot;
+        private readonly ServiceInitializationParameters serviceInitializationParameters;
 
-        public OwinCommunicationListener(IOwinAppBuilder startup)
-            : this(null, startup)
+        public OwinCommunicationListener(IOwinAppBuilder startup, ServiceInitializationParameters parameters)
+            : this(null, startup, parameters)
         {
         }
 
-        public OwinCommunicationListener(string appRoot, IOwinAppBuilder startup)
+        public OwinCommunicationListener(string appRoot, IOwinAppBuilder startup, ServiceInitializationParameters parameters)
         {
             Requires.NotNull(startup, "startup");
+            Requires.NotNull(parameters, "parameters");
             this.startup = startup;
             this.appRoot = appRoot;
+            this.serviceInitializationParameters = parameters;
         }
 
-        public void Initialize(ServiceInitializationParameters serviceInitializationParameters)
+        public Task<string> OpenAsync(CancellationToken cancellationToken)
         {
             EndpointResourceDescription serviceEndpoint = serviceInitializationParameters.CodePackageActivationContext.GetEndpoint("ServiceEndpoint");
             int port = serviceEndpoint.Port;
@@ -65,19 +70,17 @@ namespace AirTrafficControl.Web.Fabric
             }
 
             this.publishAddress = this.listeningAddress.Replace("+", FabricRuntime.GetNodeContext().IPAddressOrFQDN);
-        }
 
-        public Task<string> OpenAsync(CancellationToken cancellationToken)
-        {
             try
             {
                 this.serverHandle = WebApp.Start(this.listeningAddress, appBuilder => this.startup.Configuration(appBuilder));
 
+                ServiceEventSource.Current.CommunicationEndpointReady(this.listeningAddress);
                 return Task.FromResult(this.publishAddress);
             }
             catch (Exception ex)
             {
-                ServiceEventSource.Current.ServiceHostInitializationFailed(ex);
+                ServiceEventSource.Current.ServiceHostInitializationFailed(ex.ToString());
 
                 this.StopWebServer();
 

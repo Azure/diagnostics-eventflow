@@ -12,7 +12,7 @@ namespace Microsoft.Diagnostics.EventListeners
     using System.Globalization;
     using System.Linq;
     using System.Text;
-    using Microsoft.Diagnostics.Tracing;
+    using System.Diagnostics.Tracing;
     using Newtonsoft.Json;
 
     internal static class EventDataExtensions

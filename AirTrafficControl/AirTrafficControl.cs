@@ -7,10 +7,11 @@ using AirTrafficControl.Interfaces;
 using Microsoft.ServiceFabric;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft;
+using Validation;
 
 namespace AirTrafficControl
 {
-    public class AirTrafficControl : Actor<AirTrafficControlState>, IAirTrafficControl, IRemindable
+    public class AirTrafficControl : StatefulActor<AirTrafficControlState>, IAirTrafficControl, IRemindable
     {
         private const string TimePassedReminder = "AirTrafficControl.TimePassedReminder";
         private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates);
@@ -30,7 +31,7 @@ namespace AirTrafficControl
             };
         }        
 
-        public override Task OnActivateAsync()
+        protected override Task OnActivateAsync()
         {
             if (this.State.FlyingAirplaneIDs == null)
             {
@@ -64,8 +65,8 @@ namespace AirTrafficControl
             catch { }
             if (reminder == null)
             {
-                ActorEventSource.Current.ActorMessage(this, "ATC: Starting the world timer, current time is {0}", this.State.CurrentTime);
-                await this.RegisterReminder(TimePassedReminder, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), ActorReminderAttributes.None).ConfigureAwait(false);
+                ActorEventSource.Current.ActorMessage(this, "ATC: Starting the world timer, current time is {0}", this.State.CurrentTime);                
+                await this.RegisterReminderAsync(TimePassedReminder, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), ActorReminderAttributes.None).ConfigureAwait(false);
             }
 
             ActorId actorID = new ActorId(flightPlan.AirplaneID);
@@ -91,7 +92,7 @@ namespace AirTrafficControl
             {
                 ActorEventSource.Current.ActorMessage(this, "ATC: Time is {0} No airplanes flying, shutting down the world timer", this.State.CurrentTime);
                 var reminder = this.GetReminder(TimePassedReminder);
-                await this.UnregisterReminder(reminder).ConfigureAwait(false);
+                await this.UnregisterReminderAsync(reminder).ConfigureAwait(false);
                 return;
             }
 

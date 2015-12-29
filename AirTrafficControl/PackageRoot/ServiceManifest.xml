@@ -3,7 +3,7 @@
    <ServiceTypes>
       <StatefulServiceType ServiceTypeName="AirplaneActorServiceType" HasPersistedState="true">
          <Extensions>
-            <Extension Name="__GeneratedServiceType__">
+            <Extension Name="__GeneratedServiceType__" GeneratedId="9c0185d4-2f8d-43a0-a58e-77d1166fbaac">
                <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
                   <DefaultService Name="AirplaneActorService" />
                   <ServiceEndpoint Name="AirplaneActorServiceEndpoint" />
@@ -17,7 +17,7 @@
       </StatefulServiceType>
       <StatefulServiceType ServiceTypeName="AirTrafficControlActorServiceType" HasPersistedState="true">
          <Extensions>
-            <Extension Name="__GeneratedServiceType__">
+            <Extension Name="__GeneratedServiceType__" GeneratedId="2938c412-3718-4b0b-a8d4-f97419f59bbc">
                <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
                   <DefaultService Name="AirTrafficControlActorService" />
                   <ServiceEndpoint Name="AirTrafficControlActorServiceEndpoint" />

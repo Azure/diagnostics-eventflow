@@ -1,18 +1,26 @@
-﻿using Microsoft.ServiceFabric.Services;
+﻿using Microsoft.ServiceFabric.Services.Runtime;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using System.Fabric;
+using System.Collections.Generic;
+using System;
 
 namespace AirTrafficControl.Web.Fabric
 {
     public class AirTrafficControlWeb : StatelessService
     {
-        protected override ICommunicationListener CreateCommunicationListener()
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
-            var fabricContext = new FabricContext<StatelessServiceInitializationParameters>(this.ServiceInitializationParameters);
+            return new ServiceInstanceListener[] { new ServiceInstanceListener(CreateCommunicationListener) };
+        }
+
+        private ICommunicationListener CreateCommunicationListener(StatelessServiceInitializationParameters arg)
+        {
+            var fabricContext = new FabricContext<StatelessServiceInitializationParameters>(arg);
             FabricContext<StatelessServiceInitializationParameters>.Current = fabricContext;
 
-            ServiceEventSource.Current.ServiceExecutionStarted(this.ServiceInitializationParameters);
+            var listener = new OwinCommunicationListener(new OwinStartup(), arg);
 
-            var listener = new OwinCommunicationListener(new OwinStartup());            
+            ServiceEventSource.Current.ServiceMessage(this, "Communication listener created");
             return listener;
         }
     }

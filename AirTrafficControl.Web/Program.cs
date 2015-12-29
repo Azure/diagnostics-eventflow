@@ -1,5 +1,4 @@
-﻿using AirTrafficControl.Interfaces;
-using AirTrafficControl.Web.Fabric;
+﻿using AirTrafficControl.Web.Fabric;
 using Microsoft.Diagnostics.EventListeners;
 
 using System;
@@ -7,6 +6,8 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Fabric;
 using System.Threading;
+
+using FabricEventListeners = Microsoft.Diagnostics.EventListeners.Fabric;
 
 namespace AirTrafficControl.Web
 {
@@ -18,16 +19,12 @@ namespace AirTrafficControl.Web
             {
                 using (FabricRuntime fabricRuntime = FabricRuntime.Create())
                 {
-                    BufferingEventListener listener = null;
-
-                    if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["EsUserName"]))
+                    const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
+                    FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
+                    ElasticSearchListener listener = null;
+                    if (configProvider.HasConfiguration)
                     {
-                        listener = new ElasticSearchListener(
-                            (new FabricDiagnosticChannelContext()).ToString(),
-                            new Uri(ConfigurationManager.AppSettings["EsUrl"], UriKind.Absolute),
-                            ConfigurationManager.AppSettings["EsUserName"],
-                            ConfigurationManager.AppSettings["EsUserPassword"],
-                            "atc");
+                        listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
                     }
 
                     // This is the name of the ServiceType that is registered with FabricRuntime. 
@@ -44,7 +41,7 @@ namespace AirTrafficControl.Web
             }
             catch (Exception e)
             {
-                ServiceEventSource.Current.ServiceHostInitializationFailed(e);
+                ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
                 throw;
             }
         }
