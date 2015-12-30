@@ -27,7 +27,7 @@
          </StatefulService>
       </Service>
       <Service Name="AirTrafficControlWeb">
-         <StatelessService ServiceTypeName="AirTrafficControlWebType">
+         <StatelessService ServiceTypeName="AirTrafficControlWebType" InstanceCount="1">
             <SingletonPartition />
          </StatelessService>
       </Service>
