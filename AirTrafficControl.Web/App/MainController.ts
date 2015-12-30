@@ -44,7 +44,7 @@ module AirTrafficControl {
 
             var atcHubOptions: ngSignalr.HubOptions = {
                 listeners: {
-                    'airplaneStateUpdate': (newAirplaneStates: AirplaneState[]) => {
+                    'flightStatusUpdate': (newAirplaneStates: AirplaneState[]) => {
                         this.$scope.AirplaneStates = newAirplaneStates;
                         this.$scope.$apply();
                     }

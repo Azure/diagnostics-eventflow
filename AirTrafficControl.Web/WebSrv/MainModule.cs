@@ -22,6 +22,7 @@ namespace AirTrafficControl.Web.WebSrv
         private const string GetAirportsOperation = "GetAirports";
         private const string GetFlightsOperation = "GetFlights";
         private const string StartNewFlightOperation = "StartNewFlight";
+        private const string NotifyFlightStatusUpdate = "FlightStatusUpdate";
 
         public MainModule()
         {
@@ -40,7 +41,7 @@ namespace AirTrafficControl.Web.WebSrv
                      var atc = new AtcController();
                      var airplaneStates = await atc.GetFlyingAirplaneStates().ConfigureAwait(false);
                      ServiceEventSource.Current.RestApiOperationStop(GetAirplanesOperation);
-                     return Response.AsJson<IEnumerable<AirplaneStateModel>>(airplaneStates).WithHeaders(PublicShortLived());
+                     return Response.AsJson<IEnumerable<AirplaneStateDto>>(airplaneStates).WithHeaders(PublicShortLived());
                  };
 
                 Get["/api/airplanes/{id}", runAsync: true] = async (parameters, cancellationToken) =>
@@ -69,8 +70,18 @@ namespace AirTrafficControl.Web.WebSrv
                     await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name).ConfigureAwait(false);
                     ServiceEventSource.Current.RestApiOperationStop(StartNewFlightOperation);
                     return HttpStatusCode.Created;
-                // If the flight was addressable individually, we would return something like this:
-                // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
+                    // If the flight was addressable individually, we would return something like this:
+                    // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
+                };
+
+                Post["/api/notify/flight-status", runAsync: true] = async (parameters, cancellationToken) => 
+                {
+                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, NotifyFlightStatusUpdate);
+                    var newAirplaneStates = this.Bind<IEnumerable<AirplaneStateDto>>();
+                    var atc = new AtcController();
+                    await atc.PerformFlightStatusUpdate(newAirplaneStates).ConfigureAwait(false);
+                    ServiceEventSource.Current.RestApiOperationStop(NotifyFlightStatusUpdate);
+                    return HttpStatusCode.NoContent; // Success, just nothing to report back.
                 };
             }
             catch(Exception e)

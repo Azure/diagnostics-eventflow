@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="AirplaneActorState.cs" />
     <Compile Include="AirplaneState.cs" />
+    <Compile Include="AirplaneStateDto.cs" />
     <Compile Include="Airport.cs" />
     <Compile Include="AtcInstruction.cs" />
     <Compile Include="Direction.cs" />

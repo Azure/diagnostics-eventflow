@@ -1,17 +1,10 @@
-﻿using AirTrafficControl.Interfaces;
-using Microsoft;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Validation;
+﻿using Validation;
 
-namespace AirTrafficControl.Web.WebSrv
+namespace AirTrafficControl.Interfaces
 {
-    internal class AirplaneStateModel
+    public class AirplaneStateDto
     {
-        public AirplaneStateModel(string id, string stateDescription, Location position, double heading)
+        public AirplaneStateDto(string id, string stateDescription, Location position, double heading)
         {
             Requires.NotNullOrWhiteSpace(id, "id");
 

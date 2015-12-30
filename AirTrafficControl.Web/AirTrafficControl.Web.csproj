@@ -125,7 +125,6 @@
     <Compile Include="Fabric\FabricContext.cs" />
     <Compile Include="WebSrv\AtcController.cs" />
     <Compile Include="Fabric\IOwinAppBuilder.cs" />
-    <Compile Include="WebSrv\AirplaneStateModel.cs" />
     <Compile Include="WebSrv\ApplicationWithStandardContentFoldersBootstrapper.cs" />
     <Compile Include="WebSrv\AtcHub.cs" />
     <Compile Include="WebSrv\BasicPageModel.cs" />

@@ -29,7 +29,7 @@ var AirTrafficControl;
             $scope.OnNewFlight = function () { return _this.onNewFlight(); };
             var atcHubOptions = {
                 listeners: {
-                    'airplaneStateUpdate': function (newAirplaneStates) {
+                    'flightStatusUpdate': function (newAirplaneStates) {
                         _this.$scope.AirplaneStates = newAirplaneStates;
                         _this.$scope.$apply();
                     }
