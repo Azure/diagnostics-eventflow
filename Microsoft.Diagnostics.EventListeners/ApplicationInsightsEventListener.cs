@@ -56,11 +56,13 @@ namespace Microsoft.Diagnostics.EventListeners
 
 
 
-        private async Task SendEventsAsync(IEnumerable<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        private Task SendEventsAsync(IEnumerable<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
+            var completedTask = Task.FromResult(0);
+
             if (events == null)
             {
-                return;
+                return completedTask;
             }
 
             try
@@ -93,6 +95,8 @@ namespace Microsoft.Diagnostics.EventListeners
             {
                 this.ReportListenerProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
+
+            return completedTask;
         }
 
 
