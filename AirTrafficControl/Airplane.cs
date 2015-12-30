@@ -61,8 +61,9 @@ namespace AirTrafficControl
 
         protected override Task OnActivateAsync()
         {
-            if (this.State.AirplaneState == null)
+            if (this.State == null)
             {
+                this.State = new AirplaneActorState();
                 this.State.AirplaneState = new UnknownLocationState();
             }
 

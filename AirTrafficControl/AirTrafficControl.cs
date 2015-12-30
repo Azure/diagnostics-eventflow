@@ -33,10 +33,11 @@ namespace AirTrafficControl
 
         protected override Task OnActivateAsync()
         {
-            if (this.State.FlyingAirplaneIDs == null)
+            if (this.State == null)
             {
+                this.State = new AirTrafficControlState();
                 this.State.FlyingAirplaneIDs = new List<string>();
-            }            
+            }
 
             return base.OnActivateAsync();
         }
