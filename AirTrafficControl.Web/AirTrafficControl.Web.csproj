@@ -215,6 +215,12 @@
     <Content Include="Scripts\angular-mocks.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\angular-signalr-hub.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\angular-signalr-hub.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\angular.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -236,6 +242,12 @@
     <Content Include="Scripts\jquery-2.1.4.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Scripts\jquery.signalR-2.2.0.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery.signalR-2.2.0.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="views\atcmain.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -247,6 +259,7 @@
     <TypeScriptCompile Include="App\AtcApp.ts" />
     <TypeScriptCompile Include="App\MainController.ts" />
     <TypeScriptCompile Include="App\MapDirectives.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\angular-signalr-hub\angular-signalr-hub.d.ts" />
     <TypeScriptCompile Include="Scripts\Typings\angularjs\angularjs.d.ts" />
     <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.AdvancedShapes.d.ts" />
     <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.d.ts" />
@@ -256,6 +269,7 @@
     <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.Traffic.d.ts" />
     <TypeScriptCompile Include="Scripts\Typings\bingmaps\Microsoft.Maps.VenueMaps.d.ts" />
     <TypeScriptCompile Include="Scripts\Typings\jquery\jquery.d.ts" />
+    <TypeScriptCompile Include="Scripts\Typings\signalr\signalr.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AirTrafficControl.Interfaces\AirTrafficControl.Interfaces.csproj">

@@ -25,9 +25,9 @@ namespace AirTrafficControl.Web.Fabric
             //
             // Ideally, that would be a custom, Fabric-based backplane. Custom backplanes are possible with SignalR, 
             // but the documentation is scarce.
-            appBuilder.MapSignalR();
-
-            appBuilder.UseNancy();
+            appBuilder
+                .MapSignalR()
+                .UseNancy();
 
             // THIS IS HOW ASP.NET WEB API CAN BE BOOTSTRAPPED FOR AN OWIN-BASED APPLICATION 
             //
