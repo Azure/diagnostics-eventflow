@@ -3,6 +3,6 @@ var AirTrafficControl;
 (function (AirTrafficControl) {
     (function () {
         var app = angular.module('AtcApp', ['AtcAppDirectives']);
-        app.controller("MainController", ["$scope", "$interval", "$http", AirTrafficControl.MainController]);
+        app.controller("MainController", ["$scope", "$interval", "$http", "SignalR", AirTrafficControl.MainController]);
     })();
 })(AirTrafficControl || (AirTrafficControl = {}));

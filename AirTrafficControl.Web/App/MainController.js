@@ -11,13 +11,15 @@ var AirTrafficControl;
         return NewFlightData;
     })();
     var MainController = (function () {
-        function MainController($scope, $interval, $http) {
+        function MainController($scope, $interval, $http, Hub) {
             var _this = this;
             this.$scope = $scope;
             this.$interval = $interval;
             this.$http = $http;
+            this.Hub = Hub;
             $scope.AirplaneStates = [];
-            this.updateInterval = $interval(function () { return _this.onUpdateAirplaneStates(); }, 2000);
+            // Temporarily disable polling while experimenting with SignalR
+            // this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
             $scope.$on('$destroy', function () { return _this.onScopeDestroy(); });
             $scope.Airports = [];
             this.$http.get("/api/airports").then(function (response) {
@@ -25,6 +27,15 @@ var AirTrafficControl;
             });
             $scope.NewFlightData = new NewFlightData();
             $scope.OnNewFlight = function () { return _this.onNewFlight(); };
+            var atcHubOptions = {
+                listeners: {
+                    'airplaneStateUpdate': function (newAirplaneStates) {
+                        _this.$scope.AirplaneStates = newAirplaneStates;
+                        _this.$scope.$apply();
+                    }
+                }
+            };
+            this.atcHub = new Hub('atc', atcHubOptions);
         }
         MainController.prototype.onUpdateAirplaneStates = function () {
             var _this = this;

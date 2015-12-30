@@ -23,11 +23,13 @@ module AirTrafficControl {
 
     export class MainController {
         private updateInterval: ng.IPromise<any>;
+        private atcHub: ngSignalr.Hub;
 
-        constructor(private $scope: IMainControllerScope, private $interval: ng.IIntervalService, private $http: ng.IHttpService) {
+        constructor(private $scope: IMainControllerScope, private $interval: ng.IIntervalService, private $http: ng.IHttpService, private Hub: ngSignalr.HubFactory) {
             $scope.AirplaneStates = [];
 
-            this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
+            // Temporarily disable polling while experimenting with SignalR
+            // this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
 
             $scope.$on('$destroy',() => this.onScopeDestroy());
 
@@ -39,6 +41,16 @@ module AirTrafficControl {
             $scope.NewFlightData = new NewFlightData();
 
             $scope.OnNewFlight = () => this.onNewFlight();
+
+            var atcHubOptions: ngSignalr.HubOptions = {
+                listeners: {
+                    'airplaneStateUpdate': (newAirplaneStates: AirplaneState[]) => {
+                        this.$scope.AirplaneStates = newAirplaneStates;
+                        this.$scope.$apply();
+                    }
+                }
+            };
+            this.atcHub = new Hub('atc', atcHubOptions);
         }
 
         private onUpdateAirplaneStates() {
