@@ -165,6 +165,14 @@ namespace AirTrafficControl
         {
             WriteEvent(ActorHostInitializationFailedEventId, exception);
         }
+
+        private const int FlightStatusNotificationFailedEventId = 4;
+        [Event(FlightStatusNotificationFailedEventId, Level = EventLevel.Warning, Message = "Attempt to notify about new flight status failed")]
+        public void FlightStatusNotificationFailed(string exception)
+        {
+            WriteEvent(FlightStatusNotificationFailedEventId, exception);
+        }
+
         #endregion
 
         #region Private Methods

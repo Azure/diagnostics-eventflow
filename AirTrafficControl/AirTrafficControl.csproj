@@ -76,6 +76,7 @@
       <HintPath>..\packages\Microsoft.ServiceFabric.4.4.87-preview\lib\net45\System.Fabric.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml" />
@@ -103,6 +104,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AirTrafficControl.Common\AirTrafficControl.Common.csproj">
+      <Project>{cf947161-bfbb-4c3f-9e9f-6973c26e3624}</Project>
+      <Name>AirTrafficControl.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AirTrafficControl.Interfaces\AirTrafficControl.Interfaces.csproj">
       <Project>{E615A49E-4A25-4322-8317-33BC01130928}</Project>
       <Name>AirTrafficControl.Interfaces</Name>

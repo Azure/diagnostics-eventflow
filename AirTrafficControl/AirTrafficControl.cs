@@ -1,12 +1,15 @@
-﻿using System;
+﻿using AirTrafficControl.Common;
+using AirTrafficControl.Interfaces;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Services.Client;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using AirTrafficControl.Interfaces;
-using Microsoft.ServiceFabric;
-using Microsoft.ServiceFabric.Actors;
-using Microsoft;
 using Validation;
 
 namespace AirTrafficControl
@@ -14,9 +17,11 @@ namespace AirTrafficControl
     public class AirTrafficControl : StatefulActor<AirTrafficControlState>, IAirTrafficControl, IRemindable
     {
         private const string TimePassedReminder = "AirTrafficControl.TimePassedReminder";
+        private const string FrontendServiceName = "fabric:/AirTrafficControl/AirTrafficControlWeb";
         private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates);
 
-        private readonly IDictionary<Type, AirplaneController> AirplaneControllers; 
+        private readonly IDictionary<Type, AirplaneController> AirplaneControllers;
+        private ServicePartitionClient<HttpCommunicationClient> frontendCommunicationClient;
     
         public AirTrafficControl(): base()
         {
@@ -38,6 +43,9 @@ namespace AirTrafficControl
                 this.State = new AirTrafficControlState();
                 this.State.FlyingAirplaneIDs = new List<string>();
             }
+
+            var clientFactory = new HttpCommunicationClientFactory(ServicePartitionResolver.GetDefault(), operationTimeout: TimeSpan.FromSeconds(10), readWriteTimeout: TimeSpan.FromSeconds(5));
+            this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(clientFactory, new Uri(FrontendServiceName));
 
             return base.OnActivateAsync();
         }
@@ -112,6 +120,11 @@ namespace AirTrafficControl
             }            
 
             await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassed(this.State.CurrentTime))).ConfigureAwait(false);
+
+            // Notify anybody who is listening about new airplane states
+            var airplaneStateNotifications = airplaneActorStatesByDepartureTime.Select(airplaneActorState =>
+                                                new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
+            NotifyFlightStatus(airplaneStateNotifications);
         }
 
         private Dictionary<string, IAirplane> CreateAirplaneProxies()
@@ -122,6 +135,30 @@ namespace AirTrafficControl
                 retval.Add(airplaneID, ActorProxy.Create<IAirplane>(new ActorId(airplaneID)));
             }
             return retval;
+        }
+
+        private void NotifyFlightStatus(IEnumerable<AirplaneStateDto> airplaneStateNotifications)
+        {
+            try
+            {
+                this.frontendCommunicationClient.InvokeWithRetryAsync(async communicationClient =>
+                        {
+                            using (var httpClient = new HttpClient())
+                            {
+                                httpClient.BaseAddress = communicationClient.BaseAddress;
+                                httpClient.Timeout = communicationClient.OperationTimeout;
+                                var content = new FormUrlEncodedContent(new[]
+                                {                                    new KeyValuePair<string, string>(string.Empty, JsonConvert.SerializeObject(airplaneStateNotifications))                                });
+                                await httpClient.PostAsync("/api/notify/flight-status", content);
+                            }
+                        });
+
+                ActorEventSource.Current.ActorMessage(this, "Flight status notification sent");
+            }
+            catch (Exception e)
+            {
+                ActorEventSource.Current.FlightStatusNotificationFailed(e.ToString());
+            }
         }
 
         private Task HandleAirplaneLanded(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
