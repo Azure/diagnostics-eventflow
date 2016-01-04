@@ -4,6 +4,12 @@ namespace AirTrafficControl.Interfaces
 {
     public class AirplaneStateDto
     {
+        // Parameterless constructor for deserialization
+        public AirplaneStateDto()
+        {
+
+        }
+
         public AirplaneStateDto(string id, string stateDescription, Location position, double heading)
         {
             Requires.NotNullOrWhiteSpace(id, nameof(id));
@@ -25,12 +31,12 @@ namespace AirTrafficControl.Interfaces
             this.Heading = airplaneState.GetHeading(flightPlan);
         }
 
-        public string ID { get; private set; }
-        public string StateDescription { get; private set; }
+        public string ID { get; set; }
+        public string StateDescription { get; set; }
 
-        public Location Location { get; private set; }
+        public Location Location { get; set; }
 
         // Heading (in radians), 360 is zero and increases clockwise
-        public double Heading { get; private set; }
+        public double Heading { get; set; }
     }
 }
