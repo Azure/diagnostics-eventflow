@@ -103,11 +103,16 @@ namespace AirTrafficControl.Web.WebSrv
                 ServiceEventSource.Current.RestApiOperationStop(operationName);
                 return retval;
             }
-            catch(Exception e)
+            catch(Exception e) when (LogAndNeverCatch(e, operationName))
             {
-                ServiceEventSource.Current.RestApiOperationError(e.ToString(), operationName);
-                throw;
+                throw; // Make compiler happy
             }
+        }
+
+        private bool LogAndNeverCatch(Exception e, string operationName)
+        {
+            ServiceEventSource.Current.RestApiOperationError(e.ToString(), operationName);
+            return false; // Never catch the exception
         }
     }
 }
