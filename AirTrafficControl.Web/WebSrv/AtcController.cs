@@ -94,10 +94,17 @@ namespace AirTrafficControl.Web.WebSrv
             return Task.FromResult(Universe.Current.Airports.AsEnumerable());
         }
 
-        public Task PerformFlightStatusUpdate(IEnumerable<AirplaneStateDto> newAirplaneStates)
+        public async Task PerformFlightStatusUpdate(IEnumerable<AirplaneStateDto> newAirplaneStates)
         {
-            var context = AtcController.AtcHubContext.Value;
-            return context.Clients.All.UpdateFlightStatus(newAirplaneStates);
+            try
+            {
+                var context = AtcController.AtcHubContext.Value;
+                await context.Clients.All.UpdateFlightStatus(newAirplaneStates);
+            }
+            catch (Exception e)
+            {
+                ServiceEventSource.Current.RestApiFrontEndError("PerformFlightStatusUpdate", e.ToString());
+            }
         }
     }
 }
