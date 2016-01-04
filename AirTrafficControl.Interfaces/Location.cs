@@ -10,6 +10,9 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public class Location
     {
+        // Parameterless constructor for deserialization
+        public Location() { }
+
         public Location(double latitude, double longitude) : this(latitude, longitude, null) { }
 
         public Location(double latitude, double longitude, double? altitude)
@@ -30,13 +33,13 @@ namespace AirTrafficControl.Interfaces
         }
 
         [DataMember]
-        public double Latitude { get; private set; }
+        public double Latitude { get; set; }
 
         [DataMember]
-        public double Longitude { get; private set; }
+        public double Longitude { get; set; }
 
         [DataMember]
-        public double? Altitude { get; private set; }
+        public double? Altitude { get; set; }
 
         public double GetDirectHeadingTo(Location another)
         {

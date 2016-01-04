@@ -5,10 +5,7 @@ namespace AirTrafficControl.Interfaces
     public class AirplaneStateDto
     {
         // Parameterless constructor for deserialization
-        public AirplaneStateDto()
-        {
-
-        }
+        public AirplaneStateDto() { }
 
         public AirplaneStateDto(string id, string stateDescription, Location position, double heading)
         {

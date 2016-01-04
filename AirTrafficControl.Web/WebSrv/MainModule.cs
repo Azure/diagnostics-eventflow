@@ -73,7 +73,7 @@ namespace AirTrafficControl.Web.WebSrv
     #if DEBUG
                         string requestBody = (new StreamReader(this.Request.Body)).ReadToEnd();
     #endif
-                        var newAirplaneStates = this.Bind<IEnumerable<AirplaneStateDto>>();
+                        var newAirplaneStates = this.Bind<List<AirplaneStateDto>>();
                         var atc = new AtcController();
                         await atc.PerformFlightStatusUpdate(newAirplaneStates).ConfigureAwait(false);
                         return HttpStatusCode.NoContent; // Success, just nothing to report back.
