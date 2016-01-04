@@ -149,8 +149,7 @@ namespace AirTrafficControl
                                 {
                                     httpClient.BaseAddress = communicationClient.BaseAddress;
                                     httpClient.Timeout = communicationClient.OperationTimeout;
-                                    var content = new FormUrlEncodedContent(new[]
-                                    {                                        new KeyValuePair<string, string>(string.Empty, JsonConvert.SerializeObject(airplaneStateNotifications))                                    });
+                                    var content = new StringContent(JsonConvert.SerializeObject(airplaneStateNotifications), System.Text.Encoding.UTF8, "application/json");                                    
                                     await httpClient.PostAsync("/api/notify/flight-status", content);
 
                                     ActorEventSource.Current.ActorMessage(this, "Flight status notification sent");

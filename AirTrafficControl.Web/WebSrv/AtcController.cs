@@ -12,10 +12,10 @@ namespace AirTrafficControl.Web.WebSrv
 {
     internal class AtcController
     {
-        private static Lazy<IHubContext<AtcHub>> AtcHubContext = new Lazy<IHubContext<AtcHub>>(() => 
+        private static Lazy<IHubContext<IAtcHubClient>> AtcHubContext = new Lazy<IHubContext<IAtcHubClient>>(() => 
             {
                 var connectionManager = GlobalHost.DependencyResolver.Resolve<IConnectionManager>();
-                var retval = connectionManager.GetHubContext<AtcHub>("atc");
+                var retval = connectionManager.GetHubContext<IAtcHubClient>("atc");
                 return retval;
             }, 
             System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
@@ -99,7 +99,7 @@ namespace AirTrafficControl.Web.WebSrv
             try
             {
                 var context = AtcController.AtcHubContext.Value;
-                await context.Clients.All.UpdateFlightStatus(newAirplaneStates);
+                await context.Clients.All.flightStatusUpdate(newAirplaneStates);
             }
             catch (Exception e)
             {

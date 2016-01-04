@@ -2,26 +2,22 @@
 using AirTrafficControl.Web.Fabric;
 using Nancy;
 using Nancy.ModelBinding;
-using Nancy.TinyIoc;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Fabric;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Validation;
 
 namespace AirTrafficControl.Web.WebSrv
 {
     public class MainModule: NancyModule
     {
+        private delegate Task<dynamic> AsyncNancyRequestHandler(dynamic parameters, CancellationToken cancellationToken);
+
         private StatelessServiceInitializationParameters serviceInitializationParameters;
 
-        private const string GetAirplanesOperation = "GetAirplanes";
-        private const string GetAirplaneStateOperation = "GetAirplaneState";
-        private const string GetAirportsOperation = "GetAirports";
-        private const string GetFlightsOperation = "GetFlights";
-        private const string StartNewFlightOperation = "StartNewFlight";
         private const string NotifyFlightStatusUpdate = "FlightStatusUpdate";
 
         public MainModule()
@@ -35,54 +31,53 @@ namespace AirTrafficControl.Web.WebSrv
                     return View["atcmain.html", new MainPageModel(Request)];
                 };
 
-                Get["/api/airplanes", runAsync: true] = async (parameters, cancellationToken) =>
-                 {
-                     ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirplanesOperation);
-                     var atc = new AtcController();
-                     var airplaneStates = await atc.GetFlyingAirplaneStates().ConfigureAwait(false);
-                     ServiceEventSource.Current.RestApiOperationStop(GetAirplanesOperation);
-                     return Response.AsJson<IEnumerable<AirplaneStateDto>>(airplaneStates).WithHeaders(PublicShortLived());
-                 };
+                Get["/api/airplanes", runAsync: true] = (p, ct) => PerformRestOperation("GetAirplanes", p, ct, (AsyncNancyRequestHandler) (
+                    async (parameters, cancellationToken) =>
+                    {
+                        var atc = new AtcController();
+                        var airplaneStates = await atc.GetFlyingAirplaneStates().ConfigureAwait(false);
+                        return Response.AsJson<IEnumerable<AirplaneStateDto>>(airplaneStates).WithHeaders(PublicShortLived());
+                    }));
+                    
 
-                Get["/api/airplanes/{id}", runAsync: true] = async (parameters, cancellationToken) =>
-                {
-                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirplaneStateOperation);
-                    AtcController atc = new AtcController();
-                    AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id).ConfigureAwait(false);
-                    ServiceEventSource.Current.RestApiOperationStop(GetAirplaneStateOperation);
-                    return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
-                };
+                Get["/api/airplanes/{id}", runAsync: true] = (p, ct) => PerformRestOperation("GetAirplaneState", p, ct, (AsyncNancyRequestHandler) (
+                    async (parameters, cancellationToken) =>
+                    {
+                        AtcController atc = new AtcController();
+                        AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id).ConfigureAwait(false);
+                        return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
+                    }));
 
-                Get["/api/airports", runAsync: true] = async (parameters, cancellationToken) =>
-                {
-                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, GetAirportsOperation);
-                    var atc = new AtcController();
-                    var airports = await atc.GetAirports().ConfigureAwait(false);
-                    ServiceEventSource.Current.RestApiOperationStop(GetAirportsOperation);
-                    return Response.AsJson<IEnumerable<Airport>>(airports);
-                };
+                Get["/api/airports", runAsync: true] = (p, ct) => PerformRestOperation("GetAirports", p, ct, (AsyncNancyRequestHandler) (
+                    async (parameters, cancellationToken) =>
+                    {
+                        var atc = new AtcController();
+                        var airports = await atc.GetAirports().ConfigureAwait(false);
+                        return Response.AsJson<IEnumerable<Airport>>(airports);
+                    }));
 
-                Post["/api/flights", runAsync: true] = async (parameters, cancellationToken) =>
-                {
-                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, StartNewFlightOperation);
-                    var requestModel = this.Bind<FlightPlanRequestModel>();
-                    var atc = new AtcController();
-                    await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name).ConfigureAwait(false);
-                    ServiceEventSource.Current.RestApiOperationStop(StartNewFlightOperation);
-                    return HttpStatusCode.Created;
-                    // If the flight was addressable individually, we would return something like this:
-                    // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
-                };
+                Post["/api/flights", runAsync: true] = (p, ct) => PerformRestOperation("StartNewFlight", p, ct, (AsyncNancyRequestHandler) (
+                    async (parameters, cancellationToken) =>
+                    {
+                        var requestModel = this.Bind<FlightPlanRequestModel>();
+                        var atc = new AtcController();
+                        await atc.StartNewFlight(requestModel.AirplaneID, requestModel.DepartureAirport.Name, requestModel.DestinationAirport.Name).ConfigureAwait(false);
+                        return HttpStatusCode.Created;
+                        // If the flight was addressable individually, we would return something like this:
+                        // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
+                    }));
 
-                Post["/api/notify/flight-status", runAsync: true] = async (parameters, cancellationToken) => 
-                {
-                    ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, NotifyFlightStatusUpdate);
-                    var newAirplaneStates = this.Bind<IEnumerable<AirplaneStateDto>>();
-                    var atc = new AtcController();
-                    await atc.PerformFlightStatusUpdate(newAirplaneStates).ConfigureAwait(false);
-                    ServiceEventSource.Current.RestApiOperationStop(NotifyFlightStatusUpdate);
-                    return HttpStatusCode.NoContent; // Success, just nothing to report back.
-                };
+                Post["/api/notify/flight-status", runAsync: true] = (p, ct) => PerformRestOperation("FlightStatusUpdate", p, ct, (AsyncNancyRequestHandler) (
+                    async (parameters, cancellationToken) => 
+                    {
+    #if DEBUG
+                        string requestBody = (new StreamReader(this.Request.Body)).ReadToEnd();
+    #endif
+                        var newAirplaneStates = this.Bind<IEnumerable<AirplaneStateDto>>();
+                        var atc = new AtcController();
+                        await atc.PerformFlightStatusUpdate(newAirplaneStates).ConfigureAwait(false);
+                        return HttpStatusCode.NoContent; // Success, just nothing to report back.
+                    }));
             }
             catch(Exception e)
             {
@@ -94,6 +89,25 @@ namespace AirTrafficControl.Web.WebSrv
         private object[] PublicShortLived()
         {
             return new[] { new { Header = "Cache-Control", Value = "public,max-age=1"} };
+        }
+
+        private async Task<dynamic> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
+        {
+            Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
+            Assumes.NotNull(this.serviceInitializationParameters);
+
+            ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, operationName);
+            try
+            {
+                var retval = await inner(parameters, cancellationToken).ConfigureAwait(false);
+                ServiceEventSource.Current.RestApiOperationStop(operationName);
+                return retval;
+            }
+            catch(Exception e)
+            {
+                ServiceEventSource.Current.RestApiOperationError(e.ToString(), operationName);
+                throw;
+            }
         }
     }
 }

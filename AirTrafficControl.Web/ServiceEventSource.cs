@@ -240,6 +240,13 @@ namespace AirTrafficControl.Web
             WriteEvent(CommunicationEndpointReadyEventId, listeningAddress);
         }
 
+        public const int RestApiOperationErrorEventId = 10;
+        [Event(RestApiOperationErrorEventId, Level = EventLevel.Error, Message = "REST operation {1} ended in an error")]
+        public void RestApiOperationError(string exception, [CallerMemberName] string operationName = "")
+        {
+            WriteEvent(RestApiOperationErrorEventId, exception, operationName);
+        }
+
         #endregion
 
         #region Private methods
