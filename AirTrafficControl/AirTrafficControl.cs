@@ -17,7 +17,7 @@ namespace AirTrafficControl
     public class AirTrafficControl : StatefulActor<AirTrafficControlState>, IAirTrafficControl, IRemindable
     {
         private const string TimePassedReminder = "AirTrafficControl.TimePassedReminder";
-        private const string FrontendServiceName = "fabric:/AirTrafficControl/AirTrafficControlWeb";
+        private const string FrontendServiceName = "fabric:/AirTrafficControlApplication/AirTrafficControlWeb";
         private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates);
 
         private readonly IDictionary<Type, AirplaneController> AirplaneControllers;
@@ -143,17 +143,25 @@ namespace AirTrafficControl
             {
                 this.frontendCommunicationClient.InvokeWithRetryAsync(async communicationClient =>
                         {
-                            using (var httpClient = new HttpClient())
+                            try
                             {
-                                httpClient.BaseAddress = communicationClient.BaseAddress;
-                                httpClient.Timeout = communicationClient.OperationTimeout;
-                                var content = new FormUrlEncodedContent(new[]
-                                {                                    new KeyValuePair<string, string>(string.Empty, JsonConvert.SerializeObject(airplaneStateNotifications))                                });
-                                await httpClient.PostAsync("/api/notify/flight-status", content);
+                                using (var httpClient = new HttpClient())
+                                {
+                                    httpClient.BaseAddress = communicationClient.BaseAddress;
+                                    httpClient.Timeout = communicationClient.OperationTimeout;
+                                    var content = new FormUrlEncodedContent(new[]
+                                    {                                        new KeyValuePair<string, string>(string.Empty, JsonConvert.SerializeObject(airplaneStateNotifications))                                    });
+                                    await httpClient.PostAsync("/api/notify/flight-status", content);
+
+                                    ActorEventSource.Current.ActorMessage(this, "Flight status notification sent");
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                ActorEventSource.Current.FlightStatusNotificationFailed(e.ToString());
+                                throw;
                             }
                         });
-
-                ActorEventSource.Current.ActorMessage(this, "Flight status notification sent");
             }
             catch (Exception e)
             {
