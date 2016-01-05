@@ -1,0 +1,53 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmNamePrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The prefix of virtual machine name in service fabric cluster."
+            }
+        },
+        "vmStartIndex": {
+            "type": "int",
+            "metadata": {
+                "description": "The starting index for virtual machine name in service fabric cluster."
+            },
+            "defaultValue": 0
+        },
+        "vmCount": {
+            "type": "int",
+            "metadata": {
+                "description": "The virtual machine count in service fabric cluster."
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]"        
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('vmNamePrefix'), copyIndex(parameters('vmStartIndex')), '/CustomScriptExtensionInstallNet46')]",
+            "location": "[variables('location')]",
+            "tags": {
+                "displayName": "CustomScriptExtensionInstallNet46"
+            },
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [ "https://serviceprofiler.azurewebsites.net/content/downloads/InstallNetFx46.ps1" ],
+                    "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File InstallNetFx46.ps1"
+                }
+            },
+            "copy": {
+                "name": "vmExtensionLoop",
+                "count": "[parameters('vmCount')]"
+            }
+        }
+    ]
+}
