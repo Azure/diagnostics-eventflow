@@ -3,11 +3,10 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>d875e47f-986b-4bf1-89a9-312d0bb40348</ProjectGuid>
-    <ProjectVersion>0.11</ProjectVersion>
+    <ProjectVersion>1.0</ProjectVersion>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="ApplicationManifest.xml" />
     <None Include="Scripts\Deploy-FabricApplication.ps1" />
   </ItemGroup>
   <ItemGroup>
@@ -15,6 +14,7 @@
     <ProjectReference Include="..\AirTrafficControl\AirTrafficControl.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ApplicationPackageRoot\ApplicationManifest.xml" />
     <Content Include="ApplicationParameters\Cloud.xml" />
     <Content Include="ApplicationParameters\Local.xml" />
     <Content Include="ClusterConfig\DEPLOYMENT.txt" />
@@ -24,14 +24,12 @@
     <Content Include="PublishProfiles\Local.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.targets" />
-
   <PropertyGroup>
     <PackageDependsOn>
       $(PackageDependsOn);
       CopyWebApplicationJavascriptFilesToOutput
     </PackageDependsOn>
   </PropertyGroup>
-
   <Target Name="CopyWebApplicationJavascriptFilesToOutput">
     <ItemGroup>
       <WebApplicationJavascriptFiles Include="..\AirTrafficControl.Web\App\*.js" />
