@@ -1,6 +1,7 @@
 ﻿using AirTrafficControl.Interfaces;
 using Microsoft;
 using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,63 +12,71 @@ using Validation;
 
 namespace AirTrafficControl
 {
-    public class Airplane : StatefulActor<AirplaneActorState>, IAirplane
+    [StatePersistence(StatePersistence.Persisted)]
+    public class Airplane : Actor, IAirplane
     {
-        public Task<AirplaneActorState> GetState()
+        public Task<AirplaneActorState> GetStateAsync()
         {
-            return Task.FromResult(this.State);
+            return this.StateManager.GetStateAsync<AirplaneActorState>(nameof(AirplaneActorState));
         }
 
-        public Task ReceiveInstruction(AtcInstruction instruction)
+        public async Task ReceiveInstructionAsync(AtcInstruction instruction)
         {
             Requires.NotNull(instruction, "instruction");
 
-            if (this.State.AirplaneState is UnknownLocationState)
+            var state = await GetStateAsync();
+            if (state.AirplaneState is UnknownLocationState)
             {
                 throw new InvalidOperationException("Cannot receive ATC instruction if the airplane location is unknown. The airplane needs to start the flight first.");
             }
 
-            this.State.Instruction = instruction;
+            state.Instruction = instruction;
+            await SetState(state);
             ActorEventSource.Current.ActorMessage(this, "{0}: Received ATC instruction '{1}'", this.Id.ToString(), instruction.ToString());
-            return Task.FromResult(true);
         }
 
-        public Task TimePassed(int currentTime)
+        public async Task TimePassedAsync(int currentTime)
         {
-            if (this.State.AirplaneState is UnknownLocationState)
+            var actorState = await GetStateAsync();
+            if (actorState.AirplaneState is UnknownLocationState)
             {
-                return Task.FromResult(true);
+                return;
             }
 
-            AirplaneState newState = this.State.AirplaneState.ComputeNextState(this.State.FlightPlan, this.State.Instruction);
-            this.State.AirplaneState = newState;
-            if (newState is DepartingState)
+            AirplaneState newAirplaneState = actorState.AirplaneState.ComputeNextState(actorState.FlightPlan, actorState.Instruction);
+            actorState.AirplaneState = newAirplaneState;
+            if (newAirplaneState is DepartingState)
             {
-                this.State.DepartureTime = currentTime;
+                actorState.DepartureTime = currentTime;
             }
-            ActorEventSource.Current.ActorMessage(this, "{0}: Now {1} Time is {2}", this.Id.ToString(), newState, currentTime);
-            return Task.FromResult(true);
+            await SetState(actorState);
+            ActorEventSource.Current.ActorMessage(this, "{0}: Now {1} Time is {2}", this.Id.ToString(), newAirplaneState, currentTime);
         }
 
-        public Task StartFlight(FlightPlan flightPlan)
+        public async Task StartFlightAsync(FlightPlan flightPlan)
         {
             Requires.NotNull(flightPlan, "flightPlan");
             Requires.Argument(flightPlan.AirplaneID == this.Id.ToString(), "flightPlan", "The passed flight plan is for a different airplane");
 
-            this.State.AirplaneState = new TaxiingState(flightPlan.DeparturePoint);
-            this.State.FlightPlan = flightPlan;
-            return Task.FromResult(true);
+            var actorState = await GetStateAsync();
+            actorState.AirplaneState = new TaxiingState(flightPlan.DeparturePoint);
+            actorState.FlightPlan = flightPlan;
+            await SetState(actorState);
         }
 
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
-            if (this.State == null)
-            {
-                this.State = new AirplaneActorState();
-                this.State.AirplaneState = new UnknownLocationState();
-            }
+            await base.OnActivateAsync();
 
-            return base.OnActivateAsync();
+            var actorState = new AirplaneActorState();
+            actorState.AirplaneState = UnknownLocationState.Instance;
+            await this.StateManager.TryAddStateAsync(nameof(AirplaneActorState), actorState);
+        }
+
+        private Task SetState(AirplaneActorState state)
+        {
+            Requires.NotNull(state, nameof(state));
+            return this.StateManager.SetStateAsync<AirplaneActorState>(nameof(AirplaneActorState), state);
         }
     }
 }

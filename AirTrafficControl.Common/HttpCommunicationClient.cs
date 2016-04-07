@@ -1,37 +1,26 @@
 ﻿using System;
 using System.Fabric;
 using Microsoft.ServiceFabric.Services.Communication.Client;
+using System.Net.Http;
 
 namespace AirTrafficControl.Common
 {
     public class HttpCommunicationClient : ICommunicationClient
     {
-        public HttpCommunicationClient(Uri baseAddress, TimeSpan operationTimeout, TimeSpan readWriteTimeout)
+        public HttpCommunicationClient(HttpClient client, string address)
         {
-            this.BaseAddress = baseAddress;
-            this.OperationTimeout = operationTimeout;
-            this.ReadWriteTimeout = readWriteTimeout;
+            this.HttpClient = client;
+            this.Url = new Uri(address);
         }
 
-        /// <summary>
-        /// The service base address.
-        /// </summary>
-        public Uri BaseAddress { get; private set; }
+        public HttpClient HttpClient { get; }
 
-        /// <summary>
-        /// Represents the value for operation timeout. Used for HttpWebRequest GetResponse and GetRequestStream methods.
-        /// </summary>
-        public TimeSpan OperationTimeout { get; set; }
+        public Uri Url { get; }
 
-        /// <summary>
-        /// Represents the value for the timeout used to read/write from a stream.
-        /// </summary>
-        public TimeSpan ReadWriteTimeout { get; set; }
+        ResolvedServiceEndpoint ICommunicationClient.Endpoint { get; set; }
 
-        /// <summary>
-        /// The resolved service partition which contains the resolved service endpoints.
-        /// </summary>
-        public ResolvedServicePartition ResolvedServicePartition { get; set; }
-    
+        string ICommunicationClient.ListenerName { get; set; }
+
+        ResolvedServicePartition ICommunicationClient.ResolvedServicePartition { get; set; }
     }
 }

@@ -13,12 +13,12 @@ namespace AirTrafficControl.Web.Fabric
             return new ServiceInstanceListener[] { new ServiceInstanceListener(CreateCommunicationListener) };
         }
 
-        private ICommunicationListener CreateCommunicationListener(StatelessServiceInitializationParameters arg)
+        private ICommunicationListener CreateCommunicationListener(StatelessServiceContext ctx)
         {
-            var fabricContext = new FabricContext<StatelessServiceInitializationParameters>(arg);
-            FabricContext<StatelessServiceInitializationParameters>.Current = fabricContext;
+            var fabricContext = new FabricContext<StatelessServiceContext>(ctx);
+            FabricContext<StatelessServiceContext>.Current = fabricContext;
 
-            var listener = new OwinCommunicationListener(new OwinStartup(), arg);
+            var listener = new OwinCommunicationListener(new OwinStartup(), ctx);
 
             ServiceEventSource.Current.ServiceMessage(this, "Communication listener created");
             return listener;

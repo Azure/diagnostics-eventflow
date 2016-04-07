@@ -37,6 +37,8 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public class UnknownLocationState : AirplaneState
     {
+        public static UnknownLocationState Instance = new UnknownLocationState();
+
         public override Location Location
         {
             get { return null; }

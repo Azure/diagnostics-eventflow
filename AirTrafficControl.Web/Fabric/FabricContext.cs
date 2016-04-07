@@ -3,7 +3,7 @@ using System.Fabric;
 
 namespace AirTrafficControl.Web.Fabric
 {
-    internal class FabricContext<T> where T : ServiceInitializationParameters
+    internal class FabricContext<T> where T : ServiceContext
     {
         public static FabricContext<T> Current { get; set; }
 
