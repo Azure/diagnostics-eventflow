@@ -58,7 +58,7 @@ namespace Microsoft.Diagnostics.EventListeners
                 throw new ConfigurationErrorsException("Invalid Elastic Search credentials");
             }
 
-            ConnectionSettings config = new ConnectionSettings(esServiceUri).SetBasicAuthentication(userName, password);
+            ConnectionSettings config = new ConnectionSettings(esServiceUri).BasicAuthentication(userName, password);
             return new ElasticClient(config);
         }
 
@@ -139,17 +139,18 @@ namespace Microsoft.Diagnostics.EventListeners
             }
 
             // TODO: allow the consumer to fine-tune index settings
-            IndexSettings indexSettings = new IndexSettings();
-            indexSettings.NumberOfReplicas = 1;
-            indexSettings.NumberOfShards = 5;
+            IndexState indexSettings = new IndexState();
+            indexSettings.Settings.NumberOfReplicas = 1;
+            indexSettings.Settings.NumberOfShards = 5;
             indexSettings.Settings.Add("refresh_interval", "15s");
 
-            IIndicesOperationResponse createIndexResult = await esClient.CreateIndexAsync(c => c.Index(currentIndexName).InitializeUsing(indexSettings));
+            ICreateIndexResponse createIndexResult = await esClient.CreateIndexAsync(currentIndexName, c => c.InitializeUsing(indexSettings));
 
             if (!createIndexResult.IsValid)
             {
                 if (createIndexResult.ServerError != null &&
-                    string.Equals(createIndexResult.ServerError.ExceptionType, "IndexAlreadyExistsException", StringComparison.OrdinalIgnoreCase))
+                    createIndexResult.ServerError.Error != null &&
+                    string.Equals(createIndexResult.ServerError.Error.Type, "IndexAlreadyExistsException", StringComparison.OrdinalIgnoreCase))
                 {
                     // This is fine, someone just beat us to create a new index.
                     return;
@@ -176,13 +177,13 @@ namespace Microsoft.Diagnostics.EventListeners
                     string.Format(
                         "ElasticSearch communication attempt resulted in an error: {0} \n ExceptionType: {1} \n Status code: {2}",
                         response.ServerError.Error,
-                        response.ServerError.ExceptionType,
+                        response.ServerError.Error.Type,
                         response.ServerError.Status));
             }
-            else if (response.ConnectionStatus != null)
+            else if (response.DebugInformation != null)
             {
                 this.ReportListenerProblem(
-                    "ElasticSearch communication attempt resulted in an error. Connection status: " + response.ConnectionStatus.ToString());
+                    "ElasticSearch communication attempt resulted in an error. Debug information: " + response.DebugInformation);
             }
             else
             {
