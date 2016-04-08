@@ -154,7 +154,7 @@ namespace AirTrafficControl
                             try
                             {
                                 var content = new StringContent(JsonConvert.SerializeObject(airplaneStateNotifications), System.Text.Encoding.UTF8, "application/json");
-                                await communicationClient.HttpClient.PostAsync("/api/notify/flight-status", content);
+                                await communicationClient.HttpClient.PostAsync(new Uri(communicationClient.Url, "/api/notify/flight-status"), content);
 
                                 ActorEventSource.Current.ActorMessage(this, "Flight status notification sent");
                             }
