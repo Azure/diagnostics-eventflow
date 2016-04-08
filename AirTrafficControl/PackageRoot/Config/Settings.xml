@@ -2,22 +2,16 @@
 <Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
    <Section Name="AirplaneActorServiceReplicatorConfig">
       <Parameter Name="ReplicatorEndpoint" Value="AirplaneActorServiceReplicatorEndpoint" />
+      <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
    </Section>
    <Section Name="AirplaneActorServiceReplicatorSecurityConfig">
       <Parameter Name="CredentialType" Value="None" />
    </Section>
-   <Section Name="AirplaneActorServiceLocalStoreConfig">
-      <Parameter Name="MaxAsyncCommitDelayInMilliseconds" Value="100" />
-      <Parameter Name="MaxVerPages" Value="32768" />
-   </Section>
    <Section Name="AirTrafficControlActorServiceReplicatorConfig">
       <Parameter Name="ReplicatorEndpoint" Value="AirTrafficControlActorServiceReplicatorEndpoint" />
+      <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
    </Section>
    <Section Name="AirTrafficControlActorServiceReplicatorSecurityConfig">
       <Parameter Name="CredentialType" Value="None" />
-   </Section>
-   <Section Name="AirTrafficControlActorServiceLocalStoreConfig">
-      <Parameter Name="MaxAsyncCommitDelayInMilliseconds" Value="100" />
-      <Parameter Name="MaxVerPages" Value="32768" />
    </Section>
 </Settings>

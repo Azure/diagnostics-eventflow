@@ -1,14 +1,10 @@
-﻿using System;
-using System.Fabric;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.ServiceFabric.Services;
+﻿using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
-using Microsoft.ServiceFabric.Services.Client;
-using System.Net.Http;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AirTrafficControl.Common
 {

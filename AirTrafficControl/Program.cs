@@ -1,11 +1,9 @@
-﻿using AirTrafficControl.Interfaces;
-
+﻿
 using Microsoft.Diagnostics.EventListeners;
-using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
-using System.Configuration;
-using System.Fabric;
 using System.Threading;
+using System.Threading.Tasks;
 using FabricEventListeners = Microsoft.Diagnostics.EventListeners.Fabric;
 
 namespace AirTrafficControl
@@ -16,23 +14,22 @@ namespace AirTrafficControl
         {
             try
             {
-                using (FabricRuntime fabricRuntime = FabricRuntime.Create())
+                const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
+                FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
+                ElasticSearchListener listener = null;
+                if (configProvider.HasConfiguration)
                 {
-                    const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
-                    FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
-                    ElasticSearchListener listener = null;
-                    if (configProvider.HasConfiguration)
-                    {
-                        listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
-                    }
-
-                    fabricRuntime.RegisterActor<AirTrafficControl>();
-                    fabricRuntime.RegisterActor<Airplane>();
-
-                    Thread.Sleep(Timeout.Infinite);
-
-                    GC.KeepAlive(listener);
+                    listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
                 }
+
+                Task.WhenAll(
+                    ActorRuntime.RegisterActorAsync<AirTrafficControl>(),
+                    ActorRuntime.RegisterActorAsync<Airplane>()
+                ).Wait();
+
+                Thread.Sleep(Timeout.Infinite);
+
+                GC.KeepAlive(listener);
             }
             catch (Exception e)
             {

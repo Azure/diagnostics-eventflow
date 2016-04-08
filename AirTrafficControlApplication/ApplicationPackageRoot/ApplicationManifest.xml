@@ -16,12 +16,12 @@
       <ConfigOverrides />
    </ServiceManifestImport>
    <DefaultServices>
-      <Service Name="AirplaneActorService" GeneratedIdRef="9c0185d4-2f8d-43a0-a58e-77d1166fbaac">
+      <Service Name="AirplaneActorService" GeneratedIdRef="1494ff07-d008-4385-971a-c665df52d746|Persisted">
          <StatefulService ServiceTypeName="AirplaneActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
             <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
          </StatefulService>
       </Service>
-      <Service Name="AirTrafficControlActorService" GeneratedIdRef="2938c412-3718-4b0b-a8d4-f97419f59bbc">
+      <Service Name="AirTrafficControlActorService" GeneratedIdRef="75258f87-c084-4d49-a395-774f3f36f72a|Persisted">
          <StatefulService ServiceTypeName="AirTrafficControlActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
             <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
          </StatefulService>

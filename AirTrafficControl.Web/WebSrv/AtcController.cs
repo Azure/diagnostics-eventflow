@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using Microsoft.ServiceFabric.Actors.Client;
 
 namespace AirTrafficControl.Web.WebSrv
 {
@@ -33,7 +34,7 @@ namespace AirTrafficControl.Web.WebSrv
                     foreach(string airplaneID in flyingAirplaneIDs)
                     {
                         var airplane = ActorProxy.Create<IAirplane>(new ActorId(airplaneID));
-                        var airplaneActorState = await airplane.GetState().ConfigureAwait(false);
+                        var airplaneActorState = await airplane.GetStateAsync();
                         var airplaneState = airplaneActorState.AirplaneState;
 
                         var stateModel = new AirplaneStateDto(airplaneID, airplaneState.ToString(), airplaneState.Location, airplaneState.GetHeading(airplaneActorState.FlightPlan));
@@ -50,7 +51,7 @@ namespace AirTrafficControl.Web.WebSrv
             }
         }
 
-        public async Task<AirplaneActorState> GetAirplaneState(string id)
+        public Task<AirplaneActorState> GetAirplaneState(string id)
         {
             try
             {
@@ -60,7 +61,7 @@ namespace AirTrafficControl.Web.WebSrv
                 }
 
                 var airplane = ActorProxy.Create<IAirplane>(new ActorId(id));
-                return await airplane.GetState().ConfigureAwait(false);
+                return airplane.GetStateAsync();
             }
             catch (Exception e)
             {

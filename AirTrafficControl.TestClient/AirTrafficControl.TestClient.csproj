@@ -105,9 +105,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StatefulServiceClient\HttpCommunicationClient.cs" />
-    <Compile Include="StatefulServiceClient\HttpCommunicationClientFactory.cs" />
-    <Compile Include="StatefulServiceClient\SampleClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

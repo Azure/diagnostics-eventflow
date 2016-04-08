@@ -2,12 +2,13 @@
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using System.Fabric;
 using System.Collections.Generic;
-using System;
 
 namespace AirTrafficControl.Web.Fabric
 {
     public class AirTrafficControlWeb : StatelessService
     {
+        public AirTrafficControlWeb(StatelessServiceContext ctx): base(ctx) { }
+
         protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
             return new ServiceInstanceListener[] { new ServiceInstanceListener(CreateCommunicationListener) };

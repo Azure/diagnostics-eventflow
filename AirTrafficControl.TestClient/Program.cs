@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using AirTrafficControl.Interfaces;
+﻿using AirTrafficControl.Interfaces;
 using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Client;
+using System;
+using System.Linq;
 
 namespace AirTrafficControl.TestClient
 {

@@ -7,16 +7,16 @@ namespace AirTrafficControl.Web.Fabric
     {
         public static FabricContext<T> Current { get; set; }
 
-        public FabricContext(T parameters)
+        public FabricContext(T serviceContext)
         {
-            if (parameters == null)
+            if (serviceContext == null)
             {
-                throw new ArgumentNullException("parameters");
+                throw new ArgumentNullException(nameof(serviceContext));
             }
 
-            this.InitializationParameters = parameters;
+            this.ServiceContext = serviceContext;
         }
 
-        public T InitializationParameters { get; private set; }        
+        public T ServiceContext { get; private set; }        
     }
 }

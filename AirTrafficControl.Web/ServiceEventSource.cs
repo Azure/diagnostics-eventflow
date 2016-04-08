@@ -164,35 +164,18 @@ namespace AirTrafficControl.Web
 
 
         [NonEvent]
-        public void RestApiOperationStart(StatelessServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName = "")
+        public void RestApiOperationStart(StatelessServiceContext serviceContext, [CallerMemberName] string operationName = "")
         {
             if (this.IsEnabled())
             {
 
                 RestApiOperationStart(
-                    serviceInitializationParameters.ServiceName.ToString(),
-                    serviceInitializationParameters.ServiceTypeName,
-                    serviceInitializationParameters.InstanceId,
-                    serviceInitializationParameters.PartitionId,
-                    serviceInitializationParameters.CodePackageActivationContext.ApplicationName,
-                    serviceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
-                    FabricRuntime.GetNodeContext().NodeName,
-                    operationName);
-            }
-        }
-
-        [NonEvent]
-        public void RestApiOperationStart(StatefulServiceInitializationParameters serviceInitializationParameters, [CallerMemberName] string operationName = "")
-        {
-            if (this.IsEnabled())
-            {
-                RestApiOperationStart(
-                    serviceInitializationParameters.ServiceName.ToString(),
-                    serviceInitializationParameters.ServiceTypeName,
-                    serviceInitializationParameters.ReplicaId,
-                    serviceInitializationParameters.PartitionId,
-                    serviceInitializationParameters.CodePackageActivationContext.ApplicationName,
-                    serviceInitializationParameters.CodePackageActivationContext.ApplicationTypeName,
+                    serviceContext.ServiceName.ToString(),
+                    serviceContext.ServiceTypeName,
+                    serviceContext.InstanceId,
+                    serviceContext.PartitionId,
+                    serviceContext.CodePackageActivationContext.ApplicationName,
+                    serviceContext.CodePackageActivationContext.ApplicationTypeName,
                     FabricRuntime.GetNodeContext().NodeName,
                     operationName);
             }

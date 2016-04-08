@@ -16,7 +16,7 @@ namespace AirTrafficControl.Web.WebSrv
     {
         private delegate Task<dynamic> AsyncNancyRequestHandler(dynamic parameters, CancellationToken cancellationToken);
 
-        private StatelessServiceInitializationParameters serviceInitializationParameters;
+        private StatelessServiceContext serviceContext;
 
         private const string NotifyFlightStatusUpdate = "FlightStatusUpdate";
 
@@ -24,7 +24,7 @@ namespace AirTrafficControl.Web.WebSrv
         {
             try
             {
-                this.serviceInitializationParameters = FabricContext<StatelessServiceInitializationParameters>.Current.InitializationParameters;
+                this.serviceContext = FabricContext<StatelessServiceContext>.Current.ServiceContext;
 
                 Get["/"] = parameters =>
                 {
@@ -94,9 +94,9 @@ namespace AirTrafficControl.Web.WebSrv
         private async Task<dynamic> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
         {
             Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
-            Assumes.NotNull(this.serviceInitializationParameters);
+            Assumes.NotNull(this.serviceContext);
 
-            ServiceEventSource.Current.RestApiOperationStart(this.serviceInitializationParameters, operationName);
+            ServiceEventSource.Current.RestApiOperationStart(this.serviceContext, operationName);
             try
             {
                 var retval = await inner(parameters, cancellationToken).ConfigureAwait(false);

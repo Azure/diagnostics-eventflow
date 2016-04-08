@@ -1,12 +1,6 @@
 ﻿using AirTrafficControl.Interfaces;
-using Microsoft;
-using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using Validation;
 
