@@ -25,10 +25,10 @@ var AirTrafficControl;
                 new Heading2ImageDictionaryEntry(2 * Math.PI - pi8, 2 * Math.PI, "airplane_N.svg")
             ];
         }
-        AirplaneDepictionFactory.prototype.GetAirplaneDepiction = function (map, location, heading) {
-            return this.GetIconAirplaneDepiction(map, location, heading);
+        AirplaneDepictionFactory.prototype.GetAirplaneDepiction = function (map, location, heading, airplaneID) {
+            return this.GetIconAirplaneDepiction(map, location, heading, airplaneID);
         };
-        AirplaneDepictionFactory.prototype.GetIconAirplaneDepiction = function (map, location, heading) {
+        AirplaneDepictionFactory.prototype.GetIconAirplaneDepiction = function (map, location, heading, airplaneID) {
             var collectionOptions = { bubble: true, visible: true, zIndex: 100 };
             var collection = new Maps.EntityCollection(collectionOptions);
             var imageName;
@@ -42,8 +42,12 @@ var AirTrafficControl;
                 console.log('WARNING: Could not find proper ariplane image for given heading');
                 imageName = "airplane_N.svg";
             }
+            var content = '<div>' +
+                '  <img src="Content/' + imageName + '" height="110px" width="60px" style="padding: 80px 0px 0px 30px" /> ' +
+                '  <div style="font-family: Verdana, Geneva, sans-serif; margin: -35px 0px 0px 55px; font-size: 0.75em; font-weight: bold; color: red">' + airplaneID + '</div>' +
+                '</div>';
             var pin = new Microsoft.Maps.Pushpin(location, {
-                htmlContent: '<img src="Content/' + imageName + '" height="110px" width="60px" style="padding: 80px 0px 0px 30px" />',
+                htmlContent: content,
                 height: 100,
                 width: 100,
                 draggable: false,

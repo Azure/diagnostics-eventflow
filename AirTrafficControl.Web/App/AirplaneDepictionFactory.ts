@@ -28,11 +28,11 @@ module AirTrafficControl {
             ];
         }
 
-        public GetAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number): Maps.EntityCollection {
-            return this.GetIconAirplaneDepiction(map, location, heading);            
+        public GetAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number, airplaneID: string): Maps.EntityCollection {
+            return this.GetIconAirplaneDepiction(map, location, heading, airplaneID);            
         }
 
-        private GetIconAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number): Maps.EntityCollection {
+        private GetIconAirplaneDepiction(map: Maps.Map, location: Maps.Location, heading: number, airplaneID: string): Maps.EntityCollection {
             var collectionOptions: Maps.EntityCollectionOptions = { bubble: true, visible: true, zIndex: 100 };
             var collection = new Maps.EntityCollection(collectionOptions);
 
@@ -49,15 +49,21 @@ module AirTrafficControl {
                 imageName = "airplane_N.svg";
             }
 
+            var content: string =
+                '<div>' +
+                '  <img src="Content/' + imageName + '" height="110px" width="60px" style="padding: 80px 0px 0px 30px" /> ' +
+                '  <div style="font-family: Verdana, Geneva, sans-serif; margin: -35px 0px 0px 55px; font-size: 0.75em; font-weight: bold; color: red">' + airplaneID + '</div>' +
+                '</div>';
+
             var pin = new Microsoft.Maps.Pushpin(location, {
-                htmlContent: '<img src="Content/' + imageName + '" height="110px" width="60px" style="padding: 80px 0px 0px 30px" />',
+                htmlContent: content,
                 height: 100,
                 width: 100,
                 draggable: false,
                 visible: true
             }); 
 
-            collection.push(pin);
+            collection.push(pin);            
             return collection;
         }
 

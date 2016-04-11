@@ -18,7 +18,7 @@ var AirTrafficControl;
                         for (var i = 0; i < scope.AirplaneStates.length; i++) {
                             var airplaneState = scope.AirplaneStates[i];
                             var location = new Maps.Location(airplaneState.Location.Latitude, airplaneState.Location.Longitude, airplaneState.Location.Altitude);
-                            var airplaneDepiction = airplaneDepictionFactory.GetAirplaneDepiction(scope.Map, location, airplaneState.Heading);
+                            var airplaneDepiction = airplaneDepictionFactory.GetAirplaneDepiction(scope.Map, location, airplaneState.Heading, airplaneState.ID);
                             scope.Map.entities.push(airplaneDepiction);
                         }
                     }
