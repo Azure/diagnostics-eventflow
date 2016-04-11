@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "AirTrafficControlApplication", "AirTrafficControlApplication\AirTrafficControlApplication.sfproj", "{D875E47F-986B-4BF1-89A9-312D0BB40348}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl", "AirTrafficControl\AirTrafficControl.csproj", "{FEE56668-C053-45A0-9410-946D30B0150C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Actors", "AirTrafficControl\AirTrafficControl.Actors.csproj", "{FEE56668-C053-45A0-9410-946D30B0150C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Interfaces", "AirTrafficControl.Interfaces\AirTrafficControl.Interfaces.csproj", "{E615A49E-4A25-4322-8317-33BC01130928}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventListeners.Fabric", "Microsoft.Diagnostics.EventListeners.Fabric\Microsoft.Diagnostics.EventListeners.Fabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Common", "AirTrafficControl.Common\AirTrafficControl.Common.csproj", "{CF947161-BFBB-4C3F-9E9F-6973C26E3624}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Atc", "AirTrafficControl.Atc\AirTrafficControl.Atc.csproj", "{76C74BD5-F1BE-4699-9436-BA15352C2C5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +92,12 @@ Global
 		{CF947161-BFBB-4C3F-9E9F-6973C26E3624}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CF947161-BFBB-4C3F-9E9F-6973C26E3624}.Release|x64.ActiveCfg = Release|Any CPU
 		{CF947161-BFBB-4C3F-9E9F-6973C26E3624}.Release|x64.Build.0 = Release|Any CPU
+		{76C74BD5-F1BE-4699-9436-BA15352C2C5F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{76C74BD5-F1BE-4699-9436-BA15352C2C5F}.Debug|x64.ActiveCfg = Debug|x64
+		{76C74BD5-F1BE-4699-9436-BA15352C2C5F}.Debug|x64.Build.0 = Debug|x64
+		{76C74BD5-F1BE-4699-9436-BA15352C2C5F}.Release|Any CPU.ActiveCfg = Release|x64
+		{76C74BD5-F1BE-4699-9436-BA15352C2C5F}.Release|x64.ActiveCfg = Release|x64
+		{76C74BD5-F1BE-4699-9436-BA15352C2C5F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
