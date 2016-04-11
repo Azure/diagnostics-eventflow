@@ -130,8 +130,10 @@ namespace AirTrafficControl
             await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassedAsync(currentTime)));
 
             // Notify anybody who is listening about new airplane states
-            var airplaneStateNotifications = airplaneActorStatesByDepartureTime.Select(airplaneActorState =>
-                                                new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
+            var airplaneStateNotifications = airplaneActorStatesByDepartureTime
+                .Where(airplaneActorState => !(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] is UnknownLocationState))
+                .Select(airplaneActorState => new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
+
             NotifyFlightStatus(airplaneStateNotifications);
         }
 
@@ -176,6 +178,10 @@ namespace AirTrafficControl
             // Just remove the airplane form the flying airplanes set
             var flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal();
             flyingAirplaneIDs.Remove(airplaneActorState.FlightPlan.AirplaneID);
+            
+            // After the flight has ended we put the airplane into "Unknown Location" state to stop tracking it.
+            projectedAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] = new UnknownLocationState();
+
             await SetFlyingAirplaneIDs(flyingAirplaneIDs);
             ActorEventSource.Current.ActorMessage(this, "ATC: Airplane {0} has landed and is no longer tracked", airplaneActorState.FlightPlan.AirplaneID);
         }
