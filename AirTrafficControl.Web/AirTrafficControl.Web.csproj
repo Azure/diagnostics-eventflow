@@ -194,8 +194,12 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-    <None Include="Scripts\angular.min.js.map" />
-    <None Include="Scripts\jquery-2.2.2.min.map" />
+    <Content Include="Scripts\angular.min.js.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery-2.2.2.min.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css">
@@ -211,20 +215,36 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
-    <Content Include="Scripts\angular-mocks.js" />
-    <Content Include="Scripts\angular-signalr-hub.js" />
-    <Content Include="Scripts\angular-signalr-hub.min.js" />
-    <Content Include="Scripts\angular.js" />
-    <Content Include="Scripts\angular.min.js" />
+    <Content Include="Scripts\angular-mocks.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\angular-signalr-hub.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\angular-signalr-hub.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\angular.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\angular.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\bootstrap.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\bootstrap.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\jquery-2.2.2.intellisense.js" />
-    <Content Include="Scripts\jquery-2.2.2.js" />
-    <Content Include="Scripts\jquery-2.2.2.min.js" />
+    <Content Include="Scripts\jquery-2.2.2.intellisense.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery-2.2.2.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\jquery-2.2.2.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Scripts\jquery.signalR-2.2.0.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
