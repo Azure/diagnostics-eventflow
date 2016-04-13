@@ -21,12 +21,14 @@ namespace AirTrafficControl.Atc
     internal sealed class Atc : StatefulService, IAirTrafficControl
     {
         private const string FrontendServiceName = "fabric:/AirTrafficControlApplication/AirTrafficControlWeb";
+        private const string CurrentTimeProperty = "CurrentTime";
 
         private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates);
 
         private readonly IDictionary<Type, AirplaneController> AirplaneControllers;
         private ServicePartitionClient<HttpCommunicationClient> frontendCommunicationClient;
         private IReliableDictionary<string, int> flyingAirplaneIDs;
+        private IReliableDictionary<string, string> worldState;
 
         public Atc(StatefulServiceContext context)
             : base(context)
@@ -59,7 +61,8 @@ namespace AirTrafficControl.Atc
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
             this.flyingAirplaneIDs = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, int>>(nameof(flyingAirplaneIDs));
-
+            this.worldState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(nameof(worldState));
+            this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(new HttpCommunicationClientFactory(), new Uri(FrontendServiceName));
 
 
 
@@ -85,6 +88,23 @@ namespace AirTrafficControl.Atc
 
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             }
+        }
+
+        public async Task<IEnumerable<string>> GetFlyingAirplaneIDs()
+        {
+            var retval = new List<string>();
+
+            using (var tx = this.StateManager.CreateTransaction())
+            {                
+                var flyingAirplaneIDsEnumerator = (await this.flyingAirplaneIDs.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
+
+                while (await flyingAirplaneIDsEnumerator.MoveNextAsync(CancellationToken.None))
+                {
+                    retval.Add(flyingAirplaneIDsEnumerator.Current.Key);
+                }
+            }
+
+            return retval;    
         }
 
         private async Task HandleAirplaneLanded(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)

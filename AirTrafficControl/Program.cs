@@ -23,7 +23,7 @@ namespace AirTrafficControl
                 }
 
                 Task.WhenAll(
-                    ActorRuntime.RegisterActorAsync<AirTrafficControl>(),
+                    ActorRuntime.RegisterActorAsync<WorldClock>(),
                     ActorRuntime.RegisterActorAsync<Airplane>()
                 ).Wait();
 

@@ -15,29 +15,21 @@ using Validation;
 namespace AirTrafficControl
 {
     [StatePersistence(StatePersistence.Persisted)]
-    public class AirTrafficControl : Actor, IAirTrafficControl, IRemindable
+    public class WorldClock : Actor, IRemindable
     {
         private const string TimePassedReminder = "AirTrafficControl.TimePassedReminder";
-        private const string FrontendServiceName = "fabric:/AirTrafficControlApplication/AirTrafficControlWeb";
+        private const string CurrentTimeStateProperty = "CurrentTime";    
 
-        private ServicePartitionClient<HttpCommunicationClient> frontendCommunicationClient;
+        
     
-        public AirTrafficControl(): base()
+        public WorldClock(): base()
         {
         }        
 
         protected override async Task OnActivateAsync()
         {
-            await base.OnActivateAsync();
-            await this.StateManager.TryAddStateAsync<List<string>>(FlyingAirplaneIDsStateProperty, new List<string>());
-            await this.StateManager.TryAddStateAsync<int>(CurrentTimeStateProperty, 0);
-
-            this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(new HttpCommunicationClientFactory(), new Uri(FrontendServiceName));
-        }
-        public async Task<IEnumerable<string>> GetFlyingAirplaneIDs()
-        {
-            var flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal();
-            return flyingAirplaneIDs.AsEnumerable();
+            await base.OnActivateAsync();            
+            await this.StateManager.TryAddStateAsync<int>(CurrentTimeStateProperty, 0);            
         }
 
         public async Task StartNewFlight(FlightPlan flightPlan)

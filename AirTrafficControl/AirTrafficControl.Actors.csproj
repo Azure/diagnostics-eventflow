@@ -108,7 +108,7 @@
   <ItemGroup>
     <Compile Include="Airplane.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AirTrafficControl.cs" />
+    <Compile Include="WorldClock.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ActorEventSource.cs" />
   </ItemGroup>
