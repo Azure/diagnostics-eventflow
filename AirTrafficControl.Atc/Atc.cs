@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data.Collections;
@@ -17,6 +18,7 @@ using System.Diagnostics;
 using Validation;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
+using Newtonsoft.Json;
 
 namespace AirTrafficControl.Atc
 {
@@ -71,86 +73,102 @@ namespace AirTrafficControl.Atc
             this.worldTimer = new Timer(OnTimePassed, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
         }
 
-        public Task<IEnumerable<string>> GetFlyingAirplaneIDs()
+        public async Task<IEnumerable<string>> GetFlyingAirplaneIDs()
         {
-            using (var tx = this.StateManager.CreateTransaction())
+            ServiceEventSource.Current.ServiceRequestStart(nameof(GetFlyingAirplaneIDs));
+            IEnumerable<string> retval;
+            try
             {
-                return GetFlyingAirplaneIDsInternal(tx);
+                using (var tx = this.StateManager.CreateTransaction())
+                {
+                    retval = await GetFlyingAirplaneIDsInternal(tx);
+                }
+                ServiceEventSource.Current.ServiceRequestStop(nameof(GetFlyingAirplaneIDs));
+                return retval;
+            }
+            catch(Exception e)
+            {
+                ServiceEventSource.Current.ServiceRequestFailed(nameof(GetFlyingAirplaneIDs), e.ToString());
+                throw;
             }
         }
 
         public async Task StartNewFlight(FlightPlan flightPlan)
         {
-            Requires.NotNull(flightPlan, "flightPlan");
-            flightPlan.Validate();
+            ServiceEventSource.Current.ServiceRequestStart(nameof(StartNewFlight));
 
-            using (var tx = this.StateManager.CreateTransaction())
-            {
-                if ((await this.flyingAirplaneIDs.TryGetValueAsync(tx, flightPlan.AirplaneID)).HasValue)
+            try {
+                Requires.NotNull(flightPlan, "flightPlan");
+                flightPlan.Validate();
+
+                using (var tx = this.StateManager.CreateTransaction())
                 {
-                    // In real life airplanes can have multiple flight plans filed, just for different times. But here we assume there can be only one flight plan per airplane
-                    throw new InvalidOperationException("The airplane " + flightPlan.AirplaneID + " is already flying");
+                    if ((await this.flyingAirplaneIDs.TryGetValueAsync(tx, flightPlan.AirplaneID)).HasValue)
+                    {
+                        // In real life airplanes can have multiple flight plans filed, just for different times. But here we assume there can be only one flight plan per airplane
+                        throw new InvalidOperationException("The airplane " + flightPlan.AirplaneID + " is already flying");
+                    }
+
+                    ActorId actorID = new ActorId(flightPlan.AirplaneID);
+                    IAirplane airplane = ActorProxy.Create<IAirplane>(actorID);
+                    await airplane.StartFlightAsync(flightPlan);
+                    await this.flyingAirplaneIDs.AddAsync(tx, flightPlan.AirplaneID, 0);
+                    await tx.CommitAsync();
+
+                    ServiceEventSource.Current.ServiceMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}.",
+                        flightPlan.AirplaneID,
+                        flightPlan.DeparturePoint.DisplayName,
+                        flightPlan.Destination.DisplayName);
                 }
 
-                ActorId actorID = new ActorId(flightPlan.AirplaneID);
-                IAirplane airplane = ActorProxy.Create<IAirplane>(actorID);
-                await airplane.StartFlightAsync(flightPlan);
-                await this.flyingAirplaneIDs.AddAsync(tx, flightPlan.AirplaneID, 0);
-                await tx.CommitAsync();
-
-                ServiceEventSource.Current.ServiceMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}.",
-                    flightPlan.AirplaneID,
-                    flightPlan.DeparturePoint.DisplayName,
-                    flightPlan.Destination.DisplayName);
+                ServiceEventSource.Current.ServiceRequestStop(nameof(StartNewFlight));
+            }
+            catch (Exception e)
+            {
+                ServiceEventSource.Current.ServiceRequestFailed(nameof(StartNewFlight), e.ToString());
+                throw;
             }
         }
 
-        private void OnTimePassed(object state)
+        private void OnTimePassed(object timerState)
         {
             Task.Run(async () => 
             {
                 int currentTime;
                 ITransaction tx;
+                IEnumerable<string> flyingAirplaneIDs;
 
                 using (tx = this.StateManager.CreateTransaction())
                 {
-                    
+                    flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal(tx);
                     currentTime = await GetCurrentTime(tx);
                     await SetCurrentTime(tx, ++currentTime);
                     await tx.CommitAsync();
                 }
 
-                using (tx = this.StateManager.CreateTransaction())
+                var airplaneProxies = CreateAirplaneProxies(flyingAirplaneIDs);
+                var airplaneActorStatesByDepartureTime = (await Task.WhenAll(flyingAirplaneIDs.Select(id => airplaneProxies[id].GetStateAsync())))
+                                                            .Where(state => !(state.AirplaneState is UnknownLocationState))
+                                                            .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
+                var newAirplaneStates = new Dictionary<string, AirplaneState>();
+
+                foreach (var airplaneActorState in airplaneActorStatesByDepartureTime)
                 {
-                    var flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal(tx);
+                    var controllerFunction = this.AirplaneControllers[airplaneActorState.AirplaneState.GetType()];
+                    Assumes.NotNull(controllerFunction);
 
-                    await tx.CommitAsync();
+                    await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates);
                 }
+
+                await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassedAsync(currentTime)));
+
+                // Notify anybody who is listening about new airplane states
+                var airplaneStateNotifications = airplaneActorStatesByDepartureTime
+                    .Where(airplaneActorState => !(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] is UnknownLocationState))
+                    .Select(airplaneActorState => new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
+
+                NotifyFlightStatus(airplaneStateNotifications);
             });
-            
-                
-            var airplaneProxies = CreateAirplaneProxies(flyingAirplaneIDs);
-            var airplaneActorStatesByDepartureTime = (await Task.WhenAll(flyingAirplaneIDs.Select(id => airplaneProxies[id].GetStateAsync())))
-                                                       .Where(state => !(state.AirplaneState is UnknownLocationState))
-                                                       .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
-            var newAirplaneStates = new Dictionary<string, AirplaneState>();
-
-            foreach (var airplaneActorState in airplaneActorStatesByDepartureTime)
-            {
-                var controllerFunction = this.AirplaneControllers[airplaneActorState.AirplaneState.GetType()];
-                Assumes.NotNull(controllerFunction);
-
-                await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates);
-            }
-
-            await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassedAsync(currentTime)));
-
-            // Notify anybody who is listening about new airplane states
-            var airplaneStateNotifications = airplaneActorStatesByDepartureTime
-                .Where(airplaneActorState => !(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] is UnknownLocationState))
-                .Select(airplaneActorState => new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
-
-            NotifyFlightStatus(airplaneStateNotifications);
         }
 
         private async Task<IEnumerable<string>> GetFlyingAirplaneIDsInternal(ITransaction tx)
@@ -166,6 +184,41 @@ namespace AirTrafficControl.Atc
             return retval;
         }
 
+        private Dictionary<string, IAirplane> CreateAirplaneProxies(IEnumerable<string> flyingAirplaneIDs)
+        {
+            var retval = new Dictionary<string, IAirplane>();
+            foreach (var airplaneID in flyingAirplaneIDs)
+            {
+                retval.Add(airplaneID, ActorProxy.Create<IAirplane>(new ActorId(airplaneID)));
+            }
+            return retval;
+        }
+
+        private void NotifyFlightStatus(IEnumerable<AirplaneStateDto> airplaneStateNotifications)
+        {
+            try
+            {
+                this.frontendCommunicationClient.InvokeWithRetryAsync(async communicationClient =>
+                {
+                    try
+                    {
+                        var content = new StringContent(JsonConvert.SerializeObject(airplaneStateNotifications), System.Text.Encoding.UTF8, "application/json");
+                        await communicationClient.HttpClient.PostAsync(new Uri(communicationClient.Url, "/api/notify/flight-status"), content);
+
+                        ServiceEventSource.Current.ServiceMessage(this, "Flight status notification sent");
+                    }
+                    catch (Exception e)
+                    {
+                        ServiceEventSource.Current.FlightStatusNotificationFailed(e.ToString());
+                        throw;
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                ServiceEventSource.Current.FlightStatusNotificationFailed(e.ToString());
+            }
+        }
 
         private async Task HandleAirplaneLanded(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {

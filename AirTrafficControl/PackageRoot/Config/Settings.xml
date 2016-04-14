@@ -7,11 +7,4 @@
    <Section Name="AirplaneActorServiceReplicatorSecurityConfig">
       <Parameter Name="CredentialType" Value="None" />
    </Section>
-   <Section Name="AirTrafficControlActorServiceReplicatorConfig">
-      <Parameter Name="ReplicatorEndpoint" Value="AirTrafficControlActorServiceReplicatorEndpoint" />
-      <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
-   </Section>
-   <Section Name="AirTrafficControlActorServiceReplicatorSecurityConfig">
-      <Parameter Name="CredentialType" Value="None" />
-   </Section>
 </Settings>

@@ -22,8 +22,7 @@ namespace AirTrafficControl
                     listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
                 }
 
-                Task.WhenAll(
-                    ActorRuntime.RegisterActorAsync<WorldClock>(),
+                Task.WhenAll(                    
                     ActorRuntime.RegisterActorAsync<Airplane>()
                 ).Wait();
 

@@ -1,19 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="AirTrafficControlApplicationType" ApplicationTypeVersion="1.0.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
    <Parameters>
-     <Parameter Name="Atc_MinReplicaSetSize" DefaultValue="2" />
-     <Parameter Name="Atc_PartitionCount" DefaultValue="1" />
-     <Parameter Name="Atc_TargetReplicaSetSize" DefaultValue="3" />
+      <Parameter Name="Atc_MinReplicaSetSize" DefaultValue="2" />
+      <Parameter Name="Atc_PartitionCount" DefaultValue="1" />
+      <Parameter Name="Atc_TargetReplicaSetSize" DefaultValue="3" />
       <Parameter Name="AirplaneActorService_PartitionCount" DefaultValue="10" />
       <Parameter Name="AirplaneActorService_MinReplicaSetSize" DefaultValue="2" />
       <Parameter Name="AirplaneActorService_TargetReplicaSetSize" DefaultValue="3" />
-      <Parameter Name="AirTrafficControlActorService_PartitionCount" DefaultValue="10" />
-      <Parameter Name="AirTrafficControlActorService_MinReplicaSetSize" DefaultValue="2" />
-      <Parameter Name="AirTrafficControlActorService_TargetReplicaSetSize" DefaultValue="3" />
    </Parameters>
    <ServiceManifestImport>
-     <ServiceManifestRef ServiceManifestName="AirTrafficControl.AtcPkg" ServiceManifestVersion="1.0.0" />
-     <ConfigOverrides />
+      <ServiceManifestRef ServiceManifestName="AirTrafficControl.AtcPkg" ServiceManifestVersion="1.0.0" />
+      <ConfigOverrides />
    </ServiceManifestImport>
    <ServiceManifestImport>
       <ServiceManifestRef ServiceManifestName="AirTrafficControl.WebPkg" ServiceManifestVersion="1.0.0.0" />
@@ -23,18 +20,13 @@
       <ServiceManifestRef ServiceManifestName="AirTrafficControl.ActorsPkg" ServiceManifestVersion="1.0.0.0" />
    </ServiceManifestImport>
    <DefaultServices>
-     <Service Name="Atc">
-       <StatefulService ServiceTypeName="AtcType" TargetReplicaSetSize="[Atc_TargetReplicaSetSize]" MinReplicaSetSize="[Atc_MinReplicaSetSize]">
-         <UniformInt64Partition PartitionCount="[Atc_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
-       </StatefulService>
-     </Service>
-      <Service Name="AirplaneActorService" GeneratedIdRef="1494ff07-d008-4385-971a-c665df52d746|Persisted">
-         <StatefulService ServiceTypeName="AirplaneActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
-            <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      <Service Name="Atc">
+         <StatefulService ServiceTypeName="AtcType" TargetReplicaSetSize="[Atc_TargetReplicaSetSize]" MinReplicaSetSize="[Atc_MinReplicaSetSize]">
+            <UniformInt64Partition PartitionCount="[Atc_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
          </StatefulService>
       </Service>
-      <Service Name="AirTrafficControlActorService" GeneratedIdRef="75258f87-c084-4d49-a395-774f3f36f72a|Persisted">
-         <StatefulService ServiceTypeName="AirTrafficControlActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
+      <Service Name="AirplaneActorService" GeneratedIdRef="1494ff07-d008-4385-971a-c665df52d746|Persisted">
+         <StatefulService ServiceTypeName="AirplaneActorServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
             <UniformInt64Partition PartitionCount="9" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
          </StatefulService>
       </Service>
