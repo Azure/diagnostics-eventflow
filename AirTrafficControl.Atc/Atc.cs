@@ -15,6 +15,8 @@ using AirTrafficControl.Common;
 using Microsoft.ServiceFabric.Data;
 using System.Diagnostics;
 using Validation;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Client;
 
 namespace AirTrafficControl.Atc
 {
@@ -29,6 +31,7 @@ namespace AirTrafficControl.Atc
         private ServicePartitionClient<HttpCommunicationClient> frontendCommunicationClient;
         private IReliableDictionary<string, int> flyingAirplaneIDs;
         private IReliableDictionary<string, string> worldState;
+        private Timer worldTimer;
 
         public Atc(StatefulServiceContext context)
             : base(context)
@@ -64,48 +67,105 @@ namespace AirTrafficControl.Atc
             this.worldState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(nameof(worldState));
             this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(new HttpCommunicationClientFactory(), new Uri(FrontendServiceName));
 
+            this.worldTimer?.Dispose();
+            this.worldTimer = new Timer(OnTimePassed, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
+        }
 
-
-            var myDictionary = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, long>>("myDictionary");
-
-            while (true)
+        public Task<IEnumerable<string>> GetFlyingAirplaneIDs()
+        {
+            using (var tx = this.StateManager.CreateTransaction())
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                return GetFlyingAirplaneIDsInternal(tx);
+            }
+        }
 
-                using (var tx = this.StateManager.CreateTransaction())
+        public async Task StartNewFlight(FlightPlan flightPlan)
+        {
+            Requires.NotNull(flightPlan, "flightPlan");
+            flightPlan.Validate();
+
+            using (var tx = this.StateManager.CreateTransaction())
+            {
+                if ((await this.flyingAirplaneIDs.TryGetValueAsync(tx, flightPlan.AirplaneID)).HasValue)
                 {
-                    var result = await myDictionary.TryGetValueAsync(tx, "Counter");
+                    // In real life airplanes can have multiple flight plans filed, just for different times. But here we assume there can be only one flight plan per airplane
+                    throw new InvalidOperationException("The airplane " + flightPlan.AirplaneID + " is already flying");
+                }
 
-                    ServiceEventSource.Current.ServiceMessage(this, "Current Counter Value: {0}",
-                        result.HasValue ? result.Value.ToString() : "Value does not exist.");
+                ActorId actorID = new ActorId(flightPlan.AirplaneID);
+                IAirplane airplane = ActorProxy.Create<IAirplane>(actorID);
+                await airplane.StartFlightAsync(flightPlan);
+                await this.flyingAirplaneIDs.AddAsync(tx, flightPlan.AirplaneID, 0);
+                await tx.CommitAsync();
 
-                    await myDictionary.AddOrUpdateAsync(tx, "Counter", 0, (key, value) => ++value);
+                ServiceEventSource.Current.ServiceMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}.",
+                    flightPlan.AirplaneID,
+                    flightPlan.DeparturePoint.DisplayName,
+                    flightPlan.Destination.DisplayName);
+            }
+        }
 
-                    // If an exception is thrown before calling CommitAsync, the transaction aborts, all changes are 
-                    // discarded, and nothing is saved to the secondary replicas.
+        private void OnTimePassed(object state)
+        {
+            Task.Run(async () => 
+            {
+                int currentTime;
+                ITransaction tx;
+
+                using (tx = this.StateManager.CreateTransaction())
+                {
+                    
+                    currentTime = await GetCurrentTime(tx);
+                    await SetCurrentTime(tx, ++currentTime);
                     await tx.CommitAsync();
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                using (tx = this.StateManager.CreateTransaction())
+                {
+                    var flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal(tx);
+
+                    await tx.CommitAsync();
+                }
+            });
+            
+                
+            var airplaneProxies = CreateAirplaneProxies(flyingAirplaneIDs);
+            var airplaneActorStatesByDepartureTime = (await Task.WhenAll(flyingAirplaneIDs.Select(id => airplaneProxies[id].GetStateAsync())))
+                                                       .Where(state => !(state.AirplaneState is UnknownLocationState))
+                                                       .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
+            var newAirplaneStates = new Dictionary<string, AirplaneState>();
+
+            foreach (var airplaneActorState in airplaneActorStatesByDepartureTime)
+            {
+                var controllerFunction = this.AirplaneControllers[airplaneActorState.AirplaneState.GetType()];
+                Assumes.NotNull(controllerFunction);
+
+                await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates);
             }
+
+            await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassedAsync(currentTime)));
+
+            // Notify anybody who is listening about new airplane states
+            var airplaneStateNotifications = airplaneActorStatesByDepartureTime
+                .Where(airplaneActorState => !(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] is UnknownLocationState))
+                .Select(airplaneActorState => new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
+
+            NotifyFlightStatus(airplaneStateNotifications);
         }
 
-        public async Task<IEnumerable<string>> GetFlyingAirplaneIDs()
+        private async Task<IEnumerable<string>> GetFlyingAirplaneIDsInternal(ITransaction tx)
         {
             var retval = new List<string>();
+            var flyingAirplaneIDsEnumerator = (await this.flyingAirplaneIDs.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
 
-            using (var tx = this.StateManager.CreateTransaction())
-            {                
-                var flyingAirplaneIDsEnumerator = (await this.flyingAirplaneIDs.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
-
-                while (await flyingAirplaneIDsEnumerator.MoveNextAsync(CancellationToken.None))
-                {
-                    retval.Add(flyingAirplaneIDsEnumerator.Current.Key);
-                }
+            while (await flyingAirplaneIDsEnumerator.MoveNextAsync(CancellationToken.None))
+            {
+                retval.Add(flyingAirplaneIDsEnumerator.Current.Key);
             }
 
-            return retval;    
+            return retval;
         }
+
 
         private async Task HandleAirplaneLanded(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates)
         {
@@ -271,5 +331,14 @@ namespace AirTrafficControl.Atc
             }
         }
 
+        private Task<int> GetCurrentTime(ITransaction tx)
+        {
+            return this.worldState.GetOrAddAsync(tx, CurrentTimeProperty, "0").ContinueWith<int>(currentTimeLoadTask => int.Parse(currentTimeLoadTask.Result));
+        }
+
+        private Task SetCurrentTime(ITransaction tx, int newTime)
+        {
+            return this.worldState.AddOrUpdateAsync(tx, CurrentTimeProperty, "0", (key, currentTime) => newTime.ToString());
+        }
     }
 }

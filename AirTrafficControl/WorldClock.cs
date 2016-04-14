@@ -79,40 +79,7 @@ namespace AirTrafficControl
                 return;
             }
 
-            var flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal();
-            int currentTime = await this.StateManager.GetStateAsync<int>(CurrentTimeStateProperty);
-            currentTime++;
-
-            if (flyingAirplaneIDs.Count == 0)
-            {
-                ActorEventSource.Current.ActorMessage(this, "ATC: Time is {0} No airplanes flying, shutting down the world timer", currentTime);
-                var reminder = this.GetReminder(TimePassedReminder);
-                await this.UnregisterReminderAsync(reminder);
-                return;
-            }
-
-            var airplaneProxies = CreateAirplaneProxies(flyingAirplaneIDs);
-            var airplaneActorStatesByDepartureTime = (await Task.WhenAll(flyingAirplaneIDs.Select(id => airplaneProxies[id].GetStateAsync())))
-                                                       .Where(state => !(state.AirplaneState is UnknownLocationState))
-                                                       .OrderBy(state => (state.AirplaneState is TaxiingState) ? int.MaxValue : state.DepartureTime);
-            var newAirplaneStates = new Dictionary<string, AirplaneState>();
-
-            foreach(var airplaneActorState in airplaneActorStatesByDepartureTime)
-            {
-                var controllerFunction = this.AirplaneControllers[airplaneActorState.AirplaneState.GetType()];
-                Assumes.NotNull(controllerFunction);
-
-                await controllerFunction(airplaneProxies[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState, newAirplaneStates);
-            }            
-
-            await Task.WhenAll(newAirplaneStates.Keys.Select(airplaneID => airplaneProxies[airplaneID].TimePassedAsync(currentTime)));
-
-            // Notify anybody who is listening about new airplane states
-            var airplaneStateNotifications = airplaneActorStatesByDepartureTime
-                .Where(airplaneActorState => !(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] is UnknownLocationState))
-                .Select(airplaneActorState => new AirplaneStateDto(newAirplaneStates[airplaneActorState.FlightPlan.AirplaneID], airplaneActorState.FlightPlan));
-
-            NotifyFlightStatus(airplaneStateNotifications);
+            
         }
 
         private Dictionary<string, IAirplane> CreateAirplaneProxies(List<string> flyingAirplaneIDs)
