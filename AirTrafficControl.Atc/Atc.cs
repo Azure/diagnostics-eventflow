@@ -53,7 +53,7 @@ namespace AirTrafficControl.Atc
         {
             return new[] {
                 new ServiceReplicaListener( ctx => 
-                    new WcfCommunicationListener<IAirTrafficControl>(ctx, this, WcfUtility.CreateTcpListenerBinding(), "AtcServiceEndpoint")
+                    new WcfCommunicationListener<IAirTrafficControl>(ctx, this, WcfUtility.CreateTcpListenerBinding(), WellKnownIdentifiers.AtcServiceEndpointName)
                 )
             };
         }

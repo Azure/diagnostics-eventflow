@@ -8,11 +8,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.ServiceFabric.Actors.Client;
+using Microsoft.ServiceFabric.Services.Communication.Wcf.Client;
+using Microsoft.ServiceFabric.Services.Communication.Wcf;
+using Microsoft.ServiceFabric.Services.Client;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using System.Threading;
+using System.ServiceModel;
 
 namespace AirTrafficControl.Web.WebSrv
 {
     internal class AtcController
     {
+        private static readonly Uri AtcServiceUri = new Uri("fabric:/AirTrafficControlApplication/Atc");
+
         private static Lazy<IHubContext<IAtcHubClient>> AtcHubContext = new Lazy<IHubContext<IAtcHubClient>>(() => 
             {
                 var connectionManager = GlobalHost.DependencyResolver.Resolve<IConnectionManager>();
@@ -21,12 +29,15 @@ namespace AirTrafficControl.Web.WebSrv
             }, 
             System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
+        private static IAirTrafficControl AtcClient;
+        private static object AtcClientLock = new object();
+
         public async Task<IEnumerable<AirplaneStateDto>> GetFlyingAirplaneStates()
         {
             try
             {
                 var retval = new List<AirplaneStateDto>();
-                IAirTrafficControl atc = ActorProxy.Create<IAirTrafficControl>(new ActorId(WellKnownIdentifiers.SeattleCenter));
+                IAirTrafficControl atc = await GetAtcClient();
                 var flyingAirplaneIDs = await atc.GetFlyingAirplaneIDs().ConfigureAwait(false);
 
                 if (flyingAirplaneIDs != null)
@@ -50,7 +61,7 @@ namespace AirTrafficControl.Web.WebSrv
                 throw;
             }
         }
-
+                
         public Task<AirplaneActorState> GetAirplaneState(string id)
         {
             try
@@ -80,8 +91,8 @@ namespace AirTrafficControl.Web.WebSrv
                 flightPlan.Destination = Universe.Current.Airports.Where(a => a.Name == destination).First();
                 flightPlan.Validate();
 
-                IAirTrafficControl atc = ActorProxy.Create<IAirTrafficControl>(new ActorId(WellKnownIdentifiers.SeattleCenter));
-                await atc.StartNewFlight(flightPlan).ConfigureAwait(false);
+                IAirTrafficControl atc = await GetAtcClient();
+                await atc.StartNewFlight(flightPlan);
             }
             catch (Exception e)
             {
@@ -105,6 +116,59 @@ namespace AirTrafficControl.Web.WebSrv
             catch (Exception e)
             {
                 ServiceEventSource.Current.RestApiFrontEndError("PerformFlightStatusUpdate", e.ToString());
+            }
+        }
+
+        private async Task<IAirTrafficControl> GetAtcClient()
+        {
+            lock (AtcClientLock)
+            {
+                if (IsUsable(AtcClient as ICommunicationObject))
+                {
+                    return AtcClient;
+                }
+            }
+
+            var wcfClientFactory = new WcfCommunicationClientFactory<IAirTrafficControl>(
+                    clientBinding: WcfUtility.CreateTcpClientBinding(),
+                    servicePartitionResolver: ServicePartitionResolver.GetDefault());
+
+            var newAtcClient = await wcfClientFactory.GetClientAsync(
+                AtcServiceUri,
+                ServicePartitionKey.Singleton,
+                TargetReplicaSelector.Default,
+                WellKnownIdentifiers.AtcServiceEndpointName,
+                default(OperationRetrySettings),
+                CancellationToken.None
+                );
+
+            lock (AtcClientLock)
+            {
+                if (!IsUsable(AtcClient as ICommunicationObject))
+                {
+                    AtcClient = (IAirTrafficControl) newAtcClient;
+                }
+
+                return AtcClient;
+            }
+        }
+
+        private bool IsUsable(ICommunicationObject co)
+        {
+            if (co == null)
+            {
+                return false;
+            }
+
+            switch (co.State)
+            {
+                case CommunicationState.Opened:
+                case CommunicationState.Opening:
+                case CommunicationState.Created:
+                    return true;
+
+                default:
+                    return false;
             }
         }
     }

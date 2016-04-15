@@ -5,6 +5,6 @@
     <Parameter Name="Atc_MinReplicaSetSize" Value="2" />
     <Parameter Name="Atc_TargetReplicaSetSize" Value="3" />
     <Parameter Name="AirplaneActorService_PartitionCount" Value="1" />
-    <Parameter Name="AirTrafficControlActorService_PartitionCount" Value="1" />
+    
   </Parameters>
 </Application>

@@ -8,6 +8,6 @@ namespace AirTrafficControl.Interfaces
 {
     public static class WellKnownIdentifiers
     {
-        public static readonly string SeattleCenter = "ZSE";
+        public static readonly string AtcServiceEndpointName = "AtcServiceEndpoint";
     }
 }
