@@ -22,7 +22,7 @@
    <DefaultServices>
       <Service Name="Atc">
          <StatefulService ServiceTypeName="AtcType" TargetReplicaSetSize="[Atc_TargetReplicaSetSize]" MinReplicaSetSize="[Atc_MinReplicaSetSize]">
-            <UniformInt64Partition PartitionCount="[Atc_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+            <SingletonPartition />
          </StatefulService>
       </Service>
       <Service Name="AirplaneActorService" GeneratedIdRef="1494ff07-d008-4385-971a-c665df52d746|Persisted">

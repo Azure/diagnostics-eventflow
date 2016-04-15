@@ -138,7 +138,7 @@ namespace AirTrafficControl.Web.WebSrv
                 ServicePartitionKey.Singleton,
                 TargetReplicaSelector.Default,
                 WellKnownIdentifiers.AtcServiceEndpointName,
-                default(OperationRetrySettings),
+                new OperationRetrySettings(),
                 CancellationToken.None
                 );
 
