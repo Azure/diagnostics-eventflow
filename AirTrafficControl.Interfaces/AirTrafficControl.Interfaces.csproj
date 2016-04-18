@@ -83,6 +83,7 @@
     <Compile Include="Airport.cs" />
     <Compile Include="AtcInstruction.cs" />
     <Compile Include="Direction.cs" />
+    <Compile Include="Dispatcher.cs" />
     <Compile Include="Fix.cs" />
     <Compile Include="FlightPlan.cs" />
     <Compile Include="IAirplane.cs" />

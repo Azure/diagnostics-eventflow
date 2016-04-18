@@ -22,7 +22,7 @@ namespace AirTrafficControl.Interfaces
         public string AirplaneID { get; set; }
 
         [DataMember]
-        public IReadOnlyList<Fix> Path { get; set; }
+        public IReadOnlyList<Fix> FlightPath { get; set; }
 
         public void Validate()
         {
