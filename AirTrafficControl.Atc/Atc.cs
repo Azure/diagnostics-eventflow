@@ -107,6 +107,7 @@ namespace AirTrafficControl.Atc
                     {
                         // In real life airplanes can have multiple flight plans filed, just for different times. But here we assume there can be only one flight plan per airplane
                         throw new InvalidOperationException("The airplane " + flightPlan.AirplaneID + " is already flying");
+                        // CONSIDER forcing execution of the new flight plan here, instead of throwing an error.
                     }
 
                     ActorId actorID = new ActorId(flightPlan.AirplaneID);

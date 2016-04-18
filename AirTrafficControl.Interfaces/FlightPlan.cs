@@ -21,6 +21,9 @@ namespace AirTrafficControl.Interfaces
         [DataMember]
         public string AirplaneID { get; set; }
 
+        [DataMember]
+        public IReadOnlyList<Fix> Path { get; set; }
+
         public void Validate()
         {
             Verify.Operation(DeparturePoint != null, "Departure point must not be null");
@@ -29,6 +32,7 @@ namespace AirTrafficControl.Interfaces
             Verify.Operation(Universe.Current.Airports.Contains(DeparturePoint), "Unknown departure point airport");
             Verify.Operation(Universe.Current.Airports.Contains(Destination), "Unknown destination airport");
             Verify.Operation(!string.IsNullOrWhiteSpace(AirplaneID), "Airplane ID must not be empty");
+            // Path is calculated by ATC and might be null initially            
         }
     }
 }
