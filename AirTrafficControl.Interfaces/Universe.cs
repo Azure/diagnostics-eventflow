@@ -21,13 +21,27 @@ namespace AirTrafficControl.Interfaces
             Initialize();
         }
 
-        public Route GetRouteBetween(Fix from, Fix to)
-        {
-            Requires.NotNull(from, "from");
-            Requires.NotNull(to, "to");
+        //public Route GetRouteBetween(Fix from, Fix to)
+        //{
+        //    Requires.NotNull(from, "from");
+        //    Requires.NotNull(to, "to");
 
-            Route connectingRoute = Routes.Where(r => r.Fixes.Contains(from) && r.Fixes.Contains(to)).FirstOrDefault();
-            return connectingRoute;
+        //    Route connectingRoute = Routes.Where(r => r.Fixes.Contains(from) && r.Fixes.Contains(to)).FirstOrDefault();
+        //    return connectingRoute;
+        //}
+
+        public IEnumerable<Fix> GetAdjacentFixes(Fix reference)
+        {
+            Requires.NotNull(reference, nameof(reference));
+
+            var containingRoutes = Routes.Where(route => route.Fixes.Contains(reference)).ToList();
+            if (containingRoutes.Count == 0)
+            {
+                throw new ArgumentException("The starting fix does not belong to any route in the universe", nameof(reference));
+            }
+
+            var retval = containingRoutes.SelectMany(route => route.GetAdjacentFixes(reference)).Distinct();
+            return retval;
         }
 
         private void Initialize()

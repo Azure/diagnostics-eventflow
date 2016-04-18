@@ -13,6 +13,8 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public class Route
     {
+        private ReadOnlyCollection<Fix> fixes;
+
         public Route(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -27,47 +29,79 @@ namespace AirTrafficControl.Interfaces
         public string Name { get; private set; }
 
         [DataMember]
-        public ReadOnlyCollection<Fix> Fixes { get; set; }
-
-        public Fix GetNextFix(Fix currentFix, Fix destinationFix)
+        public ReadOnlyCollection<Fix> Fixes
         {
-            int currentFixIndex = Fixes.IndexOf(currentFix);
-            if (currentFixIndex < 0)
+            get { return this.fixes; }
+            set
             {
-                throw new ArgumentException("The current fix is not part of the route", "currentFix");
-            }
-
-            int destinationFixIndex = Fixes.IndexOf(destinationFix);
-            if (destinationFixIndex < 0)
-            {
-                throw new ArgumentException("The destination fix is not part of the route", "destinationFix");
-            }
-
-            int distance = destinationFixIndex - currentFixIndex;
-            if (distance == 0)
-            {
-                throw new InvalidOperationException("Current fix and destination fix are the same");
-            }
-
-            if (Math.Abs(distance) == 1)
-            {
-                return destinationFix;
-            }
-            else
-            {
-                return Fixes[(distance > 0) ? (currentFixIndex + 1) : (currentFixIndex - 1)];
+                if (value == null || value.Count < 2)
+                {
+                    throw new ArgumentException("A route must have at least 2 fixes");
+                }
+                this.fixes = value;
             }
         }
 
-        public int GetDirectionalDistance(Fix from, Fix to)
+        //public Fix GetNextFix(Fix currentFix, Fix destinationFix)
+        //{
+        //    int currentFixIndex = Fixes.IndexOf(currentFix);
+        //    if (currentFixIndex < 0)
+        //    {
+        //        throw new ArgumentException("The current fix is not part of the route", "currentFix");
+        //    }
+
+        //    int destinationFixIndex = Fixes.IndexOf(destinationFix);
+        //    if (destinationFixIndex < 0)
+        //    {
+        //        throw new ArgumentException("The destination fix is not part of the route", "destinationFix");
+        //    }
+
+        //    int distance = destinationFixIndex - currentFixIndex;
+        //    if (distance == 0)
+        //    {
+        //        throw new InvalidOperationException("Current fix and destination fix are the same");
+        //    }
+
+        //    if (Math.Abs(distance) == 1)
+        //    {
+        //        return destinationFix;
+        //    }
+        //    else
+        //    {
+        //        return Fixes[(distance > 0) ? (currentFixIndex + 1) : (currentFixIndex - 1)];
+        //    }
+        //}
+
+        //public int GetDirectionalDistance(Fix from, Fix to)
+        //{
+        //    int fromIndex = Fixes.IndexOf(from);
+        //    Assumes.True(fromIndex >= 0, "The 'from' fix is not part of the route");
+
+        //    int toIndex = Fixes.IndexOf(to);
+        //    Assumes.True(toIndex >= 0, "The 'to' fix is not part of the route");
+
+        //    return toIndex - fromIndex;
+        //}
+
+        public IEnumerable<Fix> GetAdjacentFixes(Fix reference)
         {
-            int fromIndex = Fixes.IndexOf(from);
-            Assumes.True(fromIndex >= 0, "The 'from' fix is not part of the route");
+            Requires.NotNull(reference, nameof(reference));
 
-            int toIndex = Fixes.IndexOf(to);
-            Assumes.True(toIndex >= 0, "The 'to' fix is not part of the route");
+            int referenceIndex = Fixes.IndexOf(reference);
+            Assumes.True(referenceIndex >= 0, "The 'reference' fix is not part of the route");
 
-            return toIndex - fromIndex;
+            if (referenceIndex == 0)
+            {
+                return new[] { Fixes[1] };
+            }
+            else if (referenceIndex == Fixes.Count - 1)
+            {
+                return new[] { Fixes[Fixes.Count - 2] };
+            }
+            else
+            {
+                return new[] { Fixes[referenceIndex - 1], Fixes[referenceIndex + 1] };
+            }
         }
 
         public override bool Equals(object obj)
