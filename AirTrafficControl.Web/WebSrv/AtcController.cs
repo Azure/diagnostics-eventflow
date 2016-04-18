@@ -137,7 +137,7 @@ namespace AirTrafficControl.Web.WebSrv
                 AtcServiceUri,
                 ServicePartitionKey.Singleton,
                 TargetReplicaSelector.Default,
-                WellKnownIdentifiers.AtcServiceEndpointName,
+                WellKnownIdentifiers.AtcServiceListenerName,
                 new OperationRetrySettings(),
                 CancellationToken.None
                 );
@@ -146,7 +146,7 @@ namespace AirTrafficControl.Web.WebSrv
             {
                 if (!IsUsable(AtcClient as ICommunicationObject))
                 {
-                    AtcClient = (IAirTrafficControl) newAtcClient;
+                    AtcClient = (IAirTrafficControl) newAtcClient.Channel;
                 }
 
                 return AtcClient;

@@ -9,5 +9,6 @@ namespace AirTrafficControl.Interfaces
     public static class WellKnownIdentifiers
     {
         public static readonly string AtcServiceEndpointName = "AtcServiceEndpoint";
+        public static readonly string AtcServiceListenerName = "AtcServiceListener";
     }
 }

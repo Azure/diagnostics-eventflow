@@ -52,9 +52,9 @@ namespace AirTrafficControl.Atc
         protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
         {
             return new[] {
-                new ServiceReplicaListener( ctx => 
-                    new WcfCommunicationListener<IAirTrafficControl>(ctx, this, WcfUtility.CreateTcpListenerBinding(), WellKnownIdentifiers.AtcServiceEndpointName)
-                )
+                new ServiceReplicaListener( 
+                    ctx => new WcfCommunicationListener<IAirTrafficControl>(ctx, this, WcfUtility.CreateTcpListenerBinding(), WellKnownIdentifiers.AtcServiceEndpointName),
+                    WellKnownIdentifiers.AtcServiceListenerName)
             };
         }
 
@@ -135,10 +135,9 @@ namespace AirTrafficControl.Atc
             Task.Run(async () => 
             {
                 int currentTime;
-                ITransaction tx;
                 IEnumerable<string> flyingAirplaneIDs;
 
-                using (tx = this.StateManager.CreateTransaction())
+                using (ITransaction tx = this.StateManager.CreateTransaction())
                 {
                     flyingAirplaneIDs = await GetFlyingAirplaneIDsInternal(tx);
                     currentTime = await GetCurrentTime(tx);
@@ -233,6 +232,7 @@ namespace AirTrafficControl.Atc
                 // Update the projected airplane state to "Unknown Location" to ensure we do not attempt to send any notifications about it.
                 projectedAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] = new UnknownLocationState();
 
+                await tx.CommitAsync();
                 ServiceEventSource.Current.ServiceMessage(this, "ATC: Airplane {0} has landed and is no longer tracked", airplaneID);
             }
             

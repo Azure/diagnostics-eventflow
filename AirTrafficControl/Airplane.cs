@@ -9,9 +9,10 @@ namespace AirTrafficControl
     [StatePersistence(StatePersistence.Persisted)]
     public class Airplane : Actor, IAirplane
     {
-        public Task<AirplaneActorState> GetStateAsync()
+        public async Task<AirplaneActorState> GetStateAsync()
         {
-            return this.StateManager.GetStateAsync<AirplaneActorState>(nameof(AirplaneActorState));
+            var state = await this.StateManager.GetStateAsync<AirplaneActorState>(nameof(AirplaneActorState));
+            return state;
         }
 
         public async Task ReceiveInstructionAsync(AtcInstruction instruction)
