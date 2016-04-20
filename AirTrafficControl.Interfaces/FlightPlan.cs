@@ -22,17 +22,25 @@ namespace AirTrafficControl.Interfaces
         public string AirplaneID { get; set; }
 
         [DataMember]
-        public IReadOnlyList<Fix> FlightPath { get; set; }
+        public IList<Fix> FlightPath { get; set; }
 
-        public void Validate()
+        public static void Validate(FlightPlan flightPlan, bool includeFlightPath = true)
         {
-            Verify.Operation(DeparturePoint != null, "Departure point must not be null");
-            Verify.Operation(Destination != null, "Destination must not be null");
-            Verify.Operation(DeparturePoint != Destination, "Departure point and destination cannot be the same");
-            Verify.Operation(Universe.Current.Airports.Contains(DeparturePoint), "Unknown departure point airport");
-            Verify.Operation(Universe.Current.Airports.Contains(Destination), "Unknown destination airport");
-            Verify.Operation(!string.IsNullOrWhiteSpace(AirplaneID), "Airplane ID must not be empty");
-            // Path is calculated by ATC and might be null initially            
+            Assumes.NotNull(flightPlan);
+            Verify.Operation(flightPlan.DeparturePoint != null, "Departure point must not be null");
+            Verify.Operation(flightPlan.Destination != null, "Destination must not be null");
+            Verify.Operation(flightPlan.DeparturePoint != flightPlan.Destination, "Departure point and destination cannot be the same");
+            Verify.Operation(Universe.Current.Airports.Contains(flightPlan.DeparturePoint), "Unknown departure point airport");
+            Verify.Operation(Universe.Current.Airports.Contains(flightPlan.Destination), "Unknown destination airport");
+            Verify.Operation(!string.IsNullOrWhiteSpace(flightPlan.AirplaneID), "Airplane ID must not be empty");
+            
+            if (includeFlightPath)
+            {
+                Verify.Operation(flightPlan.FlightPath != null, "Flight path should have been assigned by now");
+                Verify.Operation(flightPlan.FlightPath.Count >= 2 && flightPlan.FlightPath[0].Name == flightPlan.DeparturePoint.Name 
+                    && flightPlan.FlightPath[flightPlan.FlightPath.Count - 1].Name == flightPlan.Destination.Name,
+                    "Flight path does not lead from departure point to destination");
+            }
         }
     }
 }

@@ -89,7 +89,7 @@ namespace AirTrafficControl.Web.WebSrv
                 flightPlan.AirplaneID = airplaneID;
                 flightPlan.DeparturePoint = Universe.Current.Airports.Where(a => a.Name == departurePoint).First();
                 flightPlan.Destination = Universe.Current.Airports.Where(a => a.Name == destination).First();
-                flightPlan.Validate();
+                FlightPlan.Validate(flightPlan, includeFlightPath: false);
 
                 IAirTrafficControl atc = await GetAtcClient();
                 await atc.StartNewFlight(flightPlan);

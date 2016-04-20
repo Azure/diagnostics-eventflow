@@ -61,33 +61,34 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public class EnrouteClearance: AtcInstruction
     {
-        // CONSIDER Should enroute clearance also have a Route?
-        public EnrouteClearance(Fix limit) : base(limit) { }
+        private IList<Fix> flightPath;
+
+        public EnrouteClearance(Fix limit, IList<Fix> flightPath) : base(limit)
+        {
+            Requires.NotNull(flightPath, nameof(flightPath));
+            this.flightPath = flightPath;
+            Requires.ValidState(flightPath.Contains(limit), "The flight path must contain the clearance limit");
+        }
 
         public override string ToString()
         {
             return "Cleared to " + LocationOrLimit.DisplayName;
         }
 
-        public bool IsClearedTo(Fix current, Fix target, Route route)
+        public bool IsClearedTo(Fix current, Fix target)
         {
-            Requires.NotNull(current, "current");
-            Requires.NotNull(target, "to");
-            Requires.NotNull(route, "route");
-            Assumes.True(route.Fixes.Contains(current), "The 'current' fix is not part of the route");
-            Assumes.True(route.Fixes.Contains(target), "The 'target' fix is not part of the route");
+            Requires.NotNull(current, nameof(current));
+            Requires.NotNull(target, nameof(target));
+            Requires.That(this.flightPath.Contains(current), nameof(current), "The 'current' fix is not part of the flight path");
+            Requires.That(this.flightPath.Contains(target), nameof(target), "The 'target' fix is not part of the flight path");
             Assumes.False(current == target, "Current fix cannot be the same as the target fix");
 
-            if (!route.Fixes.Contains(this.LocationOrLimit))
-            {
-                return false;
-            }
+            int limitIndex = this.flightPath.IndexOf(this.LocationOrLimit);
+            int currentIndex = this.flightPath.IndexOf(current);
+            int targetIndex = this.flightPath.IndexOf(target);
 
-            int distanceToTarget = route.GetDirectionalDistance(current, target);
-            int distanceToLimit = route.GetDirectionalDistance(current, this.LocationOrLimit);
-
-            bool sameDirection = (distanceToLimit * distanceToTarget) > 0;
-            bool notGoingBeyondTheLimit = Math.Abs(distanceToTarget) <= Math.Abs(distanceToLimit);
+            bool sameDirection = currentIndex < targetIndex;
+            bool notGoingBeyondTheLimit = targetIndex <= limitIndex;
             return sameDirection && notGoingBeyondTheLimit;
         }
     }

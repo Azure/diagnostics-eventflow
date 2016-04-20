@@ -7,13 +7,13 @@ namespace AirTrafficControl.Interfaces
 {
     public class Dispatcher
     {
-        public IReadOnlyList<Fix> ComputeFlightPath(Airport departurePoint, Airport destination)
+        public static IList<Fix> ComputeFlightPath(Airport departurePoint, Airport destination)
         {
             Requires.NotNull(departurePoint, nameof(departurePoint));
             Requires.NotNull(destination, nameof(destination));
             Assumes.True(departurePoint != destination, "Departure point must be different than destination");
 
-            Queue<List<Fix>> candidates = new Queue<List<Fix>();
+            Queue<List<Fix>> candidates = new Queue<List<Fix>>();
             List<Fix> fixesProcessed = new List<Fix>();
 
             var currentPath = new List<Fix>(new Fix[] { departurePoint });

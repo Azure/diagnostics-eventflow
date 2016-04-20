@@ -24,14 +24,6 @@ namespace AirTrafficControl.Interfaces
 
         public abstract AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction);
         public abstract double GetHeading(FlightPlan flightPlan);
-
-        protected void ValidateComputeNextStateArgs(FlightPlan flightPlan, AtcInstruction instruction)
-        {
-            Requires.NotNull(flightPlan, "flightPlan");
-            Requires.Argument(flightPlan.DeparturePoint != flightPlan.Destination, "flightPlan", "The flight plan is invalid, departure point and destination cannot be the same");
-
-            // It is OK for the instruction to be null, it just means we should proceed accorting to the plan and current state
-        }
     }
 
     [DataContract]
@@ -97,7 +89,7 @@ namespace AirTrafficControl.Interfaces
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
-            ValidateComputeNextStateArgs(flightPlan, instruction);
+            FlightPlan.Validate(flightPlan);
 
             TakeoffClearance clearance = instruction as TakeoffClearance;            
             if (clearance == null || clearance.LocationOrLimit != this.Airport)
@@ -130,7 +122,7 @@ namespace AirTrafficControl.Interfaces
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
-            ValidateComputeNextStateArgs(flightPlan, instruction);
+            FlightPlan.Validate(flightPlan);
 
             // Hold at the airport if we have received a holding instruction
             HoldInstruction holdInstruction = instruction as HoldInstruction;
@@ -140,14 +132,9 @@ namespace AirTrafficControl.Interfaces
             }
             else
             {
-                Route route = Universe.Current.GetRouteBetween(flightPlan.DeparturePoint, flightPlan.Destination);
-                if (route == null)
-                {
-                    throw new ArgumentException("The flight plan is invalid, there is no route between " + flightPlan.DeparturePoint.DisplayName + " and " + flightPlan.Destination.DisplayName);
-                }
-
-                Fix next = route.GetNextFix(this.Airport, flightPlan.Destination);
-                return new EnrouteState(this.Airport, next, route);
+                Debug.Assert(flightPlan.FlightPath[0] == this.Airport);
+                Fix next = flightPlan.FlightPath[1];
+                return new EnrouteState(this.Airport, next);
             }
         }
 
@@ -169,7 +156,7 @@ namespace AirTrafficControl.Interfaces
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
-            ValidateComputeNextStateArgs(flightPlan, instruction);
+            FlightPlan.Validate(flightPlan);
 
             ApproachClearance approachClearance = instruction as ApproachClearance;
             if (approachClearance != null)
@@ -255,17 +242,12 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public class EnrouteState: AirplaneState
     {
-        public EnrouteState(Fix from, Fix to, Route route)
+        public EnrouteState(Fix from, Fix to)
         {
             Requires.NotNull(from, "from");
             Requires.NotNull(to, "to");
-            Requires.NotNull(route, "route");
-            Requires.Argument(route.Fixes.Contains(from), "from", "The 'from' Fix is not part of the passed Route");
-            Requires.Argument(route.Fixes.Contains(to), "to", "The 'to' Fix is not part of the passed Route");
-
             this.From = from;
             this.To = to;
-            this.Route = route;
         }
 
 
@@ -274,9 +256,6 @@ namespace AirTrafficControl.Interfaces
 
         [DataMember]
         public Fix To { get; private set; }
-
-        [DataMember]
-        public Route Route { get; private set; }
 
         public override Location Location
         {
@@ -292,12 +271,12 @@ namespace AirTrafficControl.Interfaces
 
         public override string ToString()
         {
-            return "Flying on route " + Route.Name + " from " + From.DisplayName + " to " + To.DisplayName;
+            return $"Flying from {From.DisplayName} to {To.DisplayName}";
         }
 
         public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
         {
-            ValidateComputeNextStateArgs(flightPlan, instruction);
+            FlightPlan.Validate(flightPlan);
 
             if (this.To == flightPlan.Destination)
             {
@@ -313,8 +292,9 @@ namespace AirTrafficControl.Interfaces
             }
             else
             {
-                Fix next = Route.GetNextFix(this.To, flightPlan.Destination);
-                return new EnrouteState(this.To, next, this.Route);
+                int currentFixIndex = flightPlan.FlightPath.IndexOf(this.To);
+                Fix next = flightPlan.FlightPath[currentFixIndex + 1];
+                return new EnrouteState(this.To, next);
             }
         }
 

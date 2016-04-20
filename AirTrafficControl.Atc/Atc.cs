@@ -98,8 +98,7 @@ namespace AirTrafficControl.Atc
             ServiceEventSource.Current.ServiceRequestStart(nameof(StartNewFlight));
 
             try {
-                Requires.NotNull(flightPlan, "flightPlan");
-                flightPlan.Validate();
+                FlightPlan.Validate(flightPlan, includeFlightPath: false);
 
                 using (var tx = this.StateManager.CreateTransaction())
                 {
