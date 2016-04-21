@@ -1,19 +1,17 @@
 ﻿using AirTrafficControl.Interfaces;
+using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Client;
+using Microsoft.ServiceFabric.Services.Client;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using Microsoft.ServiceFabric.Services.Communication.Wcf;
+using Microsoft.ServiceFabric.Services.Communication.Wcf.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNet.SignalR;
-using Microsoft.AspNet.SignalR.Infrastructure;
-using Microsoft.ServiceFabric.Actors.Client;
-using Microsoft.ServiceFabric.Services.Communication.Wcf.Client;
-using Microsoft.ServiceFabric.Services.Communication.Wcf;
-using Microsoft.ServiceFabric.Services.Client;
-using Microsoft.ServiceFabric.Services.Communication.Client;
 using System.Threading;
-using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace AirTrafficControl.Web.WebSrv
 {
@@ -29,16 +27,29 @@ namespace AirTrafficControl.Web.WebSrv
             }, 
             System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private static IAirTrafficControl AtcClient;
-        private static object AtcClientLock = new object();
+        private static Lazy<ServicePartitionClient<WcfCommunicationClient<IAirTrafficControl>>> AtcClient = 
+            new Lazy<ServicePartitionClient<WcfCommunicationClient<IAirTrafficControl>>>(() =>
+        {
+            var wcfClientFactory = new WcfCommunicationClientFactory<IAirTrafficControl>(
+                        clientBinding: WcfUtility.CreateTcpClientBinding(),
+                        servicePartitionResolver: ServicePartitionResolver.GetDefault());
+
+            var newAtcClient = new ServicePartitionClient<WcfCommunicationClient<IAirTrafficControl>>(
+                wcfClientFactory,
+                AtcServiceUri,
+                ServicePartitionKey.Singleton,
+                TargetReplicaSelector.Default,
+                WellKnownIdentifiers.AtcServiceListenerName);
+            return newAtcClient;
+        }, LazyThreadSafetyMode.ExecutionAndPublication);
 
         public async Task<IEnumerable<AirplaneStateDto>> GetFlyingAirplaneStates()
         {
             try
             {
                 var retval = new List<AirplaneStateDto>();
-                IAirTrafficControl atc = await GetAtcClient();
-                var flyingAirplaneIDs = await atc.GetFlyingAirplaneIDs().ConfigureAwait(false);
+
+                IEnumerable<string> flyingAirplaneIDs = await AtcClient.Value.InvokeWithRetryAsync((client) => client.Channel.GetFlyingAirplaneIDs());
 
                 if (flyingAirplaneIDs != null)
                 {
@@ -91,8 +102,7 @@ namespace AirTrafficControl.Web.WebSrv
                 flightPlan.Destination = Universe.Current.Airports.Where(a => a.Name == destination).First();
                 FlightPlan.Validate(flightPlan, includeFlightPath: false);
 
-                IAirTrafficControl atc = await GetAtcClient();
-                await atc.StartNewFlight(flightPlan);
+                await AtcClient.Value.InvokeWithRetryAsync((client) => client.Channel.StartNewFlight(flightPlan));
             }
             catch (Exception e)
             {
@@ -116,59 +126,6 @@ namespace AirTrafficControl.Web.WebSrv
             catch (Exception e)
             {
                 ServiceEventSource.Current.RestApiFrontEndError("PerformFlightStatusUpdate", e.ToString());
-            }
-        }
-
-        private async Task<IAirTrafficControl> GetAtcClient()
-        {
-            lock (AtcClientLock)
-            {
-                if (IsUsable(AtcClient as ICommunicationObject))
-                {
-                    return AtcClient;
-                }
-            }
-
-            var wcfClientFactory = new WcfCommunicationClientFactory<IAirTrafficControl>(
-                    clientBinding: WcfUtility.CreateTcpClientBinding(),
-                    servicePartitionResolver: ServicePartitionResolver.GetDefault());
-
-            var newAtcClient = await wcfClientFactory.GetClientAsync(
-                AtcServiceUri,
-                ServicePartitionKey.Singleton,
-                TargetReplicaSelector.Default,
-                WellKnownIdentifiers.AtcServiceListenerName,
-                new OperationRetrySettings(),
-                CancellationToken.None
-                );
-
-            lock (AtcClientLock)
-            {
-                if (!IsUsable(AtcClient as ICommunicationObject))
-                {
-                    AtcClient = (IAirTrafficControl) newAtcClient.Channel;
-                }
-
-                return AtcClient;
-            }
-        }
-
-        private bool IsUsable(ICommunicationObject co)
-        {
-            if (co == null)
-            {
-                return false;
-            }
-
-            switch (co.State)
-            {
-                case CommunicationState.Opened:
-                case CommunicationState.Opening:
-                case CommunicationState.Created:
-                    return true;
-
-                default:
-                    return false;
             }
         }
     }
