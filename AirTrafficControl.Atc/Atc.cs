@@ -99,6 +99,7 @@ namespace AirTrafficControl.Atc
 
             try {
                 FlightPlan.Validate(flightPlan, includeFlightPath: false);
+                flightPlan.FlightPath = Dispatcher.ComputeFlightPath(flightPlan.DeparturePoint, flightPlan.Destination);
 
                 using (var tx = this.StateManager.CreateTransaction())
                 {
@@ -115,10 +116,11 @@ namespace AirTrafficControl.Atc
                     await this.flyingAirplaneIDs.AddAsync(tx, flightPlan.AirplaneID, 0);
                     await tx.CommitAsync();
 
-                    ServiceEventSource.Current.ServiceMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}.",
+                    ServiceEventSource.Current.ServiceMessage(this, "ATC: new filght plan received for {0}: departing from {1}, destination {2}. Flight path is {3}",
                         flightPlan.AirplaneID,
                         flightPlan.DeparturePoint.DisplayName,
-                        flightPlan.Destination.DisplayName);
+                        flightPlan.Destination.DisplayName,
+                        flightPlan.FlightPath);
                 }
 
                 ServiceEventSource.Current.ServiceRequestStop(nameof(StartNewFlight));
@@ -271,7 +273,7 @@ namespace AirTrafficControl.Atc
             }
             else
             {
-                Fix nextFix = enrouteState.Route.GetNextFix(enrouteState.To, flightPlan.Destination);
+                Fix nextFix = flightPlan.GetNextFix(enrouteState.From);
 
                 // Is another airplane destined to the same fix?
                 if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(state => state.To == nextFix))
@@ -285,7 +287,7 @@ namespace AirTrafficControl.Atc
                 else
                 {
                     // Just let it proceed to next fix, no instruction necessary
-                    projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(enrouteState.To, nextFix, enrouteState.Route);
+                    projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(enrouteState.To, nextFix);
                     ServiceEventSource.Current.ServiceMessage(this, "ATC: Airplane {0} is flying from {1} to {2}, next fix {3}",
                         flightPlan.AirplaneID, enrouteState.From.DisplayName, enrouteState.To.DisplayName, nextFix.DisplayName);
                 }
@@ -318,10 +320,7 @@ namespace AirTrafficControl.Atc
             }
 
             // Case 2: holding at some point enroute
-            Route route = Universe.Current.GetRouteBetween(flightPlan.DeparturePoint, flightPlan.Destination);
-            Assumes.NotNull(route);
-            Fix nextFix = route.GetNextFix(holdingState.Fix, flightPlan.Destination);
-            Assumes.NotNull(nextFix);
+            Fix nextFix = flightPlan.GetNextFix(holdingState.Fix);
 
             if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(enrouteState => enrouteState.To == nextFix))
             {
@@ -331,9 +330,9 @@ namespace AirTrafficControl.Atc
             }
             else
             {
-                projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(holdingState.Fix, nextFix, route);
+                projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(holdingState.Fix, nextFix);
                 // We always optmimistically give an enroute clearance all the way to the destination
-                await airplaneProxy.ReceiveInstructionAsync(new EnrouteClearance(flightPlan.Destination)).ConfigureAwait(false);
+                await airplaneProxy.ReceiveInstructionAsync(new EnrouteClearance(flightPlan.Destination, flightPlan.FlightPath));
                 ServiceEventSource.Current.ServiceMessage(this, "ATC: Airplane {0} should end holding at {1} and proceed to destination, next fix {2}. Issued new enroute clearance.",
                     flightPlan.AirplaneID, holdingState.Fix.DisplayName, nextFix.DisplayName);
             }
@@ -344,10 +343,7 @@ namespace AirTrafficControl.Atc
             DepartingState departingState = (DepartingState)airplaneActorState.AirplaneState;
             FlightPlan flightPlan = airplaneActorState.FlightPlan;
 
-            Route route = Universe.Current.GetRouteBetween(flightPlan.DeparturePoint, flightPlan.Destination);
-            Assumes.NotNull(route);
-            Fix nextFix = route.GetNextFix(departingState.Airport, flightPlan.Destination);
-            Assumes.NotNull(nextFix);
+            Fix nextFix = flightPlan.GetNextFix(departingState.Airport);
 
             if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(enrouteState => enrouteState.To == nextFix))
             {
@@ -358,7 +354,7 @@ namespace AirTrafficControl.Atc
             }
             else
             {
-                projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(departingState.Airport, nextFix, route);
+                projectedAirplaneStates[flightPlan.AirplaneID] = new EnrouteState(departingState.Airport, nextFix);
                 ServiceEventSource.Current.ServiceMessage(this, "ATC: Airplane {0} completed departure from {1} and proceeds enroute to destination, next fix {2}",
                     flightPlan.AirplaneID, departingState.Airport.DisplayName, nextFix.DisplayName);
             }

@@ -42,5 +42,17 @@ namespace AirTrafficControl.Interfaces
                     "Flight path does not lead from departure point to destination");
             }
         }
+
+        public Fix GetNextFix(Fix current)
+        {
+            Requires.NotNull(current, nameof(current));
+            Validate(this);
+            Requires.Argument(FlightPath.Contains(current), nameof(current), "The passed fix is not part of the current flight path");
+            Requires.Argument(current != Destination, nameof(current), "The passed parameter is the destination fix for the fligh plan. There is no next fix after that.");
+
+            int currentIndex = FlightPath.IndexOf(current);
+            Fix next = FlightPath[currentIndex + 1];
+            return next;
+        }
     }
 }

@@ -170,13 +170,11 @@ namespace AirTrafficControl.Interfaces
             EnrouteClearance enrouteClearance = instruction as EnrouteClearance;
             if (enrouteClearance != null)
             {
-                Route route = Universe.Current.GetRouteBetween(this.Fix, flightPlan.Destination);
-                Assumes.NotNull(route);
-                Fix next = route.GetNextFix(this.Fix, flightPlan.Destination);
+                Fix next = flightPlan.GetNextFix(this.Fix);
 
-                if (enrouteClearance.IsClearedTo(this.Fix, next, route))
+                if (enrouteClearance.IsClearedTo(this.Fix, next))
                 {
-                    return new EnrouteState(this.Fix, next, route);
+                    return new EnrouteState(this.Fix, next);
                 }
             }
 
@@ -292,8 +290,7 @@ namespace AirTrafficControl.Interfaces
             }
             else
             {
-                int currentFixIndex = flightPlan.FlightPath.IndexOf(this.To);
-                Fix next = flightPlan.FlightPath[currentFixIndex + 1];
+                Fix next = flightPlan.GetNextFix(this.To); 
                 return new EnrouteState(this.To, next);
             }
         }
