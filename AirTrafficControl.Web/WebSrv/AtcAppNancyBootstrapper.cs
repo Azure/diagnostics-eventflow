@@ -10,7 +10,7 @@ using Nancy.TinyIoc;
 
 namespace AirTrafficControl.Web.WebSrv
 {
-    public class ApplicationWithStandardContentFoldersBootstrapper: DefaultNancyBootstrapper
+    public class AtcAppNancyBootstrapper: DefaultNancyBootstrapper
     {
         protected override void ConfigureConventions(NancyConventions nancyConventions)
         {
@@ -26,6 +26,15 @@ namespace AirTrafficControl.Web.WebSrv
         {
             base.ApplicationStartup(container, pipelines);
             Nancy.Json.JsonSettings.RetainCasing = true;
+        }
+
+        protected override byte[] FavIcon
+        {
+            get
+            {
+                // Disable default "Nancy head" favicon
+                return null;
+            }
         }
     }
 }
