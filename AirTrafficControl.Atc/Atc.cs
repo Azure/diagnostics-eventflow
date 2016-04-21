@@ -273,7 +273,7 @@ namespace AirTrafficControl.Atc
             }
             else
             {
-                Fix nextFix = flightPlan.GetNextFix(enrouteState.From);
+                Fix nextFix = flightPlan.GetNextFix(enrouteState.To);
 
                 // Is another airplane destined to the same fix?
                 if (projectedAirplaneStates.Values.OfType<EnrouteState>().Any(state => state.To == nextFix))
