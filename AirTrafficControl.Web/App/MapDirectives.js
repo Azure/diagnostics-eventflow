@@ -7,7 +7,7 @@ var AirTrafficControl;
     var Maps = Microsoft.Maps;
     (function () {
         var app = angular.module('AtcAppDirectives', []);
-        var seattleLocation = new Microsoft.Maps.Location(47.0, -120.5);
+        var mapCenter = new Microsoft.Maps.Location(45.4, -117.0);
         var airplaneDepictionFactory = new AirTrafficControl.AirplaneDepictionFactory();
         app.directive('bingMap', function () {
             return {
@@ -24,9 +24,9 @@ var AirTrafficControl;
                     }
                     scope.Map = new Maps.Map(instanceElement[0], {
                         credentials: instanceAttributes["bingMapsKey"],
-                        zoom: 7,
+                        zoom: 6,
                         disableZooming: true,
-                        center: seattleLocation
+                        center: mapCenter
                     });
                     Maps.Events.addHandler(scope.Map, 'viewchangeend', onViewChanged);
                     scope.$watch("AirplaneStates", function (newAirplaneStates, oldAirplaneStates, scope) {

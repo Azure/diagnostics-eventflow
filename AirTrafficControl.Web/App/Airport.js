@@ -6,6 +6,6 @@ var AirTrafficControl;
             this.DisplayName = DisplayName;
         }
         return Airport;
-    })();
+    }());
     AirTrafficControl.Airport = Airport;
 })(AirTrafficControl || (AirTrafficControl = {}));

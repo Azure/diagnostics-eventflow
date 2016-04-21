@@ -9,7 +9,7 @@ var AirTrafficControl;
         function NewFlightData() {
         }
         return NewFlightData;
-    })();
+    }());
     var MainController = (function () {
         function MainController($scope, $interval, $http, Hub) {
             var _this = this;
@@ -56,6 +56,6 @@ var AirTrafficControl;
             }
         };
         return MainController;
-    })();
+    }());
     AirTrafficControl.MainController = MainController;
 })(AirTrafficControl || (AirTrafficControl = {}));

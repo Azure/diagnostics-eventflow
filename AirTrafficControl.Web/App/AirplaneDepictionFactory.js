@@ -9,7 +9,7 @@ var AirTrafficControl;
             this.ImageName = ImageName;
         }
         return Heading2ImageDictionaryEntry;
-    })();
+    }());
     var AirplaneDepictionFactory = (function () {
         function AirplaneDepictionFactory() {
             var pi8 = Math.PI / 8.0;
@@ -123,6 +123,6 @@ var AirTrafficControl;
         AirplaneDepictionFactory.ScalingLattitudeFactor = 10000.0;
         AirplaneDepictionFactory.ScalingLongitudeFactor = 10000.0;
         return AirplaneDepictionFactory;
-    })();
+    }());
     AirTrafficControl.AirplaneDepictionFactory = AirplaneDepictionFactory;
 })(AirTrafficControl || (AirTrafficControl = {}));

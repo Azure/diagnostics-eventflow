@@ -7,7 +7,7 @@ var AirTrafficControl;
             this.Altitude = Altitude;
         }
         return Position;
-    })();
+    }());
     AirTrafficControl.Position = Position;
     var AirplaneState = (function () {
         function AirplaneState(ID, StateDescription, Location, Heading) {
@@ -17,6 +17,6 @@ var AirTrafficControl;
             this.Heading = Heading;
         }
         return AirplaneState;
-    })();
+    }());
     AirTrafficControl.AirplaneState = AirplaneState;
 })(AirTrafficControl || (AirTrafficControl = {}));
