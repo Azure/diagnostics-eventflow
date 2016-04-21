@@ -32,12 +32,22 @@ namespace AirTrafficControl.Tests
         [TestMethod]
         public void PathWithFixOriginatingRoutes()
         {
+            Airport kboi = Universe.Current.Airports.Where(a => a.Name == "KBOI").First();
+            Airport kbzn = Universe.Current.Airports.Where(a => a.Name == "KBZN").First();
+
+            var path = Dispatcher.ComputeFlightPath(kboi, kbzn);
+            VerifyPath(path, new[] { "kboi", "dnj", "hia", "kbzn" });
         }
 
         [TestMethod]
         public void BothWaysSamePathLength()
         {
-            
+            Airport kgeg = Universe.Current.Airports.Where(a => a.Name == "KGEG").First();
+            Airport kmfr = Universe.Current.Airports.Where(a => a.Name == "KMFR").First();
+
+            var path = Dispatcher.ComputeFlightPath(kgeg, kmfr);
+            var reversePath = Dispatcher.ComputeFlightPath(kmfr, kgeg);
+            Assert.AreEqual(path.Count, reversePath.Count);
         }
 
         private void VerifyPath(IList<Fix> path, string[] fixNames)
