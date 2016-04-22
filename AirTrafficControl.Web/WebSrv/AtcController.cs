@@ -1,23 +1,22 @@
-﻿using AirTrafficControl.Interfaces;
+﻿using AirTrafficControl.Common;
+using AirTrafficControl.Interfaces;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
-using Microsoft.ServiceFabric.Services.Client;
-using Microsoft.ServiceFabric.Services.Communication.Client;
-using Microsoft.ServiceFabric.Services.Communication.Wcf;
-using Microsoft.ServiceFabric.Services.Communication.Wcf.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AtcServiceClient = System.Lazy<Microsoft.ServiceFabric.Services.Communication.Client.ServicePartitionClient<Microsoft.ServiceFabric.Services.Communication.Wcf.Client.WcfCommunicationClient<AirTrafficControl.Interfaces.IAirTrafficControl>>>;
+
 namespace AirTrafficControl.Web.WebSrv
 {
     internal class AtcController
     {
-        private static readonly Uri AtcServiceUri = new Uri("fabric:/AirTrafficControlApplication/Atc");
+        
 
         private static Lazy<IHubContext<IAtcHubClient>> AtcHubContext = new Lazy<IHubContext<IAtcHubClient>>(() => 
             {
@@ -27,21 +26,7 @@ namespace AirTrafficControl.Web.WebSrv
             }, 
             System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private static Lazy<ServicePartitionClient<WcfCommunicationClient<IAirTrafficControl>>> AtcClient = 
-            new Lazy<ServicePartitionClient<WcfCommunicationClient<IAirTrafficControl>>>(() =>
-        {
-            var wcfClientFactory = new WcfCommunicationClientFactory<IAirTrafficControl>(
-                        clientBinding: WcfUtility.CreateTcpClientBinding(),
-                        servicePartitionResolver: ServicePartitionResolver.GetDefault());
-
-            var newAtcClient = new ServicePartitionClient<WcfCommunicationClient<IAirTrafficControl>>(
-                wcfClientFactory,
-                AtcServiceUri,
-                ServicePartitionKey.Singleton,
-                TargetReplicaSelector.Default,
-                WellKnownIdentifiers.AtcServiceListenerName);
-            return newAtcClient;
-        }, LazyThreadSafetyMode.ExecutionAndPublication);
+        private static AtcServiceClient AtcClient = new AtcServiceClient( AtcServiceClientFactory.CreateClient, LazyThreadSafetyMode.ExecutionAndPublication);
 
         public async Task<IEnumerable<AirplaneStateDto>> GetFlyingAirplaneStates()
         {

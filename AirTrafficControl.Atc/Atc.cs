@@ -32,7 +32,7 @@ namespace AirTrafficControl.Atc
         private readonly IDictionary<Type, AirplaneController> AirplaneControllers;
         private ServicePartitionClient<HttpCommunicationClient> frontendCommunicationClient;
         private IReliableDictionary<string, int> flyingAirplaneIDs;
-        private IReliableDictionary<string, string> worldState;
+        private IReliableDictionary<string, string> serviceState;
         private Timer worldTimer;
 
         public Atc(StatefulServiceContext context)
@@ -66,7 +66,7 @@ namespace AirTrafficControl.Atc
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
             this.flyingAirplaneIDs = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, int>>(nameof(flyingAirplaneIDs));
-            this.worldState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(nameof(worldState));
+            this.serviceState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(nameof(serviceState));
             this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(new HttpCommunicationClientFactory(), new Uri(FrontendServiceName));
 
             this.worldTimer?.Dispose();
@@ -382,12 +382,12 @@ namespace AirTrafficControl.Atc
 
         private Task<int> GetCurrentTime(ITransaction tx)
         {
-            return this.worldState.GetOrAddAsync(tx, CurrentTimeProperty, "0").ContinueWith<int>(currentTimeLoadTask => int.Parse(currentTimeLoadTask.Result));
+            return this.serviceState.GetOrAddAsync(tx, CurrentTimeProperty, "0").ContinueWith<int>(currentTimeLoadTask => int.Parse(currentTimeLoadTask.Result));
         }
 
         private Task SetCurrentTime(ITransaction tx, int newTime)
         {
-            return this.worldState.AddOrUpdateAsync(tx, CurrentTimeProperty, "0", (key, currentTime) => newTime.ToString());
+            return this.serviceState.AddOrUpdateAsync(tx, CurrentTimeProperty, "0", (key, currentTime) => newTime.ToString());
         }
     }
 }

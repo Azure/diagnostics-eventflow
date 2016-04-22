@@ -1,5 +1,6 @@
 ﻿using AirTrafficControl.Interfaces;
 using AirTrafficControl.Web.Fabric;
+using AirTrafficControl.Web.TrafficSimulator;
 using Nancy;
 using Nancy.ModelBinding;
 using System;
@@ -16,16 +17,12 @@ namespace AirTrafficControl.Web.WebSrv
     {
         private delegate Task<dynamic> AsyncNancyRequestHandler(dynamic parameters, CancellationToken cancellationToken);
 
-        private StatelessServiceContext serviceContext;
-
         private const string NotifyFlightStatusUpdate = "FlightStatusUpdate";
 
         public MainModule()
         {
             try
             {
-                this.serviceContext = FabricContext<StatelessServiceContext>.Current.ServiceContext;
-
                 Get["/"] = parameters =>
                 {
                     return View["atcmain.html", new MainPageModel(Request)];
@@ -35,7 +32,7 @@ namespace AirTrafficControl.Web.WebSrv
                     async (parameters, cancellationToken) =>
                     {
                         var atc = new AtcController();
-                        var airplaneStates = await atc.GetFlyingAirplaneStates().ConfigureAwait(false);
+                        var airplaneStates = await atc.GetFlyingAirplaneStates();
                         return Response.AsJson<IEnumerable<AirplaneStateDto>>(airplaneStates).WithHeaders(PublicShortLived());
                     }));
                     
@@ -44,7 +41,7 @@ namespace AirTrafficControl.Web.WebSrv
                     async (parameters, cancellationToken) =>
                     {
                         AtcController atc = new AtcController();
-                        AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id).ConfigureAwait(false);
+                        AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id);
                         return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
                     }));
 
@@ -52,7 +49,7 @@ namespace AirTrafficControl.Web.WebSrv
                     async (parameters, cancellationToken) =>
                     {
                         var atc = new AtcController();
-                        var airports = await atc.GetAirports().ConfigureAwait(false);
+                        var airports = await atc.GetAirports();
                         return Response.AsJson<IEnumerable<Airport>>(airports);
                     }));
 
@@ -78,6 +75,14 @@ namespace AirTrafficControl.Web.WebSrv
                         await atc.PerformFlightStatusUpdate(newAirplaneStates).ConfigureAwait(false);
                         return HttpStatusCode.NoContent; // Success, just nothing to report back.
                     }));
+
+                Post["/api/simulation/traffic", runAsync: true] = (p, ct) => PerformRestOperation("SimulatedTrafficUpdate", p, ct, (AsyncNancyRequestHandler)(
+                    async (parameters, cancellationToken) => 
+                    {
+                        var model = this.Bind<TrafficSimulationModel>();                        
+                        await TrafficSimulator.ChangeTrafficSimulation(model);
+                        return HttpStatusCode.NoContent;
+                    }));
             }
             catch(Exception e)
             {
@@ -94,9 +99,9 @@ namespace AirTrafficControl.Web.WebSrv
         private async Task<dynamic> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
         {
             Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
-            Assumes.NotNull(this.serviceContext);
+            Assumes.NotNull(ServiceContext);
 
-            ServiceEventSource.Current.RestApiOperationStart(this.serviceContext, operationName);
+            ServiceEventSource.Current.RestApiOperationStart(ServiceContext, operationName);
             try
             {
                 var retval = await inner(parameters, cancellationToken).ConfigureAwait(false);
@@ -113,6 +118,16 @@ namespace AirTrafficControl.Web.WebSrv
         {
             ServiceEventSource.Current.RestApiOperationError(e.ToString(), operationName);
             return false; // Never catch the exception
+        }
+
+        private StatelessServiceContext ServiceContext
+        {
+            get { return FabricContext<StatelessServiceContext, ITrafficSimulator>.Current.ServiceContext; }
+        }
+
+        private ITrafficSimulator TrafficSimulator
+        {
+            get { return FabricContext<StatelessServiceContext, ITrafficSimulator>.Current.ServiceInstance; }
         }
     }
 }
