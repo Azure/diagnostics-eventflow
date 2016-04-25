@@ -3,7 +3,7 @@
    <Parameters>
       <Parameter Name="Atc_MinReplicaSetSize" DefaultValue="2" />
       <Parameter Name="Atc_TargetReplicaSetSize" DefaultValue="3" />
-       <Parameter Name="Atc_PartitionCount" DefaultValue="1" />
+      <Parameter Name="Atc_PartitionCount" DefaultValue="1" />
       <Parameter Name="AtcWeb_MinReplicaSetSize" DefaultValue="2" />
       <Parameter Name="AtcWeb_TargetReplicaSetSize" DefaultValue="3" />
       <Parameter Name="AirplaneActorService_PartitionCount" DefaultValue="10" />
