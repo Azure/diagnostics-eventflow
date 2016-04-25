@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="AirTrafficControlApplicationType" ApplicationTypeVersion="1.0.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
    <Parameters>
-      <Parameter Name="Atc_MinReplicaSetSize" DefaultValue="2" />      
+      <Parameter Name="Atc_MinReplicaSetSize" DefaultValue="2" />
       <Parameter Name="Atc_TargetReplicaSetSize" DefaultValue="3" />
-       <Parameter Name="AtcWeb_MinReplicaSetSize" DefaultValue="2" />
-       <Parameter Name="AtcWeb_TargetReplicaSetSize" DefaultValue="3" />
+       <Parameter Name="Atc_PartitionCount" DefaultValue="1" />
+      <Parameter Name="AtcWeb_MinReplicaSetSize" DefaultValue="2" />
+      <Parameter Name="AtcWeb_TargetReplicaSetSize" DefaultValue="3" />
       <Parameter Name="AirplaneActorService_PartitionCount" DefaultValue="10" />
       <Parameter Name="AirplaneActorService_MinReplicaSetSize" DefaultValue="2" />
       <Parameter Name="AirplaneActorService_TargetReplicaSetSize" DefaultValue="3" />
