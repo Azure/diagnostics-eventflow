@@ -120,14 +120,14 @@ namespace AirTrafficControl.Web.WebSrv
             return false; // Never catch the exception
         }
 
-        private StatelessServiceContext ServiceContext
+        private StatefulServiceContext ServiceContext
         {
-            get { return FabricContext<StatelessServiceContext, ITrafficSimulator>.Current.ServiceContext; }
+            get { return FabricContext<StatefulServiceContext, ITrafficSimulator>.Current.ServiceContext; }
         }
 
         private ITrafficSimulator TrafficSimulator
         {
-            get { return FabricContext<StatelessServiceContext, ITrafficSimulator>.Current.ServiceInstance; }
+            get { return FabricContext<StatefulServiceContext, ITrafficSimulator>.Current.ServiceInstance; }
         }
     }
 }

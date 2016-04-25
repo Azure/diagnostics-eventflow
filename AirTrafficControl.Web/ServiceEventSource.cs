@@ -164,7 +164,7 @@ namespace AirTrafficControl.Web
 
 
         [NonEvent]
-        public void RestApiOperationStart(StatelessServiceContext serviceContext, [CallerMemberName] string operationName = "")
+        public void RestApiOperationStart(StatefulServiceContext serviceContext, [CallerMemberName] string operationName = "")
         {
             if (this.IsEnabled())
             {
@@ -172,7 +172,7 @@ namespace AirTrafficControl.Web
                 RestApiOperationStart(
                     serviceContext.ServiceName.ToString(),
                     serviceContext.ServiceTypeName,
-                    serviceContext.InstanceId,
+                    serviceContext.ReplicaOrInstanceId,
                     serviceContext.PartitionId,
                     serviceContext.CodePackageActivationContext.ApplicationName,
                     serviceContext.CodePackageActivationContext.ApplicationTypeName,

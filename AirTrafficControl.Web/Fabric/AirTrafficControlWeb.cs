@@ -90,6 +90,10 @@ namespace AirTrafficControl.Web.Fabric
                     byte newFlightsCount = (byte) (this.simulatedTrafficCount.Value - flyingAirplaneCount);
                     var randomGen = new Random();
                     var airports = Universe.Current.Airports;
+                    if (newFlightsCount > 0)
+                    {
+                        ServiceEventSource.Current.ServiceMessage(this, $"Launching {newFlightsCount} new flights to maintain the desired number of at least {this.simulatedTrafficCount.Value} flights in the air");
+                    }
 
                     for (byte i = 0; i < newFlightsCount; i++)
                     {
