@@ -1,17 +1,18 @@
-﻿using Microsoft.ServiceFabric.Services.Runtime;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using System.Fabric;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using AirTrafficControl.Common;
+using AirTrafficControl.Interfaces;
 using AirTrafficControl.Web.TrafficSimulator;
 using AirTrafficControl.Web.WebSrv;
-using System;
-
-using AtcServiceClient = System.Lazy<Microsoft.ServiceFabric.Services.Communication.Client.ServicePartitionClient<Microsoft.ServiceFabric.Services.Communication.Wcf.Client.WcfCommunicationClient<AirTrafficControl.Interfaces.IAirTrafficControl>>>;
-using AirTrafficControl.Common;
-using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Data.Collections;
+using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Threading;
+using System.Threading.Tasks;
+using AtcServiceClient = System.Lazy<Microsoft.ServiceFabric.Services.Communication.Client.ServicePartitionClient<Microsoft.ServiceFabric.Services.Communication.Wcf.Client.WcfCommunicationClient<AirTrafficControl.Interfaces.IAirTrafficControl>>>;
 
 namespace AirTrafficControl.Web.Fabric
 {
@@ -21,7 +22,7 @@ namespace AirTrafficControl.Web.Fabric
 
         private Timer trafficSimulationTimer;
         private IReliableDictionary<string, string> serviceState;
-        private byte simulatedTrafficCount;
+        private byte? simulatedTrafficCount;
         private AtcServiceClient AtcClient = new AtcServiceClient(AtcServiceClientFactory.CreateClient, LazyThreadSafetyMode.ExecutionAndPublication);        
 
         public AirTrafficControlWeb(StatefulServiceContext ctx): base(ctx) { }
@@ -59,6 +60,7 @@ namespace AirTrafficControl.Web.Fabric
                 await tx.CommitAsync();
             }
 
+            this.simulatedTrafficCount = trafficSimulationSettings.SimulatedTrafficCount;
             if (trafficSimulationSettings.SimulatedTrafficCount == 0)
             {
                 this.trafficSimulationTimer?.Dispose();
@@ -72,7 +74,47 @@ namespace AirTrafficControl.Web.Fabric
 
         private void SimulateTraffic(object state)
         {
-            throw new NotImplementedException();
+            Task.Run(async () =>
+            {
+                if (this.simulatedTrafficCount == null)
+                {
+                    using (ITransaction tx = this.StateManager.CreateTransaction())
+                    {
+                        this.simulatedTrafficCount = await GetSimulatedTrafficCount(tx);
+                    }
+                }
+
+                long flyingAirplaneCount = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneCount());
+                if (flyingAirplaneCount < this.simulatedTrafficCount.Value)
+                {
+                    byte newFlightsCount = (byte) (this.simulatedTrafficCount.Value - flyingAirplaneCount);
+                    var randomGen = new Random();
+                    var airports = Universe.Current.Airports;
+
+                    for (byte i = 0; i < newFlightsCount; i++)
+                    {
+                        Airport departureAirport = airports[randomGen.Next(airports.Count)];
+                        Airport destinationAirport = null;
+                        do
+                        {
+                            destinationAirport = airports[randomGen.Next(airports.Count)];
+                        } while (departureAirport == destinationAirport);
+
+                        IEnumerable<string> flyingAirplanes = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneIDs());
+                        string newAirplaneID = null;
+                        do
+                        {
+                            newAirplaneID = "N" + randomGen.Next(1, 1000).ToString() + "SIM";
+                        } while (flyingAirplanes.Contains(newAirplaneID));
+
+                        var flightPlan = new FlightPlan();
+                        flightPlan.AirplaneID = newAirplaneID;
+                        flightPlan.DeparturePoint = departureAirport;
+                        flightPlan.Destination = destinationAirport;
+                        await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.StartNewFlight(flightPlan));
+                    }
+                }
+            });
         }
 
         private Task<byte> GetSimulatedTrafficCount(ITransaction tx)

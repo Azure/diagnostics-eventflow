@@ -73,31 +73,21 @@ namespace AirTrafficControl.Atc
             this.worldTimer = new Timer(OnTimePassed, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
         }
 
-        public async Task<IEnumerable<string>> GetFlyingAirplaneIDs()
+        public Task<IEnumerable<string>> GetFlyingAirplaneIDs()
         {
-            ServiceEventSource.Current.ServiceRequestStart(nameof(GetFlyingAirplaneIDs));
-            IEnumerable<string> retval;
-            try
+            return PerformServiceOperation<IEnumerable<string>>(nameof(GetFlyingAirplaneIDs), () =>
             {
                 using (var tx = this.StateManager.CreateTransaction())
                 {
-                    retval = await GetFlyingAirplaneIDsInternal(tx);
+                    return GetFlyingAirplaneIDsInternal(tx);
                 }
-                ServiceEventSource.Current.ServiceRequestStop(nameof(GetFlyingAirplaneIDs));
-                return retval;
-            }
-            catch(Exception e)
-            {
-                ServiceEventSource.Current.ServiceRequestFailed(nameof(GetFlyingAirplaneIDs), e.ToString());
-                throw;
-            }
+            });
         }
 
-        public async Task StartNewFlight(FlightPlan flightPlan)
+        public Task StartNewFlight(FlightPlan flightPlan)
         {
-            ServiceEventSource.Current.ServiceRequestStart(nameof(StartNewFlight));
-
-            try {
+            return PerformServiceOperation<bool>(nameof(StartNewFlight), async () => 
+            {
                 FlightPlan.Validate(flightPlan, includeFlightPath: false);
                 flightPlan.FlightPath = Dispatcher.ComputeFlightPath(flightPlan.DeparturePoint, flightPlan.Destination);
 
@@ -122,12 +112,36 @@ namespace AirTrafficControl.Atc
                         flightPlan.Destination.DisplayName,
                         flightPlan.FlightPath);
                 }
+                return true;
+            });
+        }
 
-                ServiceEventSource.Current.ServiceRequestStop(nameof(StartNewFlight));
-            }
+        public Task<long> GetFlyingAirplaneCount()
+        {
+            return PerformServiceOperation<long>(nameof(GetFlyingAirplaneCount), async () =>
+             {
+                 using (var tx = this.StateManager.CreateTransaction())
+                 {
+                     long flyingAirplaneCount = await this.flyingAirplaneIDs.GetCountAsync(tx);
+                     return flyingAirplaneCount;
+                 }
+             });
+        }
+
+        private async Task<T> PerformServiceOperation<T>(string operationName, Func<Task<T>> impl)
+        {
+            Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
+
+            ServiceEventSource.Current.ServiceRequestStart(operationName);
+            try
+            {
+                T retval = await impl();
+                ServiceEventSource.Current.ServiceRequestStop(operationName);
+                return retval;
+            } 
             catch (Exception e)
             {
-                ServiceEventSource.Current.ServiceRequestFailed(nameof(StartNewFlight), e.ToString());
+                ServiceEventSource.Current.ServiceRequestFailed(operationName, e.ToString());
                 throw;
             }
         }

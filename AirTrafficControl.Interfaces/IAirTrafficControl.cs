@@ -16,5 +16,8 @@ namespace AirTrafficControl.Interfaces
 
         [OperationContract]
         Task StartNewFlight(FlightPlan flightPlan);
+
+        [OperationContract]
+        Task<long> GetFlyingAirplaneCount();
     }
 }
