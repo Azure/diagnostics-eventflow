@@ -22,20 +22,22 @@ module AirTrafficControl {
         NewFlightData: NewFlightData;
         TrafficSimulationData: TrafficSimulationData;
         Map: Microsoft.Maps.Map;
+        AnimationProgress: number; // A number from 0 to 1 that expresses the desired position of an airplane along its track during the current animation period
 
         OnNewFlight: () => void;
         UpdateSimulation: () => void;
     }
 
     export class MainController {
+        // Number of animation periods per airplane status update period
+        private static AirplaneAnimationPeriods: number = 10;
+
         private updateInterval: ng.IPromise<any>;
         private atcHub: ngSignalr.Hub;
+        
 
         constructor(private $scope: IMainControllerScope, private $interval: ng.IIntervalService, private $http: ng.IHttpService, private Hub: ngSignalr.HubFactory) {
             $scope.AirplaneStates = [];
-
-            // Temporarily disable polling while experimenting with SignalR
-            // this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
 
             $scope.$on('$destroy',() => this.onScopeDestroy());
 
@@ -52,21 +54,10 @@ module AirTrafficControl {
 
             var atcHubOptions: ngSignalr.HubOptions = {
                 listeners: {
-                    'flightStatusUpdate': (flightStatus: FlightStatusModel) => {
-                        this.$scope.AirplaneStates = flightStatus.AirplaneStates;
-                        this.$scope.$apply();
-                    }
+                    'flightStatusUpdate': this.onFlightStatusUpdate
                 }
             };
             this.atcHub = new Hub('atc', atcHubOptions);
-        }
-
-        private onUpdateAirplaneStates() {
-            this.$http.get("/api/airplanes").then((response: ng.IHttpPromiseCallbackArg<AirplaneState[]>) => {
-                this.$scope.AirplaneStates = response.data;
-            });
-            
-            // TODO: some error indication if the data is stale and cannot be refreshed
         }
 
         private onNewFlight() {
@@ -77,6 +68,23 @@ module AirTrafficControl {
 
         private updateSimulation() {
             this.$http.post("/api/simulation/traffic", this.$scope.TrafficSimulationData);
+        }
+
+        private onAnimationProgress() {
+            if (this.$scope.AnimationProgress < 0.99) {
+                this.$scope.AnimationProgress += 1.0 / MainController.AirplaneAnimationPeriods;
+                this.$scope.$apply();
+            }
+        }
+
+        private onFlightStatusUpdate(flightStatus: FlightStatusModel) {
+            this.$interval.cancel(this.updateInterval);
+            this.$scope.AnimationProgress = 0.0;
+            var animationDelay = flightStatus.EstimatedNextStatusUpdateDelayMsec / MainController.AirplaneAnimationPeriods;
+            this.updateInterval = this.$interval(() => this.onAnimationProgress(), animationDelay);
+
+            this.$scope.AirplaneStates = flightStatus.AirplaneStates;
+            this.$scope.$apply();
         }
 
         private onScopeDestroy() {

@@ -23,8 +23,6 @@ var AirTrafficControl;
             this.$http = $http;
             this.Hub = Hub;
             $scope.AirplaneStates = [];
-            // Temporarily disable polling while experimenting with SignalR
-            // this.updateInterval = $interval(() => this.onUpdateAirplaneStates(), 2000);
             $scope.$on('$destroy', function () { return _this.onScopeDestroy(); });
             $scope.Airports = [];
             this.$http.get("/api/airports").then(function (response) {
@@ -36,21 +34,11 @@ var AirTrafficControl;
             $scope.UpdateSimulation = function () { return _this.updateSimulation(); };
             var atcHubOptions = {
                 listeners: {
-                    'flightStatusUpdate': function (flightStatus) {
-                        _this.$scope.AirplaneStates = flightStatus.AirplaneStates;
-                        _this.$scope.$apply();
-                    }
+                    'flightStatusUpdate': this.onFlightStatusUpdate
                 }
             };
             this.atcHub = new Hub('atc', atcHubOptions);
         }
-        MainController.prototype.onUpdateAirplaneStates = function () {
-            var _this = this;
-            this.$http.get("/api/airplanes").then(function (response) {
-                _this.$scope.AirplaneStates = response.data;
-            });
-            // TODO: some error indication if the data is stale and cannot be refreshed
-        };
         MainController.prototype.onNewFlight = function () {
             // TODO: validate form parameters before poking the server
             this.$http.post("/api/flights", this.$scope.NewFlightData);
@@ -59,12 +47,29 @@ var AirTrafficControl;
         MainController.prototype.updateSimulation = function () {
             this.$http.post("/api/simulation/traffic", this.$scope.TrafficSimulationData);
         };
+        MainController.prototype.onAnimationProgress = function () {
+            if (this.$scope.AnimationProgress < 0.99) {
+                this.$scope.AnimationProgress += 1.0 / MainController.AirplaneAnimationPeriods;
+                this.$scope.$apply();
+            }
+        };
+        MainController.prototype.onFlightStatusUpdate = function (flightStatus) {
+            var _this = this;
+            this.$interval.cancel(this.updateInterval);
+            this.$scope.AnimationProgress = 0.0;
+            var animationDelay = flightStatus.EstimatedNextStatusUpdateDelayMsec / MainController.AirplaneAnimationPeriods;
+            this.updateInterval = this.$interval(function () { return _this.onAnimationProgress(); }, animationDelay);
+            this.$scope.AirplaneStates = flightStatus.AirplaneStates;
+            this.$scope.$apply();
+        };
         MainController.prototype.onScopeDestroy = function () {
             this.$interval.cancel(this.updateInterval);
             if (this.$scope.Map) {
                 this.$scope.Map.dispose();
             }
         };
+        // Number of animation periods per airplane status update period
+        MainController.AirplaneAnimationPeriods = 10;
         return MainController;
     }());
     AirTrafficControl.MainController = MainController;

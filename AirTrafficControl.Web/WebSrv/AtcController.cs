@@ -44,7 +44,7 @@ namespace AirTrafficControl.Web.WebSrv
                         var airplaneActorState = await airplane.GetStateAsync();
                         var airplaneState = airplaneActorState.AirplaneState;
 
-                        var stateModel = new AirplaneStateDto(airplaneID, airplaneState.ToString(), airplaneState.Location, airplaneState.GetHeading(airplaneActorState.FlightPlan));
+                        var stateModel = new AirplaneStateDto(airplaneState, airplaneActorState.FlightPlan);
                         retval.Add(stateModel);
                     }
                 }

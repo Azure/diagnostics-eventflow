@@ -13,7 +13,9 @@ module AirTrafficControl {
             public ID: string,
             public StateDescription: string,
             public Location: Position,
-            public Heading: number
+            public Heading: number,
+            public EnrouteFrom?: Position,
+            public EnrouteTo?: Position
         ) { }
     }
 

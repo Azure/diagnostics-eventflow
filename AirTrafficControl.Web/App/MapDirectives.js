@@ -17,7 +17,17 @@ var AirTrafficControl;
                         scope.Map.entities.clear();
                         for (var i = 0; i < scope.AirplaneStates.length; i++) {
                             var airplaneState = scope.AirplaneStates[i];
-                            var location = new Maps.Location(airplaneState.Location.Latitude, airplaneState.Location.Longitude, airplaneState.Location.Altitude);
+                            var latitude;
+                            var longitude;
+                            if (airplaneState.EnrouteTo && airplaneState.EnrouteFrom) {
+                                latitude = airplaneState.EnrouteFrom.Latitude + (airplaneState.EnrouteTo.Latitude - airplaneState.EnrouteFrom.Latitude) * scope.AnimationProgress;
+                                longitude = airplaneState.EnrouteFrom.Longitude + (airplaneState.EnrouteTo.Longitude - airplaneState.EnrouteFrom.Longitude) * scope.AnimationProgress;
+                            }
+                            else {
+                                latitude = airplaneState.Location.Latitude;
+                                longitude = airplaneState.Location.Longitude;
+                            }
+                            var location = new Maps.Location(latitude, longitude, airplaneState.Location.Altitude);
                             var airplaneDepiction = airplaneDepictionFactory.GetAirplaneDepiction(scope.Map, location, airplaneState.Heading, airplaneState.ID);
                             scope.Map.entities.push(airplaneDepiction);
                         }
@@ -30,6 +40,9 @@ var AirTrafficControl;
                     });
                     Maps.Events.addHandler(scope.Map, 'viewchangeend', onViewChanged);
                     scope.$watch("AirplaneStates", function (newAirplaneStates, oldAirplaneStates, scope) {
+                        onViewChanged();
+                    });
+                    scope.$watch("AnimationProgress", function (newAnimationProgress, oldAnimationProgress, scope) {
                         onViewChanged();
                     });
                 }

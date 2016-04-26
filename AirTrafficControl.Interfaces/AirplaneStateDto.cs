@@ -9,16 +9,6 @@ namespace AirTrafficControl.Interfaces
         // Parameterless constructor for deserialization
         public AirplaneStateDto() { }
 
-        public AirplaneStateDto(string id, string stateDescription, Location position, double heading)
-        {
-            Requires.NotNullOrWhiteSpace(id, nameof(id));
-
-            this.ID = id;
-            this.StateDescription = stateDescription;
-            this.Location = position;
-            this.Heading = heading;
-        }
-
         public AirplaneStateDto(AirplaneState airplaneState, FlightPlan flightPlan)
         {
             Requires.NotNull(airplaneState, nameof(airplaneState));
@@ -28,6 +18,13 @@ namespace AirTrafficControl.Interfaces
             this.StateDescription = airplaneState.ToString();
             this.Location = airplaneState.Location;
             this.Heading = airplaneState.GetHeading(flightPlan);
+
+            var enrouteState = airplaneState as EnrouteState;
+            if (enrouteState != null)
+            {
+                this.EnrouteFrom = enrouteState.From;
+                this.EnrouteTo = enrouteState.To;
+            }
         }
 
         [DataMember]
@@ -42,5 +39,14 @@ namespace AirTrafficControl.Interfaces
         [DataMember]
         // Heading (in radians), 360 is zero and increases clockwise
         public double Heading { get; set; }
+
+
+        // EnrouteTo and EnrouteFrom are only used when the airplane is enroute
+        // They are needed to animate airplanes on the map
+        [DataMember]
+        public Fix EnrouteFrom { get; set; }
+
+        [DataMember]
+        public Fix EnrouteTo { get; set; }
     }
 }
