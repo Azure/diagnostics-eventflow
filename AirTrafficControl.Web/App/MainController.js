@@ -2,7 +2,7 @@
 /// <reference path="../Scripts/Typings/bingmaps/Microsoft.Maps.d.ts" />
 /// <reference path="../Scripts/Typings/signalr/signalr.d.ts" />
 /// <reference path="../Scripts/Typings/angular-signalr-hub/angular-signalr-hub.d.ts" />
-/// <reference path="AirplaneState.ts" />
+/// <reference path="FlightStatusModel.ts" />
 var AirTrafficControl;
 (function (AirTrafficControl) {
     var NewFlightData = (function () {
