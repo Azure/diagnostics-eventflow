@@ -12,13 +12,19 @@ module AirTrafficControl {
         public DestinationAirport: Airport;
     }
 
+    class TrafficSimulationData {
+        public SimulatedTrafficCount: number;
+    }
+
     export interface IMainControllerScope extends ng.IScope {
         AirplaneStates: AirplaneState[];
         Airports: Airport[];
         NewFlightData: NewFlightData;
+        TrafficSimulationData: TrafficSimulationData;
         Map: Microsoft.Maps.Map;
 
         OnNewFlight: () => void;
+        UpdateSimulation: () => void;
     }
 
     export class MainController {
@@ -39,8 +45,10 @@ module AirTrafficControl {
             });
 
             $scope.NewFlightData = new NewFlightData();
+            $scope.TrafficSimulationData = new TrafficSimulationData();
 
             $scope.OnNewFlight = () => this.onNewFlight();
+            $scope.UpdateSimulation = () => this.updateSimulation();
 
             var atcHubOptions: ngSignalr.HubOptions = {
                 listeners: {
@@ -65,6 +73,10 @@ module AirTrafficControl {
             // TODO: validate form parameters before poking the server
             this.$http.post("/api/flights", this.$scope.NewFlightData);
             // TODO: some error indication if the new flight was not created successfully
+        }
+
+        private updateSimulation() {
+            this.$http.post("/api/simulation/traffic", this.$scope.TrafficSimulationData);
         }
 
         private onScopeDestroy() {

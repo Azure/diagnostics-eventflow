@@ -31,24 +31,45 @@
 <body class="main-page-body">
     <div ng-controller="MainController">
         <div class="row">
-            <form class="form-inline">
-                <div class="form-group">
-                    <label for="inputAircraftID">Aircraft ID</label>
-                    <input type="text" class="form-control" id="inputAircraftID" placeholder="N489Y" ng-model="NewFlightData.AirplaneID">
+            <div class="panel panel-primary">
+                <div class="panel-heading">Create new flight</div>
+
+                <div class="panel-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="inputAircraftID">Aircraft ID</label>
+                            <input type="text" class="form-control" id="inputAircraftID" placeholder="N489Y" ng-model="NewFlightData.AirplaneID">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputDepartureAirport">Departure airport</label>
+                            <select class="form-control" id="inputDepartureAirport"
+                                    ng-model="NewFlightData.DepartureAirport" ng-options="airport as airport.DisplayName for airport in Airports"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputDestinationAirport">Destination airport</label>
+                            <select class="form-control" id="inputDestinationAirport"
+                                    ng-model="NewFlightData.DestinationAirport" ng-options="airport as airport.DisplayName for airport in Airports"></select>
+                        </div>
+                        <button type="button" class="btn btn-default" ng-click="OnNewFlight()">Create new flight</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="inputDepartureAirport">Departure airport</label>
-                    <select class="form-control" id="inputDepartureAirport" 
-                            ng-model="NewFlightData.DepartureAirport" ng-options="airport as airport.DisplayName for airport in Airports">
-                    </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-heading">Add simulated traffic</div>
+
+                <div class="panel-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="inputNumberOfAirplanes">Number of airplanes</label>
+                            <input type="text" class="form-control" id="inputNumberOfAirplanes" placeholder="0" ng-model="TrafficSimulationData.SimulatedTrafficCount">
+                        </div>
+                        <button type="button" class="btn btn-default" ng-click="UpdateSimulation()">Update simulation</button>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="inputDestinationAirport">Destination airport</label>
-                    <select class="form-control" id="inputDestinationAirport"
-                            ng-model="NewFlightData.DestinationAirport" ng-options="airport as airport.DisplayName for airport in Airports"></select>
-                </div>            
-                <button type="button" class="btn btn-default" ng-click="OnNewFlight()">Create new flight</button>
-            </form>
+            </div>
         </div>
 
         <div class="row bottom-row">
@@ -70,9 +91,9 @@
             <div class="col-md-6">
                 <div class="bing-map" bing-maps-key="@Model.BingMapsKey" />
             </div>
-        </div>         
+        </div>
     </div>
-    
+
     <nav class="navbar navbar-fixed-bottom">
         <a data-toggle="collapse" href="#creditsPane" aria-expanded="false" aria-controls="creditsPane">Credits</a>
         <div class="collapse" id="creditsPane">
@@ -82,7 +103,7 @@
                 is licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a>
             </small>
         </div>
-    </nav>   
+    </nav>
 
 </body>
 

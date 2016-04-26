@@ -10,6 +10,11 @@ var AirTrafficControl;
         }
         return NewFlightData;
     }());
+    var TrafficSimulationData = (function () {
+        function TrafficSimulationData() {
+        }
+        return TrafficSimulationData;
+    }());
     var MainController = (function () {
         function MainController($scope, $interval, $http, Hub) {
             var _this = this;
@@ -26,7 +31,9 @@ var AirTrafficControl;
                 _this.$scope.Airports = response.data;
             });
             $scope.NewFlightData = new NewFlightData();
+            $scope.TrafficSimulationData = new TrafficSimulationData();
             $scope.OnNewFlight = function () { return _this.onNewFlight(); };
+            $scope.UpdateSimulation = function () { return _this.updateSimulation(); };
             var atcHubOptions = {
                 listeners: {
                     'flightStatusUpdate': function (newAirplaneStates) {
@@ -48,6 +55,9 @@ var AirTrafficControl;
             // TODO: validate form parameters before poking the server
             this.$http.post("/api/flights", this.$scope.NewFlightData);
             // TODO: some error indication if the new flight was not created successfully
+        };
+        MainController.prototype.updateSimulation = function () {
+            this.$http.post("/api/simulation/traffic", this.$scope.TrafficSimulationData);
         };
         MainController.prototype.onScopeDestroy = function () {
             this.$interval.cancel(this.updateInterval);
