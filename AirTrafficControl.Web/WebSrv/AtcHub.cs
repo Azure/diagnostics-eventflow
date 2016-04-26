@@ -13,6 +13,6 @@ namespace AirTrafficControl.Web.WebSrv
 
     public interface IAtcHubClient
     {
-        Task flightStatusUpdate(IEnumerable<AirplaneStateDto> newAirplaneStates);
+        Task flightStatusUpdate(FlightStatusModel flightStatusModel);
     }
 }

@@ -86,6 +86,7 @@
     <Compile Include="Dispatcher.cs" />
     <Compile Include="Fix.cs" />
     <Compile Include="FlightPlan.cs" />
+    <Compile Include="FlightStatusModel.cs" />
     <Compile Include="IAirplane.cs" />
     <Compile Include="ITimeAwareObject.cs" />
     <Compile Include="Location.cs" />

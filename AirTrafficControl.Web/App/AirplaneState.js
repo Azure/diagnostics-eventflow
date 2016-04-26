@@ -19,4 +19,12 @@ var AirTrafficControl;
         return AirplaneState;
     }());
     AirTrafficControl.AirplaneState = AirplaneState;
+    var FlightStatusModel = (function () {
+        function FlightStatusModel(AirplaneStates, EstimatedNextStatusUpdateDelayMsec) {
+            this.AirplaneStates = AirplaneStates;
+            this.EstimatedNextStatusUpdateDelayMsec = EstimatedNextStatusUpdateDelayMsec;
+        }
+        return FlightStatusModel;
+    }());
+    AirTrafficControl.FlightStatusModel = FlightStatusModel;
 })(AirTrafficControl || (AirTrafficControl = {}));

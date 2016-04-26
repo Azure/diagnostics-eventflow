@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Validation;
 using AtcServiceClient = System.Lazy<Microsoft.ServiceFabric.Services.Communication.Client.ServicePartitionClient<Microsoft.ServiceFabric.Services.Communication.Wcf.Client.WcfCommunicationClient<AirTrafficControl.Interfaces.IAirTrafficControl>>>;
 
 namespace AirTrafficControl.Web.WebSrv
@@ -101,12 +101,13 @@ namespace AirTrafficControl.Web.WebSrv
             return Task.FromResult(Universe.Current.Airports.AsEnumerable());
         }
 
-        public async Task PerformFlightStatusUpdate(IEnumerable<AirplaneStateDto> newAirplaneStates)
+        public async Task PerformFlightStatusUpdate(FlightStatusModel flightStatusModel)
         {
             try
             {
+                Requires.NotNull(flightStatusModel, nameof(flightStatusModel));
                 var context = AtcController.AtcHubContext.Value;
-                await context.Clients.All.flightStatusUpdate(newAirplaneStates);
+                await context.Clients.All.flightStatusUpdate(flightStatusModel);
             }
             catch (Exception e)
             {

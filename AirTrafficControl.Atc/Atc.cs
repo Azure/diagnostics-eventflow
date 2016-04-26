@@ -34,6 +34,7 @@ namespace AirTrafficControl.Atc
         private IReliableDictionary<string, int> flyingAirplaneIDs;
         private IReliableDictionary<string, string> serviceState;
         private Timer worldTimer;
+        private readonly TimeSpan WorldTimerPeriod = TimeSpan.FromSeconds(5);
 
         public Atc(StatefulServiceContext context)
             : base(context)
@@ -70,7 +71,7 @@ namespace AirTrafficControl.Atc
             this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(new HttpCommunicationClientFactory(), new Uri(FrontendServiceName));
 
             this.worldTimer?.Dispose();
-            this.worldTimer = new Timer(OnTimePassed, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
+            this.worldTimer = new Timer(OnTimePassed, null, TimeSpan.FromSeconds(1), WorldTimerPeriod);
         }
 
         public Task<IEnumerable<string>> GetFlyingAirplaneIDs()
@@ -217,7 +218,10 @@ namespace AirTrafficControl.Atc
                 {
                     try
                     {
-                        var content = new StringContent(JsonConvert.SerializeObject(airplaneStateNotifications), System.Text.Encoding.UTF8, "application/json");
+                        var flightStatusModel = new FlightStatusModel();
+                        flightStatusModel.AirplaneStates = airplaneStateNotifications;
+                        flightStatusModel.EstimatedNextStatusUpdateDelayMsec = WorldTimerPeriod.TotalMilliseconds;
+                        var content = new StringContent(JsonConvert.SerializeObject(flightStatusModel), System.Text.Encoding.UTF8, "application/json");
                         await communicationClient.HttpClient.PostAsync(new Uri(communicationClient.Url, "/api/notify/flight-status"), content);
 
                         ServiceEventSource.Current.ServiceMessage(this, "Flight status notification sent");

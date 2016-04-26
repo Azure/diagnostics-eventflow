@@ -16,4 +16,11 @@ module AirTrafficControl {
             public Heading: number
         ) { }
     }
+
+    export class FlightStatusModel {
+        constructor(
+            public AirplaneStates: AirplaneState[],
+            public EstimatedNextStatusUpdateDelayMsec: number
+        ) { }
+    }
 }

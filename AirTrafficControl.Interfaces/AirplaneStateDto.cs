@@ -1,7 +1,9 @@
-﻿using Validation;
+﻿using System.Runtime.Serialization;
+using Validation;
 
 namespace AirTrafficControl.Interfaces
 {
+    [DataContract]
     public class AirplaneStateDto
     {
         // Parameterless constructor for deserialization
@@ -28,11 +30,16 @@ namespace AirTrafficControl.Interfaces
             this.Heading = airplaneState.GetHeading(flightPlan);
         }
 
+        [DataMember]
         public string ID { get; set; }
+
+        [DataMember]
         public string StateDescription { get; set; }
 
+        [DataMember]
         public Location Location { get; set; }
 
+        [DataMember]
         // Heading (in radians), 360 is zero and increases clockwise
         public double Heading { get; set; }
     }

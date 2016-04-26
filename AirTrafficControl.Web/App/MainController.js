@@ -36,8 +36,8 @@ var AirTrafficControl;
             $scope.UpdateSimulation = function () { return _this.updateSimulation(); };
             var atcHubOptions = {
                 listeners: {
-                    'flightStatusUpdate': function (newAirplaneStates) {
-                        _this.$scope.AirplaneStates = newAirplaneStates;
+                    'flightStatusUpdate': function (flightStatus) {
+                        _this.$scope.AirplaneStates = flightStatus.AirplaneStates;
                         _this.$scope.$apply();
                     }
                 }
