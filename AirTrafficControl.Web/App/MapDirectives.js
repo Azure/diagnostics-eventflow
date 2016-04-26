@@ -23,7 +23,6 @@ var AirTrafficControl;
                                 var enrouteFromLatitude = airplaneState.EnrouteFrom.Location.Latitude;
                                 var enrouteToLatitude = airplaneState.EnrouteTo.Location.Latitude;
                                 latitude = enrouteFromLatitude + (enrouteToLatitude - enrouteFromLatitude) * scope.AnimationProgress;
-                                ';
                                 var enrouteFromLongitude = airplaneState.EnrouteFrom.Location.Longitude;
                                 var enrouteToLongitude = airplaneState.EnrouteTo.Location.Longitude;
                                 longitude = enrouteFromLongitude + (enrouteToLongitude - enrouteFromLongitude) * scope.AnimationProgress;
