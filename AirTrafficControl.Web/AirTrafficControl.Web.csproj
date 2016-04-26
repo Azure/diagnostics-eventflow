@@ -257,7 +257,7 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="App\AirplaneDepictionFactory.ts" />
-    <TypeScriptCompile Include="App\AirplaneState.ts" />
+    <TypeScriptCompile Include="App\FlightStatusModel.ts" />
     <TypeScriptCompile Include="App\Airport.ts" />
     <TypeScriptCompile Include="App\AtcApp.ts" />
     <TypeScriptCompile Include="App\MainController.ts" />

@@ -20,7 +20,7 @@ var AirTrafficControl;
                             var latitude;
                             var longitude;
                             if (airplaneState.EnrouteTo && airplaneState.EnrouteFrom) {
-                                latitude = airplaneState.EnrouteFrom.Latitude + (airplaneState.EnrouteTo.Latitude - airplaneState.EnrouteFrom.Latitude) * scope.AnimationProgress;
+                                latitude = airplaneState.EnrouteFrom.Location.Latitude + (airplaneState.EnrouteTo.Latitude - airplaneState.EnrouteFrom.Latitude) * scope.AnimationProgress;
                                 longitude = airplaneState.EnrouteFrom.Longitude + (airplaneState.EnrouteTo.Longitude - airplaneState.EnrouteFrom.Longitude) * scope.AnimationProgress;
                             }
                             else {

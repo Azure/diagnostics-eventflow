@@ -8,14 +8,20 @@ module AirTrafficControl {
         ) { }
     }
 
+    export class Fix {
+        constructor(
+            public Location: Position
+        ) { }
+    }
+
     export class AirplaneState {
         constructor(
             public ID: string,
             public StateDescription: string,
             public Location: Position,
             public Heading: number,
-            public EnrouteFrom?: Position,
-            public EnrouteTo?: Position
+            public EnrouteFrom?: Fix,
+            public EnrouteTo?: Fix
         ) { }
     }
 

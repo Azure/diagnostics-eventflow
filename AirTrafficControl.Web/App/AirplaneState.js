@@ -9,6 +9,13 @@ var AirTrafficControl;
         return Position;
     }());
     AirTrafficControl.Position = Position;
+    var Fix = (function () {
+        function Fix(Location) {
+            this.Location = Location;
+        }
+        return Fix;
+    }());
+    AirTrafficControl.Fix = Fix;
     var AirplaneState = (function () {
         function AirplaneState(ID, StateDescription, Location, Heading, EnrouteFrom, EnrouteTo) {
             this.ID = ID;
