@@ -73,7 +73,6 @@ module AirTrafficControl {
         private onAnimationProgress() {
             if (this.$scope.AnimationProgress < 0.99) {
                 this.$scope.AnimationProgress += 1.0 / MainController.AirplaneAnimationPeriods;
-                this.$scope.$apply();
             }
         }
 
