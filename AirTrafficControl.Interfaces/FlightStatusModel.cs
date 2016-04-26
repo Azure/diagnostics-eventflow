@@ -6,6 +6,9 @@ namespace AirTrafficControl.Interfaces
     [DataContract]
     public class FlightStatusModel
     {
+        // Parameterless constructor for deserialization
+        public FlightStatusModel() { }
+
         [DataMember]
         public IEnumerable<AirplaneStateDto> AirplaneStates { get; set; }
 

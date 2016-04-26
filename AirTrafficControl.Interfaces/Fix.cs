@@ -11,6 +11,9 @@ namespace AirTrafficControl.Interfaces
     [KnownType(typeof(Airport))]
     public class Fix
     {
+        // Parameterless constructur for deserialization
+        public Fix() { }
+
         public Fix(string name, string displayName)
         {
             if (string.IsNullOrWhiteSpace(name))

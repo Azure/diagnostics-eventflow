@@ -54,7 +54,7 @@ module AirTrafficControl {
 
             var atcHubOptions: ngSignalr.HubOptions = {
                 listeners: {
-                    'flightStatusUpdate': this.onFlightStatusUpdate
+                    'flightStatusUpdate': (flightStatus: FlightStatusModel) => this.onFlightStatusUpdate(flightStatus)
                 }
             };
             this.atcHub = new Hub('atc', atcHubOptions);
