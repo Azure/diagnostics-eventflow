@@ -18,8 +18,9 @@ namespace AirTrafficControl.Web.Fabric
 
             System.Net.ServicePointManager.DefaultConnectionLimit = 256;
 
-            // Since AirTrafficControl.Web service is configured as a single-instance service, there is nothing extra
-            // we have to do to make the exposed SignalR endpoint work in Fabric environment.
+            // Since AirTrafficControl.Web service is configured as a singleton partition service, 
+            // and the listener for that service uses the default for listenOnSecondary (false),
+            // there is nothing extra we have to do to make the exposed SignalR endpoint work in Fabric environment.
             // If it were a multi-instance service, we would have to use/develop a SignalR backplane linking all the instances
             // of the service, so that all clients (websites displaying airplane movement) would receive the same set of messages.
             //
