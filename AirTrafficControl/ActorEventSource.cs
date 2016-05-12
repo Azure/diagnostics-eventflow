@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AirTrafficControl
 {
-    [EventSource(Name = "MyCompany-AirTrafficControlApplication-AirTrafficControl")]
+    [EventSource(Name = "MyCompany-AirTrafficControlApplication-Airplanes")]
     internal sealed class ActorEventSource : EventSource
     {
         public static readonly ActorEventSource Current = new ActorEventSource();

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AirTrafficControl.Web
 {
-    [EventSource(Name = "MyCompany-AirTrafficControlApplication-AirTrafficControlWeb")]
+    [EventSource(Name = "MyCompany-AirTrafficControlApplication-Frontend")]
     internal sealed class ServiceEventSource : EventSource
     {
         public static readonly ServiceEventSource Current = new ServiceEventSource();
