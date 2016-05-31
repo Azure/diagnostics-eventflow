@@ -162,14 +162,31 @@ namespace AirTrafficControl.Web
             WriteEvent(RestApiFrontEndErrorEventId, apiName, exception);
         }
 
-
-        [NonEvent]
-        public void RestApiOperationStart(StatefulServiceContext serviceContext, [CallerMemberName] string operationName = "")
+        private const int RestApiOperationStartEventId = 6;
+        [Event(RestApiOperationStartEventId, Level = EventLevel.Informational, Message = "REST operation {0} started")]
+        public void RestApiOperationStart(string operationName, string correlationId)
         {
             if (this.IsEnabled())
             {
+                WriteEvent(RestApiOperationStartEventId, operationName, correlationId);
+            }
+        }
 
-                RestApiOperationStart(
+        [NonEvent]
+        public void RestApiOperationStop(
+            string operationName,
+            StatefulServiceContext serviceContext, 
+            string correlationId, 
+            DateTime startTimeUtc,
+            TimeSpan duration,
+            string responseCode,
+            string exception = ""
+            )
+        {
+            if (this.IsEnabled())
+            {
+                RestApiOperationStop(
+                    operationName,
                     serviceContext.ServiceName.ToString(),
                     serviceContext.ServiceTypeName,
                     serviceContext.ReplicaOrInstanceId,
@@ -177,13 +194,21 @@ namespace AirTrafficControl.Web
                     serviceContext.CodePackageActivationContext.ApplicationName,
                     serviceContext.CodePackageActivationContext.ApplicationTypeName,
                     FabricRuntime.GetNodeContext().NodeName,
-                    operationName);
+                    correlationId,
+                    startTimeUtc,
+                    duration.TotalMilliseconds,
+                    responseCode,
+                    exception
+                    );
             }
         }
 
-        private const int RestApiOperationStartEventId = 6;
-        [Event(RestApiOperationStartEventId, Level = EventLevel.Informational, Message = "REST operation {7} started")]
-        private void RestApiOperationStart(
+
+
+        public const int RestApiOperationStopEventId = 7;
+        [Event(RestApiOperationStopEventId, Level = EventLevel.Informational, Message = "REST operation {0} ended")]
+        public void RestApiOperationStop(
+            string operationName,
             string serviceName,
             string serviceTypeName,
             long replicaOrInstanceId,
@@ -191,21 +216,17 @@ namespace AirTrafficControl.Web
             string applicationName,
             string applicationTypeName,
             string nodeName,
-            string operationName)
+            string correlationId,
+            DateTime startTimeUtc,
+            double durationMsec,
+            string responseCode,
+            string exception
+            )
         {
             if (this.IsEnabled())
             {
-                WriteEvent(RestApiOperationStartEventId, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, applicationName, applicationTypeName, nodeName, operationName);
-            }
-        }
-
-        public const int RestApiOperationStopEventId = 7;
-        [Event(RestApiOperationStopEventId, Level = EventLevel.Informational, Message = "REST operation {0} ended")]
-        public void RestApiOperationStop([CallerMemberName] string operationName = "")
-        {
-            if (this.IsEnabled())
-            {
-                WriteEvent(RestApiOperationStopEventId, operationName);
+                WriteEvent(RestApiOperationStopEventId, operationName, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, 
+                    applicationName, applicationTypeName, nodeName, correlationId, startTimeUtc, durationMsec, responseCode, exception);
             }
         }
 
@@ -221,13 +242,6 @@ namespace AirTrafficControl.Web
         public void CommunicationEndpointReady(string listeningAddress)
         {
             WriteEvent(CommunicationEndpointReadyEventId, listeningAddress);
-        }
-
-        public const int RestApiOperationErrorEventId = 10;
-        [Event(RestApiOperationErrorEventId, Level = EventLevel.Error, Message = "REST operation {1} ended in an error")]
-        public void RestApiOperationError(string exception, [CallerMemberName] string operationName = "")
-        {
-            WriteEvent(RestApiOperationErrorEventId, exception, operationName);
         }
 
         #endregion

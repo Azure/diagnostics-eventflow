@@ -10,12 +10,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Validation;
+using System.Diagnostics;
 
 namespace AirTrafficControl.Web.WebSrv
 {
     public class MainModule: NancyModule
     {
-        private delegate Task<dynamic> AsyncNancyRequestHandler(dynamic parameters, CancellationToken cancellationToken);
+        private delegate Task<Response> AsyncNancyRequestHandler(dynamic parameters, CancellationToken cancellationToken);
 
         private const string NotifyFlightStatusUpdate = "FlightStatusUpdate";
 
@@ -40,8 +41,14 @@ namespace AirTrafficControl.Web.WebSrv
                 Get["/api/airplanes/{id}", runAsync: true] = (p, ct) => PerformRestOperation("GetAirplaneState", p, ct, (AsyncNancyRequestHandler) (
                     async (parameters, cancellationToken) =>
                     {
+                        DynamicDictionary dynamicParameters = (DynamicDictionary)parameters;
+                        dynamic id;                        
+                        if (!dynamicParameters.TryGetValue("id", out id) || string.IsNullOrWhiteSpace(id))
+                        {
+                            return StatusCodeResponse(HttpStatusCode.BadRequest, "Required parameter 'id' is missing or empty");
+                        }
                         AtcController atc = new AtcController();
-                        AirplaneActorState airplaneState = await atc.GetAirplaneState((string)parameters.id);
+                        AirplaneActorState airplaneState = await atc.GetAirplaneState(id);
                         return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
                     }));
 
@@ -96,28 +103,59 @@ namespace AirTrafficControl.Web.WebSrv
             return new[] { new { Header = "Cache-Control", Value = "public,max-age=1"} };
         }
 
-        private async Task<dynamic> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
+        private async Task<Response> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
         {
             Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
             Assumes.NotNull(ServiceContext);
 
-            ServiceEventSource.Current.RestApiOperationStart(ServiceContext, operationName);
+            string correlationId = Guid.NewGuid().ToString();
+            ServiceEventSource.Current.RestApiOperationStart(operationName, correlationId);
+            bool unexpectedException = false;
+            DateTime startTimeUtc = DateTime.UtcNow;
+            Response retval = null;
             try
             {
-                var retval = await inner(parameters, cancellationToken).ConfigureAwait(false);
-                ServiceEventSource.Current.RestApiOperationStop(operationName);
+                retval = await inner(parameters, cancellationToken).ConfigureAwait(false);
                 return retval;
             }
-            catch(Exception e) when (LogAndNeverCatch(e, operationName))
+            catch(Exception e) 
             {
-                throw; // Make compiler happy
+                unexpectedException = true;
+
+                ServiceEventSource.Current.RestApiOperationStop(
+                    operationName,
+                    ServiceContext,
+                    correlationId,
+                    startTimeUtc,
+                    DateTime.UtcNow - startTimeUtc,
+                    HttpStatusCode.InternalServerError.ToString(),
+                    e.ToString());
+                throw; 
+            }
+            finally
+            {
+                if (!unexpectedException)
+                {
+                    Debug.Assert(retval != null);
+
+                    ServiceEventSource.Current.RestApiOperationStop(
+                        operationName,
+                        ServiceContext,
+                        correlationId,
+                        startTimeUtc,
+                        DateTime.UtcNow - startTimeUtc,
+                        retval.StatusCode.ToString()
+                        );
+                }
             }
         }
 
-        private bool LogAndNeverCatch(Exception e, string operationName)
+        private Response StatusCodeResponse(HttpStatusCode statusCode, string reason)
         {
-            ServiceEventSource.Current.RestApiOperationError(e.ToString(), operationName);
-            return false; // Never catch the exception
+            Response r = new Response();
+            r.StatusCode = statusCode;
+            r.ReasonPhrase = reason;
+            return r;
         }
 
         private StatefulServiceContext ServiceContext
