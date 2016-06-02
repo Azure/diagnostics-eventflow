@@ -1,5 +1,5 @@
 ﻿using AirTrafficControl.Interfaces;
-using AirTrafficControl.Web.Fabric;
+using AirTrafficControl.Common;
 using AirTrafficControl.Web.TrafficSimulator;
 using Nancy;
 using Nancy.ModelBinding;
@@ -10,7 +10,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Validation;
-using System.Diagnostics;
 
 namespace AirTrafficControl.Web.WebSrv
 {
@@ -110,7 +109,7 @@ namespace AirTrafficControl.Web.WebSrv
 
             string correlationId = Guid.NewGuid().ToString();
             ServiceEventSource.Current.RestApiOperationStart(operationName, correlationId);
-            bool unexpectedException = false;
+            Exception unexpectedException = null;
             DateTime startTimeUtc = DateTime.UtcNow;
             Response retval = null;
             try
@@ -120,7 +119,12 @@ namespace AirTrafficControl.Web.WebSrv
             }
             catch(Exception e) 
             {
-                unexpectedException = true;
+                unexpectedException = e;                
+                throw; 
+            }
+            finally
+            {
+                HttpStatusCode statusCode = retval?.StatusCode ?? HttpStatusCode.InternalServerError;
 
                 ServiceEventSource.Current.RestApiOperationStop(
                     operationName,
@@ -128,25 +132,8 @@ namespace AirTrafficControl.Web.WebSrv
                     correlationId,
                     startTimeUtc,
                     DateTime.UtcNow - startTimeUtc,
-                    HttpStatusCode.InternalServerError.ToString(),
-                    e.ToString());
-                throw; 
-            }
-            finally
-            {
-                if (!unexpectedException)
-                {
-                    Debug.Assert(retval != null);
-
-                    ServiceEventSource.Current.RestApiOperationStop(
-                        operationName,
-                        ServiceContext,
-                        correlationId,
-                        startTimeUtc,
-                        DateTime.UtcNow - startTimeUtc,
-                        retval.StatusCode.ToString()
-                        );
-                }
+                    statusCode.ToString(),
+                    unexpectedException?.ToString() ?? string.Empty);
             }
         }
 

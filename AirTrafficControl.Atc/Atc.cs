@@ -19,6 +19,7 @@ using Validation;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace AirTrafficControl.Atc
 {
@@ -48,6 +49,9 @@ namespace AirTrafficControl.Atc
                 { typeof(ApproachState), HandleAirplaneApproaching },
                 { typeof(LandedState), HandleAirplaneLanded }
             };
+
+            var fabricContext = new FabricContext<StatefulServiceContext, IAirTrafficControl>(context, this);
+            FabricContext<StatefulServiceContext, IAirTrafficControl>.Current = fabricContext;
         }
 
         protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
@@ -133,17 +137,32 @@ namespace AirTrafficControl.Atc
         {
             Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
 
-            ServiceEventSource.Current.ServiceRequestStart(operationName);
+            string correlationId = Guid.NewGuid().ToString();
+            ServiceEventSource.Current.ServiceRequestStart(operationName, correlationId);
+            Exception unexpectedException = null;
+            DateTime startTimeUtc = DateTime.UtcNow;
             try
             {
                 T retval = await impl();
-                ServiceEventSource.Current.ServiceRequestStop(operationName);
                 return retval;
             } 
             catch (Exception e)
             {
-                ServiceEventSource.Current.ServiceRequestFailed(operationName, e.ToString());
+                unexpectedException = e;                
                 throw;
+            }
+            finally
+            {
+                HttpStatusCode statusCode = unexpectedException == null ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
+
+                ServiceEventSource.Current.ServiceRequestStop(
+                    operationName,
+                    ServiceContext,
+                    correlationId,
+                    startTimeUtc,
+                    DateTime.UtcNow - startTimeUtc,
+                    statusCode.ToString(),
+                    unexpectedException?.ToString() ?? string.Empty);
             }
         }
 
@@ -406,6 +425,11 @@ namespace AirTrafficControl.Atc
         private Task SetCurrentTime(ITransaction tx, int newTime)
         {
             return this.serviceState.AddOrUpdateAsync(tx, CurrentTimeProperty, "0", (key, currentTime) => newTime.ToString());
+        }
+
+        private StatefulServiceContext ServiceContext
+        {
+            get { return FabricContext<StatefulServiceContext, IAirTrafficControl>.Current.ServiceContext; }
         }
     }
 }

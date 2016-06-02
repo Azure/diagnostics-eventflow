@@ -180,8 +180,7 @@ namespace AirTrafficControl.Web
             DateTime startTimeUtc,
             TimeSpan duration,
             string responseCode,
-            string exception = ""
-            )
+            string exception)
         {
             if (this.IsEnabled())
             {
@@ -220,8 +219,7 @@ namespace AirTrafficControl.Web
             DateTime startTimeUtc,
             double durationMsec,
             string responseCode,
-            string exception
-            )
+            string exception)
         {
             if (this.IsEnabled())
             {

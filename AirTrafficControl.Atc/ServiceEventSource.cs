@@ -141,23 +141,63 @@ namespace AirTrafficControl.Atc
         // and other statistics.
         private const int ServiceRequestStartEventId = 5;
         [Event(ServiceRequestStartEventId, Level = EventLevel.Informational, Message = "Service request '{0}' started", Keywords = Keywords.Requests)]
-        public void ServiceRequestStart(string requestTypeName)
+        public void ServiceRequestStart(string requestTypeName, string correlationId)
         {
-            WriteEvent(ServiceRequestStartEventId, requestTypeName);
+            WriteEvent(ServiceRequestStartEventId, requestTypeName, correlationId);
+        }
+
+        [NonEvent]
+        public void ServiceRequestStop(
+            string requestTypeName,
+            StatefulServiceContext serviceContext,
+            string correlationId,
+            DateTime startTimeUtc,
+            TimeSpan duration,
+            string responseCode,
+            string exception = "")
+        {
+            if (this.IsEnabled())
+            {
+                ServiceRequestStop(
+                    requestTypeName,
+                    serviceContext.ServiceName.ToString(),
+                    serviceContext.ServiceTypeName,
+                    serviceContext.ReplicaOrInstanceId,
+                    serviceContext.PartitionId,
+                    serviceContext.CodePackageActivationContext.ApplicationName,
+                    serviceContext.CodePackageActivationContext.ApplicationTypeName,
+                    FabricRuntime.GetNodeContext().NodeName,
+                    correlationId,
+                    startTimeUtc,
+                    duration.TotalMilliseconds,
+                    responseCode,
+                    exception
+                    );
+            }
         }
 
         private const int ServiceRequestStopEventId = 6;
         [Event(ServiceRequestStopEventId, Level = EventLevel.Informational, Message = "Service request '{0}' finished", Keywords = Keywords.Requests)]
-        public void ServiceRequestStop(string requestTypeName)
+        public void ServiceRequestStop(
+            string requestTypeName,
+            string serviceName,
+            string serviceTypeName,
+            long replicaOrInstanceId,
+            Guid partitionId,
+            string applicationName,
+            string applicationTypeName,
+            string nodeName,
+            string correlationId,
+            DateTime startTimeUtc,
+            double durationMsec,
+            string responseCode,
+            string exception)
         {
-            WriteEvent(ServiceRequestStopEventId, requestTypeName);
-        }
-
-        private const int ServiceRequestFailedEventId = 7;
-        [Event(ServiceRequestFailedEventId, Level = EventLevel.Error, Message = "Service request '{0}' failed", Keywords = Keywords.Requests)]
-        public void ServiceRequestFailed(string requestTypeName, string exception)
-        {
-            WriteEvent(ServiceRequestFailedEventId, exception);
+            if (this.IsEnabled())
+            {
+                WriteEvent(ServiceRequestStopEventId, requestTypeName, serviceName, serviceTypeName, replicaOrInstanceId, partitionId,
+                    applicationName, applicationTypeName, nodeName, correlationId, startTimeUtc, durationMsec, responseCode, exception);
+            }
         }
 
         private const int FlightStatusNotificationFailedEventId = 8;

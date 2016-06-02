@@ -2,9 +2,9 @@
 using System.Fabric;
 using Validation;
 
-namespace AirTrafficControl.Web.Fabric
+namespace AirTrafficControl.Common
 {
-    internal class FabricContext<TContext, TService> 
+    public class FabricContext<TContext, TService> 
         where TContext : ServiceContext 
         where TService : class
     {
