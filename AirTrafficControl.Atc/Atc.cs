@@ -271,8 +271,16 @@ namespace AirTrafficControl.Atc
                 // Update the projected airplane state to "Unknown Location" to ensure we do not attempt to send any notifications about it.
                 projectedAirplaneStates[airplaneActorState.FlightPlan.AirplaneID] = new UnknownLocationState();
 
+                int currentTime = await GetCurrentTime(tx);
+
                 await tx.CommitAsync();
-                ServiceEventSource.Current.ServiceMessage(this, "ATC: Airplane {0} has landed and is no longer tracked", airplaneID);
+
+                ServiceEventSource.Current.FlightCompleted(
+                    airplaneID,
+                    airplaneActorState.FlightPlan.DeparturePoint.Name,
+                    airplaneActorState.FlightPlan.Destination.Name,
+                    currentTime - airplaneActorState.DepartureTime,
+                    ServiceContext);
             }
             
         }

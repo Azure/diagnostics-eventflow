@@ -171,8 +171,7 @@ namespace AirTrafficControl.Atc
                     startTimeUtc,
                     duration.TotalMilliseconds,
                     responseCode,
-                    exception
-                    );
+                    exception);
             }
         }
 
@@ -205,6 +204,54 @@ namespace AirTrafficControl.Atc
         public void FlightStatusNotificationFailed(string exception)
         {
             WriteEvent(FlightStatusNotificationFailedEventId, exception);
+        }
+
+        [NonEvent]
+        public void FlightCompleted(
+            string airplaneID,
+            string departurePoint,
+            string destination,
+            int flightDuration,
+            StatefulServiceContext serviceContext)
+        {
+            if (this.IsEnabled())
+            {
+                FlightCompleted(
+                    airplaneID,
+                    departurePoint,
+                    destination,
+                    flightDuration,
+                    serviceContext.ServiceName.ToString(),
+                    serviceContext.ServiceTypeName,
+                    serviceContext.ReplicaOrInstanceId,
+                    serviceContext.PartitionId,
+                    serviceContext.CodePackageActivationContext.ApplicationName,
+                    serviceContext.CodePackageActivationContext.ApplicationTypeName,
+                    FabricRuntime.GetNodeContext().NodeName);
+            }
+        }
+
+        private const int FlightCompletedEventId = 9;
+        [Event(FlightCompletedEventId, Level = EventLevel.Informational, Message = "Airplane {0} has flown from {1} to {2}, total time was {3}")]
+        private void FlightCompleted(
+            string airplaneID, 
+            string departurePoint,
+            string destination,
+            int flightDuration,
+            string serviceName,
+            string serviceTypeName,
+            long replicaOrInstanceId,
+            Guid partitionId,
+            string applicationName,
+            string applicationTypeName,
+            string nodeName)
+        {
+            if (this.IsEnabled())
+            {
+                WriteEvent(FlightCompletedEventId, airplaneID, departurePoint, destination, flightDuration, 
+                    serviceName, serviceTypeName, replicaOrInstanceId, partitionId,
+                    applicationName, applicationTypeName, nodeName);
+            }
         }
         #endregion
 

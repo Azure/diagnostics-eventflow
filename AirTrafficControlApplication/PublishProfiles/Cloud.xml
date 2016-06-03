@@ -15,6 +15,6 @@
                                     StoreLocation="CurrentUser"
                                     StoreName="My" />
   -->
-
+    <ClusterConnectionParameters ConnectionEndpoint="" />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
 </PublishProfile>
