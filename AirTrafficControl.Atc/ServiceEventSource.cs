@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Fabric;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Services.Runtime;
@@ -153,11 +154,13 @@ namespace AirTrafficControl.Atc
             string correlationId,
             DateTime startTimeUtc,
             TimeSpan duration,
-            string responseCode,
+            HttpStatusCode responseCode,
             string exception = "")
         {
             if (this.IsEnabled())
             {
+                int numericResponseCode = (int)responseCode;
+
                 ServiceRequestStop(
                     requestTypeName,
                     serviceContext.ServiceName.ToString(),
@@ -170,7 +173,8 @@ namespace AirTrafficControl.Atc
                     correlationId,
                     startTimeUtc,
                     duration.TotalMilliseconds,
-                    responseCode,
+                    numericResponseCode,
+                    numericResponseCode < 500,
                     exception);
             }
         }
@@ -189,13 +193,14 @@ namespace AirTrafficControl.Atc
             string correlationId,
             DateTime startTimeUtc,
             double durationMsec,
-            string responseCode,
+            int responseCode,
+            bool isSuccess,
             string exception)
         {
             if (this.IsEnabled())
             {
                 WriteEvent(ServiceRequestStopEventId, requestTypeName, serviceName, serviceTypeName, replicaOrInstanceId, partitionId,
-                    applicationName, applicationTypeName, nodeName, correlationId, startTimeUtc, durationMsec, responseCode, exception);
+                    applicationName, applicationTypeName, nodeName, correlationId, startTimeUtc, durationMsec, responseCode, isSuccess, exception);
             }
         }
 

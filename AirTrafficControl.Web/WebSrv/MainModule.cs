@@ -132,7 +132,7 @@ namespace AirTrafficControl.Web.WebSrv
                     correlationId,
                     startTimeUtc,
                     DateTime.UtcNow - startTimeUtc,
-                    statusCode.ToString(),
+                    statusCode,
                     unexpectedException?.ToString() ?? string.Empty);
             }
         }

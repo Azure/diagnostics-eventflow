@@ -1,4 +1,5 @@
 ﻿using Microsoft.ServiceFabric.Services.Runtime;
+using Nancy;
 using System;
 using System.Diagnostics.Tracing;
 using System.Fabric;
@@ -152,15 +153,17 @@ namespace AirTrafficControl.Web
             WriteEvent(ServiceHostInitializationFailedEventId, exception);
         }
 
-        // A pair of events sharing the same name prefix with a "Start"/"Stop" suffix implicitly marks boundaries of an event tracing activity.
-        // These activities can be automatically picked up by debugging and profiling tools, which can compute their execution time, child activities,
-        // and other statistics.
         private const int RestApiFrontEndErrorEventId = 5;
         [Event(RestApiFrontEndErrorEventId, Level = EventLevel.Error, Message = "Unexpected error from {0} REST API")]
         public void RestApiFrontEndError(string apiName, string exception)
         {
             WriteEvent(RestApiFrontEndErrorEventId, apiName, exception);
         }
+
+        // A pair of events sharing the same name prefix with a "Start"/"Stop" suffix implicitly marks boundaries of an event tracing activity.
+        // These activities can be automatically picked up by debugging and profiling tools, which can compute their execution time, child activities,
+        // and other statistics.
+
 
         private const int RestApiOperationStartEventId = 6;
         [Event(RestApiOperationStartEventId, Level = EventLevel.Informational, Message = "REST operation {0} started")]
@@ -179,11 +182,13 @@ namespace AirTrafficControl.Web
             string correlationId, 
             DateTime startTimeUtc,
             TimeSpan duration,
-            string responseCode,
+            HttpStatusCode responseCode,
             string exception)
         {
             if (this.IsEnabled())
             {
+                int numericResponseCode = (int)responseCode;
+
                 RestApiOperationStop(
                     operationName,
                     serviceContext.ServiceName.ToString(),
@@ -196,7 +201,8 @@ namespace AirTrafficControl.Web
                     correlationId,
                     startTimeUtc,
                     duration.TotalMilliseconds,
-                    responseCode,
+                    numericResponseCode,
+                    numericResponseCode < 500,
                     exception
                     );
             }
@@ -206,7 +212,7 @@ namespace AirTrafficControl.Web
 
         public const int RestApiOperationStopEventId = 7;
         [Event(RestApiOperationStopEventId, Level = EventLevel.Informational, Message = "REST operation {0} ended")]
-        public void RestApiOperationStop(
+        private void RestApiOperationStop(
             string operationName,
             string serviceName,
             string serviceTypeName,
@@ -218,13 +224,14 @@ namespace AirTrafficControl.Web
             string correlationId,
             DateTime startTimeUtc,
             double durationMsec,
-            string responseCode,
+            int responseCode,
+            bool isSuccess,
             string exception)
         {
             if (this.IsEnabled())
             {
                 WriteEvent(RestApiOperationStopEventId, operationName, serviceName, serviceTypeName, replicaOrInstanceId, partitionId, 
-                    applicationName, applicationTypeName, nodeName, correlationId, startTimeUtc, durationMsec, responseCode, exception);
+                    applicationName, applicationTypeName, nodeName, correlationId, startTimeUtc, durationMsec, responseCode, isSuccess, exception);
             }
         }
 
