@@ -8,6 +8,7 @@ using System.Fabric;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace AirTrafficControl
 {
@@ -145,7 +146,100 @@ namespace AirTrafficControl
         public void ActorHostInitializationFailed(string exception)
         {
             WriteEvent(ActorHostInitializationFailedEventId, exception);
-        }        
+        }
+        
+        [NonEvent]  
+        public void ActorMethodStart(Actor actor, string methodName)
+        {
+            if (this.IsEnabled())
+            {
+                ActorMethodStart(
+                    methodName,    
+                    actor.GetType().ToString(),
+                    actor.Id.ToString(),
+                    actor.ActorService.Context.CodePackageActivationContext.ApplicationTypeName,
+                    actor.ActorService.Context.CodePackageActivationContext.ApplicationName,
+                    actor.ActorService.Context.ServiceTypeName,
+                    actor.ActorService.Context.ServiceName.ToString(),
+                    actor.ActorService.Context.PartitionId,
+                    actor.ActorService.Context.ReplicaId,
+                    FabricRuntime.GetNodeContext().NodeName);
+            }
+        }
+
+        private const int ActorMethodStartEventId = 4;
+        [Event(ActorMethodStartEventId, Level = EventLevel.Informational, Message = "Actor method {0} start")]
+        private void ActorMethodStart(
+            string methodName,
+            string actorType,
+            string actorId,
+            string applicationTypeName,
+            string applicationName,
+            string serviceTypeName,
+            string serviceName,
+            Guid partitionId,
+            long replicaOrInstanceId,
+            string nodeName)
+        {
+            WriteEvent(ActorMethodStartEventId, actorType, actorId, applicationTypeName, applicationName,
+                    serviceTypeName, serviceName, partitionId, replicaOrInstanceId, nodeName);
+        }
+
+        [NonEvent]
+        public void ActorMethodStop(
+            Actor actor, 
+            string methodName, 
+            DateTime startTimeUtc,
+            TimeSpan duration,
+            HttpStatusCode responseCode,
+            string exception = "")
+        {
+            if (this.IsEnabled())
+            {
+                int numericResponseCode = (int)responseCode;
+
+                ActorMethodStop(
+                    methodName,
+                    startTimeUtc,
+                    duration.TotalMilliseconds,
+                    numericResponseCode,
+                    numericResponseCode < 500,
+                    exception,
+                    actor.GetType().ToString(),
+                    actor.Id.ToString(),
+                    actor.ActorService.Context.CodePackageActivationContext.ApplicationTypeName,
+                    actor.ActorService.Context.CodePackageActivationContext.ApplicationName,
+                    actor.ActorService.Context.ServiceTypeName,
+                    actor.ActorService.Context.ServiceName.ToString(),
+                    actor.ActorService.Context.PartitionId,
+                    actor.ActorService.Context.ReplicaId,
+                    FabricRuntime.GetNodeContext().NodeName);
+            }
+        }
+
+        private const int ActorMethodStopEventId = 5;
+        [Event(ActorMethodStopEventId, Level = EventLevel.Informational, Message = "Actor method {0} finished")]
+        private void ActorMethodStop(
+            string methodName,
+            DateTime startTimeUtc,
+            double durationMsec,
+            int responseCode,
+            bool isSuccess,
+            string exception,
+            string actorType,
+            string actorId,
+            string applicationTypeName,
+            string applicationName,
+            string serviceTypeName,
+            string serviceName,
+            Guid partitionId,
+            long replicaOrInstanceId,
+            string nodeName)
+        {
+            WriteEvent(ActorMethodStopEventId, startTimeUtc, durationMsec, responseCode, isSuccess, exception,
+                actorType, actorId, applicationTypeName, applicationName,
+                serviceTypeName, serviceName, partitionId, replicaOrInstanceId, nodeName);
+        }
 
         #endregion
 
