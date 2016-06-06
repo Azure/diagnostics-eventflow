@@ -18,6 +18,7 @@ namespace AirTrafficControl.Web.WebSrv
         private delegate Task<Response> AsyncNancyRequestHandler(dynamic parameters, CancellationToken cancellationToken);
 
         private const string NotifyFlightStatusUpdate = "FlightStatusUpdate";
+        private const string OperationNamePrefix = "FrontendService/";
 
         public MainModule()
         {
@@ -28,8 +29,8 @@ namespace AirTrafficControl.Web.WebSrv
                     return View["atcmain.html", new MainPageModel(Request)];
                 };
 
-                Get["/api/airplanes", runAsync: true] = (p, ct) => PerformRestOperation("GetAirplanes", p, ct, (AsyncNancyRequestHandler) (
-                    async (parameters, cancellationToken) =>
+                Get["/api/airplanes", runAsync: true] = (p, ct) => PerformRestOperation(OperationNamePrefix + "GetAirplanes", p, ct, 
+                    (AsyncNancyRequestHandler) (async (parameters, cancellationToken) =>
                     {
                         var atc = new AtcController();
                         var airplaneStates = await atc.GetFlyingAirplaneStates();
@@ -37,8 +38,8 @@ namespace AirTrafficControl.Web.WebSrv
                     }));
                     
 
-                Get["/api/airplanes/{id}", runAsync: true] = (p, ct) => PerformRestOperation("GetAirplaneState", p, ct, (AsyncNancyRequestHandler) (
-                    async (parameters, cancellationToken) =>
+                Get["/api/airplanes/{id}", runAsync: true] = (p, ct) => PerformRestOperation(OperationNamePrefix + "GetAirplaneState", p, ct, 
+                    (AsyncNancyRequestHandler) (async (parameters, cancellationToken) =>
                     {
                         DynamicDictionary dynamicParameters = (DynamicDictionary)parameters;
                         dynamic id;                        
@@ -51,16 +52,16 @@ namespace AirTrafficControl.Web.WebSrv
                         return Response.AsJson<AirplaneActorState>(airplaneState).WithHeaders(PublicShortLived());
                     }));
 
-                Get["/api/airports", runAsync: true] = (p, ct) => PerformRestOperation("GetAirports", p, ct, (AsyncNancyRequestHandler) (
-                    async (parameters, cancellationToken) =>
+                Get["/api/airports", runAsync: true] = (p, ct) => PerformRestOperation(OperationNamePrefix + "GetAirports", p, ct, 
+                    (AsyncNancyRequestHandler) (async (parameters, cancellationToken) =>
                     {
                         var atc = new AtcController();
                         var airports = await atc.GetAirports();
                         return Response.AsJson<IEnumerable<Airport>>(airports);
                     }));
 
-                Post["/api/flights", runAsync: true] = (p, ct) => PerformRestOperation("StartNewFlight", p, ct, (AsyncNancyRequestHandler) (
-                    async (parameters, cancellationToken) =>
+                Post["/api/flights", runAsync: true] = (p, ct) => PerformRestOperation(OperationNamePrefix + "StartNewFlight", p, ct, 
+                    (AsyncNancyRequestHandler) (async (parameters, cancellationToken) =>
                     {
                         var requestModel = this.Bind<FlightPlanRequestModel>();
                         var atc = new AtcController();
@@ -70,8 +71,8 @@ namespace AirTrafficControl.Web.WebSrv
                         // return new Response(){StatusCode = HttpStatusCode.Created}.WithHeader("Location", "new flight URL");
                     }));
 
-                Post["/api/notify/flight-status", runAsync: true] = (p, ct) => PerformRestOperation("FlightStatusUpdate", p, ct, (AsyncNancyRequestHandler) (
-                    async (parameters, cancellationToken) => 
+                Post["/api/notify/flight-status", runAsync: true] = (p, ct) => PerformRestOperation(OperationNamePrefix + "FlightStatusUpdate", p, ct, 
+                    (AsyncNancyRequestHandler) (async (parameters, cancellationToken) => 
                     {
     #if DEBUG
                         string requestBody = (new StreamReader(this.Request.Body)).ReadToEnd();
@@ -82,8 +83,8 @@ namespace AirTrafficControl.Web.WebSrv
                         return HttpStatusCode.NoContent; // Success, just nothing to report back.
                     }));
 
-                Post["/api/simulation/traffic", runAsync: true] = (p, ct) => PerformRestOperation("SimulatedTrafficUpdate", p, ct, (AsyncNancyRequestHandler)(
-                    async (parameters, cancellationToken) => 
+                Post["/api/simulation/traffic", runAsync: true] = (p, ct) => PerformRestOperation(OperationNamePrefix + "SimulatedTrafficUpdate", p, ct, 
+                    (AsyncNancyRequestHandler) (async (parameters, cancellationToken) => 
                     {
                         var model = this.Bind<TrafficSimulationModel>();                        
                         await TrafficSimulator.ChangeTrafficSimulation(model);

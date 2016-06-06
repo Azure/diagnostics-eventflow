@@ -27,6 +27,7 @@ namespace AirTrafficControl.Atc
     {
         private const string FrontendServiceName = "fabric:/AirTrafficControlApplication/AirTrafficControlWeb";
         private const string CurrentTimeProperty = "CurrentTime";
+        private const string OperationNamePrefix = "AtcService/";
 
         private delegate Task AirplaneController(IAirplane airplaneProxy, AirplaneActorState airplaneActorState, IDictionary<string, AirplaneState> projectedAirplaneStates);
 
@@ -80,7 +81,7 @@ namespace AirTrafficControl.Atc
 
         public Task<IEnumerable<string>> GetFlyingAirplaneIDs()
         {
-            return PerformServiceOperation<IEnumerable<string>>(nameof(GetFlyingAirplaneIDs), () =>
+            return PerformServiceOperation<IEnumerable<string>>(OperationNamePrefix + nameof(GetFlyingAirplaneIDs), () =>
             {
                 using (var tx = this.StateManager.CreateTransaction())
                 {
@@ -91,7 +92,7 @@ namespace AirTrafficControl.Atc
 
         public Task StartNewFlight(FlightPlan flightPlan)
         {
-            return PerformServiceOperation<bool>(nameof(StartNewFlight), async () => 
+            return PerformServiceOperation<bool>(OperationNamePrefix + nameof(StartNewFlight), async () => 
             {
                 FlightPlan.Validate(flightPlan, includeFlightPath: false);
                 flightPlan.FlightPath = Dispatcher.ComputeFlightPath(flightPlan.DeparturePoint, flightPlan.Destination);
@@ -123,7 +124,7 @@ namespace AirTrafficControl.Atc
 
         public Task<long> GetFlyingAirplaneCount()
         {
-            return PerformServiceOperation<long>(nameof(GetFlyingAirplaneCount), async () =>
+            return PerformServiceOperation<long>(OperationNamePrefix + nameof(GetFlyingAirplaneCount), async () =>
              {
                  using (var tx = this.StateManager.CreateTransaction())
                  {

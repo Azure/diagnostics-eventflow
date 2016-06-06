@@ -10,9 +10,11 @@ namespace AirTrafficControl
     [StatePersistence(StatePersistence.Persisted)]
     public class Airplane : Actor, IAirplane
     {
+        private const string OperationNamePrefix = "Actors/" + nameof(Airplane) + "/";
+
         public Task<AirplaneActorState> GetStateAsync()
         {
-            return PerformActorOperation(nameof(GetStateAsync), async () =>
+            return PerformActorOperation(OperationNamePrefix + nameof(GetStateAsync), async () =>
              {
                  var state = await this.StateManager.GetStateAsync<AirplaneActorState>(nameof(AirplaneActorState));
                  return state;
@@ -23,7 +25,7 @@ namespace AirTrafficControl
         {
             Requires.NotNull(instruction, "instruction");
 
-            return PerformActorOperation(nameof(ReceiveInstructionAsync), async () =>
+            return PerformActorOperation(OperationNamePrefix + nameof(ReceiveInstructionAsync), async () =>
             {
                 var state = await GetStateAsync();
                 if (state.AirplaneState is UnknownLocationState)
@@ -41,7 +43,7 @@ namespace AirTrafficControl
 
         public Task TimePassedAsync(int currentTime)
         {
-            return PerformActorOperation(nameof(TimePassedAsync), async () =>
+            return PerformActorOperation(OperationNamePrefix + nameof(TimePassedAsync), async () =>
             {
                 var actorState = await GetStateAsync();
                 if (actorState.AirplaneState is UnknownLocationState)
@@ -67,7 +69,7 @@ namespace AirTrafficControl
             Requires.NotNull(flightPlan, "flightPlan");
             Requires.Argument(flightPlan.AirplaneID == this.Id.ToString(), "flightPlan", "The passed flight plan is for a different airplane");
 
-            return PerformActorOperation(nameof(StartFlightAsync), async () =>
+            return PerformActorOperation(OperationNamePrefix + nameof(StartFlightAsync), async () =>
             {
                 var actorState = await GetStateAsync();
                 actorState.AirplaneState = new TaxiingState(flightPlan.DeparturePoint);
