@@ -84,6 +84,11 @@ namespace AirTrafficControl.Web.Fabric
                     }
                 }
 
+                if (this.simulatedTrafficCount.Value == 0)
+                {
+                    return; // Nothing to do
+                }
+
                 long flyingAirplaneCount = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneCount());
                 if (flyingAirplaneCount < this.simulatedTrafficCount.Value)
                 {

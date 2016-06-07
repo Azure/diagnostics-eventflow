@@ -182,6 +182,11 @@ namespace AirTrafficControl.Atc
                     await tx.CommitAsync();
                 }
 
+                if (!flyingAirplaneIDs.Any())
+                {
+                    return; // Nothing else to do
+                }
+
                 var airplaneProxies = CreateAirplaneProxies(flyingAirplaneIDs);
                 var airplaneActorStatesByDepartureTime = (await Task.WhenAll(flyingAirplaneIDs.Select(id => airplaneProxies[id].GetStateAsync())))
                                                             .Where(state => !(state.AirplaneState is UnknownLocationState))
