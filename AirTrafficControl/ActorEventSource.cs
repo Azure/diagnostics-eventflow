@@ -181,7 +181,7 @@ namespace AirTrafficControl
             long replicaOrInstanceId,
             string nodeName)
         {
-            WriteEvent(ActorMethodStartEventId, actorType, actorId, applicationTypeName, applicationName,
+            WriteEvent(ActorMethodStartEventId, methodName, actorType, actorId, applicationTypeName, applicationName,
                     serviceTypeName, serviceName, partitionId, replicaOrInstanceId, nodeName);
         }
 
@@ -236,7 +236,7 @@ namespace AirTrafficControl
             long replicaOrInstanceId,
             string nodeName)
         {
-            WriteEvent(ActorMethodStopEventId, startTimeUtc, durationMsec, responseCode, isSuccess, exception,
+            WriteEvent(ActorMethodStopEventId, methodName, startTimeUtc, durationMsec, responseCode, isSuccess, exception,
                 actorType, actorId, applicationTypeName, applicationName,
                 serviceTypeName, serviceName, partitionId, replicaOrInstanceId, nodeName);
         }

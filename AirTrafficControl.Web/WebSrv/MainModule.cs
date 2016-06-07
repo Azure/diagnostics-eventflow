@@ -103,7 +103,9 @@ namespace AirTrafficControl.Web.WebSrv
             return new[] { new { Header = "Cache-Control", Value = "public,max-age=1"} };
         }
 
-        private async Task<Response> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
+        // Has to be declared as returning Task<object> even through it always returns a Nancy Response because 
+        // of Nancy dynamic objects usage and the lack of suitable implicit conversions.
+        private async Task<object> PerformRestOperation(string operationName, dynamic parameters, CancellationToken cancellationToken, AsyncNancyRequestHandler inner)
         {
             Requires.NotNullOrWhiteSpace(operationName, nameof(operationName));
             Assumes.NotNull(ServiceContext);
