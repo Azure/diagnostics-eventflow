@@ -43,6 +43,13 @@ namespace AirTrafficControl.Web.WebSrv
                         var airplane = ActorProxy.Create<IAirplane>(new ActorId(airplaneID));
                         var airplaneActorState = await airplane.GetStateAsync();
                         var airplaneState = airplaneActorState.AirplaneState;
+                        if (airplaneState == null)
+                        {
+                            // It can happen that the airplane was flying when we called ATC service, but by the time we ask the airplane for its state
+                            // it has already landed and is no longer flying.
+                            // If that is the case, just skip it.
+                            continue;
+                        }
 
                         var stateModel = new AirplaneStateDto(airplaneState, airplaneActorState.FlightPlan);
                         retval.Add(stateModel);

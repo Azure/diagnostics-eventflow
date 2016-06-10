@@ -57,6 +57,13 @@ namespace AirTrafficControl
                 {
                     actorState.DepartureTime = currentTime;
                 }
+                if (newAirplaneState == null)
+                {
+                    // We have finished flying, clear the rest of the state
+                    actorState.DepartureTime = 0;
+                    actorState.FlightPlan = null;
+                    actorState.Instruction = null;
+                }
                 await SetState(actorState);
 
                 ActorEventSource.Current.ActorMessage(this, "{0}: Now {1} Time is {2}", this.Id.ToString(), newAirplaneState, currentTime);
