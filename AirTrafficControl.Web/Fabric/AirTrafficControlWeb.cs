@@ -22,8 +22,9 @@ namespace AirTrafficControl.Web.Fabric
 
         private Timer trafficSimulationTimer;
         private IReliableDictionary<string, string> serviceState;
-        private byte? simulatedTrafficCount;
-        private AtcServiceClient AtcClient = new AtcServiceClient(AtcServiceClientFactory.CreateClient, LazyThreadSafetyMode.ExecutionAndPublication);        
+        private byte simulatedTrafficCount = 0;
+        private AtcServiceClient AtcClient = new AtcServiceClient(AtcServiceClientFactory.CreateClient, LazyThreadSafetyMode.ExecutionAndPublication);
+        private bool updatingSimulatedTraffic = false;
 
         public AirTrafficControlWeb(StatefulServiceContext ctx): base(ctx) { }
 
@@ -45,10 +46,19 @@ namespace AirTrafficControl.Web.Fabric
 
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
-            this.serviceState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(nameof(serviceState));
-
             this.trafficSimulationTimer?.Dispose();
-            this.trafficSimulationTimer = CreateTrafficSimulationTimer();
+            
+            using (ITransaction tx = this.StateManager.CreateTransaction())
+            {
+                this.serviceState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(tx, nameof(serviceState));
+                this.simulatedTrafficCount = await GetSimulatedTrafficCount(tx);
+                await tx.CommitAsync();
+            }
+
+            if (this.simulatedTrafficCount > 0)
+            {
+                this.trafficSimulationTimer = CreateTrafficSimulationTimer();
+            }
         }
 
         public async Task ChangeTrafficSimulation(TrafficSimulationModel trafficSimulationSettings)
@@ -76,54 +86,67 @@ namespace AirTrafficControl.Web.Fabric
         {
             Task.Run(async () =>
             {
-                if (this.simulatedTrafficCount == null)
-                {
-                    using (ITransaction tx = this.StateManager.CreateTransaction())
-                    {
-                        this.simulatedTrafficCount = await GetSimulatedTrafficCount(tx);
-                    }
-                }
-
-                if (this.simulatedTrafficCount.Value == 0)
+                byte desiredTrafficCount = this.simulatedTrafficCount;
+                if (desiredTrafficCount == 0)
                 {
                     return; // Nothing to do
                 }
 
-                long flyingAirplaneCount = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneCount());
-                if (flyingAirplaneCount < this.simulatedTrafficCount.Value)
+                if (this.updatingSimulatedTraffic)
                 {
-                    byte newFlightsCount = (byte) (this.simulatedTrafficCount.Value - flyingAirplaneCount);
-                    var randomGen = new Random();
-                    var airports = Universe.Current.Airports;
-                    if (newFlightsCount > 0)
+                    return; // For some reason updating simulated traffic took longer. We do not want to run two or more updates concurrently.
+                }
+
+                try
+                {
+                    this.updatingSimulatedTraffic = true;
+
+                    long flyingAirplaneCount = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneCount());
+                    if (flyingAirplaneCount < desiredTrafficCount)
                     {
-                        ServiceEventSource.Current.ServiceMessage(this, $"Launching {newFlightsCount} new flights to maintain the desired number of at least {this.simulatedTrafficCount.Value} flights in the air");
-                    }
-
-                    for (byte i = 0; i < newFlightsCount; i++)
-                    {
-                        Airport departureAirport = airports[randomGen.Next(airports.Count)];
-                        Airport destinationAirport = null;
-                        do
+                        byte newFlightsCount = (byte)(desiredTrafficCount - flyingAirplaneCount);
+                        if (newFlightsCount > 0)
                         {
-                            destinationAirport = airports[randomGen.Next(airports.Count)];
-                        } while (departureAirport == destinationAirport);
+                            ServiceEventSource.Current.ServiceMessage(this, $"Launching {newFlightsCount} new flights to maintain the desired number of at least {desiredTrafficCount} flights in the air");
+                        }
 
-                        IEnumerable<string> flyingAirplanes = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneIDs());
-                        string newAirplaneID = null;
-                        do
+                        var randomGen = new Random();
+
+                        for (byte i = 0; i < newFlightsCount; i++)
                         {
-                            newAirplaneID = "N" + randomGen.Next(1, 1000).ToString() + "SIM";
-                        } while (flyingAirplanes.Contains(newAirplaneID));
-
-                        var flightPlan = new FlightPlan();
-                        flightPlan.AirplaneID = newAirplaneID;
-                        flightPlan.DeparturePoint = departureAirport;
-                        flightPlan.Destination = destinationAirport;
-                        await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.StartNewFlight(flightPlan));
+                            await LaunchNewFlight(randomGen);
+                        }
                     }
                 }
+                finally
+                {
+                    this.updatingSimulatedTraffic = false;
+                }
             });
+        }
+
+        private async Task LaunchNewFlight(Random randomGen)
+        {
+            var airports = Universe.Current.Airports;
+            Airport departureAirport = airports[randomGen.Next(airports.Count)];
+            Airport destinationAirport = null;
+            do
+            {
+                destinationAirport = airports[randomGen.Next(airports.Count)];
+            } while (departureAirport == destinationAirport);
+
+            IEnumerable<string> flyingAirplanes = await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.GetFlyingAirplaneIDs());
+            string newAirplaneID = null;
+            do
+            {
+                newAirplaneID = "N" + randomGen.Next(1, 1000).ToString() + "SIM";
+            } while (flyingAirplanes.Contains(newAirplaneID));
+
+            var flightPlan = new FlightPlan();
+            flightPlan.AirplaneID = newAirplaneID;
+            flightPlan.DeparturePoint = departureAirport;
+            flightPlan.Destination = destinationAirport;
+            await this.AtcClient.Value.InvokeWithRetryAsync(client => client.Channel.StartNewFlight(flightPlan));
         }
 
         private Task<byte> GetSimulatedTrafficCount(ITransaction tx)
@@ -139,7 +162,7 @@ namespace AirTrafficControl.Web.Fabric
 
         private Timer CreateTrafficSimulationTimer()
         {
-            return new Timer(SimulateTraffic, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2));
+            return new Timer(SimulateTraffic, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
         }
     }
 }

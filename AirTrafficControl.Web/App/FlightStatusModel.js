@@ -37,3 +37,4 @@ var AirTrafficControl;
     }());
     AirTrafficControl.FlightStatusModel = FlightStatusModel;
 })(AirTrafficControl || (AirTrafficControl = {}));
+//# sourceMappingURL=FlightStatusModel.js.map

@@ -6,3 +6,4 @@ var AirTrafficControl;
         app.controller("MainController", ["$scope", "$interval", "$http", "Hub", AirTrafficControl.MainController]);
     })();
 })(AirTrafficControl || (AirTrafficControl = {}));
+//# sourceMappingURL=AtcApp.js.map

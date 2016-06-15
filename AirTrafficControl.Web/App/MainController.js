@@ -73,3 +73,4 @@ var AirTrafficControl;
     }());
     AirTrafficControl.MainController = MainController;
 })(AirTrafficControl || (AirTrafficControl = {}));
+//# sourceMappingURL=MainController.js.map

@@ -9,3 +9,4 @@ var AirTrafficControl;
     }());
     AirTrafficControl.Airport = Airport;
 })(AirTrafficControl || (AirTrafficControl = {}));
+//# sourceMappingURL=Airport.js.map
