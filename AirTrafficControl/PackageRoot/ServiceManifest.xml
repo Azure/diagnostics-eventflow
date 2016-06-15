@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ServiceManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="AirTrafficControl.ActorsPkg" Version="1.0.0.1" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+<ServiceManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="AirTrafficControl.ActorsPkg" Version="1.0.0.2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
    <ServiceTypes>
       <StatefulServiceType ServiceTypeName="AirplaneActorServiceType" HasPersistedState="true">
          <Extensions>
@@ -16,7 +16,7 @@
          </Extensions>
       </StatefulServiceType>
    </ServiceTypes>
-   <CodePackage Name="Code" Version="1.0.0.1">
+   <CodePackage Name="Code" Version="1.0.0.2">
       <EntryPoint>
          <ExeHost>
             <Program>AirTrafficControl.exe</Program>
