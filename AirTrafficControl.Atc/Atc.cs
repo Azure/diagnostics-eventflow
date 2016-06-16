@@ -75,8 +75,12 @@ namespace AirTrafficControl.Atc
         /// <param name="cancellationToken">Canceled when Service Fabric needs to shut down this service replica.</param>
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
-            this.flyingAirplaneIDs = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, int>>(nameof(flyingAirplaneIDs));
-            this.serviceState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(nameof(serviceState));
+            using (ITransaction tx = this.StateManager.CreateTransaction())
+            {
+                this.flyingAirplaneIDs = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, int>>(tx, nameof(flyingAirplaneIDs));
+                this.serviceState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(tx, nameof(serviceState));
+                await tx.CommitAsync();
+            }
             this.frontendCommunicationClient = new ServicePartitionClient<HttpCommunicationClient>(new HttpCommunicationClientFactory(), new Uri(FrontendServiceName));
 
             this.worldTimer?.Dispose();

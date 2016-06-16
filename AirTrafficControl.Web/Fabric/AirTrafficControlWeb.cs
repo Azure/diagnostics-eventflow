@@ -51,6 +51,11 @@ namespace AirTrafficControl.Web.Fabric
             using (ITransaction tx = this.StateManager.CreateTransaction())
             {
                 this.serviceState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(tx, nameof(serviceState));
+                await tx.CommitAsync();
+            }
+
+            using (ITransaction tx = this.StateManager.CreateTransaction())
+            {
                 this.simulatedTrafficCount = await GetSimulatedTrafficCount(tx);
                 await tx.CommitAsync();
             }
