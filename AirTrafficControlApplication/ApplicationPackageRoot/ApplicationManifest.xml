@@ -15,7 +15,7 @@
       <ConfigOverrides />
    </ServiceManifestImport>
    <ServiceManifestImport>
-      <ServiceManifestRef ServiceManifestName="AirTrafficControl.WebPkg" ServiceManifestVersion="1.0.0.2" />
+      <ServiceManifestRef ServiceManifestName="AirTrafficControl.WebPkg" ServiceManifestVersion="1.0.0.3" />
       <ConfigOverrides />
    </ServiceManifestImport>
    <ServiceManifestImport>
