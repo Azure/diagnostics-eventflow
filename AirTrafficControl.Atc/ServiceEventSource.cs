@@ -258,6 +258,16 @@ namespace AirTrafficControl.Atc
                     applicationName, applicationTypeName, nodeName);
             }
         }
+
+        private const int TimePassageHandlingFailedEventId = 10;
+        [Event(TimePassageHandlingFailedEventId, Level = EventLevel.Error, Message = "Handling of time passage ended up with unexpected error")]
+        public void TimePassageHandlingFailed(int currentTime, string exception)
+        {
+            if (this.IsEnabled())
+            {
+                WriteEvent(TimePassageHandlingFailedEventId, currentTime, exception);
+            }
+        }
         #endregion
 
         #region Private methods

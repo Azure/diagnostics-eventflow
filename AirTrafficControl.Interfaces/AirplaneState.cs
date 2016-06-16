@@ -17,39 +17,12 @@ namespace AirTrafficControl.Interfaces
     [KnownType(typeof(ApproachState))]
     [KnownType(typeof(LandedState))]
     [KnownType(typeof(EnrouteState))]
-    [KnownType(typeof(UnknownLocationState))]
     public abstract class AirplaneState
     {
         public abstract Location Location { get; }
 
         public abstract AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction);
         public abstract double GetHeading(FlightPlan flightPlan);
-    }
-
-    [DataContract]
-    public class UnknownLocationState : AirplaneState
-    {
-        public static UnknownLocationState Instance = new UnknownLocationState();
-
-        public override Location Location
-        {
-            get { return null; }
-        }
-
-        public override AirplaneState ComputeNextState(FlightPlan flightPlan, AtcInstruction instruction)
-        {
-            throw new InvalidOperationException("Cannot compute next airplane state from UnknownLocationState");
-        }
-
-        public override double GetHeading(FlightPlan flightPlan)
-        {
-            return 0.0;
-        }
-
-        public override string ToString()
-        {
-            return "Unknown location";
-        }
     }
 
     [DataContract]

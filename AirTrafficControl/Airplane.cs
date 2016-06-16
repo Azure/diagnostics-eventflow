@@ -28,7 +28,7 @@ namespace AirTrafficControl
             return PerformActorOperation(OperationNamePrefix + nameof(ReceiveInstructionAsync), async () =>
             {
                 var state = await GetStateAsync();
-                if (state.AirplaneState is UnknownLocationState)
+                if (state.AirplaneState == null)
                 {
                     throw new InvalidOperationException("Cannot receive ATC instruction if the airplane location is unknown. The airplane needs to start the flight first.");
                 }
@@ -46,7 +46,7 @@ namespace AirTrafficControl
             return PerformActorOperation(OperationNamePrefix + nameof(TimePassedAsync), async () =>
             {
                 var actorState = await GetStateAsync();
-                if (actorState.AirplaneState is UnknownLocationState)
+                if (actorState.AirplaneState == null)
                 {
                     return true;
                 }
@@ -91,7 +91,7 @@ namespace AirTrafficControl
             await base.OnActivateAsync();
 
             var actorState = new AirplaneActorState();
-            actorState.AirplaneState = UnknownLocationState.Instance;
+            actorState.AirplaneState = null;
             await this.StateManager.TryAddStateAsync(nameof(AirplaneActorState), actorState);
         }
 

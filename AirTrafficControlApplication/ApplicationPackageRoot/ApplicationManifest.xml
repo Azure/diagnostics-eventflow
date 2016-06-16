@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="AirTrafficControlApplicationType" ApplicationTypeVersion="1.0.0.2" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="AirTrafficControlApplicationType" ApplicationTypeVersion="1.0.0.3" xmlns="http://schemas.microsoft.com/2011/01/fabric">
    <Parameters>
       <Parameter Name="Atc_MinReplicaSetSize" DefaultValue="2" />
       <Parameter Name="Atc_TargetReplicaSetSize" DefaultValue="3" />
@@ -11,7 +11,7 @@
       <Parameter Name="AirplaneActorService_TargetReplicaSetSize" DefaultValue="3" />
    </Parameters>
    <ServiceManifestImport>
-      <ServiceManifestRef ServiceManifestName="AirTrafficControl.AtcPkg" ServiceManifestVersion="1.0.0.2" />
+      <ServiceManifestRef ServiceManifestName="AirTrafficControl.AtcPkg" ServiceManifestVersion="1.0.0.3" />
       <ConfigOverrides />
    </ServiceManifestImport>
    <ServiceManifestImport>
@@ -19,7 +19,7 @@
       <ConfigOverrides />
    </ServiceManifestImport>
    <ServiceManifestImport>
-      <ServiceManifestRef ServiceManifestName="AirTrafficControl.ActorsPkg" ServiceManifestVersion="1.0.0.2" />
+      <ServiceManifestRef ServiceManifestName="AirTrafficControl.ActorsPkg" ServiceManifestVersion="1.0.0.3" />
    </ServiceManifestImport>
    <DefaultServices>
       <Service Name="Atc">
