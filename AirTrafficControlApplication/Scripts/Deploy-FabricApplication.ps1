@@ -38,6 +38,9 @@ Overwrite Behavior if an application exists in the cluster with the same name. A
 'Always' will remove the existing application even if its Application type and Version is different from the application being created. 
 'SameAppTypeAndVersion' will remove the existing application only if its Application type and Version is same as the application being created.
 
+.PARAMETER SkipPackageValidation
+Switch signaling whether the package should be validated or not before deployment.
+
 .PARAMETER SecurityToken
 A security token for authentication to cluster management endpoints. Used for silent authentication to clusters that are protected by Azure Active Directory.
 
@@ -84,6 +87,9 @@ Param
     [String]
     [ValidateSet('Never','Always','SameAppTypeAndVersion')]
     $OverwriteBehavior = 'Never',
+
+    [Switch]
+    $SkipPackageValidation,
 
     [String]
     $SecurityToken 
@@ -210,5 +216,5 @@ else
         $Action = "Register"
     }
     
-    Publish-NewServiceFabricApplication -ApplicationPackagePath $ApplicationPackagePath -ApplicationParameterFilePath $publishProfile.ApplicationParameterFile -Action $Action -ApplicationParameter $ApplicationParameter -OverwriteBehavior $OverwriteBehavior -ErrorAction Stop
+    Publish-NewServiceFabricApplication -ApplicationPackagePath $ApplicationPackagePath -ApplicationParameterFilePath $publishProfile.ApplicationParameterFile -Action $Action -ApplicationParameter $ApplicationParameter -OverwriteBehavior $OverwriteBehavior -SkipPackageValidation:$SkipPackageValidation -ErrorAction Stop
 }
