@@ -20,11 +20,15 @@ namespace AirTrafficControl.Web.Fabric
     {
         private const string SimulatedTrafficCountProperty = "CurrentTime";
 
-        private Timer trafficSimulationTimer;
-        private IReliableDictionary<string, string> serviceState;
-        private byte simulatedTrafficCount = 0;
+        
+        private IReliableDictionary<string, string> serviceState;        
         private AtcServiceClient AtcClient = new AtcServiceClient(AtcServiceClientFactory.CreateClient, LazyThreadSafetyMode.ExecutionAndPublication);
+
         private bool updatingSimulatedTraffic = false;
+        private Timer trafficSimulationTimer;
+        private byte simulatedTrafficCount = 0;
+        private object instanceLock = new object();
+        private bool primaryShuttingDown = false;
 
         public AirTrafficControlWeb(StatefulServiceContext ctx): base(ctx) { }
 
@@ -47,6 +51,7 @@ namespace AirTrafficControl.Web.Fabric
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
             this.trafficSimulationTimer?.Dispose();
+            this.primaryShuttingDown = false;
             
             using (ITransaction tx = this.StateManager.CreateTransaction())
             {
@@ -60,9 +65,29 @@ namespace AirTrafficControl.Web.Fabric
                 await tx.CommitAsync();
             }
 
-            if (this.simulatedTrafficCount > 0)
+            lock (this.instanceLock)
             {
-                this.trafficSimulationTimer = CreateTrafficSimulationTimer();
+                if (this.simulatedTrafficCount > 0)
+                {
+                    this.trafficSimulationTimer = CreateTrafficSimulationTimer();
+                }
+            }
+
+            while(true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        this.primaryShuttingDown = true;
+                        this.trafficSimulationTimer?.Dispose();
+                        this.trafficSimulationTimer = null;
+                    }
+                    catch { }
+
+                    break;
+                }
             }
         }
 
@@ -75,15 +100,18 @@ namespace AirTrafficControl.Web.Fabric
                 await tx.CommitAsync();
             }
 
-            this.simulatedTrafficCount = trafficSimulationSettings.SimulatedTrafficCount;
-            if (trafficSimulationSettings.SimulatedTrafficCount == 0)
+            lock (this.instanceLock)
             {
-                this.trafficSimulationTimer?.Dispose();
-                this.trafficSimulationTimer = null;
-            }
-            else if (this.trafficSimulationTimer == null)
-            {
-                this.trafficSimulationTimer = CreateTrafficSimulationTimer();
+                this.simulatedTrafficCount = trafficSimulationSettings.SimulatedTrafficCount;
+                if (trafficSimulationSettings.SimulatedTrafficCount == 0 || this.primaryShuttingDown)
+                {
+                    this.trafficSimulationTimer?.Dispose();
+                    this.trafficSimulationTimer = null;
+                }
+                else if (this.trafficSimulationTimer == null)
+                {
+                    this.trafficSimulationTimer = CreateTrafficSimulationTimer();
+                }
             }
         }
 

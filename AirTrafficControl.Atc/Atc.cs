@@ -85,6 +85,21 @@ namespace AirTrafficControl.Atc
 
             this.worldTimer?.Dispose();
             this.worldTimer = new Timer(OnTimePassed, null, TimeSpan.FromSeconds(1), WorldTimerPeriod);
+
+            while(true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        this.worldTimer.Dispose();
+                    }
+                    catch { }
+
+                    break;
+                }
+            }
         }
 
         public Task<IEnumerable<string>> GetFlyingAirplaneIDs()
