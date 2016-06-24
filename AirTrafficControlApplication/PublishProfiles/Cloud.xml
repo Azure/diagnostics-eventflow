@@ -15,6 +15,9 @@
                                     StoreLocation="CurrentUser"
                                     StoreName="My" />
   -->
-    <ClusterConnectionParameters ConnectionEndpoint="" />
+    <ClusterConnectionParameters ConnectionEndpoint="kzfab0511b.westus.cloudapp.azure.com:19000" X509Credential="true" ServerCertThumbprint="65E3F2A1FCA73AE4819B4BB401EBFA65AE161733" FindType="FindByThumbprint" FindValue="65E3F2A1FCA73AE4819B4BB401EBFA65AE161733" StoreLocation="CurrentUser" StoreName="My" />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
+  <UpgradeDeployment Mode="Monitored" Enabled="true">
+    <Parameters FailureAction="Rollback" Force="True" />
+  </UpgradeDeployment>
 </PublishProfile>

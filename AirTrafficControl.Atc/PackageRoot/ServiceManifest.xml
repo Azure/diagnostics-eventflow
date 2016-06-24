@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ServiceManifest Name="AirTrafficControl.AtcPkg" Version="1.0.0.4" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ServiceManifest Name="AirTrafficControl.AtcPkg" Version="1.0.0.5" xmlns="http://schemas.microsoft.com/2011/01/fabric" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ServiceTypes>
     <!-- This is the name of your ServiceType. 
          This name must match the string used in RegisterServiceType call in Program.cs. -->
@@ -7,7 +7,7 @@
   </ServiceTypes>
 
   <!-- Code package is your service executable. -->
-  <CodePackage Name="Code" Version="1.0.0.4">
+  <CodePackage Name="Code" Version="1.0.0.5">
     <EntryPoint>
       <ExeHost>
         <Program>AirTrafficControl.Atc.exe</Program>
