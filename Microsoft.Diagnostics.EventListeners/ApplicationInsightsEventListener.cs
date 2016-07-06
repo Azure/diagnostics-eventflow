@@ -98,9 +98,5 @@ namespace Microsoft.Diagnostics.EventListeners
 
             return completedTask;
         }
-
-
-
-
     }
 }
