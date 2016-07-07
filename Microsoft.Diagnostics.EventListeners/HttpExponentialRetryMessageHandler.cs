@@ -3,7 +3,6 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,25 +13,37 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Diagnostics.EventListeners
 {
+    /// <summary>
+    /// Implements a message handler that employs exponential backoff retry policy for HTTP requests
+    /// </summary>
     public class HttpExponentialRetryMessageHandler: DelegatingHandler
     {
-        private Polly.Retry.RetryPolicy<HttpResponseMessage> retryPolicy;
-        private Polly.CircuitBreaker.CircuitBreakerPolicy<HttpResponseMessage> breakerPolicy;
+        private const int MaxRetries = 3;
+        private readonly TimeSpan[] AttemptDelays = new[] { TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5) };
+        private Random random;
 
         public HttpExponentialRetryMessageHandler(): base(new HttpClientHandler())
         {
-            this.retryPolicy = Policy
-                .HandleResult<HttpResponseMessage>(responseMessage => ((int)responseMessage.StatusCode) >= 500)
-                .WaitAndRetryAsync(new[] { TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5)});
-
-            this.breakerPolicy = Policy
-                .HandleResult<HttpResponseMessage>(responseMessage => ((int)responseMessage.StatusCode) >= 500)
-                .CircuitBreakerAsync(handledEventsAllowedBeforeBreaking: 3, durationOfBreak: TimeSpan.FromMinutes(2));
+            this.random = new Random();
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return this.breakerPolicy.ExecuteAsync(() => this.retryPolicy.ExecuteAsync(() => base.SendAsync(request, cancellationToken)));
+            // TODO: circuit breaker
+            int attempt = 0;
+
+            while(true)
+            {
+                var response = await base.SendAsync(request, cancellationToken);
+                if (attempt == MaxRetries || (int) response.StatusCode < 500)
+                {
+                    return response;
+                }
+                else
+                {
+                    await Task.Delay(AttemptDelays[attempt++]);
+                }
+            }            
         }
     }
 }
