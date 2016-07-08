@@ -103,6 +103,7 @@
     <Compile Include="BufferingEventListener.cs" />
     <Compile Include="ConcurrentEventSender.cs" />
     <Compile Include="ElasticSearchListener.cs" />
+    <Compile Include="EtwProviderConfiguration.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />
     <Compile Include="EventHubListener.cs" />

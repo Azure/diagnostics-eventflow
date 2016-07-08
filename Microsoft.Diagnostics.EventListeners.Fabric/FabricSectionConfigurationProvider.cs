@@ -10,11 +10,11 @@ namespace Microsoft.Diagnostics.EventListeners.Fabric
     using System.Fabric;
     using System.Fabric.Description;
 
-    public class FabricConfigurationProvider : IConfigurationProvider
+    public class FabricSectionConfigurationProvider : IConfigurationProvider
     {
         private KeyedCollection<string, ConfigurationProperty> configurationProperties;
 
-        public FabricConfigurationProvider(string configurationSectionName)
+        public FabricSectionConfigurationProvider(string configurationSectionName)
         {
             if (string.IsNullOrWhiteSpace(configurationSectionName))
             {
@@ -46,6 +46,26 @@ namespace Microsoft.Diagnostics.EventListeners.Fabric
             else
             {
                 return cachedConfigurationProperties[name].Value;
+            }
+        }
+
+        public T GetValue<T>(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return default(T);
+            }
+
+            KeyedCollection<string, ConfigurationProperty> cachedConfigurationProperties = this.configurationProperties;
+            if (cachedConfigurationProperties == null || !cachedConfigurationProperties.Contains(name))
+            {
+                return default(T);
+            }
+            else
+            {
+                string valueString = cachedConfigurationProperties[name].Value;
+                Type typeParameterType = typeof(T);
+                return (T) Convert.ChangeType(valueString, typeParameterType); // Best effort
             }
         }
 

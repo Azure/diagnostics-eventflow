@@ -6,12 +6,14 @@
 namespace Microsoft.Diagnostics.EventListeners
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.Tracing;
 
     public abstract class BufferingEventListener : EventListener
     {
         private IHealthReporter healthReporter;
         private TimeSpanThrottle errorReportingThrottle;
+        private ApplicationInsightsEventListener<>
 
         public BufferingEventListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter)
         {
@@ -28,6 +30,10 @@ namespace Microsoft.Diagnostics.EventListeners
             this.errorReportingThrottle = new TimeSpanThrottle(TimeSpan.FromSeconds(1));
 
             this.Disabled = !configurationProvider.HasConfiguration;
+            if (!this.Disabled)
+            {
+
+            }
         }
 
         public bool ApproachingBufferCapacity

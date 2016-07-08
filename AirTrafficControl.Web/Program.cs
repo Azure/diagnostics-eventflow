@@ -19,7 +19,7 @@ namespace AirTrafficControl.Web
             {
                 const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
                 ElasticSearchListener esListener = null;
-                FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
+                FabricEventListeners.FabricSectionConfigurationProvider configProvider = new FabricEventListeners.FabricSectionConfigurationProvider(ElasticSearchEventListenerId);
                 if (configProvider.HasConfiguration)
                 {
                     esListener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
@@ -27,7 +27,7 @@ namespace AirTrafficControl.Web
 
                 const string OmsEventListenerId = "OmsEventListener";
                 OmsEventListener omsListener = null;
-                configProvider = new FabricEventListeners.FabricConfigurationProvider(OmsEventListenerId);
+                configProvider = new FabricEventListeners.FabricSectionConfigurationProvider(OmsEventListenerId);
                 if (configProvider.HasConfiguration)
                 {
                     omsListener = new OmsEventListener(configProvider, new FabricEventListeners.FabricHealthReporter(OmsEventListenerId));

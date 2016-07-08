@@ -15,7 +15,7 @@ namespace AirTrafficControl
             try
             {
                 const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
-                FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
+                FabricEventListeners.FabricSectionConfigurationProvider configProvider = new FabricEventListeners.FabricSectionConfigurationProvider(ElasticSearchEventListenerId);
                 ElasticSearchListener listener = null;
                 if (configProvider.HasConfiguration)
                 {

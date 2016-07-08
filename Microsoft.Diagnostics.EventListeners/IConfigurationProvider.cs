@@ -10,5 +10,6 @@ namespace Microsoft.Diagnostics.EventListeners
         bool HasConfiguration { get; }
 
         string GetValue(string name);
+        T GetValue<T>(string name);
     }
 }
