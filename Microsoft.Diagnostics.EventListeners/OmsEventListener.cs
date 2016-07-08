@@ -37,7 +37,7 @@ namespace Microsoft.Diagnostics.EventListeners
             Verify.Operation(omsConfigurationProvider != null, "OmsEventListener configuration section is missing");
             this.workspaceId = omsConfigurationProvider.GetValue("workspaceId");
             Verify.Operation(!string.IsNullOrWhiteSpace(this.workspaceId), "workspaceId configuration parameter is not set");
-            string omsWorkspaceKeyBase64 = configurationProvider.GetValue("workspaceKey");
+            string omsWorkspaceKeyBase64 = omsConfigurationProvider.GetValue("workspaceKey");
             Verify.Operation(!string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64), "workspaceKey configuration parameter is not set");
             this.hasher = new HMACSHA256( Convert.FromBase64String(omsWorkspaceKeyBase64));
 
