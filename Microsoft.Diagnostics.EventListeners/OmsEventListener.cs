@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -39,7 +40,7 @@ namespace Microsoft.Diagnostics.EventListeners
             Verify.Operation(!string.IsNullOrWhiteSpace(this.workspaceId), "workspaceId configuration parameter is not set");
             string omsWorkspaceKeyBase64 = omsConfigurationProvider.GetValue("workspaceKey");
             Verify.Operation(!string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64), "workspaceKey configuration parameter is not set");
-            this.hasher = new HMACSHA256( Convert.FromBase64String(omsWorkspaceKeyBase64));
+            this.hasher = new HMACSHA256(Convert.FromBase64String(omsWorkspaceKeyBase64));
 
             var retryHandler = new HttpExponentialRetryMessageHandler();
             this.httpClient = new HttpClient(retryHandler);
@@ -59,17 +60,21 @@ namespace Microsoft.Diagnostics.EventListeners
         {
             try
             {
-                var jsonData = JsonConvert.SerializeObject(events);
+                string jsonData = JsonConvert.SerializeObject(events);
+                jsonData = @"[{""testField1"":""alex"",""testField2"":""frankel""},{""testField1"":""john"",""testField2"":""smith""}]";
+
                 string dateString = DateTime.UtcNow.ToString("r");
 
                 string signature = BuildSignature(jsonData, dateString);
 
                 HttpContent content = new StringContent(jsonData, Encoding.UTF8, JsonContentId);
-                content.Headers.Add("Authorization", signature);
-                content.Headers.Add("x-ms-date", dateString);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, OmsDataUploadUrl);
+                request.Headers.Add("Authorization", signature);
+                request.Headers.Add(MsDateHeaderName, dateString);
+                request.Content = content;
 
-                // PostAsync is thread safe
-                HttpResponseMessage response = await this.httpClient.PostAsync(OmsDataUploadUrl, null, cancellationToken);
+                // SendAsync is thread safe
+                HttpResponseMessage response = await this.httpClient.SendAsync(request, cancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
                     this.ReportListenerHealthy();
@@ -95,7 +100,7 @@ namespace Microsoft.Diagnostics.EventListeners
             {
                 hash = this.hasher.ComputeHash(signatureInputBytes);
             }
-            string signature = $"SharedKey {this.workspaceId}: {Convert.ToBase64String(hash)}";
+            string signature = $"SharedKey {this.workspaceId}:{Convert.ToBase64String(hash)}";
             return signature;
         }
     }
