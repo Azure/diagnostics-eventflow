@@ -14,21 +14,11 @@ namespace AirTrafficControl
         {
             try
             {
-                const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
-                FabricEventListeners.FabricSectionConfigurationProvider configProvider = new FabricEventListeners.FabricSectionConfigurationProvider(ElasticSearchEventListenerId);
-                ElasticSearchListener listener = null;
-                if (configProvider.HasConfiguration)
-                {
-                    listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
-                }
-
                 Task.WhenAll(                    
                     ActorRuntime.RegisterActorAsync<Airplane>()
                 ).Wait();
 
                 Thread.Sleep(Timeout.Infinite);
-
-                GC.KeepAlive(listener);
             }
             catch (Exception e)
             {

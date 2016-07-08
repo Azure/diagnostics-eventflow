@@ -10,7 +10,7 @@ namespace Microsoft.Diagnostics.EventListeners.Fabric
     using System.Fabric;
     using System.Fabric.Description;
 
-    public class FabricSectionConfigurationProvider : ICompositeConfigurationProvider
+    public class FabricSectionConfigurationProvider : IConfigurationProvider
     {
         private KeyedCollection<string, ConfigurationProperty> configurationProperties;
 
