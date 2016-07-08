@@ -61,6 +61,7 @@
     <Compile Include="FabricSectionConfigurationProvider.cs" />
     <Compile Include="FabricHealthReporter.cs" />
     <Compile Include="FabricJsonFileConfigurationProvider.cs" />
+    <Compile Include="JsonObjectConfigurationProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

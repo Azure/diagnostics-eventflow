@@ -4,22 +4,16 @@
 // ------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Fabric;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Diagnostics.EventListeners.Fabric
 {
-    public class FabricJsonFileConfigurationProvider : IConfigurationProvider
+    public class FabricJsonFileConfigurationProvider : JsonObjectConfigurationProvider
     {
-        private JObject configuration;
-
-        public FabricJsonFileConfigurationProvider(string configurationFileName)
+        public FabricJsonFileConfigurationProvider(string configurationFileName): base(null)
         {
             if (string.IsNullOrWhiteSpace(configurationFileName))
             {
@@ -38,35 +32,6 @@ namespace Microsoft.Diagnostics.EventListeners.Fabric
             {
                 this.configuration = (JObject) JToken.ReadFrom(new JsonTextReader(sr));
             }            
-        }
-
-        public bool HasConfiguration
-        {
-            get
-            {
-                return this.configuration != null;
-            }
-        }
-
-        public string GetValue(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                return null;
-            }
-
-            return this.configuration?.GetValue(name)?.ToString();            
-        }
-
-        public T GetValue<T>(string name)
-        {
-            string valueString = this.GetValue(name);
-            if (string.IsNullOrWhiteSpace(valueString))
-            {
-                return default(T);
-            }
-
-            return JsonConvert.DeserializeObject<T>(valueString);
         }
     }
 }

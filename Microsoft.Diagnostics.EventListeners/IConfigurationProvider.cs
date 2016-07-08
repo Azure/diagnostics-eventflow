@@ -12,4 +12,9 @@ namespace Microsoft.Diagnostics.EventListeners
         string GetValue(string name);
         T GetValue<T>(string name);
     }
+
+    public interface ICompositeConfigurationProvider: IConfigurationProvider
+    {
+        ICompositeConfigurationProvider GetConfiguration(string configurationName);
+    }
 }

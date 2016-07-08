@@ -21,7 +21,7 @@ namespace Microsoft.Diagnostics.EventListeners
         private const int ConcurrentConnections = 4;
         private EventHubConnectionData connectionData;
 
-        public EventHubListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public EventHubListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
         {
             if (this.Disabled)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.Diagnostics.EventListeners
 
         private void CreateConnectionData(object sender)
         {
-            IConfigurationProvider configurationProvider = (IConfigurationProvider) sender;
+            ICompositeConfigurationProvider configurationProvider = (ICompositeConfigurationProvider) sender;
 
             string serviceBusConnectionString = configurationProvider.GetValue("serviceBusConnectionString");
             if (string.IsNullOrWhiteSpace(serviceBusConnectionString))

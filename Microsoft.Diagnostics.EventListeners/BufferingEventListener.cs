@@ -3,19 +3,20 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics.Tracing;
+
 namespace Microsoft.Diagnostics.EventListeners
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.Tracing;
-
     public abstract class BufferingEventListener : EventListener
     {
         private IHealthReporter healthReporter;
         private TimeSpanThrottle errorReportingThrottle;
-        private ApplicationInsightsEventListener<>
+        private List<EtwProviderConfiguration> providers;
 
-        public BufferingEventListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter)
+        public BufferingEventListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter)
         {
             if (configurationProvider == null)
             {
@@ -32,13 +33,13 @@ namespace Microsoft.Diagnostics.EventListeners
             this.Disabled = !configurationProvider.HasConfiguration;
             if (!this.Disabled)
             {
-
+                this.providers = configurationProvider.GetValue<List<EtwProviderConfiguration>>("EtwProviders");
             }
         }
 
-        public bool ApproachingBufferCapacity
+        public bool? ApproachingBufferCapacity
         {
-            get { return this.Sender.ApproachingBufferCapacity; }
+            get { return this.Sender?.ApproachingBufferCapacity; }
         }
 
         public bool Disabled { get; }
@@ -48,19 +49,30 @@ namespace Microsoft.Diagnostics.EventListeners
         public override void Dispose()
         {
             base.Dispose();
-            this.Sender.Dispose();
+            this.Sender?.Dispose();
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventArgs)
         {
-            this.Sender.SubmitEvent(eventArgs.ToEventData());
+            this.Sender?.SubmitEvent(eventArgs.ToEventData());
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
         {
             if (!this.Disabled)
             {
-                this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords) ~0);
+                if (this.providers == null)
+                {
+                    this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)~0);
+                }
+                else
+                {
+                    EtwProviderConfiguration provider = this.providers.Where(p => p.ProviderName == eventSource.Name).FirstOrDefault();
+                    if (provider != null)
+                    {
+                        this.EnableEvents(eventSource, provider.Level, provider.Keywords);
+                    }
+                }
             }
         }
 

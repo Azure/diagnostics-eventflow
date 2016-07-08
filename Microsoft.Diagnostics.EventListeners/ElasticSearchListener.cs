@@ -22,7 +22,7 @@ namespace Microsoft.Diagnostics.EventListeners
         private ElasticSearchConnectionData connectionData;
         // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing        
 
-        public ElasticSearchListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public ElasticSearchListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
         {
             if (this.Disabled)
             {
@@ -41,7 +41,7 @@ namespace Microsoft.Diagnostics.EventListeners
                 healthReporter: healthReporter);
         }
 
-        private ElasticClient CreateElasticClient(IConfigurationProvider configurationProvider)
+        private ElasticClient CreateElasticClient(ICompositeConfigurationProvider configurationProvider)
         {
             string esServiceUriString = configurationProvider.GetValue("serviceUri");
             Uri esServiceUri;
@@ -64,7 +64,7 @@ namespace Microsoft.Diagnostics.EventListeners
 
         private void CreateConnectionData(object sender)
         {
-            IConfigurationProvider configurationProvider = (IConfigurationProvider) sender;
+            ICompositeConfigurationProvider configurationProvider = (ICompositeConfigurationProvider) sender;
 
             this.connectionData = new ElasticSearchConnectionData();
             this.connectionData.Client = this.CreateElasticClient(configurationProvider);

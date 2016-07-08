@@ -24,7 +24,7 @@ namespace Microsoft.Diagnostics.EventListeners
         private volatile int nextEntityId;
         private object identityIdResetLock;
 
-        public TableStorageEventListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter)
+        public TableStorageEventListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter)
             : base(configurationProvider, healthReporter)
         {
             if (this.Disabled)
@@ -50,7 +50,7 @@ namespace Microsoft.Diagnostics.EventListeners
                 healthReporter: healthReporter);
         }
 
-        private void CreateTableClient(IConfigurationProvider configurationProvider)
+        private void CreateTableClient(ICompositeConfigurationProvider configurationProvider)
         {
             string accountConnectionString = configurationProvider.GetValue("StorageAccountConnectionString");
             string sasToken = configurationProvider.GetValue("StorageAccountSasToken");

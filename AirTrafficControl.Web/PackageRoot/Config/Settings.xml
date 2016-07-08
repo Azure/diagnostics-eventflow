@@ -5,9 +5,5 @@
   <Section Name="MyConfigSection">
     <Parameter Name="MyParameter" Value="Value1" />
   </Section>
-  -->
-    <Section Name="OmsEventListener">
-        <Parameter Name="omsWorkspaceId" Value="30787dd1-cacc-4bca-8944-ba88ccb6f350" />
-        <Parameter Name="omsWorkspaceKey" Value="ZOkRX79gxSp4luNztJQCaxjuDaLnBSVfkQWRLTouc8tmQXkGtbpXBYBegerlr2xYL0g00y7Zw+KYyihJ4bV/pg==" />
-    </Section>
+  -->    
 </Settings>

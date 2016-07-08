@@ -1,0 +1,12 @@
+﻿{
+  "EtwProviders": [
+    { "ProviderName": "Microsoft-ServiceFabric-Services" },
+    { "ProviderName": "Microsoft-ServiceFabric-Actors" },
+    { "ProviderName": "MyCompany-AirTrafficControlApplication-Frontend" }
+  ],
+
+  "OmsEventListener": {
+    "workspaceId": "30787dd1-cacc-4bca-8944-ba88ccb6f350",
+    "workspaceKey": "ZOkRX79gxSp4luNztJQCaxjuDaLnBSVfkQWRLTouc8tmQXkGtbpXBYBegerlr2xYL0g00y7Zw+KYyihJ4bV/pg=="
+  }
+}

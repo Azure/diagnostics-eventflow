@@ -33,7 +33,7 @@ namespace Microsoft.Diagnostics.EventListeners
         private readonly TelemetryClient telemetry;
 
 
-        public ApplicationInsightsEventListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public ApplicationInsightsEventListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
         {
             if (this.Disabled)
             {

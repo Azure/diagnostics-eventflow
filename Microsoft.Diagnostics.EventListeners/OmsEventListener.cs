@@ -26,17 +26,19 @@ namespace Microsoft.Diagnostics.EventListeners
         private HMACSHA256 hasher;
         private string workspaceId;
 
-        public OmsEventListener(IConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public OmsEventListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
         {
             if (this.Disabled)
             {
                 return;
             }
 
-            this.workspaceId = configurationProvider.GetValue("omsWorkspaceId");
-            Verify.Operation(!string.IsNullOrWhiteSpace(this.workspaceId), "omsWorkspaceId configuration parameter is not set");
-            string omsWorkspaceKeyBase64 = configurationProvider.GetValue("omsWorkspaceKey");
-            Verify.Operation(!string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64), "omsWorkspaceKey configuration parameter is not set");
+            ICompositeConfigurationProvider omsConfigurationProvider = configurationProvider.GetConfiguration("OmsEventListener");
+            Verify.Operation(omsConfigurationProvider != null, "OmsEventListener configuration section is missing");
+            this.workspaceId = omsConfigurationProvider.GetValue("workspaceId");
+            Verify.Operation(!string.IsNullOrWhiteSpace(this.workspaceId), "workspaceId configuration parameter is not set");
+            string omsWorkspaceKeyBase64 = configurationProvider.GetValue("workspaceKey");
+            Verify.Operation(!string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64), "workspaceKey configuration parameter is not set");
             this.hasher = new HMACSHA256( Convert.FromBase64String(omsWorkspaceKeyBase64));
 
             var retryHandler = new HttpExponentialRetryMessageHandler();
