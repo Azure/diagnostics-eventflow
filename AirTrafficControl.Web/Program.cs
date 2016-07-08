@@ -18,11 +18,19 @@ namespace AirTrafficControl.Web
             try
             {
                 const string ElasticSearchEventListenerId = "ElasticSearchEventListener";
+                ElasticSearchListener esListener = null;
                 FabricEventListeners.FabricConfigurationProvider configProvider = new FabricEventListeners.FabricConfigurationProvider(ElasticSearchEventListenerId);
-                ElasticSearchListener listener = null;
                 if (configProvider.HasConfiguration)
                 {
-                    listener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
+                    esListener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter(ElasticSearchEventListenerId));
+                }
+
+                const string OmsEventListenerId = "OmsEventListener";
+                OmsEventListener omsListener = null;
+                configProvider = new FabricEventListeners.FabricConfigurationProvider(OmsEventListenerId);
+                if (configProvider.HasConfiguration)
+                {
+                    omsListener = new OmsEventListener(configProvider, new FabricEventListeners.FabricHealthReporter(OmsEventListenerId));
                 }
 
                 // This is the name of the ServiceType that is registered with FabricRuntime. 
@@ -34,7 +42,8 @@ namespace AirTrafficControl.Web
 
                 Thread.Sleep(Timeout.Infinite);
 
-                GC.KeepAlive(listener);
+                GC.KeepAlive(esListener);
+                GC.KeepAlive(omsListener);
             }
             catch (Exception e)
             {
