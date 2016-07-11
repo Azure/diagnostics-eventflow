@@ -46,7 +46,9 @@ namespace Microsoft.Diagnostics.EventListeners
             var retryHandler = new HttpExponentialRetryMessageHandler();
             this.httpClient = new HttpClient(retryHandler);
             this.httpClient.BaseAddress = new Uri($"https://{this.workspaceId}.ods.opinsights.azure.com", UriKind.Absolute);
-            this.httpClient.DefaultRequestHeaders.Add("Log-Type", "TestLFALogs");
+
+            string logTypeName = "ETWEvent";  // CONSIDER: make it a configuration parameter
+            this.httpClient.DefaultRequestHeaders.Add("Log-Type", logTypeName);
 
             this.Sender = new ConcurrentEventSender<EventData>(
                 eventBufferSize: 1000,
@@ -62,7 +64,6 @@ namespace Microsoft.Diagnostics.EventListeners
             try
             {
                 string jsonData = JsonConvert.SerializeObject(events);
-                // jsonData = @"[{""testField1"":""alex"",""testField2"":""frankel""},{""testField1"":""john"",""testField2"":""smith""}]";
 
                 string dateString = DateTime.UtcNow.ToString("r");
 
