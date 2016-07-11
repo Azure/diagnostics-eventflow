@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -61,13 +62,14 @@ namespace Microsoft.Diagnostics.EventListeners
             try
             {
                 string jsonData = JsonConvert.SerializeObject(events);
-                jsonData = @"[{""testField1"":""alex"",""testField2"":""frankel""},{""testField1"":""john"",""testField2"":""smith""}]";
+                // jsonData = @"[{""testField1"":""alex"",""testField2"":""frankel""},{""testField1"":""john"",""testField2"":""smith""}]";
 
                 string dateString = DateTime.UtcNow.ToString("r");
 
                 string signature = BuildSignature(jsonData, dateString);
 
                 HttpContent content = new StringContent(jsonData, Encoding.UTF8, JsonContentId);
+                content.Headers.ContentType = new MediaTypeHeaderValue(JsonContentId);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, OmsDataUploadUrl);
                 request.Headers.Add("Authorization", signature);
                 request.Headers.Add(MsDateHeaderName, dateString);
