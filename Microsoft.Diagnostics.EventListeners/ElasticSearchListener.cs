@@ -141,6 +141,7 @@ namespace Microsoft.Diagnostics.EventListeners
 
             // TODO: allow the consumer to fine-tune index settings
             IndexState indexSettings = new IndexState();
+            indexSettings.Settings = new IndexSettings();
             indexSettings.Settings.NumberOfReplicas = 1;
             indexSettings.Settings.NumberOfShards = 5;
             indexSettings.Settings.Add("refresh_interval", "15s");
