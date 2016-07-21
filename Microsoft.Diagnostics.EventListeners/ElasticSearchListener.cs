@@ -43,7 +43,8 @@ namespace Microsoft.Diagnostics.EventListeners
 
         private ElasticClient CreateElasticClient(ICompositeConfigurationProvider configurationProvider)
         {
-            string esServiceUriString = configurationProvider.GetValue("serviceUri");
+            ICompositeConfigurationProvider esConfigurationProvider = configurationProvider.GetConfiguration("ElasticSearchListener");
+            string esServiceUriString = esConfigurationProvider.GetValue("serviceUri");
             Uri esServiceUri;
             bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
             if (!serviceUriIsValid)
@@ -51,8 +52,8 @@ namespace Microsoft.Diagnostics.EventListeners
                 throw new ConfigurationErrorsException("serviceUri must be a valid, absolute URI");
             }
 
-            string userName = configurationProvider.GetValue("userName");
-            string password = configurationProvider.GetValue("password");
+            string userName = esConfigurationProvider.GetValue("userName");
+            string password = esConfigurationProvider.GetValue("password");
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
                 throw new ConfigurationErrorsException("Invalid Elastic Search credentials");

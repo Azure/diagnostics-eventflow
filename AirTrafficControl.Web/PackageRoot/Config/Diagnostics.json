@@ -6,7 +6,14 @@
   ],
 
   "OmsEventListener": {
-    "workspaceId": "30787dd1-cacc-4bca-8944-ba88ccb6f350",
-    "workspaceKey": "ZOkRX79gxSp4luNztJQCaxjuDaLnBSVfkQWRLTouc8tmQXkGtbpXBYBegerlr2xYL0g00y7Zw+KYyihJ4bV/pg=="
+    "workspaceId": "",
+    "workspaceKey": ""
+  },
+
+  "ElasticSearchListener": {
+    "userName": "",
+    "password": "",
+    "serviceUri": ""
   }
+
 }

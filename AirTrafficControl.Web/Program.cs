@@ -17,11 +17,11 @@ namespace AirTrafficControl.Web
         {
             try
             {
-                OmsEventListener omsListener = null;
+                BufferingEventListener diagnosticListener = null;
                 ICompositeConfigurationProvider configProvider = new FabricEventListeners.FabricJsonFileConfigurationProvider("Diagnostics.json");
                 if (configProvider.HasConfiguration)
                 {
-                    omsListener = new OmsEventListener(configProvider, new FabricEventListeners.FabricHealthReporter("OmsEventListener"));
+                    diagnosticListener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter("ElasticSearchListener"));
                 }
 
                 // This is the name of the ServiceType that is registered with FabricRuntime. 
@@ -33,7 +33,7 @@ namespace AirTrafficControl.Web
 
                 Thread.Sleep(Timeout.Infinite);
 
-                GC.KeepAlive(omsListener);
+                GC.KeepAlive(diagnosticListener);
             }
             catch (Exception e)
             {
