@@ -191,3 +191,4 @@ ModelManifest.xml
 /.vs/config/applicationhost.config
 /AirTrafficControlApplication/Scripts/wadcfg.base64
 *.trace
+/AirTrafficControl.Web/PackageRoot/Config/Diagnostics.json
