@@ -22,8 +22,7 @@ namespace Microsoft.Diagnostics.EventListeners
         private uint maxConcurrency;
         private int batchSize;
         private TimeSpan noEventsDelay;
-        private IEventSender<EventDataType> sender;
-        private IEnumerable<Func<EventDataType, bool>> filters;
+        private EventSink<EventDataType> sink;
         private TimeSpanThrottle eventLossThrottle;
         private IHealthReporter healthReporter;
 
@@ -32,14 +31,13 @@ namespace Microsoft.Diagnostics.EventListeners
             uint maxConcurrency, 
             int batchSize, 
             TimeSpan noEventsDelay,
-            IEventSender<EventDataType> sender,
-            IEnumerable<Func<EventDataType, bool>> filters,
+            EventSink<EventDataType> sink,
             IHealthReporter healthReporter)
         {
             Requires.Range(eventBufferSize > 0, nameof(eventBufferSize));
             Requires.Range(maxConcurrency > 0, nameof(maxConcurrency));
             Requires.Range(batchSize > 0, nameof(batchSize));
-            Requires.NotNull(sender, nameof(sender));
+            Requires.NotNull(sink, nameof(sink));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.events = new BlockingCollection<EventDataType>(eventBufferSize);
@@ -47,10 +45,9 @@ namespace Microsoft.Diagnostics.EventListeners
             this.maxConcurrency = maxConcurrency;
             this.batchSize = batchSize;
             this.noEventsDelay = noEventsDelay;
-            this.sender = sender;
+            this.sink = sink;
             this.capacityWarningThreshold = (int) Math.Ceiling(0.9m*eventBufferSize);
             this.healthReporter = healthReporter;
-            this.filters = filters;
 
             // Probably does not make sense to report event loss more often than once per second.
             this.eventLossThrottle = new TimeSpanThrottle(TimeSpan.FromSeconds(1));
@@ -113,15 +110,26 @@ namespace Microsoft.Diagnostics.EventListeners
                     Task.WaitAny(transmitterTasks.ToArray());
                 }
 
-                IEnumerable<EventDataType> transmitterEvents;
+                IEnumerable<EventDataType> eventsToFilter;
                 int eventsFetched;
-                if (!this.GetBatch(cancellationToken, out transmitterEvents, out eventsFetched))
+                if (!this.GetBatch(cancellationToken, out eventsToFilter, out eventsFetched))
                 {
                     break;
                 }
 
+                // Filter and decorate events
+                ConcurrentBag<EventDataType> eventsToSend = FilterAndDecorate(cancellationToken, eventsToFilter);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                if (eventsToSend.Count == 0)
+                {
+                    continue;
+                }
+
                 Task transmitterTask = Task.Run(
-                    () => this.TransmitterProc(transmitterEvents, transmissionSequenceNumber++, cancellationToken),
+                    () => this.sink.Sender.SendEvents(eventsToSend, transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);
                 transmitterTasks.Add(transmitterTask);
 
@@ -139,6 +147,31 @@ namespace Microsoft.Diagnostics.EventListeners
                     }
                 }
             }
+        }
+
+        private ConcurrentBag<EventDataType> FilterAndDecorate(CancellationToken cancellationToken, IEnumerable<EventDataType> eventsToFilter)
+        {
+            ConcurrentBag<EventDataType> eventsToSend;
+            IEnumerable<IEventFilter<EventDataType>> filters = this.sink.Filters;
+            if (filters != null)
+            {
+                ParallelOptions parallelOptions = new ParallelOptions();
+                parallelOptions.CancellationToken = cancellationToken;
+                eventsToSend = new ConcurrentBag<EventDataType>();
+                Parallel.ForEach(eventsToFilter, parallelOptions, eventData =>
+                {
+                    if (filters.All(f => f.Filter(eventData)))
+                    {
+                        eventsToSend.Add(eventData);
+                    }
+                });
+            }
+            else
+            {
+                eventsToSend = new ConcurrentBag<EventDataType>(eventsToFilter);
+            }
+
+            return eventsToSend;
         }
 
         private void ForgetCompletedTransmitterTasks(List<Task> transmitterTasks)

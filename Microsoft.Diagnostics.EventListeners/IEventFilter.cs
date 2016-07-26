@@ -3,18 +3,16 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 namespace Microsoft.Diagnostics.EventListeners
 {
-    public interface IConfigurationProvider
+    public interface IEventFilter<EventDataType>
     {
-        bool HasConfiguration { get; }
-
-        string GetValue(string name);
-        T GetValue<T>(string name);
-    }
-
-    public interface ICompositeConfigurationProvider: IConfigurationProvider
-    {
-        ICompositeConfigurationProvider GetConfiguration(string configurationName);
+        bool Filter(EventDataType eventData);
     }
 }
