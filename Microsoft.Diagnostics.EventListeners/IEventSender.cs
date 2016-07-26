@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Diagnostics.Pipeline
+namespace Microsoft.Diagnostics.EventListeners
 {
-    interface IEventSender<EventDataType>
+    public interface IEventSender<EventDataType>
     {
         Task SendEvents(IReadOnlyCollection<EventDataType> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
     }

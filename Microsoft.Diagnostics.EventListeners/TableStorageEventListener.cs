@@ -41,7 +41,7 @@ namespace Microsoft.Diagnostics.EventListeners
             this.nextEntityId = 0;
             this.identityIdResetLock = new object();
 
-            this.Sender = new ConcurrentEventSender<EventData>(
+            this.Sender = new ConcurrentEventProcessor<EventData>(
                 eventBufferSize: 1000,
                 maxConcurrency: MaxConcurrentPartitions,
                 batchSize: 50,

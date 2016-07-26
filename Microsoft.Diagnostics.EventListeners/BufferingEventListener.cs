@@ -52,7 +52,7 @@ namespace Microsoft.Diagnostics.EventListeners
 
         public bool Disabled { get; }
 
-        protected ConcurrentEventSender<EventData> Sender { get; set; }
+        protected ConcurrentEventProcessor<EventData> Sender { get; set; }
 
         public override void Dispose()
         {

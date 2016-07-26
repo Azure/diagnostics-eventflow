@@ -50,7 +50,7 @@ namespace Microsoft.Diagnostics.EventListeners
             string logTypeName = "ETWEvent";  // CONSIDER: make it a configuration parameter
             this.httpClient.DefaultRequestHeaders.Add("Log-Type", logTypeName);
 
-            this.Sender = new ConcurrentEventSender<EventData>(
+            this.Sender = new ConcurrentEventProcessor<EventData>(
                 eventBufferSize: 1000,
                 maxConcurrency: 2,
                 batchSize: 100,

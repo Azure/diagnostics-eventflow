@@ -45,7 +45,7 @@ namespace Microsoft.Diagnostics.EventListeners
             telemetry = new TelemetryClient();
             telemetry.Context.InstrumentationKey = configurationProvider.GetValue(AppInsightsKeyName);
 
-            this.Sender = new ConcurrentEventSender<EventData>(
+            this.Sender = new ConcurrentEventProcessor<EventData>(
                 eventBufferSize: 1000,
                 maxConcurrency: 2,
                 batchSize: 100,

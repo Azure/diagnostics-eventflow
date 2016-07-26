@@ -32,7 +32,7 @@ namespace Microsoft.Diagnostics.EventListeners
             Debug.Assert(configurationProvider != null);
             this.CreateConnectionData(configurationProvider);
 
-            this.Sender = new ConcurrentEventSender<EventData>(
+            this.Sender = new ConcurrentEventProcessor<EventData>(
                 eventBufferSize: 1000,
                 maxConcurrency: 2,
                 batchSize: 100,

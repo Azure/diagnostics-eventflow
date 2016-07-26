@@ -101,7 +101,7 @@
   <ItemGroup>
     <Compile Include="ApplicationInsightsEventListener.cs" />
     <Compile Include="BufferingEventListener.cs" />
-    <Compile Include="ConcurrentEventSender.cs" />
+    <Compile Include="ConcurrentEventProcessor.cs" />
     <Compile Include="ElasticSearchListener.cs" />
     <Compile Include="EtwProviderConfiguration.cs" />
     <Compile Include="EventData.cs" />
@@ -109,6 +109,7 @@
     <Compile Include="EventHubListener.cs" />
     <Compile Include="HttpExponentialRetryMessageHandler.cs" />
     <Compile Include="IConfigurationProvider.cs" />
+    <Compile Include="IEventSender.cs" />
     <Compile Include="IHealthReporter.cs" />
     <Compile Include="OmsEventListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
