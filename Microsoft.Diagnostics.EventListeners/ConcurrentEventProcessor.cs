@@ -129,7 +129,7 @@ namespace Microsoft.Diagnostics.EventListeners
                 }
 
                 Task transmitterTask = Task.Run(
-                    () => this.sink.Sender.SendEvents(eventsToSend, transmissionSequenceNumber++, cancellationToken),
+                    () => this.sink.Sender.SendEventsAsync(eventsToSend, transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);
                 transmitterTasks.Add(transmitterTask);
 

@@ -11,6 +11,6 @@ namespace Microsoft.Diagnostics.EventListeners
 {
     public interface IEventSender<EventDataType>
     {
-        Task SendEvents(IReadOnlyCollection<EventDataType> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
+        Task SendEventsAsync(IReadOnlyCollection<EventDataType> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
     }
 }

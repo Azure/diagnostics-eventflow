@@ -143,6 +143,7 @@ namespace Microsoft.Diagnostics.EventListeners
         {
             public void Dispose()
             {
+                // No-op
             }
         }
     }

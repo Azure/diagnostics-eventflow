@@ -42,7 +42,7 @@ namespace Microsoft.Diagnostics.EventListeners
                 }
                 EnableInitialSources();
                 this.constructed = true;
-            }            
+            }
         }
 
         public bool? ApproachingBufferCapacity
@@ -50,7 +50,7 @@ namespace Microsoft.Diagnostics.EventListeners
             get { return this.Sender?.ApproachingBufferCapacity; }
         }
 
-        public bool Disabled { get; }
+        public bool Disabled { get; private set; }
 
         protected ConcurrentEventProcessor<EventData> Sender { get; set; }
 
@@ -69,10 +69,11 @@ namespace Microsoft.Diagnostics.EventListeners
         {
             // There is a bug in the EventListener library that causes this override to be called before the object is fully constructed.
             // So if we are not constructed yet, we will just remember the event source reference. Once the construction is accomplished,
-            // we can decide right here if we want to handle a given event source or not.
+            // we can decide if we want to handle a given event source or not.
 
-            // Yes, locking on 'this' is a bad practice because someone from outside could put a lock on us, and this is outside of our control.
-            // But that scenario is very unlikely and because of the bug above, we cannot rely on construction to prepare a private lock object for us.
+            // Locking on 'this' is generally a bad practice because someone from outside could put a lock on us, and this is outside of our control.
+            // But in the case of this class it is an unlikely scenario, and because of the bug described above, 
+            // we cannot rely on construction to prepare a private lock object for us.
             lock (this)
             {
                 if (!this.constructed)
@@ -89,7 +90,7 @@ namespace Microsoft.Diagnostics.EventListeners
                     EnableAsNecessary(eventSource);
                 }
             }
-        }        
+        }
 
         protected void ReportListenerHealthy()
         {
