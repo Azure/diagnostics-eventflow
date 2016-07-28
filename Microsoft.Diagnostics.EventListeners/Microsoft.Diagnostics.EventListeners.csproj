@@ -137,10 +137,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
-    <Compile Include="BufferingEventListener.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
     <Compile Include="DiagnosticsPipeline.cs" />
-    <Compile Include="ElasticSearchListener.cs" />
+    <Compile Include="Senders\ElasticSearchSender.cs" />
     <Compile Include="EtwProviderConfiguration.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />

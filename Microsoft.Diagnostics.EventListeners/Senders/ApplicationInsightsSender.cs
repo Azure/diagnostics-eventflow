@@ -22,6 +22,7 @@ namespace Microsoft.Diagnostics.EventListeners
         public ApplicationInsightsSender(IConfiguration configuration, IHealthReporter healthReporter): base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
             string telemetryKey = configuration[AppInsightsKeyName];
             if (string.IsNullOrWhiteSpace(telemetryKey))
@@ -39,7 +40,7 @@ namespace Microsoft.Diagnostics.EventListeners
             // TODO: transmit all event properties
             // TODO: support higher-level AI concepts like metrics, dependency calls, and requests
 
-            if (events == null || events.Count == 0)
+            if (this.telemetryClient == null || events == null || events.Count == 0)
             {
                 return Task.CompletedTask;
             }

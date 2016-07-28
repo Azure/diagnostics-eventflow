@@ -21,7 +21,7 @@ namespace AirTrafficControl.Web
                 ICompositeConfigurationProvider configProvider = new FabricEventListeners.FabricJsonFileConfigurationProvider("Diagnostics.json");
                 if (configProvider.HasConfiguration)
                 {
-                    diagnosticListener = new ElasticSearchListener(configProvider, new FabricEventListeners.FabricHealthReporter("ElasticSearchListener"));
+                    diagnosticListener = new ElasticSearchSender(configProvider, new FabricEventListeners.FabricHealthReporter("ElasticSearchListener"));
                 }
 
                 // This is the name of the ServiceType that is registered with FabricRuntime. 

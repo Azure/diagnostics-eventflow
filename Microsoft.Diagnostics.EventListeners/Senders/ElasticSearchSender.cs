@@ -3,80 +3,78 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Nest;
+using Validation;
+
 namespace Microsoft.Diagnostics.EventListeners
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Diagnostics;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Nest;
-
-    public class ElasticSearchListener : BufferingEventListener, IDisposable
+    public class ElasticSearchSender : SenderBase<EventData>, IEventSender<EventData>
     {
         private const string Dot = ".";
         private const string Dash = "-";
+
         // TODO: make it a (configuration) property of the listener
         private const string EventDocumentTypeName = "event";
+
         private ElasticSearchConnectionData connectionData;
         // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing        
 
-        public ElasticSearchListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public ElasticSearchSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
-            if (this.Disabled)
-            {
-                return;
-            }
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            Debug.Assert(configurationProvider != null);
-            this.CreateConnectionData(configurationProvider);
-
-            this.Sender = new ConcurrentEventProcessor<EventData>(
-                eventBufferSize: 1000,
-                maxConcurrency: 2,
-                batchSize: 100,
-                noEventsDelay: TimeSpan.FromMilliseconds(1000),
-                transmitterProc: this.SendEventsAsync,
-                healthReporter: healthReporter);
+            this.connectionData = CreateConnectionData(configuration, healthReporter);
         }
 
-        private ElasticClient CreateElasticClient(ICompositeConfigurationProvider configurationProvider)
+        private ElasticClient CreateElasticClient(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            ICompositeConfigurationProvider esConfigurationProvider = configurationProvider.GetConfiguration("ElasticSearchListener");
-            string esServiceUriString = esConfigurationProvider.GetValue("serviceUri");
+            string esServiceUriString = configuration["serviceUri"];
             Uri esServiceUri;
             bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
             if (!serviceUriIsValid)
             {
-                throw new ConfigurationErrorsException("serviceUri must be a valid, absolute URI");
+                healthReporter.ReportProblem("ElasticSearchSender configuration is missing required 'serviceUri' parameter");
+                return null;
             }
 
-            string userName = esConfigurationProvider.GetValue("userName");
-            string password = esConfigurationProvider.GetValue("password");
+            string userName = configuration["userName"];
+            string password = configuration["password"];
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
-                throw new ConfigurationErrorsException("Invalid Elastic Search credentials");
+                healthReporter.ReportProblem("ElasticSearchSender configuration is missing Elastic Search credentials");
+                return null;
             }
 
             ConnectionSettings config = new ConnectionSettings(esServiceUri).BasicAuthentication(userName, password);
             return new ElasticClient(config);
         }
 
-        private void CreateConnectionData(object sender)
+        private ElasticSearchConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            ICompositeConfigurationProvider configurationProvider = (ICompositeConfigurationProvider) sender;
-
-            this.connectionData = new ElasticSearchConnectionData();
-            this.connectionData.Client = this.CreateElasticClient(configurationProvider);
-            this.connectionData.LastIndexName = null;
-            string indexNamePrefix = configurationProvider.GetValue("indexNamePrefix");
-            this.connectionData.IndexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
+            var connectionData = new ElasticSearchConnectionData();
+            var client = this.CreateElasticClient(configuration, healthReporter);
+            if (client == null)
+            {
+                return null;
+            }
+            connectionData.Client = client;
+            connectionData.LastIndexName = null;
+            string indexNamePrefix = configuration["indexNamePrefix"];
+            connectionData.IndexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
+            return connectionData;
         }
 
-        private async Task SendEventsAsync(IEnumerable<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        private async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
-            if (events == null)
+            if (this.connectionData == null || events == null || events.Count == 0)
             {
                 return;
             }
@@ -118,11 +116,11 @@ namespace Microsoft.Diagnostics.EventListeners
                     this.ReportEsRequestError(response, "Bulk upload");
                 }
 
-                this.ReportListenerHealthy();
+                this.ReportSenderHealthy();
             }
             catch (Exception e)
             {
-                this.ReportListenerProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.ReportSenderProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
         }
 
@@ -175,7 +173,7 @@ namespace Microsoft.Diagnostics.EventListeners
 
             if (response.ServerError != null)
             {
-                this.ReportListenerProblem(
+                this.ReportSenderProblem(
                     string.Format(
                         "ElasticSearch communication attempt resulted in an error: {0} \n ExceptionType: {1} \n Status code: {2}",
                         response.ServerError.Error,
@@ -184,13 +182,13 @@ namespace Microsoft.Diagnostics.EventListeners
             }
             else if (response.DebugInformation != null)
             {
-                this.ReportListenerProblem(
+                this.ReportSenderProblem(
                     "ElasticSearch communication attempt resulted in an error. Debug information: " + response.DebugInformation);
             }
             else
             {
                 // Hopefully never happens
-                this.ReportListenerProblem("ElasticSearch communication attempt resulted in an error. No further error information is available");
+                this.ReportSenderProblem("ElasticSearch communication attempt resulted in an error. No further error information is available");
             }
         }
 
