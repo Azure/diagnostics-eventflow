@@ -11,81 +11,44 @@ namespace Microsoft.Diagnostics.EventListeners
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
+    using Extensions.Configuration;
     using Microsoft.WindowsAzure.Storage;
     using Microsoft.WindowsAzure.Storage.Auth;
     using Microsoft.WindowsAzure.Storage.Table;
+    using Validation;
 
-    public class TableStorageEventListener : BufferingEventListener
+    public class TableStorageSender : SenderBase<EventData>
     {
         private const int MaxConcurrentPartitions = 4;
         private const string KeySegmentSeparator = "_";
+
         private readonly string instanceId;
         private CloudTable cloudTable;
         private volatile int nextEntityId;
         private object identityIdResetLock;
 
-        public TableStorageEventListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter)
-            : base(configurationProvider, healthReporter)
+        public TableStorageSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
-            if (this.Disabled)
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            Debug.Assert(configuration != null);
+            this.cloudTable = this.CreateTableClient(configuration, healthReporter);
+            if (this.cloudTable == null)
             {
                 return;
             }
-
-            Debug.Assert(configurationProvider != null);
-            this.CreateTableClient(configurationProvider);
 
             Random randomNumberGenerator = new Random();
             this.instanceId = randomNumberGenerator.Next(100000000).ToString("D8");
 
             this.nextEntityId = 0;
             this.identityIdResetLock = new object();
-
-            this.Sender = new ConcurrentEventProcessor<EventData>(
-                eventBufferSize: 1000,
-                maxConcurrency: MaxConcurrentPartitions,
-                batchSize: 50,
-                noEventsDelay: TimeSpan.FromMilliseconds(1000),
-                transmitterProc: this.SendEventsAsync,
-                healthReporter: healthReporter);
         }
 
-        private void CreateTableClient(ICompositeConfigurationProvider configurationProvider)
+        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
-            string accountConnectionString = configurationProvider.GetValue("StorageAccountConnectionString");
-            string sasToken = configurationProvider.GetValue("StorageAccountSasToken");
-
-            if (string.IsNullOrWhiteSpace(sasToken) && string.IsNullOrWhiteSpace(accountConnectionString))
-            {
-                throw new ConfigurationErrorsException(
-                    "Configuration must specify either the storage account connection string ('StorageAccountConnectionString' parameter) or SAS token ('StorageAccountSasToken' paramteter)");
-            }
-
-            string storageTableName = configurationProvider.GetValue("StorageTableName");
-            if (string.IsNullOrWhiteSpace(storageTableName))
-            {
-                throw new ConfigurationErrorsException("Configuration must specify the target storage name ('storageTableName' parameter)");
-            }
-
-            CloudStorageAccount storageAccount = string.IsNullOrWhiteSpace(sasToken)
-                ? CloudStorageAccount.Parse(accountConnectionString)
-                : new CloudStorageAccount(new StorageCredentials(sasToken), useHttps: true);
-            this.cloudTable = storageAccount.CreateCloudTableClient().GetTableReference(storageTableName);
-
-            try
-            {
-                this.cloudTable.CreateIfNotExists();
-            }
-            catch (Exception e)
-            {
-                this.ReportListenerProblem("Could not ensure that destination Azure storage table exists" + Environment.NewLine + e.ToString());
-                throw;
-            }
-        }
-
-        private async Task SendEventsAsync(IEnumerable<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
-        {
-            if (events == null)
+            if (this.cloudTable == null || events == null || events.Count == 0)
             {
                 return;
             }
@@ -113,13 +76,49 @@ namespace Microsoft.Diagnostics.EventListeners
                 // CONSIDER exposing TableRequestOptions and OperationContext for the batch operation
                 await this.cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
 
-                this.ReportListenerHealthy();
+                this.ReportSenderHealthy();
             }
             catch (Exception e)
             {
-                this.ReportListenerProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.ReportSenderProblem($"{nameof(TableStorageSender)}: diagnostics data upload has failed{Environment.NewLine}{e.ToString()}");
             }
         }
+
+        private CloudTable CreateTableClient(IConfiguration configuration, IHealthReporter healthReporter)
+        {
+            string accountConnectionString = configuration["StorageAccountConnectionString"];
+            string sasToken = configuration["StorageAccountSasToken"];
+
+            if (string.IsNullOrWhiteSpace(sasToken) && string.IsNullOrWhiteSpace(accountConnectionString))
+            {
+                healthReporter.ReportProblem($"{nameof(TableStorageSender)}: configuration must specify either the storage account connection string ('StorageAccountConnectionString' parameter) or SAS token ('StorageAccountSasToken' paramteter)");
+                return null;
+            }
+
+            string storageTableName = configuration["StorageTableName"];
+            if (string.IsNullOrWhiteSpace(storageTableName))
+            {
+                healthReporter.ReportProblem($"{nameof(TableStorageSender)}: configuration must specify the target storage name ('storageTableName' parameter)");
+                return null;
+            }
+
+            CloudStorageAccount storageAccount = string.IsNullOrWhiteSpace(sasToken)
+                ? CloudStorageAccount.Parse(accountConnectionString)
+                : new CloudStorageAccount(new StorageCredentials(sasToken), useHttps: true);
+            var cloudTable = storageAccount.CreateCloudTableClient().GetTableReference(storageTableName);
+
+            try
+            {
+                cloudTable.CreateIfNotExists();
+            }
+            catch (Exception e)
+            {
+                healthReporter.ReportProblem($"{nameof(TableStorageSender)}: could not ensure that destination Azure storage table exists{Environment.NewLine}{e.ToString()}");
+                throw;
+            }
+
+            return cloudTable;
+        }        
 
         private DynamicTableEntity ToTableEntity(EventData eventData, string partitionKey, string rowKeyPrefix)
         {

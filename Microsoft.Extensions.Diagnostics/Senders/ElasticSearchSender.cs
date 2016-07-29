@@ -82,7 +82,7 @@ namespace Microsoft.Diagnostics.EventListeners
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.ReportSenderProblem($"{nameof(ElasticSearchSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 
@@ -93,7 +93,7 @@ namespace Microsoft.Diagnostics.EventListeners
             bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
             if (!serviceUriIsValid)
             {
-                healthReporter.ReportProblem("ElasticSearchSender configuration is missing required 'serviceUri' parameter");
+                healthReporter.ReportProblem($"{nameof(ElasticSearchSender)}:  configuration is missing required 'serviceUri' parameter");
                 return null;
             }
 
@@ -101,7 +101,7 @@ namespace Microsoft.Diagnostics.EventListeners
             string password = configuration["password"];
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
-                healthReporter.ReportProblem("ElasticSearchSender configuration is missing Elastic Search credentials");
+                healthReporter.ReportProblem($"{nameof(ElasticSearchSender)}:  configuration is missing Elastic Search credentials");
                 return null;
             }
 
@@ -171,25 +171,25 @@ namespace Microsoft.Diagnostics.EventListeners
         {
             Debug.Assert(!response.IsValid);
 
+            string errorMessage = $"{nameof(ElasticSearchSender)}: request resulted in an error: ";
+
             if (response.ServerError != null)
             {
-                this.ReportSenderProblem(
-                    string.Format(
-                        "ElasticSearch communication attempt resulted in an error: {0} \n ExceptionType: {1} \n Status code: {2}",
-                        response.ServerError.Error,
-                        response.ServerError.Error.Type,
-                        response.ServerError.Status));
+                errorMessage += $"{response.ServerError.Error}{Environment.NewLine}" +
+                                $"ExceptionType: {response.ServerError.Error.Type}{Environment.NewLine}" +
+                                $"Status code: {response.ServerError.Status}";
             }
             else if (response.DebugInformation != null)
             {
-                this.ReportSenderProblem(
-                    "ElasticSearch communication attempt resulted in an error. Debug information: " + response.DebugInformation);
+                errorMessage += $"Debug information: {response.DebugInformation}";
             }
             else
             {
                 // Hopefully never happens
-                this.ReportSenderProblem("ElasticSearch communication attempt resulted in an error. No further error information is available");
+                errorMessage += "No further error information is available";
             }
+
+            this.ReportSenderProblem(errorMessage);
         }
 
         private class ElasticSearchConnectionData

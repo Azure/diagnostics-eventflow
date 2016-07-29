@@ -65,7 +65,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Diagnostics.EventListeners\Microsoft.Extensions.Diagnostics.csproj">
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics\Microsoft.Extensions.Diagnostics.csproj">
       <Project>{5f87e027-ba54-469c-ad4d-ea52f9d8ceab}</Project>
       <Name>Microsoft.Extensions.Diagnostics</Name>
     </ProjectReference>

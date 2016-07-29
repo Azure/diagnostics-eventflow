@@ -154,7 +154,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Senders\SenderBase.cs" />
     <Compile Include="SimpleSubject.cs" />
-    <Compile Include="TableStorageEventListener.cs" />
+    <Compile Include="Senders\TableStorageSender.cs" />
     <Compile Include="TimeSpanThrottle.cs" />
   </ItemGroup>
   <ItemGroup>

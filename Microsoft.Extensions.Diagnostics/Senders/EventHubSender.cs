@@ -36,14 +36,14 @@ namespace Microsoft.Diagnostics.EventListeners
             string serviceBusConnectionString = configuration["serviceBusConnectionString"];
             if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
             {
-                healthReporter.ReportProblem("Configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
+                healthReporter.ReportProblem($"{nameof(EventHubSender)}: configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
                 return null;
             }
 
             string eventHubName = configuration["eventHubName"];
             if (string.IsNullOrWhiteSpace(eventHubName))
             {
-                healthReporter.ReportProblem("Configuration parameter 'eventHubName' must not be empty");
+                healthReporter.ReportProblem($"{nameof(EventHubSender)}: configuration parameter 'eventHubName' must not be empty");
                 return null;
             }
 
@@ -96,7 +96,7 @@ namespace Microsoft.Diagnostics.EventListeners
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.ReportSenderProblem($"{nameof(EventHubSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 

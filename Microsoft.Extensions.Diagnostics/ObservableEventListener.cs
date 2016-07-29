@@ -28,7 +28,7 @@ namespace Microsoft.Diagnostics.EventListeners
             this.healthReporter = healthReporter;
             this.subject = new SimpleSubject<EventData>();
 
-            // TODO read configuration and initialize providers and Disabled members
+            // TODO read configuration and initialize providers 
 
             lock (this)  // See OnEventSourceCreated() for explanation why we are locking on 'this' here.
             {
@@ -36,8 +36,6 @@ namespace Microsoft.Diagnostics.EventListeners
                 this.constructed = true;
             }
         }
-
-        public bool Disabled { get; private set; }
 
         public IDisposable Subscribe(IObserver<EventData> observer)
         {

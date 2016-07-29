@@ -40,13 +40,13 @@ namespace Microsoft.Diagnostics.EventListeners
             string workspaceId = configuration["workspaceId"];
             if (string.IsNullOrWhiteSpace(workspaceId))
             {
-                healthReporter.ReportProblem("'workspaceId' configuration parameter is not set");
+                healthReporter.ReportProblem($"{nameof(OmsEventSender)}: 'workspaceId' configuration parameter is not set");
                 return null;
             }
             string omsWorkspaceKeyBase64 = configuration["workspaceKey"];
             if (string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64))
             {
-                healthReporter.ReportProblem("'workspaceKey' configuration parameter is not set");
+                healthReporter.ReportProblem($"{nameof(OmsEventSender)}: 'workspaceKey' configuration parameter is not set");
                 return null;
             }
 
