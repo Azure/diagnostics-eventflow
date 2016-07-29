@@ -32,37 +32,46 @@ namespace Microsoft.Diagnostics.EventListeners
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            if (this.Disabled)
+            this.connectionData = CreateConnectionData(configuration, healthReporter);
+        }
+
+        private OmsConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
+        {
+            string workspaceId = configuration["workspaceId"];
+            if (string.IsNullOrWhiteSpace(workspaceId))
+            {
+                healthReporter.ReportProblem("'workspaceId' configuration parameter is not set");
+                return null;
+            }
+            string omsWorkspaceKeyBase64 = configuration["workspaceKey"];
+            if (string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64))
+            {
+                healthReporter.ReportProblem("'workspaceKey' configuration parameter is not set");
+                return null;
+            }
+
+            var hasher = new HMACSHA256(Convert.FromBase64String(omsWorkspaceKeyBase64));
+
+            var retryHandler = new HttpExponentialRetryMessageHandler();
+            var httpClient = new HttpClient(retryHandler);
+            httpClient.BaseAddress = new Uri($"https://{workspaceId}.ods.opinsights.azure.com", UriKind.Absolute);
+
+            string logTypeName = configuration["logTypeName"];
+            if (string.IsNullOrWhiteSpace(logTypeName))
+            {
+                logTypeName = "ETWEvent";
+            }
+            httpClient.DefaultRequestHeaders.Add("Log-Type", logTypeName);
+
+            return new OmsConnectionData { HttpClient = httpClient, Hasher = hasher, WorkspaceId = workspaceId };
+        }
+
+        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        {
+            if (this.connectionData == null || events == null || events.Count == 0)
             {
                 return;
             }
-
-            ICompositeConfigurationProvider omsConfigurationProvider = configurationProvider.GetConfiguration("OmsEventListener");
-            Verify.Operation(omsConfigurationProvider != null, "OmsEventListener configuration section is missing");
-            this.workspaceId = omsConfigurationProvider.GetValue("workspaceId");
-            Verify.Operation(!string.IsNullOrWhiteSpace(this.workspaceId), "workspaceId configuration parameter is not set");
-            string omsWorkspaceKeyBase64 = omsConfigurationProvider.GetValue("workspaceKey");
-            Verify.Operation(!string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64), "workspaceKey configuration parameter is not set");
-            this.hasher = new HMACSHA256(Convert.FromBase64String(omsWorkspaceKeyBase64));
-
-            var retryHandler = new HttpExponentialRetryMessageHandler();
-            this.httpClient = new HttpClient(retryHandler);
-            this.httpClient.BaseAddress = new Uri($"https://{this.workspaceId}.ods.opinsights.azure.com", UriKind.Absolute);
-
-            string logTypeName = "ETWEvent";  // CONSIDER: make it a configuration parameter
-            this.httpClient.DefaultRequestHeaders.Add("Log-Type", logTypeName);
-
-            this.Sender = new ConcurrentEventProcessor<EventData>(
-                eventBufferSize: 1000,
-                maxConcurrency: 2,
-                batchSize: 100,
-                noEventsDelay: TimeSpan.FromMilliseconds(1000),
-                transmitterProc: this.SendEventsAsync,
-                healthReporter: healthReporter);
-        }
-
-        private override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
-        {
 
             try
             {
@@ -80,19 +89,19 @@ namespace Microsoft.Diagnostics.EventListeners
                 request.Content = content;
 
                 // SendAsync is thread safe
-                HttpResponseMessage response = await this.httpClient.SendAsync(request, cancellationToken);
+                HttpResponseMessage response = await this.connectionData.HttpClient.SendAsync(request, cancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
-                    this.ReportListenerHealthy();
+                    this.ReportSenderHealthy();
                 }
                 else
                 {
-                    this.ReportListenerProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
+                    this.ReportSenderProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
                 }
             }
             catch (Exception e)
             {
-                this.ReportListenerProblem($"An error occurred while sending data to OMS: {e.ToString()}");
+                this.ReportSenderProblem($"An error occurred while sending data to OMS: {e.ToString()}");
             }
         }
 
@@ -102,19 +111,19 @@ namespace Microsoft.Diagnostics.EventListeners
             string signatureInput = $"POST\n{message.Length}\n{JsonContentId}\n{dateHeader}\n{OmsDataUploadResource}";
             byte[] signatureInputBytes = Encoding.ASCII.GetBytes(signatureInput);
             byte[] hash;
-            lock(this.hasher)
+            lock(this.connectionData.Hasher)
             {
-                hash = this.hasher.ComputeHash(signatureInputBytes);
+                hash = this.connectionData.Hasher.ComputeHash(signatureInputBytes);
             }
-            string signature = $"SharedKey {this.workspaceId}:{Convert.ToBase64String(hash)}";
+            string signature = $"SharedKey {this.connectionData.WorkspaceId}:{Convert.ToBase64String(hash)}";
             return signature;
         }
 
         private class OmsConnectionData
         {
             public HttpClient HttpClient { get; set; }
-            private HMACSHA256 Hasher { get; set; }
-            private string WorkspaceId { get; set; }
+            public HMACSHA256 Hasher { get; set; }
+            public string WorkspaceId { get; set; }
         }
     }
 }

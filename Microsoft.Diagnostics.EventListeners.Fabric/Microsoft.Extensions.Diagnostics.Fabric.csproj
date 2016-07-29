@@ -7,8 +7,8 @@
     <ProjectGuid>{2D19BF76-04E1-4969-AD66-984160D38E2C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Diagnostics.EventListeners.Fabric</RootNamespace>
-    <AssemblyName>Microsoft.Diagnostics.EventListeners.Fabric</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Fabric</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.Diagnostics.Fabric</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -65,9 +65,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Diagnostics.EventListeners\Microsoft.Diagnostics.EventListeners.csproj">
+    <ProjectReference Include="..\Microsoft.Diagnostics.EventListeners\Microsoft.Extensions.Diagnostics.csproj">
       <Project>{5f87e027-ba54-469c-ad4d-ea52f9d8ceab}</Project>
-      <Name>Microsoft.Diagnostics.EventListeners</Name>
+      <Name>Microsoft.Extensions.Diagnostics</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -13,9 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Web", "Ai
 EndProject
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ClusterResource", "ClusterResource\ClusterResource.deployproj", "{B247729F-DAD4-4529-ADF5-98071E975007}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventListeners", "Microsoft.Diagnostics.EventListeners\Microsoft.Diagnostics.EventListeners.csproj", "{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics", "Microsoft.Diagnostics.EventListeners\Microsoft.Extensions.Diagnostics.csproj", "{5F87E027-BA54-469C-AD4D-EA52F9D8CEAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventListeners.Fabric", "Microsoft.Diagnostics.EventListeners.Fabric\Microsoft.Diagnostics.EventListeners.Fabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Fabric", "Microsoft.Diagnostics.EventListeners.Fabric\Microsoft.Extensions.Diagnostics.Fabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirTrafficControl.Common", "AirTrafficControl.Common\AirTrafficControl.Common.csproj", "{CF947161-BFBB-4C3F-9E9F-6973C26E3624}"
 EndProject
