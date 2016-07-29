@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public interface IEventSender<EventDataType>
     {

@@ -11,7 +11,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public class ApplicationInsightsSender : SenderBase<EventData>
     {

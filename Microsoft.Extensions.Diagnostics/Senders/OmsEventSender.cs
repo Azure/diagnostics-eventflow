@@ -16,7 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public class OmsEventSender : SenderBase<EventData>
     {

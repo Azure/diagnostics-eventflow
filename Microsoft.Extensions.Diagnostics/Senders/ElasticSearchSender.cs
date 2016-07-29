@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Nest;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public class ElasticSearchSender : SenderBase<EventData>
     {

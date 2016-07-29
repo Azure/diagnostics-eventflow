@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     /// <summary>
     /// Implements a message handler that employs exponential backoff retry policy for HTTP requests

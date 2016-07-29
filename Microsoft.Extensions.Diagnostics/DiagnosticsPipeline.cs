@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public class DiagnosticsPipeline<EventData>: IDisposable
     {

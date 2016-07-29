@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public class EventSink<EventDataType>: IDisposable
     {

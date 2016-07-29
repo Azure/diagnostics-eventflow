@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     internal class SimpleSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable
     {

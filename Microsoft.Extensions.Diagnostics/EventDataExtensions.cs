@@ -5,7 +5,7 @@
 
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     using System;
     using System.Collections.Generic;

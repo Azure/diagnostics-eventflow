@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public abstract class SenderBase<EventDataType>: IEventSender<EventDataType>
     {

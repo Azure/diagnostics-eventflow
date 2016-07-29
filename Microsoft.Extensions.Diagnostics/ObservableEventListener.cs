@@ -10,7 +10,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventListeners
+namespace Microsoft.Extensions.Diagnostics
 {
     public class ObservableEventListener : EventListener, IObservable<EventData>, IDisposable
     {
@@ -73,7 +73,7 @@ namespace Microsoft.Diagnostics.EventListeners
 
                     this.eventSourcesPresentAtConstruction.Add(eventSource);
                 }
-                else if (!this.Disabled)
+                else
                 {
                     EnableAsNecessary(eventSource);
                 }
