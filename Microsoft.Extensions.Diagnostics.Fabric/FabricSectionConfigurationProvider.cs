@@ -3,7 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace Microsoft.Diagnostics.EventListeners.Fabric
+namespace Microsoft.Extensions.Diagnostics.Fabric
 {
     using System;
     using System.Collections.ObjectModel;

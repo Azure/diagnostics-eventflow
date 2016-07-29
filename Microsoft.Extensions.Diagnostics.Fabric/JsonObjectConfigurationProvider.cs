@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 
-namespace Microsoft.Diagnostics.EventListeners.Fabric
+namespace Microsoft.Extensions.Diagnostics.Fabric
 {
     public class JsonObjectConfigurationProvider: ICompositeConfigurationProvider
     {

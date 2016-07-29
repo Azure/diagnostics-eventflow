@@ -6,32 +6,32 @@
 using System;
 using System.Fabric;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.Fabric
 {
-    public class FabricJsonFileConfigurationProvider : JsonObjectConfigurationProvider
+    public static class EventSourceToAppInsightsPipelineFactory 
     {
-        public FabricJsonFileConfigurationProvider(string configurationFileName): base(null)
+        IDisposable CreatePipeline(string configurationFileName = "Diagnostics.json")
         {
-            if (string.IsNullOrWhiteSpace(configurationFileName))
-            {
-                throw new ArgumentNullException(nameof(configurationFileName));
-            }
+            // TODO: dynamically re-configure the pipeline when configuration changes, without stopping the service
 
             CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
             ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject("Config");
             string configFilePath = Path.Combine(configPackage.Path, configurationFileName);
             if (!File.Exists(configFilePath))
             {
-                return;
+                throw new FileNotFoundException("Configuration file is missing or inaccessible", configFilePath);
             }
 
-            using (StreamReader sr = new StreamReader(configFilePath))
-            {
-                this.configuration = (JObject) JToken.ReadFrom(new JsonTextReader(sr));
-            }            
+            ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+            configBuilder.AddJsonFile(configFilePath);
+            IConfigurationRoot configurationRoot = configBuilder.Build();
+
+            DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>)(
+                    
+                );
         }
     }
 }

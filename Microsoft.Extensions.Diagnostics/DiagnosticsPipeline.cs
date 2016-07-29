@@ -20,12 +20,10 @@ namespace Microsoft.Extensions.Diagnostics
         private bool disposed;
 
         public DiagnosticsPipeline(
-            IConfiguration configuration, 
             IHealthReporter healthReporter,
             IReadOnlyCollection<IObservable<EventData>> sources, 
             IReadOnlyCollection<EventSink<EventData>> sinks)
         {
-            Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(sources, nameof(sources));
             Requires.Argument(sources.Count > 0, nameof(sources), "There must be at least one source");
