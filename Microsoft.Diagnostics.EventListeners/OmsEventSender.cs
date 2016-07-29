@@ -12,24 +12,26 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventListeners
 {
-    public class OmsEventListener : BufferingEventListener, IDisposable
+    public class OmsEventSender : SenderBase<EventData>
     {
         const string OmsDataUploadResource = "/api/logs";
         const string OmsDataUploadUrl = OmsDataUploadResource + "?api-version=2016-04-01";
         const string MsDateHeaderName = "x-ms-date";
         const string JsonContentId = "application/json";
 
-        private HttpClient httpClient;
-        private HMACSHA256 hasher;
-        private string workspaceId;
+        private OmsConnectionData connectionData;
 
-        public OmsEventListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public OmsEventSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
             if (this.Disabled)
             {
                 return;
@@ -59,8 +61,9 @@ namespace Microsoft.Diagnostics.EventListeners
                 healthReporter: healthReporter);
         }
 
-        private async Task SendEventsAsync(IEnumerable<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        private override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
+
             try
             {
                 string jsonData = JsonConvert.SerializeObject(events);
@@ -105,6 +108,13 @@ namespace Microsoft.Diagnostics.EventListeners
             }
             string signature = $"SharedKey {this.workspaceId}:{Convert.ToBase64String(hash)}";
             return signature;
+        }
+
+        private class OmsConnectionData
+        {
+            public HttpClient HttpClient { get; set; }
+            private HMACSHA256 Hasher { get; set; }
+            private string WorkspaceId { get; set; }
         }
     }
 }

@@ -13,7 +13,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventListeners
 {
-    public class ApplicationInsightsSender : SenderBase<EventData>, IEventSender<EventData>
+    public class ApplicationInsightsSender : SenderBase<EventData>
     {
         private const string AppInsightsKeyName = "InstrumentationKey";
 
@@ -35,7 +35,7 @@ namespace Microsoft.Diagnostics.EventListeners
             this.telemetryClient.InstrumentationKey = telemetryKey;
         }
 
-        Task IEventSender<EventData>.SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             // TODO: transmit all event properties
             // TODO: support higher-level AI concepts like metrics, dependency calls, and requests

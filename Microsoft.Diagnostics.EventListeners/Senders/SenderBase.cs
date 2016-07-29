@@ -4,11 +4,14 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventListeners
 {
-    public abstract class SenderBase<EventDataType>
+    public abstract class SenderBase<EventDataType>: IEventSender<EventDataType>
     {
         protected readonly IHealthReporter healthReporter;
         private TimeSpanThrottle errorReportingThrottle;
@@ -19,6 +22,8 @@ namespace Microsoft.Diagnostics.EventListeners
             this.healthReporter = healthReporter;
             this.errorReportingThrottle = new TimeSpanThrottle(TimeSpan.FromSeconds(1));
         }
+
+        public abstract Task SendEventsAsync(IReadOnlyCollection<EventDataType> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
 
         protected void ReportSenderHealthy()
         {

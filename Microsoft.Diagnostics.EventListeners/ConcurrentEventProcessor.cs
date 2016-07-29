@@ -70,6 +70,8 @@ namespace Microsoft.Diagnostics.EventListeners
             }
 
             this.cts.Cancel();
+
+            this.sink.Dispose();
         }
 
         public void OnNext(EventDataType eData)

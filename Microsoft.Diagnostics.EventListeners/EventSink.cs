@@ -12,7 +12,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventListeners
 {
-    public class EventSink<EventDataType>
+    public class EventSink<EventDataType>: IDisposable
     {
         public EventSink(IEventSender<EventDataType> sender, IEnumerable<IEventFilter<EventDataType>> filters)
         {
@@ -23,5 +23,18 @@ namespace Microsoft.Diagnostics.EventListeners
 
         public IEventSender<EventDataType> Sender { get; private set; }
         public IEnumerable<IEventFilter<EventDataType>> Filters { get; private set; }
+
+        public void Dispose()
+        {
+            (Sender as IDisposable)?.Dispose();
+
+            if (Filters != null)
+            {
+                foreach (var f in Filters)
+                {
+                    (f as IDisposable)?.Dispose();
+                }
+            }
+        }
     }
 }

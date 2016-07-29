@@ -15,7 +15,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventListeners
 {
-    public class ElasticSearchSender : SenderBase<EventData>, IEventSender<EventData>
+    public class ElasticSearchSender : SenderBase<EventData>
     {
         private const string Dot = ".";
         private const string Dash = "-";
@@ -32,47 +32,9 @@ namespace Microsoft.Diagnostics.EventListeners
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.connectionData = CreateConnectionData(configuration, healthReporter);
-        }
+        }        
 
-        private ElasticClient CreateElasticClient(IConfiguration configuration, IHealthReporter healthReporter)
-        {
-            string esServiceUriString = configuration["serviceUri"];
-            Uri esServiceUri;
-            bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
-            if (!serviceUriIsValid)
-            {
-                healthReporter.ReportProblem("ElasticSearchSender configuration is missing required 'serviceUri' parameter");
-                return null;
-            }
-
-            string userName = configuration["userName"];
-            string password = configuration["password"];
-            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
-            {
-                healthReporter.ReportProblem("ElasticSearchSender configuration is missing Elastic Search credentials");
-                return null;
-            }
-
-            ConnectionSettings config = new ConnectionSettings(esServiceUri).BasicAuthentication(userName, password);
-            return new ElasticClient(config);
-        }
-
-        private ElasticSearchConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
-        {
-            var connectionData = new ElasticSearchConnectionData();
-            var client = this.CreateElasticClient(configuration, healthReporter);
-            if (client == null)
-            {
-                return null;
-            }
-            connectionData.Client = client;
-            connectionData.LastIndexName = null;
-            string indexNamePrefix = configuration["indexNamePrefix"];
-            connectionData.IndexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
-            return connectionData;
-        }
-
-        private async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             if (this.connectionData == null || events == null || events.Count == 0)
             {
@@ -122,6 +84,44 @@ namespace Microsoft.Diagnostics.EventListeners
             {
                 this.ReportSenderProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
+        }
+
+        private ElasticClient CreateElasticClient(IConfiguration configuration, IHealthReporter healthReporter)
+        {
+            string esServiceUriString = configuration["serviceUri"];
+            Uri esServiceUri;
+            bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
+            if (!serviceUriIsValid)
+            {
+                healthReporter.ReportProblem("ElasticSearchSender configuration is missing required 'serviceUri' parameter");
+                return null;
+            }
+
+            string userName = configuration["userName"];
+            string password = configuration["password"];
+            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
+            {
+                healthReporter.ReportProblem("ElasticSearchSender configuration is missing Elastic Search credentials");
+                return null;
+            }
+
+            ConnectionSettings config = new ConnectionSettings(esServiceUri).BasicAuthentication(userName, password);
+            return new ElasticClient(config);
+        }
+
+        private ElasticSearchConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
+        {
+            var connectionData = new ElasticSearchConnectionData();
+            var client = this.CreateElasticClient(configuration, healthReporter);
+            if (client == null)
+            {
+                return null;
+            }
+            connectionData.Client = client;
+            connectionData.LastIndexName = null;
+            string indexNamePrefix = configuration["indexNamePrefix"];
+            connectionData.IndexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
+            return connectionData;
         }
 
         private async Task EnsureIndexExists(string currentIndexName, ElasticClient esClient)

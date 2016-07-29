@@ -13,65 +13,57 @@ namespace Microsoft.Diagnostics.EventListeners
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
+    using Extensions.Configuration;
     using Microsoft.ServiceBus;
     using Microsoft.ServiceBus.Messaging;
+    using Validation;
 
-    public class EventHubListener : BufferingEventListener
+    public class EventHubSender : SenderBase<EventData>
     {
         private const int ConcurrentConnections = 4;
         private EventHubConnectionData connectionData;
 
-        public EventHubListener(ICompositeConfigurationProvider configurationProvider, IHealthReporter healthReporter) : base(configurationProvider, healthReporter)
+        public EventHubSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
-            if (this.Disabled)
-            {
-                return;
-            }
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            Debug.Assert(configurationProvider != null);
-            this.CreateConnectionData(configurationProvider);
-
-            this.Sender = new ConcurrentEventProcessor<EventData>(
-                eventBufferSize: 1000,
-                maxConcurrency: ConcurrentConnections,
-                batchSize: 50,
-                noEventsDelay: TimeSpan.FromMilliseconds(1000),
-                transmitterProc: this.SendEventsAsync,
-                healthReporter: healthReporter);
+            this.connectionData = CreateConnectionData(configuration, healthReporter);
         }
 
-        private void CreateConnectionData(object sender)
+        private EventHubConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            ICompositeConfigurationProvider configurationProvider = (ICompositeConfigurationProvider) sender;
-
-            string serviceBusConnectionString = configurationProvider.GetValue("serviceBusConnectionString");
+            string serviceBusConnectionString = configuration["serviceBusConnectionString"];
             if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
             {
-                throw new ConfigurationErrorsException(
-                    "Configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
+                healthReporter.ReportProblem("Configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
+                return null;
             }
 
-            string eventHubName = configurationProvider.GetValue("eventHubName");
+            string eventHubName = configuration["eventHubName"];
             if (string.IsNullOrWhiteSpace(eventHubName))
             {
-                throw new ConfigurationErrorsException("Configuration parameter 'eventHubName' must not be empty");
+                healthReporter.ReportProblem("Configuration parameter 'eventHubName' must not be empty");
+                return null;
             }
 
-            this.connectionData = new EventHubConnectionData();
-            this.connectionData.EventHubName = eventHubName;
+            var connectionData = new EventHubConnectionData();
+            connectionData.EventHubName = eventHubName;
 
             ServiceBusConnectionStringBuilder connStringBuilder = new ServiceBusConnectionStringBuilder(serviceBusConnectionString);
             connStringBuilder.TransportType = TransportType.Amqp;
-            this.connectionData.MessagingFactories = new MessagingFactory[ConcurrentConnections];
+            connectionData.MessagingFactories = new MessagingFactory[ConcurrentConnections];
             for (uint i = 0; i < ConcurrentConnections; i++)
             {
-                this.connectionData.MessagingFactories[i] = MessagingFactory.CreateFromConnectionString(connStringBuilder.ToString());
+                connectionData.MessagingFactories[i] = MessagingFactory.CreateFromConnectionString(connStringBuilder.ToString());
             }
+
+            return connectionData;
         }
 
-        private async Task SendEventsAsync(IEnumerable<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
-            if (events == null)
+            if (this.connectionData == null || events == null || events.Count == 0)
             {
                 return;
             }
@@ -100,11 +92,11 @@ namespace Microsoft.Diagnostics.EventListeners
 
                 await hubClient.SendBatchAsync(batch);
 
-                this.ReportListenerHealthy();
+                this.ReportSenderHealthy();
             }
             catch (Exception e)
             {
-                this.ReportListenerProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.ReportSenderProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
         }
 
