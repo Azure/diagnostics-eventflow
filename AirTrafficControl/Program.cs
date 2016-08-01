@@ -1,10 +1,8 @@
 ﻿
-using Microsoft.Diagnostics.EventListeners;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FabricEventListeners = Microsoft.Diagnostics.EventListeners.Fabric;
 
 namespace AirTrafficControl
 {
