@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class EtwProviderConfiguration
+    public class EventSourceConfiguration
     {
         public string ProviderName { get; set; }
         public EventLevel Level { get; set; }
         public EventKeywords Keywords { get; set; }
 
-        public EtwProviderConfiguration()
+        public EventSourceConfiguration()
         {
             Level = EventLevel.LogAlways;
             Keywords = (EventKeywords) ~0;

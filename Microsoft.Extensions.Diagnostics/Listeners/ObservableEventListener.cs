@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
@@ -17,18 +18,29 @@ namespace Microsoft.Extensions.Diagnostics
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
         private List<EventSource> eventSourcesPresentAtConstruction;
-        private List<EtwProviderConfiguration> providers;
+        private List<EventSourceConfiguration> eventSources;
         private SimpleSubject<EventData> subject;
 
         public ObservableEventListener(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
             this.subject = new SimpleSubject<EventData>();
 
-            // TODO read configuration and initialize providers 
+            if (configuration != null)
+            {
+                this.eventSources = new List<EventSourceConfiguration>();
+                try
+                {
+                    configuration.Bind(this.eventSources);
+                }
+                catch (Exception e)
+                {
+                    healthReporter.ReportProblem($"{nameof(ObservableEventListener)}: error reading configuration. {e.ToString()}");
+                    return;
+                }
+            }
 
             lock (this)  // See OnEventSourceCreated() for explanation why we are locking on 'this' here.
             {
@@ -89,19 +101,19 @@ namespace Microsoft.Extensions.Diagnostics
                 {
                     EnableAsNecessary(eventSource);
                 }
-                this.eventSourcesPresentAtConstruction.Clear(); // Do not hold onto EventSource references that are no longer needed.
+                this.eventSourcesPresentAtConstruction.Clear(); // Do not hold onto EventSource references that are already initialized.
             }
         }
 
         private void EnableAsNecessary(EventSource eventSource)
         {
-            if (this.providers == null)
+            if (this.eventSources == null)
             {
                 this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)~0);
             }
             else
             {
-                EtwProviderConfiguration provider = this.providers.Where(p => p.ProviderName == eventSource.Name).FirstOrDefault();
+                EventSourceConfiguration provider = this.eventSources.Where(p => p.ProviderName == eventSource.Name).FirstOrDefault();
                 if (provider != null)
                 {
                     this.EnableEvents(eventSource, provider.Level, provider.Keywords);
