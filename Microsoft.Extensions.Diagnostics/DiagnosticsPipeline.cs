@@ -13,16 +13,16 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class DiagnosticsPipeline<EventData>: IDisposable
+    public class DiagnosticsPipeline<EventDataType>: IDisposable
     {
-        private IEnumerable<ConcurrentEventProcessor<EventData>> processors;
+        private IEnumerable<ConcurrentEventProcessor<EventDataType>> processors;
         private List<IDisposable> subscriptions;
         private bool disposed;
 
         public DiagnosticsPipeline(
             IHealthReporter healthReporter,
-            IReadOnlyCollection<IObservable<EventData>> sources, 
-            IReadOnlyCollection<EventSink<EventData>> sinks)
+            IReadOnlyCollection<IObservable<EventDataType>> sources, 
+            IReadOnlyCollection<EventSink<EventDataType>> sinks)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(sources, nameof(sources));
@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Diagnostics
             Requires.NotNull(sinks, nameof(sinks));
             Requires.Argument(sinks.Count > 0, nameof(sinks), "There must be at least one sink");
 
-            this.processors = sinks.Select(sink => new ConcurrentEventProcessor<EventData>(
+            this.processors = sinks.Select(sink => new ConcurrentEventProcessor<EventDataType>(
                     eventBufferSize: 1000,
                     maxConcurrency: 4,
                     batchSize: 100,

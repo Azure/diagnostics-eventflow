@@ -8,14 +8,17 @@ using System.Fabric;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics;
+using Validation;
 
 namespace Microsoft.Extensions.Diagnostics.Fabric
 {
     public static class EventSourceToAppInsightsPipelineFactory 
     {
-        IDisposable CreatePipeline(string configurationFileName = "Diagnostics.json")
+        public static IDisposable CreatePipeline(string healthEntityName, string configurationFileName = "Diagnostics.json")
         {
             // TODO: dynamically re-configure the pipeline when configuration changes, without stopping the service
+
+            Requires.NotNullOrWhiteSpace(healthEntityName, nameof(healthEntityName));
 
             CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
             ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject("Config");
@@ -29,9 +32,21 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
             configBuilder.AddJsonFile(configFilePath);
             IConfigurationRoot configurationRoot = configBuilder.Build();
 
-            DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>)(
-                    
-                );
+            var healthReporter = new FabricHealthReporter(healthEntityName);
+            var listener = ObservableEventListenerFactory.CreateListener(configurationRoot, healthReporter);
+            var sender = ApplicationInsigthsSenderFactory.CreateSender(configurationRoot, healthReporter);
+            if (sender == null)
+            {
+                listener.Dispose();
+                return EmptyDisposable.Instance;
+            }
+
+            DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
+                healthReporter,
+                new IObservable<EventData>[] { listener },
+                new EventSink<EventData>[] { new EventSink<EventData>(sender, null)});
+
+            return pipeline;
         }
     }
 }

@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Diagnostics
                 if (IsCompleted)
                 {
                     observer.OnCompleted();
-                    return new EmptyDisposable();
+                    return EmptyDisposable.Instance;
                 }
                 else
                 {
@@ -137,14 +137,6 @@ namespace Microsoft.Extensions.Diagnostics
                     this.parentSubject = null;
                 }
             }
-        }
-
-        private class EmptyDisposable : IDisposable
-        {
-            public void Dispose()
-            {
-                // No-op
-            }
-        }
+        }        
     }
 }

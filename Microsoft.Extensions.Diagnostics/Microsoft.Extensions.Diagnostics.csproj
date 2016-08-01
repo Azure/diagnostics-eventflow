@@ -140,6 +140,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EmptyDisposable.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
