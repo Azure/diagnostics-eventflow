@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
@@ -37,7 +39,6 @@ namespace Microsoft.Extensions.Diagnostics
 
         public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
-            // TODO: transmit all event properties
             // TODO: support higher-level AI concepts like metrics, dependency calls, and requests
 
             if (this.telemetryClient == null || events == null || events.Count == 0)
@@ -49,23 +50,10 @@ namespace Microsoft.Extensions.Diagnostics
             {
                 foreach (var e in events)
                 {
-                    var properties = new Dictionary<string, string>
-                    {
-                        {nameof(e.EventName), e.EventName },
-                        {nameof(e.EventId), e.EventId.ToString() },
-                        {nameof(e.Keywords), e.Keywords},
-                        {nameof(e.Level), e.Level},
-                        {nameof(e.Message), e.Message},
-                        {nameof(e.ProviderName), e.ProviderName}
-                    };
+                    TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
+                    AddProperties(t, e);
 
-
-                    foreach (var item in e.Payload)
-                    {
-                        properties.Add(item.Key, item.Value.ToString());
-                    }
-
-                    telemetryClient.TrackTrace(e.Message, properties);
+                    telemetryClient.TrackTrace(t);
                 }
 
                 telemetryClient.Flush();
@@ -78,6 +66,28 @@ namespace Microsoft.Extensions.Diagnostics
             }
 
             return Task.CompletedTask;
+        }
+
+        private void AddProperties(ISupportProperties item, EventData e)
+        {
+            ITelemetry telemetry = item as ITelemetry;
+            if (telemetry != null)
+            {
+                telemetry.Timestamp = e.Timestamp;
+            }
+
+            item.Properties.Add(nameof(e.EventId), e.EventId.ToString());
+            item.Properties.Add(nameof(e.EventName), e.EventName);
+            item.Properties.Add(nameof(e.Keywords), e.Keywords);
+            item.Properties.Add(nameof(e.Level), e.Level);
+            item.Properties.Add(nameof(e.Message), e.Message);
+            item.Properties.Add(nameof(e.ProviderName), e.ProviderName);
+            item.Properties.Add(nameof(e.ActivityID), e.ActivityID);
+
+            foreach (var payloadItem in e.Payload)
+            {
+                item.Properties.Add(payloadItem.Key, payloadItem.Value.ToString());
+            }
         }
     }
 }

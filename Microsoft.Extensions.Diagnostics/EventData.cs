@@ -24,6 +24,8 @@ namespace Microsoft.Extensions.Diagnostics
 
         public string EventName { get; set; }
 
+        public string ActivityID { get; set; }
+
         public IDictionary<string, object> Payload { get; set; }
     }
 }
