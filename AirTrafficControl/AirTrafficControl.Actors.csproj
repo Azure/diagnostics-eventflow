@@ -116,6 +116,7 @@
     <Compile Include="ActorEventSource.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="PackageRoot\Config\Diagnostics.json" />
     <None Include="PackageRoot\ServiceManifest.xml" />
     <None Include="PackageRoot\Config\Settings.xml" />
     <None Include="App.config">

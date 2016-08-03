@@ -96,6 +96,7 @@
     <Compile Include="ServiceEventSource.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="PackageRoot\Config\Diagnostics.json" />
     <None Include="PackageRoot\Config\Settings.xml" />
     <None Include="PackageRoot\ServiceManifest.xml">
       <SubType>Designer</SubType>

@@ -1,0 +1,50 @@
+﻿{
+  "EventSources": [
+    {
+      "ProviderName": "Microsoft-ServiceFabric-Services",
+      "Metrics": [
+        {
+          "EventName": "StatefulRunAsyncFailure",
+          "Name": "StatefulRunAsyncFailure",
+          "MetricValue": "1.0"
+        },
+        {
+          "EventName": "StatefulRunAsyncInvocation",
+          "Name": "StatefulRunAsyncInvocation",
+          "MetricValue": "1.0"
+        }
+      ]
+    },
+
+    {
+      "ProviderName": "Microsoft-ServiceFabric-Actors",
+      "Metrics": [
+        {
+          "EventName": "ActorMethodCallsWaitingForLock",
+          "Name": "ActorMethodCallsWaitingForLock",
+          "MetricValueProperty": "countOfWaitingMethodCalls"
+        },
+        {
+          "EventName": "ActorActivated",
+          "Name": "ActorActivated",
+          "MetricValue": "1.0"
+        }
+      ]
+    },
+
+    {
+      "ProviderName": "MyCompany-AirTrafficControlApplication-Airplanes",
+      "Metrics": [
+        {
+          "EventName": "ActorMethod/Stop",
+          "Name": "ActorMethodDurationMsec",
+          "MetricValueProperty": "durationMsec"
+        }
+      ]
+    }
+  ],
+
+  "ApplicationInsightsSender": {
+    "InstrumentationKey": "***REMOVED***"
+  }
+}

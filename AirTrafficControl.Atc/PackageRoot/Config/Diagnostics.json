@@ -1,0 +1,39 @@
+﻿{
+  "EventSources": [
+    {
+      "ProviderName": "Microsoft-ServiceFabric-Services",
+      "Metrics": [
+        {
+          "EventName": "StatefulRunAsyncFailure",
+          "Name": "StatefulRunAsyncFailure",
+          "MetricValue": "1.0"
+        },
+        {
+          "EventName": "StatefulRunAsyncInvocation",
+          "Name": "StatefulRunAsyncInvocation",
+          "MetricValue": "1.0"
+        }
+      ]
+    },   
+
+    {
+      "ProviderName": "MyCompany-AirTrafficControlApplication-Atc",
+      "Metrics": [
+        {
+          "EventName": "ServiceRequest/Stop",
+          "Name": "AtcServiceOperationDurationMsec",
+          "MetricValueProperty": "durationMsec"
+        },
+        {
+          "EventName": "FlightCompleted",
+          "Name": "FlightCompletedTime",
+          "MetricValueProperty": "flightDuration"
+        }
+      ]
+    }    
+  ],
+
+  "ApplicationInsightsSender": {
+    "InstrumentationKey": "***REMOVED***"
+  }
+}

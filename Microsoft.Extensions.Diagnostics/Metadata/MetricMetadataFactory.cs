@@ -41,6 +41,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 
                     foreach(MetricMetadata metricConfiguration in esConfiguration.Metrics)
                     {
+                        metricConfiguration.ProviderName = esConfiguration.ProviderName;
                         innerCollection[MetricMetadataCollection.GetCollectionKey(esConfiguration.ProviderName, metricConfiguration.EventName)] = metricConfiguration;                        
                     }
                 }
