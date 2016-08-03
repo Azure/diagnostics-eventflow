@@ -10,6 +10,8 @@ namespace Microsoft.Extensions.Diagnostics
 
     public class EventData
     {
+        private IDictionary<Type, object> metadata;
+
         public DateTimeOffset Timestamp { get; set; }
 
         public string ProviderName { get; set; }
@@ -27,5 +29,18 @@ namespace Microsoft.Extensions.Diagnostics
         public string ActivityID { get; set; }
 
         public IDictionary<string, object> Payload { get; set; }
+
+        public IDictionary<Type, object> Metadata
+        {
+            get
+            {
+                if (this.metadata == null)
+                {
+                    this.metadata = new Dictionary<Type, object>();
+                }
+
+                return this.metadata;
+            }
+        }
     }
 }

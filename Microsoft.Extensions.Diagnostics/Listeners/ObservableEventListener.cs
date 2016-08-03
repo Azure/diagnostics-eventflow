@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Diagnostics.Configuration;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics

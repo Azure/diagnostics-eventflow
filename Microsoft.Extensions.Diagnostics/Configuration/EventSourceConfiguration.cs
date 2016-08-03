@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Configuration
 {
     public class EventSourceConfiguration
     {

@@ -143,12 +143,14 @@
   <ItemGroup>
     <Compile Include="EmptyDisposable.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
+    <Compile Include="Metadata\MetricMetadata.cs" />
+    <Compile Include="Metadata\MetricMetadataFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
     <Compile Include="DiagnosticsPipeline.cs" />
     <Compile Include="Senders\ApplicationInsigthsSenderFactory.cs" />
     <Compile Include="Senders\ElasticSearchSender.cs" />
-    <Compile Include="EventSourceConfiguration.cs" />
+    <Compile Include="Configuration\EventSourceConfiguration.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />
     <Compile Include="Senders\EventHubSender.cs" />
@@ -170,6 +172,9 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Filters\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
