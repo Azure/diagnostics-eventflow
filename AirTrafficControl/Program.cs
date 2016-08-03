@@ -3,6 +3,7 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Fabric;
 
 namespace AirTrafficControl
 {
@@ -12,11 +13,14 @@ namespace AirTrafficControl
         {
             try
             {
-                Task.WhenAll(                    
-                    ActorRuntime.RegisterActorAsync<Airplane>()
-                ).Wait();
+                using (var diagnosticsPipeline = EventSourceToAppInsightsPipelineFactory.CreatePipeline("DiagnosticsPipeline-AirplaneService"))
+                {
+                    Task.WhenAll(
+                        ActorRuntime.RegisterActorAsync<Airplane>()
+                    ).Wait();
 
-                Thread.Sleep(Timeout.Infinite);
+                    Thread.Sleep(Timeout.Infinite);
+                }
             }
             catch (Exception e)
             {

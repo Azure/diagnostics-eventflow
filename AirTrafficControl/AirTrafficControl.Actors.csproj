@@ -135,6 +135,14 @@
       <Project>{E615A49E-4A25-4322-8317-33BC01130928}</Project>
       <Name>AirTrafficControl.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Fabric\Microsoft.Extensions.Diagnostics.Fabric.csproj">
+      <Project>{2d19bf76-04e1-4969-ad66-984160d38e2c}</Project>
+      <Name>Microsoft.Extensions.Diagnostics.Fabric</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics\Microsoft.Extensions.Diagnostics.csproj">
+      <Project>{5f87e027-ba54-469c-ad4d-ea52f9d8ceab}</Project>
+      <Name>Microsoft.Extensions.Diagnostics</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6">

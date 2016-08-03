@@ -15,7 +15,7 @@ namespace AirTrafficControl.Web
         {
             try
             {
-                using (var diagnosticsPipeline = EventSourceToAppInsightsPipelineFactory.CreatePipeline("DiagnosticsPipeline"))
+                using (var diagnosticsPipeline = EventSourceToAppInsightsPipelineFactory.CreatePipeline("DiagnosticsPipeline-FrontendService"))
                 {
                     // This is the name of the ServiceType that is registered with FabricRuntime. 
                     // This name must match the name defined in the ServiceManifest. If you change
