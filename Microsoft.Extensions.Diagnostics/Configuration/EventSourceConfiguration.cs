@@ -9,14 +9,17 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Metadata;
 
 namespace Microsoft.Extensions.Diagnostics.Configuration
 {
-    public class EventSourceConfiguration
+    internal class EventSourceConfiguration
     {
         public string ProviderName { get; set; }
         public EventLevel Level { get; set; }
         public EventKeywords Keywords { get; set; }
+
+        public List<MetricMetadata> Metrics { get; set; }
 
         public EventSourceConfiguration()
         {

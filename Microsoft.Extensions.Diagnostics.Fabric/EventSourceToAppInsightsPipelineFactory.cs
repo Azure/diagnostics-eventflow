@@ -8,6 +8,7 @@ using System.Fabric;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics;
+using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics.Fabric
@@ -41,10 +42,13 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
                 return EmptyDisposable.Instance;
             }
 
+            var metricMetadata = MetricMetadataFactory.CreateMetricMetadata(configurationRoot, healthReporter);
+            var metricFilter = new MetricFilter(metricMetadata, healthReporter);
+
             DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
                 healthReporter,
                 new IObservable<EventData>[] { listener },
-                new EventSink<EventData>[] { new EventSink<EventData>(sender, null)});
+                new EventSink<EventData>[] { new EventSink<EventData>(sender, new IEventFilter<EventData>[] { metricFilter } )});
 
             return pipeline;
         }

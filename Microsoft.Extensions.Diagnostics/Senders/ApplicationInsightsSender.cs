@@ -11,11 +11,12 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class ApplicationInsightsSender : SenderBase<EventData>
+    public class ApplicationInsightsSender : EventDataSender
     {
         private const string AppInsightsKeyName = "InstrumentationKey";
 
@@ -50,10 +51,34 @@ namespace Microsoft.Extensions.Diagnostics
             {
                 foreach (var e in events)
                 {
-                    TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
-                    AddProperties(t, e);
+                    MetricMetadata metricMetadata = e.GetMetadata(typeof(MetricMetadata)) as MetricMetadata;
+                    if (metricMetadata != null)
+                    {
+                        MetricTelemetry mt = new MetricTelemetry();
+                        mt.Name = metricMetadata.Name;
 
-                    telemetryClient.TrackTrace(t);
+                        double value = 0.0;
+                        if (string.IsNullOrEmpty(metricMetadata.MetricValueProperty))
+                        {
+                            value = metricMetadata.MetricValue;
+                        }
+                        else
+                        {
+                            this.GetValueFromPayload<double>(e, metricMetadata.MetricValueProperty, (v) => value = v);
+                        }
+                        mt.Value = value;
+
+                        AddProperties(mt, e);
+
+                        telemetryClient.TrackMetric(mt);
+                    }
+                    else
+                    {
+                        TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
+                        AddProperties(t, e);
+
+                        telemetryClient.TrackTrace(t);
+                    }
                 }
 
                 telemetryClient.Flush();

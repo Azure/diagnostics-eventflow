@@ -7,8 +7,10 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public class MetricMetadata
     {
+        public string ProviderName { get; set; }
+        public string EventName { get; set; }
         public string Name { get; set; }    // Metric name
         public string MetricValueProperty { get; set; }
-        public string MetricValue { get; set; }
+        public double MetricValue { get; set; }
     }
 }

@@ -3,14 +3,16 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using Validation;
+
 namespace Microsoft.Extensions.Diagnostics
 {
-    using System;
-    using System.Collections.Generic;
-
     public class EventData
     {
-        private IDictionary<Type, object> metadata;
+        private HybridDictionary metadata;
 
         public DateTimeOffset Timestamp { get; set; }
 
@@ -30,17 +32,25 @@ namespace Microsoft.Extensions.Diagnostics
 
         public IDictionary<string, object> Payload { get; set; }
 
-        public IDictionary<Type, object> Metadata
+        public object GetMetadata(Type metadataType)
         {
-            get
+            if (this.metadata == null)
             {
-                if (this.metadata == null)
-                {
-                    this.metadata = new Dictionary<Type, object>();
-                }
-
-                return this.metadata;
+                return null;
             }
+
+            return this.metadata[metadataType];
+        }
+
+        public void SetMetadata(Type metadataType, object value)
+        {
+            Requires.NotNull(metadataType, nameof(metadataType));
+            if (this.metadata == null)
+            {
+                this.metadata = new HybridDictionary();
+            }
+
+            this.metadata[metadataType] = value;
         }
     }
 }

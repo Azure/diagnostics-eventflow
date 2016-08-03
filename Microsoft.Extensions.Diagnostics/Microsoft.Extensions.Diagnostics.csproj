@@ -142,7 +142,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EmptyDisposable.cs" />
+    <Compile Include="Filters\MetricFilter.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
+    <Compile Include="Metadata\MetricMetadataCollection.cs" />
     <Compile Include="Metadata\MetricMetadata.cs" />
     <Compile Include="Metadata\MetricMetadataFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
@@ -153,6 +155,7 @@
     <Compile Include="Configuration\EventSourceConfiguration.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />
+    <Compile Include="Senders\EventDataSender.cs" />
     <Compile Include="Senders\EventHubSender.cs" />
     <Compile Include="EventSink.cs" />
     <Compile Include="HttpExponentialRetryMessageHandler.cs" />
@@ -173,9 +176,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Filters\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

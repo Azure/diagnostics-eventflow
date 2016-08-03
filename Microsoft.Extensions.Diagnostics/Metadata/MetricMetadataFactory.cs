@@ -5,46 +5,48 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.Configuration;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public static class MetricMetadataFactory
     {
-        public static IReadOnlyDictionary<MetricLookupKey, MetricMetadata> CreateMetricMetadata(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
+        public static IMetricMetadataCollection CreateMetricMetadata(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
         {
             Requires.NotNull(configurationRoot, nameof(configurationRoot));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            IConfiguration eventSourceConfiguration = configurationRoot.GetSection("EventSources");
+            var innerCollection = new HybridDictionary();
+
+            IConfiguration eventSourcesConfiguration = configurationRoot.GetSection("EventSources");
+            if (eventSourcesConfiguration == null)
+            {
+                healthReporter.ReportProblem("MetricMetadataFactory: required configuration section 'EventSources' missing");
+                
+            }
+            else
+            {
+                var eventSources = new List<EventSourceConfiguration>();
+                eventSourcesConfiguration.Bind(eventSources);
+                foreach (EventSourceConfiguration esConfiguration in eventSources)
+                {
+                    if (esConfiguration.Metrics == null)
+                    {
+                        continue;
+                    }
+
+                    foreach(MetricMetadata metricConfiguration in esConfiguration.Metrics)
+                    {
+                        innerCollection[MetricMetadataCollection.GetCollectionKey(esConfiguration.ProviderName, metricConfiguration.EventName)] = metricConfiguration;                        
+                    }
+                }
+            }
+            
+            return new MetricMetadataCollection(innerCollection);
         }
-    }
-
-    public class MetricLookupKey
-    {
-        public MetricLookupKey(string providerName, string eventName)
-        {
-            Requires.NotNull(providerName, nameof(providerName));
-            Requires.NotNull(eventName, nameof(eventName));
-
-            ProviderName = providerName;
-            EventName = eventName;
-        }
-
-        public string ProviderName { get; private set; }
-        public string EventName { get; private set; }
-
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return ProviderName.GetHashCode() ^ EventName.GetHashCode();
-        }
-    }
+    }    
 }
