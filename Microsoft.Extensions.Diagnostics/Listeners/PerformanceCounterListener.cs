@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
+using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
@@ -20,6 +21,7 @@ namespace Microsoft.Extensions.Diagnostics
     public class PerformanceCounterListener: IObservable<EventData>, IDisposable
     {
         private const int SampleIntervalSeconds = 10;
+        internal static readonly string MetricValueProperty = "Value";
 
         private IHealthReporter healthReporter;
         private SimpleSubject<EventData> subject;
@@ -68,48 +70,93 @@ namespace Microsoft.Extensions.Diagnostics
 
         private void DoCollection(object state)
         {
-            throw new NotImplementedException();
+            float counterValue;
+
+            lock(this.syncObject)
+            {
+                foreach(TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
+                {
+                    if (counter.SampleNextValue(out counterValue))
+                    {
+                        EventData d = new EventData();
+                        d.Payload = new Dictionary<string, object>();
+                        d.Payload[MetricValueProperty] = counterValue;
+                        d.Timestamp = DateTimeOffset.UtcNow;
+                        d.SetMetadata(MetadataKind.Metric, counter.Metadata);
+                        this.subject.OnNext(d);
+                    }
+                }
+            }
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            lock (this.syncObject)
+            {
+                this.subject.Dispose();
+                foreach (TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
+                {
+                    counter.Dispose();
+                }
+                this.trackedPerformanceCounters.Clear();
+            }
         }
 
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
-            throw new NotImplementedException();
+            return this.subject.Subscribe(observer);
         }
 
-        private class TrackedPerformanceCounter
+        private class TrackedPerformanceCounter: IDisposable
         {
             private PerformanceCounter counter;
+            private bool disposed;
+            private DateTimeOffset lastAccessedOn;
 
             public PerformanceCounterConfiguration Configuration { get; private set; }
-            public DateTimeOffset LastAccessedOn { get; set; }
+            public PerformanceCounterMetricMetadata Metadata { get; private set; }
+            
 
             public TrackedPerformanceCounter(PerformanceCounterConfiguration configuration)
             {
                 Requires.NotNull(configuration, nameof(configuration));
                 this.Configuration = configuration;
-                this.LastAccessedOn = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+                this.lastAccessedOn = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
+                this.disposed = false;
+
+                this.Metadata = new PerformanceCounterMetricMetadata()
+                {
+                    Name = configuration.Name,
+                    MetricValueProperty = PerformanceCounterListener.MetricValueProperty
+                };
+
                 this.counter = new PerformanceCounter(configuration.CounterCategory, configuration.CoutnerName, instanceName: string.Empty, readOnly: true);
             }
 
             public bool SampleNextValue(out float newValue)
             {
-                var now = DateTimeOffset.UtcNow;
-                if (now - this.LastAccessedOn > TimeSpan.FromSeconds(this.Configuration.CollectionIntervalInSeconds))
+                newValue = 0;
+                if (disposed)
                 {
-                    this.LastAccessedOn = now;
+                    return false;
+                }
+
+                var now = DateTimeOffset.UtcNow;
+                if (now - this.lastAccessedOn > TimeSpan.FromSeconds(this.Configuration.CollectionIntervalInSeconds))
+                {
+                    this.lastAccessedOn = now;
                     newValue = this.counter.NextValue();
                     return true;
                 }
                 else
-                {
-                    newValue = 0;
+                {                    
                     return false;
                 }
+            }
+
+            public void Dispose()
+            {
+                this.counter.Dispose();
             }
         }
     }

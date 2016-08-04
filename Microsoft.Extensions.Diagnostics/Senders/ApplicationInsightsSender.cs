@@ -144,17 +144,28 @@ namespace Microsoft.Extensions.Diagnostics
                 telemetry.Timestamp = e.Timestamp;
             }
 
-            item.Properties.Add(nameof(e.EventId), e.EventId.ToString());
-            item.Properties.Add(nameof(e.EventName), e.EventName);
-            item.Properties.Add(nameof(e.Keywords), e.Keywords);
-            item.Properties.Add(nameof(e.Level), e.Level);
-            item.Properties.Add(nameof(e.Message), e.Message);
-            item.Properties.Add(nameof(e.ProviderName), e.ProviderName);
-            item.Properties.Add(nameof(e.ActivityID), e.ActivityID);
+            if (e.EventId != 0)
+            {
+                AddProperty(item, nameof(e.EventId), e.EventId.ToString());
+            }
+            AddProperty(item, nameof(e.EventName), e.EventName);
+            AddProperty(item, nameof(e.Keywords), e.Keywords);
+            AddProperty(item, nameof(e.Level), e.Level);
+            AddProperty(item, nameof(e.Message), e.Message);
+            AddProperty(item, nameof(e.ProviderName), e.ProviderName);
+            AddProperty(item, nameof(e.ActivityID), e.ActivityID);
 
             foreach (var payloadItem in e.Payload)
             {
-                item.Properties.Add(payloadItem.Key, payloadItem.Value.ToString());
+                AddProperty(item, payloadItem.Key, payloadItem.Value.ToString());
+            }
+        }
+
+        private void AddProperty(ISupportProperties item, string propertyName, string propertyValue)
+        {
+            if (propertyValue != null)
+            {
+                AddProperty(item, propertyName, propertyValue);
             }
         }
     }

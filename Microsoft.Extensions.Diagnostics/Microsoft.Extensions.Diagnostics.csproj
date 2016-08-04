@@ -152,6 +152,7 @@
     <Compile Include="Metadata\EventMetadataCollection.cs" />
     <Compile Include="Metadata\MetadataKind.cs" />
     <Compile Include="Metadata\EventMetricMetadata.cs" />
+    <Compile Include="Metadata\PerformanceCounterMetricMetadata.cs" />
     <Compile Include="Metadata\RequestMetadata.cs" />
     <Compile Include="Metadata\EventSourceMetadataFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
