@@ -10,5 +10,10 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
         public string Name { get; set; }    // Metric name
         public string MetricValueProperty { get; set; }
         public double MetricValue { get; set; }
+
+        public override bool Validate()
+        {
+            return base.Validate() && !string.IsNullOrWhiteSpace(Name);
+        }
     }
 }

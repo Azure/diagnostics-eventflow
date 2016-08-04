@@ -10,5 +10,10 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
         public string RequestNameProperty { get; set; }
         public string DurationProperty { get; set; }
         public string IsSuccessProperty { get; set; }
+
+        public override bool Validate()
+        {
+            return base.Validate() && !string.IsNullOrWhiteSpace(RequestNameProperty) && !string.IsNullOrWhiteSpace(DurationProperty);
+        }
     }
 }

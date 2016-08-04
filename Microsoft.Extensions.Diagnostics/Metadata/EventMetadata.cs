@@ -14,5 +14,10 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
         {
             return providerName + eventName;
         }
+
+        public virtual bool Validate()
+        {
+            return !string.IsNullOrWhiteSpace(ProviderName) && !string.IsNullOrWhiteSpace(EventName);
+        }
     }
 }

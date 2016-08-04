@@ -47,6 +47,11 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
                     foreach (TMetadata metadata in metadataEnumerable)
                     {
                         metadata.ProviderName = esConfiguration.ProviderName;
+                        if (!metadata.Validate())
+                        {
+                            healthReporter.ReportProblem($"MetadataFactory: configuration for provider {esConfiguration.ProviderName} event {metadata.EventName} is invalid");
+                            continue;
+                        }
                         innerCollection[EventMetadata.GetCollectionKey(esConfiguration.ProviderName, metadata.EventName)] = metadata;
                     }
                 }

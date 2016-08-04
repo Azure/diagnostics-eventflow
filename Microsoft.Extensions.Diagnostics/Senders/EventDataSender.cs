@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.Diagnostics
         public EventDataSender(IHealthReporter healthReporter) : base(healthReporter) { }
 
         protected delegate void ProcessPayload<T>(T value);
+
         protected void GetValueFromPayload<T>(EventData e, string payloadName, ProcessPayload<T> handler)
         {
             if (string.IsNullOrEmpty(payloadName))

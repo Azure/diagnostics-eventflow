@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
@@ -54,30 +56,22 @@ namespace Microsoft.Extensions.Diagnostics
                     MetricMetadata metricMetadata = e.GetMetadata(typeof(MetricMetadata)) as MetricMetadata;
                     if (metricMetadata != null)
                     {
-                        MetricTelemetry mt = new MetricTelemetry();
-                        mt.Name = metricMetadata.Name;
-
-                        double value = 0.0;
-                        if (string.IsNullOrEmpty(metricMetadata.MetricValueProperty))
-                        {
-                            value = metricMetadata.MetricValue;
-                        }
-                        else
-                        {
-                            this.GetValueFromPayload<double>(e, metricMetadata.MetricValueProperty, (v) => value = v);
-                        }
-                        mt.Value = value;
-
-                        AddProperties(mt, e);
-
-                        telemetryClient.TrackMetric(mt);
+                        TrackMetric(e, metricMetadata);
                     }
                     else
                     {
-                        TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
-                        AddProperties(t, e);
+                        RequestMetadata requestMetadata = e.GetMetadata(typeof(RequestMetadata)) as RequestMetadata;
+                        if (requestMetadata != null)
+                        {
+                            TrackRequest(e, requestMetadata);
+                        }
+                        else
+                        {
+                            TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
+                            AddProperties(t, e);
 
-                        telemetryClient.TrackTrace(t);
+                            telemetryClient.TrackTrace(t);
+                        }
                     }
                 }
 
@@ -91,6 +85,56 @@ namespace Microsoft.Extensions.Diagnostics
             }
 
             return Task.CompletedTask;
+        }
+
+        private void TrackMetric(EventData e, MetricMetadata metricMetadata)
+        {
+            MetricTelemetry mt = new MetricTelemetry();
+            mt.Name = metricMetadata.Name;
+
+            double value = 0.0;
+            if (string.IsNullOrEmpty(metricMetadata.MetricValueProperty))
+            {
+                value = metricMetadata.MetricValue;
+            }
+            else
+            {
+                this.GetValueFromPayload<double>(e, metricMetadata.MetricValueProperty, (v) => value = v);
+            }
+            mt.Value = value;
+
+            AddProperties(mt, e);
+
+            telemetryClient.TrackMetric(mt);
+        }
+
+        private void TrackRequest(EventData e, RequestMetadata requestMetadata)
+        {
+            RequestTelemetry rt = new RequestTelemetry();
+
+            string requestName = null;
+            bool? success = null;
+            double duration = 0;
+            // CONSIDER: add ability to send response code
+
+            Debug.Assert(!string.IsNullOrWhiteSpace(requestMetadata.RequestNameProperty));
+            this.GetValueFromPayload<string>(e, requestMetadata.RequestNameProperty, (v) => requestName = v);
+
+            this.GetValueFromPayload<bool>(e, requestMetadata.IsSuccessProperty, (v) => success = v);
+
+            this.GetValueFromPayload<double>(e, requestMetadata.DurationProperty, (v) => duration = v);
+
+            TimeSpan durationSpan = TimeSpan.FromMilliseconds(duration);
+            DateTimeOffset startTime = e.Timestamp.Subtract(durationSpan); // TODO: add an option to extract request start time from event data
+
+            rt.Name = requestName;
+            rt.StartTime = startTime.ToUniversalTime();
+            rt.Duration = durationSpan;
+            rt.Success = success;
+
+            AddProperties(rt, e);
+
+            telemetryClient.TrackRequest(rt);
         }
 
         private void AddProperties(ISupportProperties item, EventData e)
