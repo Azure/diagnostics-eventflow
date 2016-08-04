@@ -14,7 +14,7 @@
           "MetricValue": "1.0"
         }
       ]
-    },   
+    },
 
     {
       "ProviderName": "MyCompany-AirTrafficControlApplication-Atc",
@@ -28,6 +28,14 @@
           "EventName": "FlightCompleted",
           "Name": "FlightCompletedTime",
           "MetricValueProperty": "flightDuration"
+        }
+      ],
+      "Requests": [
+        {
+          "EventName": "ServiceRequest/Stop",
+          "RequestNameProperty": "requestTypeName",
+          "DurationProperty": "durationMsec",
+          "IsSuccessProperty": "isSuccess"
         }
       ]
     }    

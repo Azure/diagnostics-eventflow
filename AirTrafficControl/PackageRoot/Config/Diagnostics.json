@@ -40,6 +40,14 @@
           "Name": "ActorMethodDurationMsec",
           "MetricValueProperty": "durationMsec"
         }
+      ],
+      "Requests": [
+        {
+          "EventName": "ActorMethod/Stop",
+          "RequestNameProperty": "methodName",
+          "DurationProperty": "durationMsec",
+          "IsSuccessProperty": "isSuccess"
+        }
       ]
     }
   ],
