@@ -142,7 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EmptyDisposable.cs" />
-    <Compile Include="Filters\MetricFilter.cs" />
+    <Compile Include="Filters\EventMetadataFilter.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
     <Compile Include="Metadata\EventMetadata.cs" />
     <Compile Include="Metadata\MetadataCollection.cs" />
