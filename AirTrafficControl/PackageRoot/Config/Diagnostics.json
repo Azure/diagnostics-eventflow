@@ -36,14 +36,14 @@
       "ProviderName": "MyCompany-AirTrafficControlApplication-Airplanes",
       "Metrics": [
         {
-          "EventName": "ActorMethod/Stop",
+          "EventName": "ActorMethodStop",
           "Name": "ActorMethodDurationMsec",
           "MetricValueProperty": "durationMsec"
         }
       ],
       "Requests": [
         {
-          "EventName": "ActorMethod/Stop",
+          "EventName": "ActorMethodStop",
           "RequestNameProperty": "methodName",
           "DurationProperty": "durationMsec",
           "IsSuccessProperty": "isSuccess"

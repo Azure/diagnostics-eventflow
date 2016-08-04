@@ -58,20 +58,19 @@ namespace Microsoft.Extensions.Diagnostics
                     {
                         TrackMetric(e, metricMetadata);
                     }
-                    else
-                    {
-                        RequestMetadata requestMetadata = e.GetMetadata(typeof(RequestMetadata)) as RequestMetadata;
-                        if (requestMetadata != null)
-                        {
-                            TrackRequest(e, requestMetadata);
-                        }
-                        else
-                        {
-                            TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
-                            AddProperties(t, e);
 
-                            telemetryClient.TrackTrace(t);
-                        }
+                    RequestMetadata requestMetadata = e.GetMetadata(typeof(RequestMetadata)) as RequestMetadata;
+                    if (requestMetadata != null)
+                    {
+                        TrackRequest(e, requestMetadata);
+                    }
+
+                    if (metricMetadata == null && requestMetadata == null)
+                    {
+                        TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
+                        AddProperties(t, e);
+
+                        telemetryClient.TrackTrace(t);
                     }
                 }
 

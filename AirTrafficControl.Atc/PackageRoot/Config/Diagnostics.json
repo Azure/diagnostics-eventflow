@@ -20,7 +20,7 @@
       "ProviderName": "MyCompany-AirTrafficControlApplication-Atc",
       "Metrics": [
         {
-          "EventName": "ServiceRequest/Stop",
+          "EventName": "ServiceRequestStop",
           "Name": "AtcServiceOperationDurationMsec",
           "MetricValueProperty": "durationMsec"
         },
@@ -32,7 +32,7 @@
       ],
       "Requests": [
         {
-          "EventName": "ServiceRequest/Stop",
+          "EventName": "ServiceRequestStop",
           "RequestNameProperty": "requestTypeName",
           "DurationProperty": "durationMsec",
           "IsSuccessProperty": "isSuccess"
