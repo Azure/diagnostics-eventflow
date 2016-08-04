@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
@@ -13,20 +12,25 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
-    public static class MetricMetadataFactory
+    public static class EventSourceMetadataFactory
     {
-        public static IMetricMetadataCollection CreateMetricMetadata(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
+        public static MetadataCollection<TMetadata> ReadMetadata<TMetadata>(
+            IConfigurationRoot configurationRoot, 
+            IHealthReporter healthReporter, 
+            Func<EventSourceConfiguration, IEnumerable<TMetadata>> metadataSelector)
+            where TMetadata : EventMetadata
         {
             Requires.NotNull(configurationRoot, nameof(configurationRoot));
             Requires.NotNull(healthReporter, nameof(healthReporter));
+            Requires.NotNull(metadataSelector, nameof(metadataSelector));
 
             var innerCollection = new HybridDictionary();
 
             IConfiguration eventSourcesConfiguration = configurationRoot.GetSection("EventSources");
             if (eventSourcesConfiguration == null)
             {
-                healthReporter.ReportProblem("MetricMetadataFactory: required configuration section 'EventSources' missing");
-                
+                healthReporter.ReportProblem("MetadataFactory: required configuration section 'EventSources' missing");
+
             }
             else
             {
@@ -34,20 +38,21 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
                 eventSourcesConfiguration.Bind(eventSources);
                 foreach (EventSourceConfiguration esConfiguration in eventSources)
                 {
-                    if (esConfiguration.Metrics == null)
+                    IEnumerable<TMetadata> metadataEnumerable = metadataSelector(esConfiguration);
+                    if (metadataEnumerable == null)
                     {
                         continue;
                     }
 
-                    foreach(MetricMetadata metricConfiguration in esConfiguration.Metrics)
+                    foreach (TMetadata metadata in metadataEnumerable)
                     {
-                        metricConfiguration.ProviderName = esConfiguration.ProviderName;
-                        innerCollection[MetricMetadataCollection.GetCollectionKey(esConfiguration.ProviderName, metricConfiguration.EventName)] = metricConfiguration;                        
+                        metadata.ProviderName = esConfiguration.ProviderName;
+                        innerCollection[EventMetadata.GetCollectionKey(esConfiguration.ProviderName, metadata.EventName)] = metadata;
                     }
                 }
             }
-            
-            return new MetricMetadataCollection(innerCollection);
+
+            return new MetadataCollection<TMetadata>(innerCollection);
         }
-    }    
+    }
 }

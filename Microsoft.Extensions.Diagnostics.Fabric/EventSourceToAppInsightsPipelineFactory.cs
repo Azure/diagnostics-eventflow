@@ -42,8 +42,10 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
                 return EmptyDisposable.Instance;
             }
 
-            var metricMetadata = MetricMetadataFactory.CreateMetricMetadata(configurationRoot, healthReporter);
+            var metricMetadata = EventSourceMetadataFactory.ReadMetadata(configurationRoot, healthReporter, (esConfiguration) => esConfiguration.Metrics);
             var metricFilter = new MetricFilter(metricMetadata, healthReporter);
+
+            var requestMetadata = EventSourceMetadataFactory.ReadMetadata(configurationRoot, healthReporter, (esConfiguration) => esConfiguration.Requests);
 
             DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
                 healthReporter,

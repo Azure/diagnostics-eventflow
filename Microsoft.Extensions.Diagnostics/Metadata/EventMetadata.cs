@@ -5,10 +5,14 @@
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
-    public class MetricMetadata: EventMetadata
+    public class EventMetadata
     {
-        public string Name { get; set; }    // Metric name
-        public string MetricValueProperty { get; set; }
-        public double MetricValue { get; set; }
+        public string ProviderName { get; set; }
+        public string EventName { get; set; }
+
+        public static string GetCollectionKey(string providerName, string eventName)
+        {
+            return providerName + eventName;
+        }
     }
 }

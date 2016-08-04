@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Diagnostics
         {
             EventData eventData = new EventData
             {
-                ProviderName = eventSourceEvent.EventSource.GetType().FullName,
+                ProviderName = eventSourceEvent.EventSource.Name,
                 Timestamp = DateTime.UtcNow,
                 EventId = eventSourceEvent.EventId,
                 Level = EventLevelNames[(int) eventSourceEvent.Level],

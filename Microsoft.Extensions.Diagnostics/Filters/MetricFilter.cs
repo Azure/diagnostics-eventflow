@@ -15,9 +15,9 @@ namespace Microsoft.Extensions.Diagnostics
 {
     public class MetricFilter: IEventFilter<EventData>
     {
-        private IMetricMetadataCollection metricMetadataCollection;
+        private MetadataCollection<MetricMetadata> metricMetadataCollection;
 
-        public MetricFilter(IMetricMetadataCollection metricMetadataCollection, IHealthReporter healthReporter)
+        public MetricFilter(MetadataCollection<MetricMetadata> metricMetadataCollection, IHealthReporter healthReporter)
         {
             Requires.NotNull(metricMetadataCollection, nameof(metricMetadataCollection));
 

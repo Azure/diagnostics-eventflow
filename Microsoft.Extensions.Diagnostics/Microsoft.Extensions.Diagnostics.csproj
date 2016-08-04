@@ -144,9 +144,11 @@
     <Compile Include="EmptyDisposable.cs" />
     <Compile Include="Filters\MetricFilter.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
-    <Compile Include="Metadata\MetricMetadataCollection.cs" />
+    <Compile Include="Metadata\EventMetadata.cs" />
+    <Compile Include="Metadata\MetadataCollection.cs" />
     <Compile Include="Metadata\MetricMetadata.cs" />
-    <Compile Include="Metadata\MetricMetadataFactory.cs" />
+    <Compile Include="Metadata\RequestMetadata.cs" />
+    <Compile Include="Metadata\EventSourceMetadataFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
     <Compile Include="DiagnosticsPipeline.cs" />

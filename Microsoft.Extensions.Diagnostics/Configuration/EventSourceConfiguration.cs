@@ -13,13 +13,15 @@ using Microsoft.Extensions.Diagnostics.Metadata;
 
 namespace Microsoft.Extensions.Diagnostics.Configuration
 {
-    internal class EventSourceConfiguration
+    public class EventSourceConfiguration
     {
         public string ProviderName { get; set; }
         public EventLevel Level { get; set; }
         public EventKeywords Keywords { get; set; }
 
         public List<MetricMetadata> Metrics { get; set; }
+
+        public List<RequestMetadata> Requests { get; set; }
 
         public EventSourceConfiguration()
         {
