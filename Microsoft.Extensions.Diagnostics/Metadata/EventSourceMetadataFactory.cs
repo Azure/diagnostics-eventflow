@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public static class EventSourceMetadataFactory
     {
-        public static MetadataCollection<TMetadata> ReadMetadata<TMetadata>(
+        public static EventMetadataCollection<TMetadata> ReadMetadata<TMetadata>(
             IConfigurationRoot configurationRoot, 
             IHealthReporter healthReporter, 
             Func<EventSourceConfiguration, IEnumerable<TMetadata>> metadataSelector)
@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
                 }
             }
 
-            return new MetadataCollection<TMetadata>(innerCollection);
+            return new EventMetadataCollection<TMetadata>(innerCollection);
         }
     }
 }

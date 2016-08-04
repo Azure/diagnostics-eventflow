@@ -5,15 +5,15 @@
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
-    public class RequestMetadata: EventMetadata, IRequestMetadata
+    public class EventMetricMetadata: EventMetadata, IMetricMetadata
     {
-        public string RequestNameProperty { get; set; }
-        public string DurationProperty { get; set; }
-        public string IsSuccessProperty { get; set; }
+        public string Name { get; set; }    // Metric name
+        public string MetricValueProperty { get; set; }
+        public double MetricValue { get; set; }
 
         public override bool Validate()
         {
-            return base.Validate() && !string.IsNullOrWhiteSpace(RequestNameProperty) && !string.IsNullOrWhiteSpace(DurationProperty);
+            return base.Validate() && !string.IsNullOrWhiteSpace(Name);
         }
     }
 }

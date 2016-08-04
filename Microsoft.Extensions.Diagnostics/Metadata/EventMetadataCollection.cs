@@ -9,11 +9,11 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
-    public class MetadataCollection<TMetadata> where TMetadata: EventMetadata
+    public class EventMetadataCollection<TMetadata> where TMetadata: EventMetadata
     {
         private IDictionary source;
 
-        public MetadataCollection(IDictionary source)
+        public EventMetadataCollection(IDictionary source)
         {
             Requires.NotNull(source, nameof(source));
             this.source = source;

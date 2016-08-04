@@ -43,10 +43,10 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
             }
 
             var metricMetadata = EventSourceMetadataFactory.ReadMetadata(configurationRoot, healthReporter, (esConfiguration) => esConfiguration.Metrics);
-            var metricFilter = new EventMetadataFilter<MetricMetadata>(metricMetadata, healthReporter);
+            var metricFilter = new EventMetadataFilter<EventMetricMetadata>(metricMetadata, MetadataKind.Metric);
 
             var requestMetadata = EventSourceMetadataFactory.ReadMetadata(configurationRoot, healthReporter, (esConfiguration) => esConfiguration.Requests);
-            var requestFilter = new EventMetadataFilter<RequestMetadata>(requestMetadata, healthReporter);
+            var requestFilter = new EventMetadataFilter<RequestMetadata>(requestMetadata, MetadataKind.Request);
 
             DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
                 healthReporter,

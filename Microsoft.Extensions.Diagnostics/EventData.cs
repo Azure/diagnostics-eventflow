@@ -32,25 +32,27 @@ namespace Microsoft.Extensions.Diagnostics
 
         public IDictionary<string, object> Payload { get; set; }
 
-        public object GetMetadata(Type metadataType)
+        public object GetMetadata(string metadataKind)
         {
             if (this.metadata == null)
             {
                 return null;
             }
 
-            return this.metadata[metadataType];
+            return this.metadata[metadataKind];
         }
 
-        public void SetMetadata(Type metadataType, object value)
+        public void SetMetadata(string metadataKind, object value)
         {
-            Requires.NotNull(metadataType, nameof(metadataType));
+            Requires.NotNull(metadataKind, nameof(metadataKind));
             if (this.metadata == null)
             {
                 this.metadata = new HybridDictionary();
             }
 
-            this.metadata[metadataType] = value;
+            // CONSIDER: we'll probably need to be able to attach more than one piece of metadata of the same kind to an event
+            // For now just one will suffice.
+            this.metadata[metadataKind] = value;
         }
     }
 }

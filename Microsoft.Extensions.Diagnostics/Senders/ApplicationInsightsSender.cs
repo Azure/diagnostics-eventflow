@@ -53,13 +53,13 @@ namespace Microsoft.Extensions.Diagnostics
             {
                 foreach (var e in events)
                 {
-                    MetricMetadata metricMetadata = e.GetMetadata(typeof(MetricMetadata)) as MetricMetadata;
+                    IMetricMetadata metricMetadata = e.GetMetadata(MetadataKind.Metric) as IMetricMetadata;
                     if (metricMetadata != null)
                     {
                         TrackMetric(e, metricMetadata);
                     }
 
-                    RequestMetadata requestMetadata = e.GetMetadata(typeof(RequestMetadata)) as RequestMetadata;
+                    IRequestMetadata requestMetadata = e.GetMetadata(MetadataKind.Request) as IRequestMetadata;
                     if (requestMetadata != null)
                     {
                         TrackRequest(e, requestMetadata);
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.Diagnostics
             return Task.CompletedTask;
         }
 
-        private void TrackMetric(EventData e, MetricMetadata metricMetadata)
+        private void TrackMetric(EventData e, IMetricMetadata metricMetadata)
         {
             MetricTelemetry mt = new MetricTelemetry();
             mt.Name = metricMetadata.Name;
@@ -107,7 +107,7 @@ namespace Microsoft.Extensions.Diagnostics
             telemetryClient.TrackMetric(mt);
         }
 
-        private void TrackRequest(EventData e, RequestMetadata requestMetadata)
+        private void TrackRequest(EventData e, IRequestMetadata requestMetadata)
         {
             RequestTelemetry rt = new RequestTelemetry();
 

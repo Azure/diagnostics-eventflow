@@ -10,13 +10,16 @@ namespace Microsoft.Extensions.Diagnostics
 {
     public class EventMetadataFilter<TMetadata>: IEventFilter<EventData> where TMetadata : EventMetadata
     {
-        private MetadataCollection<TMetadata> metadataCollection;
+        private EventMetadataCollection<TMetadata> metadataCollection;
+        private string metadataKind;
 
-        public EventMetadataFilter(MetadataCollection<TMetadata> metadataCollection, IHealthReporter healthReporter)
+        public EventMetadataFilter(EventMetadataCollection<TMetadata> metadataCollection, string metadataKind)
         {
             Requires.NotNull(metadataCollection, nameof(metadataCollection));
+            Requires.NotNullOrWhiteSpace(metadataKind, nameof(metadataKind));
 
             this.metadataCollection = metadataCollection;
+            this.metadataKind = metadataKind;
         }
 
         public bool Filter(EventData eventData)
@@ -24,7 +27,7 @@ namespace Microsoft.Extensions.Diagnostics
             TMetadata metadata = this.metadataCollection.GetMetadata(eventData.ProviderName, eventData.EventName);
             if (metadata != null)
             {
-                eventData.SetMetadata(typeof(TMetadata), metadata);
+                eventData.SetMetadata(this.metadataKind, metadata);
             }
 
             return true;

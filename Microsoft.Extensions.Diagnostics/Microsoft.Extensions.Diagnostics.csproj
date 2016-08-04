@@ -141,12 +141,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\PerformanceCounterConfiguration.cs" />
     <Compile Include="EmptyDisposable.cs" />
     <Compile Include="Filters\EventMetadataFilter.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
+    <Compile Include="Listeners\PerformanceCounterListener.cs" />
     <Compile Include="Metadata\EventMetadata.cs" />
-    <Compile Include="Metadata\MetadataCollection.cs" />
-    <Compile Include="Metadata\MetricMetadata.cs" />
+    <Compile Include="Metadata\IMetricMetadata.cs" />
+    <Compile Include="Metadata\IRequestMetadata.cs" />
+    <Compile Include="Metadata\EventMetadataCollection.cs" />
+    <Compile Include="Metadata\MetadataKind.cs" />
+    <Compile Include="Metadata\EventMetricMetadata.cs" />
     <Compile Include="Metadata\RequestMetadata.cs" />
     <Compile Include="Metadata\EventSourceMetadataFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />

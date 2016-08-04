@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
         public EventLevel Level { get; set; }
         public EventKeywords Keywords { get; set; }
 
-        public List<MetricMetadata> Metrics { get; set; }
+        public List<EventMetricMetadata> Metrics { get; set; }
 
         public List<RequestMetadata> Requests { get; set; }
 
