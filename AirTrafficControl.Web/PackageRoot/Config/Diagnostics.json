@@ -1,0 +1,42 @@
+﻿{
+  "EventSources": [
+    {
+      "ProviderName": "Microsoft-ServiceFabric-Services",
+      "Metrics": [
+        {
+          "EventName": "StatefulRunAsyncFailure",
+          "Name": "StatefulRunAsyncFailure",
+          "MetricValue": "1.0"
+        },
+        {
+          "EventName": "StatefulRunAsyncInvocation",
+          "Name": "StatefulRunAsyncInvocation",
+          "MetricValue": "1.0"
+        }
+      ]
+    },
+
+    {
+      "ProviderName": "MyCompany-AirTrafficControlApplication-Frontend",
+      "Metrics": [
+        {
+          "EventName": "RestApiOperationStop",
+          "Name": "FrontendOperationDurationMsec",
+          "MetricValueProperty": "durationMsec"
+        }
+      ],
+      "Requests": [
+        {
+          "EventName": "RestApiOperationStop",
+          "RequestNameProperty": "operationName",
+          "DurationProperty": "durationMsec",
+          "IsSuccessProperty": "isSuccess"
+        }
+      ]
+    }    
+  ],
+
+  "ApplicationInsightsSender": {
+    "InstrumentationKey": "***REMOVED***"
+  }
+}
