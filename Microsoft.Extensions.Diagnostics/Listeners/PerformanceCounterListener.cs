@@ -81,6 +81,8 @@ namespace Microsoft.Extensions.Diagnostics
                         this.subject.OnNext(d);
                     }
                 }
+
+                this.collectionTimer.Change(TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));
             }
         }
 
@@ -88,6 +90,7 @@ namespace Microsoft.Extensions.Diagnostics
         {
             lock (this.syncObject)
             {
+                this.collectionTimer.Dispose();
                 this.subject.Dispose();
                 foreach (TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
                 {
