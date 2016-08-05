@@ -165,7 +165,7 @@ namespace Microsoft.Extensions.Diagnostics
         {
             if (propertyValue != null)
             {
-                AddProperty(item, propertyName, propertyValue);
+                item.Properties.Add(propertyName, propertyValue);
             }
         }
     }
