@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Diagnostics
         private void TrackMetric(EventData e, IMetricMetadata metricMetadata)
         {
             MetricTelemetry mt = new MetricTelemetry();
-            mt.Name = metricMetadata.Name;
+            mt.Name = metricMetadata.MetricName;
 
             double value = 0.0;
             if (string.IsNullOrEmpty(metricMetadata.MetricValueProperty))

@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.Diagnostics
 
                 this.Metadata = new PerformanceCounterMetricMetadata()
                 {
-                    Name = configuration.Name,
+                    MetricName = configuration.Name,
                     MetricValueProperty = PerformanceCounterListener.MetricValueProperty
                 };
 

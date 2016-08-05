@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public class PerformanceCounterMetricMetadata : IMetricMetadata
     {
-        public string Name { get; set; }
+        public string MetricName { get; set; }
         public string MetricValueProperty { get; set; }
         public double MetricValue { get; set; }
     }

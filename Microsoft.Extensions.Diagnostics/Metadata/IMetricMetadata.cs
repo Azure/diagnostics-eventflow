@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public interface IMetricMetadata
     {
-        string Name { get; set; }
+        string MetricName { get; set; }
         string MetricValueProperty { get; set; }
         double MetricValue { get; set; }
     }

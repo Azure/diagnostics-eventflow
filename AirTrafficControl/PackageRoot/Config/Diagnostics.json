@@ -5,12 +5,12 @@
       "Metrics": [
         {
           "EventName": "StatefulRunAsyncFailure",
-          "Name": "StatefulRunAsyncFailure",
+          "MetricName": "StatefulRunAsyncFailure",
           "MetricValue": "1.0"
         },
         {
           "EventName": "StatefulRunAsyncInvocation",
-          "Name": "StatefulRunAsyncInvocation",
+          "MetricName": "StatefulRunAsyncInvocation",
           "MetricValue": "1.0"
         }
       ]
@@ -21,12 +21,12 @@
       "Metrics": [
         {
           "EventName": "ActorMethodCallsWaitingForLock",
-          "Name": "ActorMethodCallsWaitingForLock",
+          "MetricName": "ActorMethodCallsWaitingForLock",
           "MetricValueProperty": "countOfWaitingMethodCalls"
         },
         {
           "EventName": "ActorActivated",
-          "Name": "ActorActivated",
+          "MetricName": "ActorActivated",
           "MetricValue": "1.0"
         }
       ]
@@ -37,7 +37,7 @@
       "Metrics": [
         {
           "EventName": "ActorMethodStop",
-          "Name": "ActorMethodDurationMsec",
+          "MetricName": "ActorMethodDurationMsec",
           "MetricValueProperty": "durationMsec"
         }
       ],
@@ -49,6 +49,33 @@
           "IsSuccessProperty": "isSuccess"
         }
       ]
+    }
+  ],
+
+  "PerformanceCounterMetrics": [
+    {
+      "MetricName": "ActorServiceProcessorTimePercent",
+      "CounterCategory": "Process",
+      "CounterName": "% Processor Time",
+      "CollectionIntervalInSeconds": "30"
+    },
+    {
+      "MetricName": "ActorServicePercentTimeInGC",
+      "CounterCategory": ".NET CLR Memory",
+      "CounterName": "% Time in GC",
+      "CollectionIntervalInSeconds": "30"
+    },
+    {
+      "MetricName": "ActorServiceExceptionsThrownPerSecond",
+      "CounterCategory": ".NET CLR Exceptions",
+      "CounterName": "# of Exceps Thrown / sec",
+      "CollectionIntervalInSeconds": "30"
+    },
+    {
+      "MetricName": "ActorServiceProcessPrivateBytes",
+      "CounterCategory": "Process",
+      "CounterName": "Private Bytes",
+      "CollectionIntervalInSeconds": "30"
     }
   ],
 
