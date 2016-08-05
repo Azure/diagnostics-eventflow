@@ -8,15 +8,15 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public static class ObservableEventListenerFactory
+    public static class PerformanceCounterListenerFactory
     {
-        public static ObservableEventListener CreateListener(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
+        public static PerformanceCounterListener CreateListener(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
         {
             Requires.NotNull(configurationRoot, nameof(configurationRoot));
 
-            IConfiguration eventSourceConfiguration = configurationRoot.GetSection("EventSources");
-            return eventSourceConfiguration != null ?
-                new ObservableEventListener(eventSourceConfiguration, healthReporter) :
+            IConfiguration performanceCounterConfiguration = configurationRoot.GetSection("PerformanceCounterMetrics");
+            return performanceCounterConfiguration != null ?
+                new PerformanceCounterListener(performanceCounterConfiguration, healthReporter) :
                 null;
         }
     }

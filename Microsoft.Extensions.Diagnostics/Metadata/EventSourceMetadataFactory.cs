@@ -30,7 +30,6 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
             if (eventSourcesConfiguration == null)
             {
                 healthReporter.ReportProblem("MetadataFactory: required configuration section 'EventSources' missing");
-
             }
             else
             {

@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Fabric;
 using System.IO;
 using Microsoft.Extensions.Configuration;
@@ -21,24 +22,41 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
 
             Requires.NotNullOrWhiteSpace(healthEntityName, nameof(healthEntityName));
 
+            var healthReporter = new FabricHealthReporter(healthEntityName);
+
             CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
             ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject("Config");
             string configFilePath = Path.Combine(configPackage.Path, configurationFileName);
             if (!File.Exists(configFilePath))
             {
-                throw new FileNotFoundException("Configuration file is missing or inaccessible", configFilePath);
+                healthReporter.ReportProblem($"{nameof(EventSourceToAppInsightsPipelineFactory)}: configuration file '{configFilePath}' is missing or inaccessible");
+                return EmptyDisposable.Instance;
             }
 
             ConfigurationBuilder configBuilder = new ConfigurationBuilder();
             configBuilder.AddJsonFile(configFilePath);
             IConfigurationRoot configurationRoot = configBuilder.Build();
 
-            var healthReporter = new FabricHealthReporter(healthEntityName);
-            var listener = ObservableEventListenerFactory.CreateListener(configurationRoot, healthReporter);
+            var listeners = new List<IObservable<EventData>>();
+            var eventListener = ObservableEventListenerFactory.CreateListener(configurationRoot, healthReporter);
+            if (eventListener == null)
+            {
+                healthReporter.ReportProblem($"{nameof(EventSourceToAppInsightsPipelineFactory)}: could not create event listener-configuration might be invalid");
+                return EmptyDisposable.Instance;
+            }
+            listeners.Add(eventListener);
+
+            var performanceCounterListener = PerformanceCounterListenerFactory.CreateListener(configurationRoot, healthReporter);
+            if (performanceCounterListener != null)
+            {
+                listeners.Add(performanceCounterListener);
+            }
+
             var sender = ApplicationInsigthsSenderFactory.CreateSender(configurationRoot, healthReporter);
             if (sender == null)
             {
-                listener.Dispose();
+                healthReporter.ReportProblem($"{nameof(EventSourceToAppInsightsPipelineFactory)}: could not create Application Insights event sender");
+                eventListener.Dispose();
                 return EmptyDisposable.Instance;
             }
 
@@ -50,7 +68,7 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
 
             DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
                 healthReporter,
-                new IObservable<EventData>[] { listener },
+                listeners,
                 new EventSink<EventData>[] { new EventSink<EventData>(sender, new IEventFilter<EventData>[] { metricFilter, requestFilter } )});
 
             return pipeline;

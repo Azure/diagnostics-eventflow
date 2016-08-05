@@ -146,6 +146,7 @@
     <Compile Include="Filters\EventMetadataFilter.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
     <Compile Include="Listeners\PerformanceCounterListener.cs" />
+    <Compile Include="Listeners\PerformanceCounterListenerFactory.cs" />
     <Compile Include="Metadata\EventMetadata.cs" />
     <Compile Include="Metadata\IMetricMetadata.cs" />
     <Compile Include="Metadata\IRequestMetadata.cs" />

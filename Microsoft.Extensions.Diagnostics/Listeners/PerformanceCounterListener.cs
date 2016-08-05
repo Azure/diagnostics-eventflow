@@ -6,11 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Microsoft.Extensions.Diagnostics.Metadata;
@@ -28,7 +24,6 @@ namespace Microsoft.Extensions.Diagnostics
         private object syncObject;
         private Timer collectionTimer;
         private List<TrackedPerformanceCounter> trackedPerformanceCounters;
-
         
         public PerformanceCounterListener(IConfiguration configuration, IHealthReporter healthReporter)
         {
