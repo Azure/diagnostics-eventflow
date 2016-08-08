@@ -57,25 +57,31 @@
       "MetricName": "ActorServiceProcessorTimePercent",
       "CounterCategory": "Process",
       "CounterName": "% Processor Time",
-      "CollectionIntervalInSeconds": "30"
+      "CollectionIntervalInSeconds": "30",
+      "ProcessIdCounterName": "ID Process"
     },
     {
       "MetricName": "ActorServicePercentTimeInGC",
       "CounterCategory": ".NET CLR Memory",
       "CounterName": "% Time in GC",
-      "CollectionIntervalInSeconds": "30"
+      "CollectionIntervalInSeconds": "30",
+      "ProcessIdCounterName": "Process ID",
+      "ProcessIdCounterCategory": ".NET CLR Memory"
     },
     {
       "MetricName": "ActorServiceExceptionsThrownPerSecond",
       "CounterCategory": ".NET CLR Exceptions",
       "CounterName": "# of Exceps Thrown / sec",
-      "CollectionIntervalInSeconds": "30"
+      "CollectionIntervalInSeconds": "30",
+      "ProcessIdCounterName": "Process ID",
+      "ProcessIdCounterCategory": ".NET CLR Memory"
     },
     {
       "MetricName": "ActorServiceProcessPrivateBytes",
       "CounterCategory": "Process",
       "CounterName": "Private Bytes",
-      "CollectionIntervalInSeconds": "30"
+      "CollectionIntervalInSeconds": "30",
+      "ProcessIdCounterName": "ID Process"
     }
   ],
 

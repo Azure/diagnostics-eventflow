@@ -61,8 +61,12 @@ namespace Microsoft.Extensions.Diagnostics
                 return;
             }
 
-            this.collectionTimer = new Timer(this.DoCollection, null, TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));
-            
+            // The CLR Process ID counter used for process ID to counter instance name mapping for CLR counters will not read correctly
+            // until at least one garbage collection is performed, so we will force one now. 
+            // The listener is usually created during service startup so the GC should not take very long.
+            GC.Collect();
+
+            this.collectionTimer = new Timer(this.DoCollection, null, TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));            
         }
 
         private void DoCollection(object state)
@@ -71,17 +75,24 @@ namespace Microsoft.Extensions.Diagnostics
 
             lock(this.syncObject)
             {
-                foreach(TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
+                try
                 {
-                    if (counter.SampleNextValue(out counterValue))
+                    foreach (TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
                     {
-                        EventData d = new EventData();
-                        d.Payload = new Dictionary<string, object>();
-                        d.Payload[MetricValueProperty] = counterValue;
-                        d.Timestamp = DateTimeOffset.UtcNow;
-                        d.SetMetadata(MetadataKind.Metric, counter.Metadata);
-                        this.subject.OnNext(d);
+                        if (counter.SampleNextValue(out counterValue))
+                        {
+                            EventData d = new EventData();
+                            d.Payload = new Dictionary<string, object>();
+                            d.Payload[MetricValueProperty] = counterValue;
+                            d.Timestamp = DateTimeOffset.UtcNow;
+                            d.SetMetadata(MetadataKind.Metric, counter.Metadata);
+                            this.subject.OnNext(d);
+                        }
                     }
+                }
+                catch(Exception e)
+                {
+                    this.healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: an error occurred when sampling performance counters{Environment.NewLine}{e.ToString()}");
                 }
 
                 this.collectionTimer.Change(TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));
@@ -129,8 +140,6 @@ namespace Microsoft.Extensions.Diagnostics
                     MetricName = configuration.MetricName,
                     MetricValueProperty = PerformanceCounterListener.MetricValueProperty
                 };
-
-                this.counter = new PerformanceCounter(configuration.CounterCategory, configuration.CounterName, instanceName: string.Empty, readOnly: true);
             }
 
             public bool SampleNextValue(out float newValue)
@@ -147,7 +156,18 @@ namespace Microsoft.Extensions.Diagnostics
                     return false;                    
                 }
 
+                // TODO: for counters that share process ID counter name and category we should be able to cache the instance name 
+                // for a single counter collection cycle. In other words, we should be able call GetInstanceNameForCurrentProcess() 
+                // only once per cycle for given process ID counter name and category.
+
+                string instanceName = GetInstanceNameForCurrentProcess();
                 this.lastAccessedOn = now;
+                this.counter = new PerformanceCounter(
+                    this.Configuration.CounterCategory, 
+                    this.Configuration.CounterName, 
+                    instanceName, 
+                    readOnly: true);
+
                 newValue = this.counter.NextValue();
                 return true;
             }
@@ -161,6 +181,14 @@ namespace Microsoft.Extensions.Diagnostics
             {
                 Process currentProcess = Process.GetCurrentProcess();
                 string processName = Path.GetFileNameWithoutExtension(currentProcess.ProcessName);
+
+                string processIdCounterName = this.Configuration.ProcessIdCounterName;
+                Debug.Assert(!string.IsNullOrWhiteSpace(processIdCounterName));
+                string processIdCounterCategory = this.Configuration.ProcessIdCounterCategory;
+                if (string.IsNullOrWhiteSpace(processIdCounterCategory))
+                {
+                    processIdCounterCategory = this.Configuration.CounterCategory;
+                }
 
                 PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
                 string[] instances = cat.GetInstanceNames()
