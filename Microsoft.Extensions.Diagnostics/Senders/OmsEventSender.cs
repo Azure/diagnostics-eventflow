@@ -18,7 +18,7 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class OmsEventSender : SenderBase<EventData>
+    public class OmsEventSender : EventDataSender
     {
         const string OmsDataUploadResource = "/api/logs";
         const string OmsDataUploadUrl = OmsDataUploadResource + "?api-version=2016-04-01";
@@ -92,16 +92,16 @@ namespace Microsoft.Extensions.Diagnostics
                 HttpResponseMessage response = await this.connectionData.HttpClient.SendAsync(request, cancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
-                    this.ReportSenderHealthy();
+                    this.ReportHealthy();
                 }
                 else
                 {
-                    this.ReportSenderProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
+                    this.ReportProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
                 }
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem($"An error occurred while sending data to OMS: {e.ToString()}");
+                this.ReportProblem($"An error occurred while sending data to OMS: {e.ToString()}");
             }
         }
 

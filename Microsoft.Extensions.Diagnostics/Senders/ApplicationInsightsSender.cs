@@ -76,11 +76,11 @@ namespace Microsoft.Extensions.Diagnostics
 
                 telemetryClient.Flush();
 
-                this.ReportSenderHealthy();
+                this.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.ReportProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
 
             return Task.CompletedTask;

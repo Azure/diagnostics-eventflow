@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Diagnostics
     using Microsoft.WindowsAzure.Storage.Table;
     using Validation;
 
-    public class TableStorageSender : SenderBase<EventData>
+    public class TableStorageSender : EventDataSender
     {
         private const int MaxConcurrentPartitions = 4;
         private const string KeySegmentSeparator = "_";
@@ -76,11 +76,11 @@ namespace Microsoft.Extensions.Diagnostics
                 // CONSIDER exposing TableRequestOptions and OperationContext for the batch operation
                 await this.cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
 
-                this.ReportSenderHealthy();
+                this.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem($"{nameof(TableStorageSender)}: diagnostics data upload has failed{Environment.NewLine}{e.ToString()}");
+                this.ReportProblem($"{nameof(TableStorageSender)}: diagnostics data upload has failed{Environment.NewLine}{e.ToString()}");
             }
         }
 

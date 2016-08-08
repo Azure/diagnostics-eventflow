@@ -15,7 +15,7 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class ElasticSearchSender : SenderBase<EventData>
+    public class ElasticSearchSender : EventDataSender
     {
         private const string Dot = ".";
         private const string Dash = "-";
@@ -78,11 +78,11 @@ namespace Microsoft.Extensions.Diagnostics
                     this.ReportEsRequestError(response, "Bulk upload");
                 }
 
-                this.ReportSenderHealthy();
+                this.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem($"{nameof(ElasticSearchSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                this.ReportProblem($"{nameof(ElasticSearchSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.Extensions.Diagnostics
                 errorMessage += "No further error information is available";
             }
 
-            this.ReportSenderProblem(errorMessage);
+            this.ReportProblem(errorMessage);
         }
 
         private class ElasticSearchConnectionData

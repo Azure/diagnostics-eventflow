@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Diagnostics
     using Microsoft.ServiceBus.Messaging;
     using Validation;
 
-    public class EventHubSender : SenderBase<EventData>
+    public class EventHubSender : EventDataSender
     {
         private const int ConcurrentConnections = 4;
         private EventHubConnectionData connectionData;
@@ -92,11 +92,11 @@ namespace Microsoft.Extensions.Diagnostics
 
                 await hubClient.SendBatchAsync(batch);
 
-                this.ReportSenderHealthy();
+                this.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportSenderProblem($"{nameof(EventHubSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                this.ReportProblem($"{nameof(EventHubSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 

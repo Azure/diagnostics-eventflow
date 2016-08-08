@@ -16,7 +16,7 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class PerformanceCounterListener: IObservable<EventData>, IDisposable
+    public class PerformanceCounterListener: ThrottledHealthReporter, IObservable<EventData>, IDisposable
     {
         private const int SampleIntervalSeconds = 10;
         internal static readonly string MetricValueProperty = "Value";
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Diagnostics
         private Timer collectionTimer;
         private List<TrackedPerformanceCounter> trackedPerformanceCounters;
         
-        public PerformanceCounterListener(IConfiguration configuration, IHealthReporter healthReporter)
+        public PerformanceCounterListener(IConfiguration configuration, IHealthReporter healthReporter): base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -75,9 +75,9 @@ namespace Microsoft.Extensions.Diagnostics
 
             lock(this.syncObject)
             {
-                try
+                foreach (TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
                 {
-                    foreach (TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
+                    try
                     {
                         if (counter.SampleNextValue(out counterValue))
                         {
@@ -89,11 +89,13 @@ namespace Microsoft.Extensions.Diagnostics
                             this.subject.OnNext(d);
                         }
                     }
-                }
-                catch(Exception e)
-                {
-                    this.healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: an error occurred when sampling performance counters{Environment.NewLine}{e.ToString()}");
-                }
+                    catch (Exception e)
+                    {
+                        this.ReportProblem(
+                            $"{nameof(PerformanceCounterListener)}: an error occurred when sampling performance counter {counter.Configuration.CounterName} "
+                            + $"in category {counter.Configuration.CounterCategory}{Environment.NewLine}{e.ToString()}");
+                    }
+                }                
 
                 this.collectionTimer.Change(TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));
             }
@@ -190,14 +192,14 @@ namespace Microsoft.Extensions.Diagnostics
                     processIdCounterCategory = this.Configuration.CounterCategory;
                 }
 
-                PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
+                PerformanceCounterCategory cat = new PerformanceCounterCategory(processIdCounterCategory);
                 string[] instances = cat.GetInstanceNames()
                     .Where(inst => inst.StartsWith(processName))
                     .ToArray();
 
                 foreach (string instance in instances)
                 {
-                    using (PerformanceCounter cnt = new PerformanceCounter("Process", "ID Process", instance, true))
+                    using (PerformanceCounter cnt = new PerformanceCounter(processIdCounterCategory, processIdCounterName, instance, true))
                     {
                         int val = (int)cnt.RawValue;
                         if (val == currentProcess.Id)

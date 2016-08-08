@@ -5,32 +5,31 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public abstract class SenderBase<EventDataType>: IEventSender<EventDataType>
+    public class ThrottledHealthReporter
     {
         protected readonly IHealthReporter healthReporter;
         private TimeSpanThrottle errorReportingThrottle;
 
-        public SenderBase(IHealthReporter healthReporter)
+        public ThrottledHealthReporter(IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             this.healthReporter = healthReporter;
             this.errorReportingThrottle = new TimeSpanThrottle(TimeSpan.FromSeconds(1));
         }
 
-        public abstract Task SendEventsAsync(IReadOnlyCollection<EventDataType> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
-
-        protected void ReportSenderHealthy()
+        protected void ReportHealthy()
         {
             this.errorReportingThrottle.Execute(() => this.healthReporter.ReportHealthy());
         }
 
-        protected void ReportSenderProblem(string problemDescription)
+        protected void ReportProblem(string problemDescription)
         {
             this.errorReportingThrottle.Execute(() => this.healthReporter.ReportProblem(problemDescription));
         }

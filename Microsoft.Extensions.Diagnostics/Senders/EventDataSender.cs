@@ -5,17 +5,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public abstract class EventDataSender: SenderBase<EventData>
+    public abstract class EventDataSender: ThrottledHealthReporter, IEventSender<EventData>
     {
         public EventDataSender(IHealthReporter healthReporter) : base(healthReporter) { }
 
         protected delegate void ProcessPayload<T>(T value);
+
+        public abstract Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
 
         protected void GetValueFromPayload<T>(EventData e, string payloadName, ProcessPayload<T> handler)
         {
