@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
@@ -45,7 +47,7 @@ namespace Microsoft.Extensions.Diagnostics
                 {
                     if (!counterConfiguration.Validate())
                     {
-                        healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: configuration for counter {counterConfiguration.CoutnerName} is invalid");
+                        healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: configuration for counter {counterConfiguration.CounterName} is invalid");
                     }
                     else
                     {
@@ -124,11 +126,11 @@ namespace Microsoft.Extensions.Diagnostics
 
                 this.Metadata = new PerformanceCounterMetricMetadata()
                 {
-                    MetricName = configuration.Name,
+                    MetricName = configuration.MetricName,
                     MetricValueProperty = PerformanceCounterListener.MetricValueProperty
                 };
 
-                this.counter = new PerformanceCounter(configuration.CounterCategory, configuration.CoutnerName, instanceName: string.Empty, readOnly: true);
+                this.counter = new PerformanceCounter(configuration.CounterCategory, configuration.CounterName, instanceName: string.Empty, readOnly: true);
             }
 
             public bool SampleNextValue(out float newValue)
@@ -140,21 +142,43 @@ namespace Microsoft.Extensions.Diagnostics
                 }
 
                 var now = DateTimeOffset.UtcNow;
-                if (now - this.lastAccessedOn > TimeSpan.FromSeconds(this.Configuration.CollectionIntervalInSeconds))
+                if (now - this.lastAccessedOn < TimeSpan.FromSeconds(this.Configuration.CollectionIntervalInSeconds))
                 {
-                    this.lastAccessedOn = now;
-                    newValue = this.counter.NextValue();
-                    return true;
+                    return false;                    
                 }
-                else
-                {                    
-                    return false;
-                }
+
+                this.lastAccessedOn = now;
+                newValue = this.counter.NextValue();
+                return true;
             }
 
             public void Dispose()
             {
                 this.counter.Dispose();
+            }
+
+            private string GetInstanceNameForCurrentProcess()
+            {
+                Process currentProcess = Process.GetCurrentProcess();
+                string processName = Path.GetFileNameWithoutExtension(currentProcess.ProcessName);
+
+                PerformanceCounterCategory cat = new PerformanceCounterCategory("Process");
+                string[] instances = cat.GetInstanceNames()
+                    .Where(inst => inst.StartsWith(processName))
+                    .ToArray();
+
+                foreach (string instance in instances)
+                {
+                    using (PerformanceCounter cnt = new PerformanceCounter("Process", "ID Process", instance, true))
+                    {
+                        int val = (int)cnt.RawValue;
+                        if (val == currentProcess.Id)
+                        {
+                            return instance;
+                        }
+                    }
+                }
+                return null;
             }
         }
     }

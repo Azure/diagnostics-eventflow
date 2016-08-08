@@ -7,14 +7,14 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
 {
     public class PerformanceCounterConfiguration
     {
-        public string Name { get; set; }
+        public string MetricName { get; set; }
         public string CounterCategory { get; set; }
-        public string CoutnerName { get; set; }
+        public string CounterName { get; set; }
         public int CollectionIntervalInSeconds { get; set; }
 
         public virtual bool Validate()
         {
-            return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(CounterCategory) && !string.IsNullOrWhiteSpace(CoutnerName);
+            return !string.IsNullOrWhiteSpace(MetricName) && !string.IsNullOrWhiteSpace(CounterCategory) && !string.IsNullOrWhiteSpace(CounterName);
         }
     }
 }
