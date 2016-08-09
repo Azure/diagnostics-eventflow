@@ -49,7 +49,7 @@
   </DefaultServices>
   <Principals>
     <Users>
-      <User Name="SetupLocalSystem" AccountType="LocalSystem" />
+      <User Name="SetupAdminUser" AccountType="LocalSystem" />
     </Users>
   </Principals>
 </ApplicationManifest>

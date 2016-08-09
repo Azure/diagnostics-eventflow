@@ -8,6 +8,12 @@
 
   <!-- Code package is your service executable. -->
   <CodePackage Name="Code" Version="1.0.0.9">
+      <SetupEntryPoint>
+          <ExeHost>
+              <Program>setup.bat</Program>
+              <WorkingFolder>CodePackage</WorkingFolder>
+          </ExeHost>
+      </SetupEntryPoint>
     <EntryPoint>
       <ExeHost>
         <Program>AirTrafficControl.Atc.exe</Program>

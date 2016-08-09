@@ -17,6 +17,12 @@
     </StatefulServiceType>
   </ServiceTypes>
   <CodePackage Name="Code" Version="1.0.0.9">
+    <SetupEntryPoint>
+      <ExeHost>
+        <Program>setup.bat</Program>
+        <WorkingFolder>CodePackage</WorkingFolder>
+      </ExeHost>
+    </SetupEntryPoint>
     <EntryPoint>
       <ExeHost>
         <Program>AirTrafficControl.exe</Program>
