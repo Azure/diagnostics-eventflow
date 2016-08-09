@@ -221,6 +221,12 @@
     </Content>
     <None Include="Scripts\angular.min.js.map" />
     <None Include="Scripts\jquery-2.2.3.min.map" />
+    <None Include="setup.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="setup.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css">

@@ -17,6 +17,12 @@
         <Program>AirTrafficControl.Web.exe</Program>
       </ExeHost>
     </EntryPoint>
+      <SetupEntryPoint>
+          <ExeHost>
+              <Program>setup.bat</Program>
+              <WorkingFolder>CodePackage</WorkingFolder>
+          </ExeHost>
+      </SetupEntryPoint>
   </CodePackage>
 
   <!-- Config package is the contents of the Config directoy under PackageRoot that contains an 

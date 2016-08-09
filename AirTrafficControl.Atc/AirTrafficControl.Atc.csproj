@@ -103,6 +103,12 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="setup.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="setup.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AirTrafficControl.Common\AirTrafficControl.Common.csproj">

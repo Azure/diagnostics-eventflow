@@ -13,13 +13,22 @@
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="AirTrafficControl.AtcPkg" ServiceManifestVersion="1.0.0.9" />
     <ConfigOverrides />
+    <Policies>
+      <RunAsPolicy CodePackageRef="Code" UserRef="SetupAdminUser" EntryPointType="Setup" />
+    </Policies>
   </ServiceManifestImport>
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="AirTrafficControl.WebPkg" ServiceManifestVersion="1.0.0.9" />
     <ConfigOverrides />
+    <Policies>
+      <RunAsPolicy CodePackageRef="Code" UserRef="SetupAdminUser" EntryPointType="Setup" />
+    </Policies>
   </ServiceManifestImport>
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="AirTrafficControl.ActorsPkg" ServiceManifestVersion="1.0.0.9" />
+    <Policies>
+      <RunAsPolicy CodePackageRef="Code" UserRef="SetupAdminUser" EntryPointType="Setup" />
+    </Policies>
   </ServiceManifestImport>
   <DefaultServices>
     <Service Name="Atc">
@@ -38,4 +47,9 @@
       </StatefulService>
     </Service>
   </DefaultServices>
+  <Principals>
+    <Users>
+      <User Name="SetupLocalSystem" AccountType="LocalSystem" />
+    </Users>
+  </Principals>
 </ApplicationManifest>
