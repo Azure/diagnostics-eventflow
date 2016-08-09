@@ -21,6 +21,11 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
         // If this is not specified, CounterCategory value will be used for the process ID counter.
         public string ProcessIdCounterCategory { get; set; }
 
+        // If set, it will be assumed that the instance name of the counter will follow the new .NET name format
+        // See https://msdn.microsoft.com/en-us/library/dd537616(v=vs.110).aspx for more information
+        // No need to set ProcessIdCounterName or ProcessIdCounterCategory
+        public bool UseDotNetInstanceNameConvention { get; set; }
+
         public virtual bool Validate()
         {
             // CONSIDER: for well-known categories like Process and all .NET categories we could just assume default ProcessIdCounterName
@@ -28,7 +33,7 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
             return !string.IsNullOrWhiteSpace(MetricName) 
                 && !string.IsNullOrWhiteSpace(CounterCategory) 
                 && !string.IsNullOrWhiteSpace(CounterName)
-                && !string.IsNullOrWhiteSpace(ProcessIdCounterName);
+                && (UseDotNetInstanceNameConvention || !string.IsNullOrWhiteSpace(ProcessIdCounterName));
         }
     }
 }

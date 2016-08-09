@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
+using System.Runtime.Versioning;
 
 namespace Microsoft.Extensions.Diagnostics
 {
@@ -21,7 +23,6 @@ namespace Microsoft.Extensions.Diagnostics
         private const int SampleIntervalSeconds = 10;
         internal static readonly string MetricValueProperty = "Value";
 
-        private IHealthReporter healthReporter;
         private SimpleSubject<EventData> subject;
         private object syncObject;
         private Timer collectionTimer;
@@ -33,8 +34,12 @@ namespace Microsoft.Extensions.Diagnostics
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.syncObject = new object();
-            this.healthReporter = healthReporter;
             this.subject = new SimpleSubject<EventData>();
+
+            // The CLR Process ID counter used for process ID to counter instance name mapping for CLR counters will not read correctly
+            // until at least one garbage collection is performed, so we will force one now. 
+            // The listener is usually created during service startup so the GC should not take very long.
+            GC.Collect();
 
             try
             {
@@ -60,11 +65,6 @@ namespace Microsoft.Extensions.Diagnostics
                 healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: an error occurred when reading configuration{Environment.NewLine}{e.ToString()}");
                 return;
             }
-
-            // The CLR Process ID counter used for process ID to counter instance name mapping for CLR counters will not read correctly
-            // until at least one garbage collection is performed, so we will force one now. 
-            // The listener is usually created during service startup so the GC should not take very long.
-            GC.Collect();
 
             this.collectionTimer = new Timer(this.DoCollection, null, TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));            
         }
@@ -125,6 +125,7 @@ namespace Microsoft.Extensions.Diagnostics
             private PerformanceCounter counter;
             private bool disposed;
             private DateTimeOffset lastAccessedOn;
+            private string lastInstanceName;
 
             public PerformanceCounterConfiguration Configuration { get; private set; }
             public PerformanceCounterMetricMetadata Metadata { get; private set; }
@@ -133,6 +134,7 @@ namespace Microsoft.Extensions.Diagnostics
             public TrackedPerformanceCounter(PerformanceCounterConfiguration configuration)
             {
                 Requires.NotNull(configuration, nameof(configuration));
+
                 this.Configuration = configuration;
                 this.lastAccessedOn = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
                 this.disposed = false;
@@ -164,11 +166,19 @@ namespace Microsoft.Extensions.Diagnostics
 
                 string instanceName = GetInstanceNameForCurrentProcess();
                 this.lastAccessedOn = now;
-                this.counter = new PerformanceCounter(
-                    this.Configuration.CounterCategory, 
-                    this.Configuration.CounterName, 
-                    instanceName, 
-                    readOnly: true);
+                if (this.counter == null || (!string.IsNullOrEmpty(instanceName) && instanceName != this.lastInstanceName))
+                {
+                    if (this.counter != null)
+                    {
+                        this.counter.Dispose();
+                    }
+                    this.counter = new PerformanceCounter(
+                        this.Configuration.CounterCategory,
+                        this.Configuration.CounterName,
+                        instanceName,
+                        readOnly: true);
+                }
+                this.lastInstanceName = instanceName;
 
                 newValue = this.counter.NextValue();
                 return true;
@@ -176,38 +186,58 @@ namespace Microsoft.Extensions.Diagnostics
 
             public void Dispose()
             {
-                this.counter.Dispose();
+                if (this.counter != null)
+                {
+                    this.counter.Dispose();
+                    this.counter = null;
+                }
             }
 
             private string GetInstanceNameForCurrentProcess()
             {
                 Process currentProcess = Process.GetCurrentProcess();
-                string processName = Path.GetFileNameWithoutExtension(currentProcess.ProcessName);
 
-                string processIdCounterName = this.Configuration.ProcessIdCounterName;
-                Debug.Assert(!string.IsNullOrWhiteSpace(processIdCounterName));
-                string processIdCounterCategory = this.Configuration.ProcessIdCounterCategory;
-                if (string.IsNullOrWhiteSpace(processIdCounterCategory))
+                if (this.Configuration.UseDotNetInstanceNameConvention)
                 {
-                    processIdCounterCategory = this.Configuration.CounterCategory;
-                }
-
-                PerformanceCounterCategory cat = new PerformanceCounterCategory(processIdCounterCategory);
-                string[] instances = cat.GetInstanceNames()
-                    .Where(inst => inst.StartsWith(processName))
-                    .ToArray();
-
-                foreach (string instance in instances)
-                {
-                    using (PerformanceCounter cnt = new PerformanceCounter(processIdCounterCategory, processIdCounterName, instance, true))
+                    string instanceName = VersioningHelper.MakeVersionSafeName(currentProcess.ProcessName, ResourceScope.Machine, ResourceScope.AppDomain);
+                    // We actually don't need the AppDomain portion, but there is no way to get the runtime ID without AppDomain id attached.
+                    // So we just filter it out 
+                    int adIdIndex = instanceName.LastIndexOf("_ad");
+                    if (adIdIndex > 0)
                     {
-                        int val = (int)cnt.RawValue;
-                        if (val == currentProcess.Id)
+                        instanceName = instanceName.Substring(0, adIdIndex);
+                    }
+                    return instanceName;
+                }
+                else
+                {
+                    string processIdCounterName = this.Configuration.ProcessIdCounterName;
+                    Debug.Assert(!string.IsNullOrWhiteSpace(processIdCounterName));
+                    string processIdCounterCategory = this.Configuration.ProcessIdCounterCategory;
+                    if (string.IsNullOrWhiteSpace(processIdCounterCategory))
+                    {
+                        processIdCounterCategory = this.Configuration.CounterCategory;
+                    }
+
+                    PerformanceCounterCategory cat = new PerformanceCounterCategory(processIdCounterCategory);
+
+                    string[] instanceNames = cat.GetInstanceNames()
+                        .Where(inst => inst.StartsWith(currentProcess.ProcessName))
+                        .ToArray();
+
+                    foreach (string instanceName in instanceNames)
+                    {
+                        using (PerformanceCounter cnt = new PerformanceCounter(processIdCounterCategory, processIdCounterName, instanceName, readOnly: true))
                         {
-                            return instance;
+                            int val = (int)cnt.RawValue;
+                            if (val == currentProcess.Id)
+                            {
+                                return instanceName;
+                            }
                         }
                     }
                 }
+
                 return null;
             }
         }

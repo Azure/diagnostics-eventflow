@@ -65,16 +65,14 @@
       "CounterCategory": ".NET CLR Memory",
       "CounterName": "% Time in GC",
       "CollectionIntervalInSeconds": "30",
-      "ProcessIdCounterName": "Process ID",
-      "ProcessIdCounterCategory": ".NET CLR Memory"
+      "UseDotNetInstanceNameConvention": "true"
     },
     {
       "MetricName": "ActorServiceExceptionsThrownPerSecond",
       "CounterCategory": ".NET CLR Exceptions",
       "CounterName": "# of Exceps Thrown / sec",
       "CollectionIntervalInSeconds": "30",
-      "ProcessIdCounterName": "Process ID",
-      "ProcessIdCounterCategory": ".NET CLR Memory"
+      "UseDotNetInstanceNameConvention": "true"
     },
     {
       "MetricName": "ActorServiceProcessPrivateBytes",
