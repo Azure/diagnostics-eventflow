@@ -193,3 +193,4 @@ ModelManifest.xml
 *.trace
 
 /.vs/restore.dg
+project.lock.json
