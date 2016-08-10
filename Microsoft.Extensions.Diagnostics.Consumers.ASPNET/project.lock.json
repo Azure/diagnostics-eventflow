@@ -3450,7 +3450,9 @@
         "type": "project",
         "framework": ".NETStandard,Version=v1.6",
         "dependencies": {
-          "NETStandard.Library": "1.6.0"
+          "NETStandard.Library": "1.6.0",
+          "Newtonsoft.Json": "9.0.1",
+          "Validation": "2.3.5"
         },
         "compile": {
           "netstandard1.6/Microsoft.Extensions.Diagnostics.Common.dll": {}
@@ -3465,7 +3467,7 @@
         "dependencies": {
           "Microsoft.Extensions.Diagnostics.Common": "1.0.0",
           "NETStandard.Library": "1.6.0",
-          "System.Threading.Tasks.Parallel": "4.0.1",
+          "System.Threading.Tasks.Parallel": "4.0.0",
           "Validation": "2.3.5"
         },
         "compile": {
