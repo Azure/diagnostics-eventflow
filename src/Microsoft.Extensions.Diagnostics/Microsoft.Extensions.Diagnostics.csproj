@@ -144,6 +144,7 @@
     <Compile Include="Configuration\PerformanceCounterConfiguration.cs" />
     <Compile Include="EmptyDisposable.cs" />
     <Compile Include="Filters\EventMetadataFilter.cs" />
+    <Compile Include="IHealthReporter.cs" />
     <Compile Include="Listeners\ObservableEventListenerFactory.cs" />
     <Compile Include="Listeners\PerformanceCounterListener.cs" />
     <Compile Include="Listeners\PerformanceCounterListenerFactory.cs" />
@@ -170,7 +171,6 @@
     <Compile Include="HttpExponentialRetryMessageHandler.cs" />
     <Compile Include="IEventFilter.cs" />
     <Compile Include="IEventSender.cs" />
-    <Compile Include="IHealthReporter.cs" />
     <Compile Include="Listeners\ObservableEventListener.cs" />
     <Compile Include="Senders\OmsEventSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

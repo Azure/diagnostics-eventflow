@@ -192,3 +192,4 @@ ModelManifest.xml
 /AirTrafficControlApplication/Scripts/wadcfg.base64
 *.trace
 
+/.vs/restore.dg
