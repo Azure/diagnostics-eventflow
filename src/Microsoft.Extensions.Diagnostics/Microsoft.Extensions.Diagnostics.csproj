@@ -145,7 +145,6 @@
     <Compile Include="ConcurrentEventProcessor.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />
-    <Compile Include="Senders\EventHubSender.cs" />
     <Compile Include="HttpExponentialRetryMessageHandler.cs" />
     <Compile Include="IEventFilter.cs" />
     <Compile Include="IEventSender.cs" />

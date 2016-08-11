@@ -3,20 +3,16 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Diagnostics.Tracing;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using System.Diagnostics.Tracing;
-    using Newtonsoft.Json;
-    using System.Diagnostics;
-    using Diagnostics;
-
     internal static class EventDataExtensions
     {
         private static string HexadecimalNumberPrefix = "0x";
@@ -39,8 +35,8 @@ namespace Microsoft.Extensions.Diagnostics
                 ProviderName = eventSourceEvent.EventSource.Name,
                 Timestamp = DateTime.UtcNow,
                 EventId = eventSourceEvent.EventId,
-                Level = EventLevelNames[(int) eventSourceEvent.Level],
-                Keywords = HexadecimalNumberPrefix + ((ulong) eventSourceEvent.Keywords).ToString("X16", CultureInfo.InvariantCulture),
+                Level = EventLevelNames[(int)eventSourceEvent.Level],
+                Keywords = HexadecimalNumberPrefix + ((ulong)eventSourceEvent.Keywords).ToString("X16", CultureInfo.InvariantCulture),
                 EventName = eventSourceEvent.EventName,
                 ActivityID = ActivityPathString(eventSourceEvent.ActivityId)
             };
@@ -60,13 +56,6 @@ namespace Microsoft.Extensions.Diagnostics
             eventData.Payload = eventSourceEvent.GetPayloadData();
 
             return eventData;
-        }
-
-        public static MessagingEventData ToMessagingEventData(this EventData eventData)
-        {
-            string eventDataSerialized = JsonConvert.SerializeObject(eventData);
-            MessagingEventData messagingEventData = new MessagingEventData(Encoding.UTF8.GetBytes(eventDataSerialized));
-            return messagingEventData;
         }
 
         private static IDictionary<string, object> GetPayloadData(this EventWrittenEventArgs eventSourceEvent)

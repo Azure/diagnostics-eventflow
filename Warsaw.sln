@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagno
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Senders.ElasticSearch", "Microsoft.Extensions.Diagnostics.Senders.ElasticSearch\Microsoft.Extensions.Diagnostics.Senders.ElasticSearch.xproj", "{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Senders.EventHubs", "Microsoft.Extensions.Diagnostics.Senders.EventHubs\Microsoft.Extensions.Diagnostics.Senders.EventHubs.xproj", "{7072DB92-0FDA-4B87-ABFD-897882C9284A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,14 @@ Global
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}.Release|x64.ActiveCfg = Release|Any CPU
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}.Release|x64.Build.0 = Release|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Debug|x64.Build.0 = Debug|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Release|x64.ActiveCfg = Release|Any CPU
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -117,5 +127,6 @@ Global
 		{E86E245F-DE12-4E29-8124-2370EB0BE705} = {47200F40-43E1-4B09-B803-A921FED2BF05}
 		{DF34722D-646E-40D2-8FC7-012E787A3727} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
+		{7072DB92-0FDA-4B87-ABFD-897882C9284A} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
 	EndGlobalSection
 EndGlobal

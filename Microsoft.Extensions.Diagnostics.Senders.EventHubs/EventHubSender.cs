@@ -3,20 +3,19 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.ServiceBus;
+using Microsoft.ServiceBus.Messaging;
+using Validation;
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
+using Microsoft.Extensions.Diagnostics.Senders.EventHubs;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Diagnostics;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Extensions.Configuration;
-    using Microsoft.ServiceBus;
-    using Microsoft.ServiceBus.Messaging;
-    using Validation;
 
     public class EventHubSender : EventDataSender
     {
