@@ -5,10 +5,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Validation;
+
+#if NET45
+using System.Collections.Specialized;
+#endif
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
@@ -24,8 +27,12 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(metadataSelector, nameof(metadataSelector));
 
+#if NET45
             var innerCollection = new HybridDictionary();
-
+#elif NETSTANDARD1_6
+            var innerCollection = new Dictionary<string,object>();
+#endif
+            
             IConfiguration eventSourcesConfiguration = configurationRoot.GetSection("EventSources");
             if (eventSourcesConfiguration == null)
             {

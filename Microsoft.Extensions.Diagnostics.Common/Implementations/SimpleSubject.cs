@@ -7,15 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    internal class SimpleSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable
+    public class SimpleSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable
     {
         private readonly object lockObject = new object();
         private volatile ImmutableList<IObserver<SubjectType>> observers = ImmutableList<IObserver<SubjectType>>.Empty;

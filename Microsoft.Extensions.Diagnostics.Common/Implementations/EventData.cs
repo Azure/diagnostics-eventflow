@@ -7,11 +7,19 @@ using System;
 using System.Collections.Generic;
 using Validation;
 
+#if NET45
+using System.Collections.Specialized;
+#endif
+
 namespace Microsoft.Extensions.Diagnostics
 {
     public class EventData
     {
+#if NET45
+        private HybridDictionary metadata;
+#elif NETSTANDARD1_6
         private IDictionary<string,object> metadata;
+#endif
 
         public DateTimeOffset Timestamp { get; set; }
 
@@ -46,7 +54,11 @@ namespace Microsoft.Extensions.Diagnostics
             Requires.NotNull(metadataKind, nameof(metadataKind));
             if (this.metadata == null)
             {
-                this.metadata = new Dictionary<string,object>();
+#if NET45
+                this.metadata = new HybridDictionary();
+#elif NETSTANDARD1_6
+                this.metadata = new Dictionary<string, object>();
+#endif
             }
 
             // CONSIDER: we'll probably need to be able to attach more than one piece of metadata of the same kind to an event
