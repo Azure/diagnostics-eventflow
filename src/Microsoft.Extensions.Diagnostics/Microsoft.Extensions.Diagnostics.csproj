@@ -143,7 +143,6 @@
   <ItemGroup>
     <Compile Include="IHealthReporter.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
-    <Compile Include="Senders\ElasticSearchSender.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />
     <Compile Include="Senders\EventHubSender.cs" />
