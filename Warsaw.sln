@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagno
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter", "Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter\Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter.csproj", "{E86E245F-DE12-4E29-8124-2370EB0BE705}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights", "Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights\Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights.csproj", "{DF34722D-646E-40D2-8FC7-012E787A3727}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,14 @@ Global
 		{E86E245F-DE12-4E29-8124-2370EB0BE705}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E86E245F-DE12-4E29-8124-2370EB0BE705}.Release|x64.ActiveCfg = Release|Any CPU
 		{E86E245F-DE12-4E29-8124-2370EB0BE705}.Release|x64.Build.0 = Release|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Debug|x64.Build.0 = Debug|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Release|x64.ActiveCfg = Release|Any CPU
+		{DF34722D-646E-40D2-8FC7-012E787A3727}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,5 +105,6 @@ Global
 		{0EB2C089-06A7-495D-8909-E00C88E112D3} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{11D12E7E-A723-44A3-A9C7-31A5D548D6B3} = {47200F40-43E1-4B09-B803-A921FED2BF05}
 		{E86E245F-DE12-4E29-8124-2370EB0BE705} = {47200F40-43E1-4B09-B803-A921FED2BF05}
+		{DF34722D-646E-40D2-8FC7-012E787A3727} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
 	EndGlobalSection
 EndGlobal

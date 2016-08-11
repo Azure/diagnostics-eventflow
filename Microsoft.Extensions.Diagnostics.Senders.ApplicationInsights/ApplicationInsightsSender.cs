@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
@@ -24,7 +23,7 @@ namespace Microsoft.Extensions.Diagnostics
 
         private readonly TelemetryClient telemetryClient;
 
-        public ApplicationInsightsSender(IConfiguration configuration, IHealthReporter healthReporter): base(healthReporter)
+        public ApplicationInsightsSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -46,7 +45,7 @@ namespace Microsoft.Extensions.Diagnostics
 
             if (this.telemetryClient == null || events == null || events.Count == 0)
             {
-                return Task.CompletedTask;
+                return Task.FromResult<object>(null);
             }
 
             try
@@ -83,7 +82,7 @@ namespace Microsoft.Extensions.Diagnostics
                 this.ReportProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult<object>(null);
         }
 
         private void TrackMetric(EventData e, IMetricMetadata metricMetadata)

@@ -142,13 +142,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IHealthReporter.cs" />
-    <Compile Include="Senders\ApplicationInsightsSender.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
-    <Compile Include="Senders\ApplicationInsigthsSenderFactory.cs" />
     <Compile Include="Senders\ElasticSearchSender.cs" />
     <Compile Include="EventData.cs" />
     <Compile Include="EventDataExtensions.cs" />
-    <Compile Include="Senders\EventDataSender.cs" />
     <Compile Include="Senders\EventHubSender.cs" />
     <Compile Include="HttpExponentialRetryMessageHandler.cs" />
     <Compile Include="IEventFilter.cs" />

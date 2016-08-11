@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E86E245F-DE12-4E29-8124-2370EB0BE705}</ProjectGuid>
+    <ProjectGuid>{DF34722D-646E-40D2-8FC7-012E787A3727}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter</RootNamespace>
-    <AssemblyName>Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,14 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\Debug\net45\Microsoft.Extensions.Diagnostics.Common.dll">
-      <Name>Microsoft.Extensions.Diagnostics.Common</Name>
+    <Reference Include="Microsoft.ApplicationInsights, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.2.1.0\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\Debug\net45\Microsoft.Extensions.Diagnostics.Core.dll">
-      <Name>Microsoft.Extensions.Diagnostics.Core</Name>
-    </Reference>
-    <!--~-->
     <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Configuration.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>
       <Private>True</Private>
@@ -71,14 +67,22 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\Debug\net45\Microsoft.Extensions.Diagnostics.Common.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Common</Name>
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\Debug\net45\Microsoft.Extensions.Diagnostics.Core.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Core</Name>
+    </Reference>
     <Reference Include="Validation, Version=2.3.0.0, Culture=neutral, PublicKeyToken=2fc06f0d701809a7, processorArchitecture=MSIL">
       <HintPath>..\packages\Validation.2.3.5\lib\dotnet\Validation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <!--~-->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PerformanceCounterListener.cs" />
-    <Compile Include="PerformanceCounterListenerFactory.cs" />
+    <Compile Include="ApplicationInsightsSender.cs" />
+    <Compile Include="ApplicationInsigthsSenderFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
