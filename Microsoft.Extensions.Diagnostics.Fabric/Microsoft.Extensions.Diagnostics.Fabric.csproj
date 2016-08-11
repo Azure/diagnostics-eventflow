@@ -33,9 +33,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Common.dll">
-      <Name>Microsoft.Extensions.Diagnostics.Common</Name>
-    </Reference>
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Core.dll">
       <Name>Microsoft.Extensions.Diagnostics.Core</Name>
     </Reference>
