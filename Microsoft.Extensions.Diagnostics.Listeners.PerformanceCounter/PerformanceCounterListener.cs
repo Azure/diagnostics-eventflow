@@ -5,16 +5,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
-using System.Runtime.Versioning;
 
 namespace Microsoft.Extensions.Diagnostics
 {

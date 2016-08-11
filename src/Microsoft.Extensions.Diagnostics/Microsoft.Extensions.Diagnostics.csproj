@@ -141,10 +141,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Filters\EventMetadataFilter.cs" />
     <Compile Include="IHealthReporter.cs" />
-    <Compile Include="Listeners\PerformanceCounterListener.cs" />
-    <Compile Include="Listeners\PerformanceCounterListenerFactory.cs" />
     <Compile Include="Senders\ApplicationInsightsSender.cs" />
     <Compile Include="ConcurrentEventProcessor.cs" />
     <Compile Include="Senders\ApplicationInsigthsSenderFactory.cs" />
@@ -159,8 +156,6 @@
     <Compile Include="Senders\OmsEventSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Senders\TableStorageSender.cs" />
-    <Compile Include="ThrottledHealthReporter.cs" />
-    <Compile Include="TimeSpanThrottle.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -177,6 +172,9 @@
       <Project>{f1ef768d-9e8b-42d5-b0e1-c7ef2270c245}</Project>
       <Name>Microsoft.Extensions.Diagnostics.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Listeners\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
