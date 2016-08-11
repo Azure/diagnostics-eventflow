@@ -141,12 +141,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IHealthReporter.cs" />
-    <Compile Include="ConcurrentEventProcessor.cs" />
-    <Compile Include="EventData.cs" />
-    <Compile Include="EventDataExtensions.cs" />
-    <Compile Include="IEventFilter.cs" />
-    <Compile Include="IEventSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
