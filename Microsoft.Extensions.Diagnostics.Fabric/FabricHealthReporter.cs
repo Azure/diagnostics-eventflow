@@ -2,13 +2,12 @@
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
+using System;
+using System.Fabric;
+using System.Fabric.Health;
 
 namespace Microsoft.Extensions.Diagnostics.Fabric
 {
-    using System;
-    using System.Fabric;
-    using System.Fabric.Health;
-
     public class FabricHealthReporter : IHealthReporter
     {
         private FabricClient fabricClient;

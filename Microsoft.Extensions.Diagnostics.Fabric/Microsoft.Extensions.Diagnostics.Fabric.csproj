@@ -32,6 +32,20 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Core.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Core</Name>
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.EventSource.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Inputs.EventSource</Name>
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter</Name>
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights</Name>
+    </Reference>
+    <!--~-->
     <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Configuration.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>
       <Private>True</Private>
@@ -100,14 +114,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics\Microsoft.Extensions.Diagnostics.csproj">
-      <Project>{5f87e027-ba54-469c-ad4d-ea52f9d8ceab}</Project>
-      <Name>Microsoft.Extensions.Diagnostics</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

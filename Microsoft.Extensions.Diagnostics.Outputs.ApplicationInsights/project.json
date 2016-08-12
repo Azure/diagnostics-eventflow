@@ -1,0 +1,13 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.ApplicationInsights": "2.1.0",
+    "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "frameworks": {
+    "net45": {}
+  }
+}
