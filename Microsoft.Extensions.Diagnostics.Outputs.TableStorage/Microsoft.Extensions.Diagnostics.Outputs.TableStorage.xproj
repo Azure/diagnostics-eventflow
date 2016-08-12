@@ -8,7 +8,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>b56c3023-e73e-43c4-859a-8ad328e675ed</ProjectGuid>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Senders.TableStorage</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Outputs.TableStorage</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>

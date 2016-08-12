@@ -1,16 +1,13 @@
-{
+﻿{
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Extensions.Diagnostics.Common": "1.0.0-*",
+    "Microsoft.ApplicationInsights": "2.1.0",
     "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
     "NETStandard.Library": "1.6.0"
   },
 
   "frameworks": {
-    "netstandard1.6": {
-      "imports": "dnxcore50"
-    },
     "net45": {}
   }
 }

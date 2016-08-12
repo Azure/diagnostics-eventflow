@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Elasticsearch.Net": "2.4.3",
+    "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
+    "NEST": "2.4.3",
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    },
+    "net45": {}
+  }
+}

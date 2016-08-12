@@ -8,7 +8,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>7072db92-0fda-4b87-abfd-897882c9284a</ProjectGuid>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Senders.EventHubs</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Outputs.EventHubs</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>

@@ -2,7 +2,6 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Extensions.Diagnostics.Common": "1.0.0-*",
     "NETStandard.Library": "1.6.0",
     "System.Threading.Tasks.Parallel": "4.0.0",
     "Validation": "2.3.5"

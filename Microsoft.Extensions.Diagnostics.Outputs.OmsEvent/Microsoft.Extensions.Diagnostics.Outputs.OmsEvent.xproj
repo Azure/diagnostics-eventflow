@@ -7,8 +7,8 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>b6372f30-bbdc-41a4-afb0-93d571dda9fb</ProjectGuid>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Senders.ElasticSearch</RootNamespace>
+    <ProjectGuid>b254ad24-ebdf-4871-8a69-184d167923f0</ProjectGuid>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Outputs.OmsEvent</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>

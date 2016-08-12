@@ -36,14 +36,14 @@
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Core.dll">
       <Name>Microsoft.Extensions.Diagnostics.Core</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Listeners.EventSource\bin\$(Configuration)\Microsoft.Extensions.Diagnostics.Listeners.EventSource.dll">
-      <Name>Microsoft.Extensions.Diagnostics.Listeners.EventSource</Name>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.EventSource.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Inputs.EventSource</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter\bin\Debug\Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter.dll">
-      <Name>Microsoft.Extensions.Diagnostics.Listeners.PerformanceCounter</Name>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights\bin\Debug\Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights.dll">
-      <Name>Microsoft.Extensions.Diagnostics.Senders.ApplicationInsights</Name>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights</Name>
     </Reference>
     <!--~-->
     <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">

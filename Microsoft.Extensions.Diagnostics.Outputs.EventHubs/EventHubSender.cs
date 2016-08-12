@@ -12,7 +12,7 @@ using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using Validation;
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
-using Microsoft.Extensions.Diagnostics.Senders.EventHubs;
+using Microsoft.Extensions.Diagnostics.Outputs.EventHubs;
 
 namespace Microsoft.Extensions.Diagnostics
 {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
 
-namespace Microsoft.Extensions.Diagnostics.Senders.EventHubs
+namespace Microsoft.Extensions.Diagnostics.Outputs.EventHubs
 {
     internal static class EventDataExtensions
     {

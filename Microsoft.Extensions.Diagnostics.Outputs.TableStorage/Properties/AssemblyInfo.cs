@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Extensions.Diagnostics.Senders.ElasticSearch")]
+[assembly: AssemblyProduct("Microsoft.Extensions.Diagnostics.Outputs.TableStorage")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b6372f30-bbdc-41a4-afb0-93d571dda9fb")]
+[assembly: Guid("b56c3023-e73e-43c4-859a-8ad328e675ed")]

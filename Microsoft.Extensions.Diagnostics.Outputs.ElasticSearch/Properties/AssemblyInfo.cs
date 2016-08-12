@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Extensions.Diagnostics.Senders.OmsEvent")]
+[assembly: AssemblyProduct("Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b254ad24-ebdf-4871-8a69-184d167923f0")]
+[assembly: Guid("b6372f30-bbdc-41a4-afb0-93d571dda9fb")]
