@@ -8,6 +8,8 @@ namespace Microsoft.Extensions.Diagnostics
     public interface IHealthReporter
     {
         void ReportHealthy();
-        void ReportProblem(string problemDescription);
+        void ReportProblem(string problemDescription, string category = null);
+        void ReportMessage(string description, string category = null);
+        void ReportWarning(string description, string category = null);
     }
 }
