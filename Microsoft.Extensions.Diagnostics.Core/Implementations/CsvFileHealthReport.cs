@@ -2,11 +2,14 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace Microsoft.Extensions.Diagnostics.Core.Implementations
 {
     public class CsvFileHealthReport : IHealthReporter
     {
+        private static readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
+
         private static Lazy<CsvFileHealthReport> defaultInstance = new Lazy<CsvFileHealthReport>(() =>
         {
             return new CsvFileHealthReport("HealthReport.csv");
@@ -60,10 +63,11 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
         {
             category = category ?? "Default";
 
-            string message = DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.SortableDateTimePattern);
-            message = $"{message},{category},{text}";
+            string timestamp = DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.SortableDateTimePattern);
+            string message = $"{timestamp},{category},{level},{text}";
             try
             {
+                _locker.EnterWriteLock();
                 string logFileName = this.fileName;
                 using (FileStream fs = new FileStream(logFileName, FileMode.Append))
                 using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
@@ -74,6 +78,10 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
             catch
             {
                 // Crash prevention.
+            }
+            finally
+            {
+                _locker.ExitWriteLock();
             }
         }
     }
