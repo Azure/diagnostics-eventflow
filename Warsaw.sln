@@ -41,7 +41,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagno
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights", "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights.xproj", "{EF3B9B49-1372-4A4B-9E20-A2C1ADABEB64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp", "D:\Data\Common\Source\Repos\Warsaw\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp.csproj", "{F0DC8BED-405A-42C7-8D65-A46385F859F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp", "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp.csproj", "{F0DC8BED-405A-42C7-8D65-A46385F859F9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B56C3023-E73E-43C4-859A-8AD328E675ED} = {B56C3023-E73E-43C4-859A-8AD328E675ED}
 		{B254AD24-EBDF-4871-8A69-184D167923F0} = {B254AD24-EBDF-4871-8A69-184D167923F0}
