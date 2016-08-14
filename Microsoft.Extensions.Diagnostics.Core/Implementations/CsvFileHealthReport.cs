@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
         private static readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
         private HealthReportLevels _logLevel;
         private string _fileName;
+        private FileStream _fileStream;
         #endregion
 
         private static Lazy<CsvFileHealthReport> defaultInstance = new Lazy<CsvFileHealthReport>(() =>
@@ -32,8 +33,26 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
             Validation.Requires.NotNullOrWhiteSpace(fileName, nameof(fileName));
             _fileName = fileName;
             _logLevel = logLevel;
+            try
+            {
+                try
+                {
+                    _fileStream = new FileStream(_fileName, FileMode.Append);
+                }
+                catch (IOException)
+                {
+                    // In case file is locked by other process, give it another shoot
+                    _fileName = $"{Path.GetFileNameWithoutExtension(_fileName)}_{Path.GetRandomFileName()}{Path.GetExtension(_fileName)}";
+                    _fileStream = new FileStream(_fileName, FileMode.Append);
+                }
+            }
+            catch (Exception)
+            {
+                // Crash prevention
+            }
+
             // Header
-            ReportText(HealthReportLevels.Message, "== Message ==", "== Category ==");
+            WriteLine(_fileName, "Timestamp,Tag,Level,Message");
         }
 
 
@@ -42,40 +61,41 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
             ReportMessage("Health.");
         }
 
-        public void ReportMessage(string description, string category = null)
+        public void ReportMessage(string description, string tag = null)
         {
-            ReportText(HealthReportLevels.Message, description, category);
+            ReportText(HealthReportLevels.Message, description, tag);
         }
 
-        public void ReportProblem(string problemDescription, string category = null)
+        public void ReportProblem(string problemDescription, string tag = null)
         {
-            ReportText(HealthReportLevels.Error, problemDescription, category);
+            ReportText(HealthReportLevels.Error, problemDescription, tag);
         }
 
-        public void ReportWarning(string description, string category = null)
+        public void ReportWarning(string description, string tag = null)
         {
-            ReportText(HealthReportLevels.Warning, description, category);
+            ReportText(HealthReportLevels.Warning, description, tag);
         }
 
-        private void ReportText(HealthReportLevels level, string text, string category = null)
+        private void ReportText(HealthReportLevels level, string text, string tag = null)
         {
             if (level < _logLevel)
             {
                 return;
             }
-
-            category = category ?? "Default";
-
+            tag = tag ?? "Default";
             string timestamp = DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.SortableDateTimePattern);
-            string message = $"{timestamp},{category},{level},{text}";
+            string message = $"{timestamp},{tag},{level},{text}";
+            WriteLine(_fileName, message);
+        }
+
+        private void WriteLine(string fileName, string text)
+        {
             try
             {
                 _locker.EnterWriteLock();
-                string logFileName = this._fileName;
-                using (FileStream fs = new FileStream(logFileName, FileMode.Append))
-                using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
+                using (StreamWriter sw = new StreamWriter(_fileStream, Encoding.UTF8, 512, leaveOpen: true))
                 {
-                    sw.WriteLine(message);
+                    sw.WriteLine(text);
                 }
             }
             catch
@@ -85,6 +105,14 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
             finally
             {
                 _locker.ExitWriteLock();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_fileStream != null)
+            {
+                _fileStream.Dispose();
             }
         }
     }
