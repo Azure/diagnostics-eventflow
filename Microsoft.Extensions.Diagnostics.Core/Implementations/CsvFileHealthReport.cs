@@ -8,11 +8,15 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
 {
     public class CsvFileHealthReport : IHealthReporter
     {
+        #region Fields
         private static readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
+        private HealthReportLevels _logLevel;
+        private string _fileName;
+        #endregion
 
         private static Lazy<CsvFileHealthReport> defaultInstance = new Lazy<CsvFileHealthReport>(() =>
         {
-            return new CsvFileHealthReport("HealthReport.csv");
+            return new CsvFileHealthReport("HealthReport.csv", HealthReportLevels.Error);
         });
 
         public static CsvFileHealthReport Default
@@ -23,21 +27,15 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
             }
         }
 
-        private string fileName;
-        public CsvFileHealthReport(string fileName)
+        public CsvFileHealthReport(string fileName, HealthReportLevels logLevel)
         {
             Validation.Requires.NotNullOrWhiteSpace(fileName, nameof(fileName));
-            this.fileName = fileName;
+            _fileName = fileName;
+            _logLevel = logLevel;
             // Header
-            ReportText(Level.Message, "== Message ==", "== Category ==");
+            ReportText(HealthReportLevels.Message, "== Message ==", "== Category ==");
         }
 
-        private enum Level
-        {
-            Message,
-            Warning,
-            Error
-        }
 
         public void ReportHealthy()
         {
@@ -46,21 +44,26 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
 
         public void ReportMessage(string description, string category = null)
         {
-            ReportText(Level.Message, description, category);
+            ReportText(HealthReportLevels.Message, description, category);
         }
 
         public void ReportProblem(string problemDescription, string category = null)
         {
-            ReportText(Level.Error, problemDescription, category);
+            ReportText(HealthReportLevels.Error, problemDescription, category);
         }
 
         public void ReportWarning(string description, string category = null)
         {
-            ReportText(Level.Warning, description, category);
+            ReportText(HealthReportLevels.Warning, description, category);
         }
 
-        private void ReportText(Level level, string text, string category = null)
+        private void ReportText(HealthReportLevels level, string text, string category = null)
         {
+            if (level < _logLevel)
+            {
+                return;
+            }
+
             category = category ?? "Default";
 
             string timestamp = DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.SortableDateTimePattern);
@@ -68,7 +71,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Implementations
             try
             {
                 _locker.EnterWriteLock();
-                string logFileName = this.fileName;
+                string logFileName = this._fileName;
                 using (FileStream fs = new FileStream(logFileName, FileMode.Append))
                 using (StreamWriter sw = new StreamWriter(fs, Encoding.UTF8))
                 {

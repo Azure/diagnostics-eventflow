@@ -46,12 +46,12 @@ namespace Microsoft.Extensions.Diagnostics.Inputs
         {
             try
             {
-                healthReporter.ReportProblem("Subscribing", TraceTag);
+                healthReporter.ReportMessage("Subscribing", TraceTag);
                 return subject.Subscribe(observer);
             }
             finally
             {
-                healthReporter.ReportProblem("Subscribed", TraceTag);
+                healthReporter.ReportMessage("Subscribed", TraceTag);
             }
         }
 

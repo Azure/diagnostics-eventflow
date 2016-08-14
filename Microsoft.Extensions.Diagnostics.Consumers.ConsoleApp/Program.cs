@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
         static void Main(string[] args)
         {
             // HealthReporter
-            IHealthReporter reporter = CsvFileHealthReport.Default;
+            IHealthReporter reporter = new CsvFileHealthReport("HealthReport.csv", HealthReportLevels.Message);
 
             // Listeners
             List<IObservable<EventData>> inputs = new List<IObservable<EventData>>();
