@@ -64,5 +64,25 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
 
             this.fabricClient.HealthManager.ReportHealth(healthReport);
         }
+
+        public void ReportProblem(string problemDescription, string category = null)
+        {
+            ReportHealth(HealthState.Error, problemDescription);
+        }
+
+        public void ReportMessage(string description, string category = null)
+        {
+            ReportHealth(HealthState.Ok, description);
+        }
+
+        public void ReportWarning(string description, string category = null)
+        {
+            ReportHealth(HealthState.Warning, description);
+        }
+
+        public void Dispose()
+        {
+            // Nothing
+        }
     }
 }

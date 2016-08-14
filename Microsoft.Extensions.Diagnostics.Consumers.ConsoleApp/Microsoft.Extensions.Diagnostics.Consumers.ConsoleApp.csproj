@@ -34,6 +34,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Core.dll">
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.Trace\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.Trace.dll">
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.dll">
+    </Reference>
+    <!--~-->
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,16 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Common\Microsoft.Extensions.Diagnostics.Common.xproj">
-      <Project>{2a663c32-847f-4880-bb6b-d20165f95661}</Project>
-      <Name>Microsoft.Extensions.Diagnostics.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Core\Microsoft.Extensions.Diagnostics.Core.xproj">
-      <Project>{f1ef768d-9e8b-42d5-b0e1-c7ef2270c245}</Project>
-      <Name>Microsoft.Extensions.Diagnostics.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

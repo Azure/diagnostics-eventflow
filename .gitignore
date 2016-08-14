@@ -190,7 +190,6 @@ _Pvt_Extensions/
 ModelManifest.xml
 /.vs/config/applicationhost.config
 /AirTrafficControlApplication/Scripts/wadcfg.base64
-*.trace
 
 /.vs/restore.dg
 project.lock.json
