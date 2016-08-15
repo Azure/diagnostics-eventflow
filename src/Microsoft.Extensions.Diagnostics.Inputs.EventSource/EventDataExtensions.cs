@@ -53,19 +53,19 @@ namespace Microsoft.Extensions.Diagnostics
             {
             }
 
-            eventData.Payload = eventSourceEvent.GetPayloadData();
+            eventSourceEvent.GetPayloadData(eventData);
 
             return eventData;
         }
 
-        private static IDictionary<string, object> GetPayloadData(this EventWrittenEventArgs eventSourceEvent)
+        private static void GetPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData)
         {
-            Dictionary<string, object> payloadData = new Dictionary<string, object>();
-
             if (eventSourceEvent.Payload == null || eventSourceEvent.PayloadNames == null)
             {
-                return payloadData;
+                return;
             }
+
+            IDictionary<string, object> payloadData = eventData.Payload;
 
             IEnumerator<object> payloadEnumerator = eventSourceEvent.Payload.GetEnumerator();
             IEnumerator<string> payloadNamesEnunmerator = eventSourceEvent.PayloadNames.GetEnumerator();
@@ -74,8 +74,6 @@ namespace Microsoft.Extensions.Diagnostics
                 payloadNamesEnunmerator.MoveNext();
                 payloadData.Add(payloadNamesEnunmerator.Current, payloadEnumerator.Current);
             }
-
-            return payloadData;
         }
 
         /// <summary>

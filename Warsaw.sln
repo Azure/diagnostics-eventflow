@@ -72,6 +72,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagno
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.Tests", "test\Microsoft.Extensions.Diagnostics.Inputs.Tests\Microsoft.Extensions.Diagnostics.Inputs.Tests.xproj", "{4F92132C-C455-40DD-A02D-A204FCF9DF50}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics", "src\Microsoft.Extensions.Diagnostics\Microsoft.Extensions.Diagnostics.xproj", "{D9228FA7-5C35-423C-8152-F153A6EF1158}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E7AA4B2F-C884-48F2-B521-4355D84F6CEF}"
 	ProjectSection(SolutionItems) = preProject
 		runtest.cmd = runtest.cmd
@@ -240,6 +242,14 @@ Global
 		{DF757591-70DA-4367-AC08-396B170629F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF757591-70DA-4367-AC08-396B170629F5}.Release|x64.ActiveCfg = Release|Any CPU
 		{DF757591-70DA-4367-AC08-396B170629F5}.Release|x64.Build.0 = Release|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Debug|x64.Build.0 = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Release|x64.ActiveCfg = Debug|Any CPU
+		{D9228FA7-5C35-423C-8152-F153A6EF1158}.Release|x64.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -264,5 +274,6 @@ Global
 		{4F92132C-C455-40DD-A02D-A204FCF9DF50} = {86A33E36-2266-4E31-8D91-1F720C9A1F27}
 		{959AF666-E881-4758-918E-E7A76C0971EF} = {FC86C736-6428-431B-B83F-940BF7182757}
 		{DF757591-70DA-4367-AC08-396B170629F5} = {FC86C736-6428-431B-B83F-940BF7182757}
+		{D9228FA7-5C35-423C-8152-F153A6EF1158} = {FC86C736-6428-431B-B83F-940BF7182757}
 	EndGlobalSection
 EndGlobal

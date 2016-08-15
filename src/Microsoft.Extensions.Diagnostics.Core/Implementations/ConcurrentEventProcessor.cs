@@ -133,11 +133,11 @@ namespace Microsoft.Extensions.Diagnostics
 
 #if NET45
                 Task transmitterTask = Task.Run(
-                    () => this.sink.Sender.SendEventsAsync(eventsToSend.ToList(), transmissionSequenceNumber++, cancellationToken),
+                    () => this.sink.Output.SendEventsAsync(eventsToSend.ToList(), transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);
 #elif NETSTANDARD1_6
                 Task transmitterTask = Task.Run(
-                    () => this.sink.Sender.SendEventsAsync(eventsToSend, transmissionSequenceNumber++, cancellationToken),
+                    () => this.sink.Output.SendEventsAsync(eventsToSend, transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);
 #endif
                 transmitterTasks.Add(transmitterTask);

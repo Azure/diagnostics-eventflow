@@ -7,7 +7,11 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public static class MetadataKind
     {
-        public static readonly string Metric = nameof(Metric);
-        public static readonly string Request = nameof(Request);
+        public static readonly string Metric = "metric";
+        public static readonly string Request = "request";
+
+        // TODO: add some validation for well-known metadata
+
+        // CONSIDER: strongly-typed classes that define properties for well-known metadata
     }
 }

@@ -3,12 +3,12 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace Microsoft.Extensions.Diagnostics.Metadata
+using System.Collections.Generic;
+
+namespace Microsoft.Extensions.Diagnostics.Configuration
 {
-    public class PerformanceCounterMetricMetadata : IMetricMetadata
+    public class EventSourceInputConfiguration: ItemConfiguration
     {
-        public string MetricName { get; set; }
-        public string MetricValueProperty { get; set; }
-        public double MetricValue { get; set; }
+        public List<EventSourceConfiguration> Sources { get; set; }
     }
 }

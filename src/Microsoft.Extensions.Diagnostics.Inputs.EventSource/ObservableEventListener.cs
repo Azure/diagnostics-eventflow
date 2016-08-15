@@ -17,29 +17,22 @@ namespace Microsoft.Extensions.Diagnostics
     {
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
-        private List<EventSource> eventSourcesPresentAtConstruction;
-        private List<EventSourceConfiguration> eventSources;
+        private List<EventSource> eventSourcesPresentAtConstruction;        
         private SimpleSubject<EventData> subject;
 
-        public ObservableEventListener(IConfiguration configuration, IHealthReporter healthReporter)
+        public ObservableEventListener(List<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
         {
+            Requires.NotNull(eventSources, nameof(eventSources));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
             this.subject = new SimpleSubject<EventData>();
 
-            if (configuration != null)
+            this.EventSources = eventSources;
+            if (this.EventSources.Count == 0)
             {
-                this.eventSources = new List<EventSourceConfiguration>();
-                try
-                {
-                    configuration.Bind(this.eventSources);
-                }
-                catch (Exception e)
-                {
-                    healthReporter.ReportProblem($"{nameof(ObservableEventListener)}: error reading configuration. {e.ToString()}");
-                    return;
-                }
+                healthReporter.ReportWarning($"{nameof(ObservableEventListener)}: no event sources configured");
+                return;
             }
 
             lock (this)  // See OnEventSourceCreated() for explanation why we are locking on 'this' here.
@@ -48,6 +41,8 @@ namespace Microsoft.Extensions.Diagnostics
                 this.constructed = true;
             }
         }
+
+        public IReadOnlyCollection<EventSourceConfiguration> EventSources { get; private set; }
 
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
@@ -107,17 +102,10 @@ namespace Microsoft.Extensions.Diagnostics
 
         private void EnableAsNecessary(EventSource eventSource)
         {
-            if (this.eventSources == null)
+            EventSourceConfiguration provider = this.EventSources.Where(p => p.ProviderName == eventSource.Name).FirstOrDefault();
+            if (provider != null)
             {
-                this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)~0);
-            }
-            else
-            {
-                EventSourceConfiguration provider = this.eventSources.Where(p => p.ProviderName == eventSource.Name).FirstOrDefault();
-                if (provider != null)
-                {
-                    this.EnableEvents(eventSource, provider.Level, provider.Keywords);
-                }
+                this.EnableEvents(eventSource, provider.Level, provider.Keywords);
             }
         }
     }

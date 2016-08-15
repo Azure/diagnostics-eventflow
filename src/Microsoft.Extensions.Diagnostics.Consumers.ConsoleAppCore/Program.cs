@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Diagnostics.HealthReporters;
 using Microsoft.Extensions.Diagnostics.Inputs;
-using Microsoft.Extensions.Diagnostics.Outputs.StdOutput;
+using Microsoft.Extensions.Diagnostics.Outputs;
 
 namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore
 {

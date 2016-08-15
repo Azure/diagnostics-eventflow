@@ -4,19 +4,21 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public class ApplicationInsightsSenderFactory: IPipelineItemFactory<ApplicationInsightsSender>
+    public class StdOutputFactory : IPipelineItemFactory<StdSender>
     {
-        public ApplicationInsightsSender CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        public StdSender CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            return new ApplicationInsightsSender(configuration, healthReporter);
+            return new StdSender(healthReporter);
         }
     }
 }

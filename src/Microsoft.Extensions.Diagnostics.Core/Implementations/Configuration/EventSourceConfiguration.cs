@@ -15,14 +15,26 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
         public EventLevel Level { get; set; }
         public EventKeywords Keywords { get; set; }
 
-        public List<EventMetricMetadata> Metrics { get; set; }
-
-        public List<RequestMetadata> Requests { get; set; }
-
         public EventSourceConfiguration()
         {
             Level = EventLevel.LogAlways;
             Keywords = (EventKeywords) ~0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as EventSourceConfiguration;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return ProviderName == other.ProviderName && Level == other.Level && Keywords == other.Keywords;
+        }
+
+        public override int GetHashCode()
+        {
+            return ProviderName.GetHashCode();
         }
     }
 }

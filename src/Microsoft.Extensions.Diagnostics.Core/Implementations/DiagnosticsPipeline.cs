@@ -18,14 +18,17 @@ namespace Microsoft.Extensions.Diagnostics
 
         public DiagnosticsPipeline(
             IHealthReporter healthReporter,
-            IReadOnlyCollection<IObservable<EventDataType>> sources, 
+            IReadOnlyCollection<IObservable<EventDataType>> inputs, 
             IReadOnlyCollection<EventSink<EventDataType>> sinks)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
-            Requires.NotNull(sources, nameof(sources));
-            Requires.Argument(sources.Count > 0, nameof(sources), "There must be at least one source");
+            Requires.NotNull(inputs, nameof(inputs));
+            Requires.Argument(inputs.Count > 0, nameof(inputs), "There must be at least one input");
             Requires.NotNull(sinks, nameof(sinks));
             Requires.Argument(sinks.Count > 0, nameof(sinks), "There must be at least one sink");
+
+            this.Inputs = inputs;
+            this.Sinks = sinks;
 
             this.processors = sinks.Select(sink => new ConcurrentEventProcessor<EventDataType>(
                     eventBufferSize: 1000,
@@ -35,13 +38,13 @@ namespace Microsoft.Extensions.Diagnostics
                     sink: sink,
                     healthReporter: healthReporter));
 
-            this.subscriptions = new List<IDisposable>(sources.Count * sinks.Count);
+            this.subscriptions = new List<IDisposable>(inputs.Count * sinks.Count);
 
-            foreach(var source in sources)
+            foreach(var input in inputs)
             {
                 foreach (var processor in this.processors)
                 {
-                    this.subscriptions.Add(source.Subscribe(processor));
+                    this.subscriptions.Add(input.Subscribe(processor));
                 }
             }
 
@@ -65,5 +68,8 @@ namespace Microsoft.Extensions.Diagnostics
                 processor.Dispose();
             }
         }
+
+        public IReadOnlyCollection<IObservable<EventDataType>> Inputs { get; private set; }
+        public IReadOnlyCollection<EventSink<EventDataType>> Sinks { get; private set; }
     }
 }

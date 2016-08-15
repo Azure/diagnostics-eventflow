@@ -52,19 +52,22 @@ namespace Microsoft.Extensions.Diagnostics
             {
                 foreach (var e in events)
                 {
-                    IMetricMetadata metricMetadata = e.GetMetadata(MetadataKind.Metric) as IMetricMetadata;
-                    if (metricMetadata != null)
+                    EventMetadata singleMetadata;
+                    IEnumerable<EventMetadata> multiMetadata;
+                    bool handled = false;
+
+                    if (e.GetMetadata(MetadataKind.Metric, out singleMetadata, out multiMetadata))
                     {
-                        TrackMetric(e, metricMetadata);
+                        TrackMetric(e, singleMetadata, multiMetadata);
+                        handled = true;
                     }
 
-                    IRequestMetadata requestMetadata = e.GetMetadata(MetadataKind.Request) as IRequestMetadata;
-                    if (requestMetadata != null)
+                    if (e.GetMetadata(MetadataKind.Request, out singleMetadata, out multiMetadata))
                     {
-                        TrackRequest(e, requestMetadata);
+                        TrackRequest(e, singleMetadata, multiMetadata);
                     }
 
-                    if (metricMetadata == null && requestMetadata == null)
+                    if (!handled)
                     {
                         TraceTelemetry t = new TraceTelemetry(e.Message ?? string.Empty);
                         AddProperties(t, e);
@@ -85,19 +88,28 @@ namespace Microsoft.Extensions.Diagnostics
             return Task.FromResult<object>(null);
         }
 
-        private void TrackMetric(EventData e, IMetricMetadata metricMetadata)
+        private void TrackMetric(EventData e, EventMetadata singleMetadata, IEnumerable<EventMetadata> multiMetadata)
         {
+            Debug.Assert(singleMetadata != null || multiMetadata != null);
+
+            if (singleMetadata == null)
+            {
+                // TODO: handle multi-metadata case
+                return;
+            }
+
             MetricTelemetry mt = new MetricTelemetry();
-            mt.Name = metricMetadata.MetricName;
+            mt.Name = singleMetadata["metricName"];
 
             double value = 0.0;
-            if (string.IsNullOrEmpty(metricMetadata.MetricValueProperty))
+            string metricValueProperty = singleMetadata["metricValueProperty"];
+            if (string.IsNullOrEmpty(metricValueProperty))
             {
-                value = metricMetadata.MetricValue;
+                double.TryParse(singleMetadata["metricValue"], out value);
             }
             else
             {
-                this.GetValueFromPayload<double>(e, metricMetadata.MetricValueProperty, (v) => value = v);
+                this.GetValueFromPayload<double>(e, metricValueProperty, (v) => value = v);
             }
             mt.Value = value;
 
@@ -106,21 +118,30 @@ namespace Microsoft.Extensions.Diagnostics
             telemetryClient.TrackMetric(mt);
         }
 
-        private void TrackRequest(EventData e, IRequestMetadata requestMetadata)
+        private void TrackRequest(EventData e, EventMetadata singleMetadata, IEnumerable<EventMetadata> multiMetadata)
         {
             RequestTelemetry rt = new RequestTelemetry();
+
+            Debug.Assert(singleMetadata != null || multiMetadata != null);
+
+            if (singleMetadata == null)
+            {
+                // TODO: handle multi-metadata case
+                return;
+            }
 
             string requestName = null;
             bool? success = null;
             double duration = 0;
             // CONSIDER: add ability to send response code
 
-            Debug.Assert(!string.IsNullOrWhiteSpace(requestMetadata.RequestNameProperty));
-            this.GetValueFromPayload<string>(e, requestMetadata.RequestNameProperty, (v) => requestName = v);
+            string requestNameProperty = singleMetadata["requestNameProperty"];
+            Debug.Assert(!string.IsNullOrWhiteSpace(requestNameProperty));
+            this.GetValueFromPayload<string>(e, requestNameProperty, (v) => requestName = v);
 
-            this.GetValueFromPayload<bool>(e, requestMetadata.IsSuccessProperty, (v) => success = v);
+            this.GetValueFromPayload<bool>(e, singleMetadata["isSuccessProperty"], (v) => success = v);
 
-            this.GetValueFromPayload<double>(e, requestMetadata.DurationProperty, (v) => duration = v);
+            this.GetValueFromPayload<double>(e, singleMetadata["durationProperty"], (v) => duration = v);
 
             TimeSpan durationSpan = TimeSpan.FromMilliseconds(duration);
             DateTimeOffset startTime = e.Timestamp.Subtract(durationSpan); // TODO: add an option to extract request start time from event data

@@ -4,20 +4,38 @@
 // ------------------------------------------------------------
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.Configuration;
+using System;
 using Validation;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public static class ObservableEventListenerFactory
+    public class ObservableEventListenerFactory: IPipelineItemFactory<ObservableEventListener>
     {
-        public static ObservableEventListener CreateListener(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
+        public ObservableEventListener CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            Requires.NotNull(configurationRoot, nameof(configurationRoot));
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            IConfiguration eventSourceConfiguration = configurationRoot.GetSection("EventSources");
-            return eventSourceConfiguration != null ?
-                new ObservableEventListener(eventSourceConfiguration, healthReporter) :
-                null;
+            IConfiguration sourcesConfiguration = configuration.GetSection("sources");
+            if (sourcesConfiguration == null)
+            {
+                healthReporter.ReportProblem($"{nameof(ObservableEventListenerFactory)}: required configuration section 'sources' is missing");
+                return null;
+            }
+            var eventSourceConfigurations = new List<EventSourceConfiguration>();
+            try
+            {
+                sourcesConfiguration.Bind(eventSourceConfigurations);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"{nameof(ObservableEventListenerFactory)}: configuration is invalid");
+                return null;
+            }
+
+            return new ObservableEventListener(eventSourceConfigurations, healthReporter);
         }
     }
 }

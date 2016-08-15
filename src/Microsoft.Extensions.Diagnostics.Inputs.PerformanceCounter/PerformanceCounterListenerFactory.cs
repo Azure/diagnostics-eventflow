@@ -3,21 +3,20 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public static class PerformanceCounterListenerFactory
+    public class PerformanceCounterListenerFactory: IPipelineItemFactory<PerformanceCounterListener>
     {
-        public static PerformanceCounterListener CreateListener(IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
+        public PerformanceCounterListener CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            Requires.NotNull(configurationRoot, nameof(configurationRoot));
+            Requires.NotNull(configuration, nameof(configuration));
 
-            IConfiguration performanceCounterConfiguration = configurationRoot.GetSection("PerformanceCounterMetrics");
-            return performanceCounterConfiguration != null ?
-                new PerformanceCounterListener(performanceCounterConfiguration, healthReporter) :
-                null;
+            // TODO: implement
+            throw new NotImplementedException();
         }
     }
 }
