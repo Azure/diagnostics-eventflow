@@ -65,5 +65,10 @@ namespace Microsoft.Extensions.Diagnostics
             // For now just one will suffice.
             this.metadata[metadataKind] = value;
         }
+
+        public object GetPropertyValue(string propertyName)
+        {
+            throw new NotImplementedException("Just make the parser work for now. This method needs to be implemented to make evaluators work.");
+        }
     }
 }

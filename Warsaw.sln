@@ -22,6 +22,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ouputs", "Ouputs", "{5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Core", "src\Microsoft.Extensions.Diagnostics.Core\Microsoft.Extensions.Diagnostics.Core.xproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DF757591-70DA-4367-AC08-396B170629F5} = {DF757591-70DA-4367-AC08-396B170629F5}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Consumers", "Consumers", "{D67068AF-16BB-4037-BE4E-B642419089BA}"
 EndProject
@@ -66,6 +69,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Core.Tests", "test\Microsoft.Extensions.Diagnostics.Core.Tests\Microsoft.Extensions.Diagnostics.Core.Tests.xproj", "{06D5E2CB-446F-4C92-9E76-17088B0B9ED7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Tests", "test\Microsoft.Extensions.Diagnostics.Tests\Microsoft.Extensions.Diagnostics.Tests.csproj", "{EFF41C6B-63FE-477D-B910-EF5A40CB8753}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.FilterParserGenerator", "src\Microsoft.Extensions.Diagnostics.FilterParserGenerator\Microsoft.Extensions.Diagnostics.FilterParserGenerator.csproj", "{DF757591-70DA-4367-AC08-396B170629F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -202,6 +207,14 @@ Global
 		{EFF41C6B-63FE-477D-B910-EF5A40CB8753}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EFF41C6B-63FE-477D-B910-EF5A40CB8753}.Release|x64.ActiveCfg = Release|Any CPU
 		{EFF41C6B-63FE-477D-B910-EF5A40CB8753}.Release|x64.Build.0 = Release|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Debug|x64.Build.0 = Debug|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Release|x64.ActiveCfg = Release|Any CPU
+		{DF757591-70DA-4367-AC08-396B170629F5}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -223,5 +236,6 @@ Global
 		{8DD84071-078D-4B93-9BC5-968F0F67CCA3} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{06D5E2CB-446F-4C92-9E76-17088B0B9ED7} = {86A33E36-2266-4E31-8D91-1F720C9A1F27}
 		{EFF41C6B-63FE-477D-B910-EF5A40CB8753} = {86A33E36-2266-4E31-8D91-1F720C9A1F27}
+		{DF757591-70DA-4367-AC08-396B170629F5} = {FC86C736-6428-431B-B83F-940BF7182757}
 	EndGlobalSection
 EndGlobal
