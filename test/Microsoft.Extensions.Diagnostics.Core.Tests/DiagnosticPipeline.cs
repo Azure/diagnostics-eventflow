@@ -12,12 +12,26 @@ using Microsoft.Extensions.Diagnostics.Inputs;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Diagnostics.Tests
+namespace Microsoft.Extensions.Diagnostics.Core.Tests
 {
-    public class DiagnosticPipeline_Should
+    public class DiagnosticPipeline
     {
+        [Fact(DisplayName = "DiagnosticsPipeline constructor should require health reporter")]
+        public void ConstructorShouldRequireHealthReport()
+        {
+            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            {
+                DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
+                    null,
+                    new List<TraceInput>(),
+                    new List<EventSink<EventData>>());
+            });
+
+            Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
+        }
+
         [Fact(DisplayName = "DiagnosticPipeline should pass 1 input to 1 output")]
-        public async void PassOneInputToOneOutput()
+        public async void ShouldPassOneInputToOneOutput()
         {
             // Setup
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();

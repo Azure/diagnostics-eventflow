@@ -7,6 +7,7 @@
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Extensions.Diagnostics.Core": { "target": "project" },
     "Microsoft.Extensions.Diagnostics.Inputs.Trace": { "target": "project" },
+    "Microsoft.Extensions.Diagnostics.Outputs.StdOutput": "1.0.0-*",
     "Moq": "4.6.36-alpha",
     "System.ComponentModel.Primitives": "4.1.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",

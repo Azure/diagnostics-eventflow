@@ -7,12 +7,13 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Diagnostics.Tests
+namespace Microsoft.Extensions.Diagnostics.Inputs.Tests
 {
-    public class EventSourceInput_ConstructorShould
+    public class EventSourceInput
     {
-        [Fact(DisplayName = "EventSourceInput ctor should create instance")]
-        public void CreateInstance()
+#if NET46
+        [Fact(DisplayName = "EventSourceInput constructor should create instance")]
+        public void ConstructorShouldCreateInstance()
         {
             // Setup
             Mock<IConfiguration> configurationMock = new Mock<IConfiguration>();
@@ -25,5 +26,6 @@ namespace Microsoft.Extensions.Diagnostics.Tests
             // Verify
             Assert.NotNull(target);
         }
+#endif
     }
 }

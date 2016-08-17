@@ -12,7 +12,6 @@
     "System.Runtime.Serialization.Primitives": "4.1.1",
     "xunit": "2.2.0-beta2-build3300"
   },
-  "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
@@ -33,5 +32,6 @@
         "xunit.runner.visualstudio": "2.2.0-beta2-build1149"
       }
     }
-  }
+  },
+  "testRunner": "xunit"
 }
