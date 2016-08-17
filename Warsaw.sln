@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Fabric", "Microsoft.Extensions.Diagnostics.Fabric\Microsoft.Extensions.Diagnostics.Fabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Fabric", "src\Microsoft.Extensions.Diagnostics.Fabric\Microsoft.Extensions.Diagnostics.Fabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B56C3023-E73E-43C4-859A-8AD328E675ED} = {B56C3023-E73E-43C4-859A-8AD328E675ED}
 		{B254AD24-EBDF-4871-8A69-184D167923F0} = {B254AD24-EBDF-4871-8A69-184D167923F0}
@@ -21,27 +21,27 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Inputs", "Inputs", "{47200F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ouputs", "Ouputs", "{5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Core", "Microsoft.Extensions.Diagnostics.Core\Microsoft.Extensions.Diagnostics.Core.xproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Core", "src\Microsoft.Extensions.Diagnostics.Core\Microsoft.Extensions.Diagnostics.Core.xproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Consumers", "Consumers", "{D67068AF-16BB-4037-BE4E-B642419089BA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Consumers.ASPNET", "Microsoft.Extensions.Diagnostics.Consumers.ASPNET\Microsoft.Extensions.Diagnostics.Consumers.ASPNET.xproj", "{0EB2C089-06A7-495D-8909-E00C88E112D3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Consumers.ASPNET", "src\Microsoft.Extensions.Diagnostics.Consumers.ASPNET\Microsoft.Extensions.Diagnostics.Consumers.ASPNET.xproj", "{0EB2C089-06A7-495D-8909-E00C88E112D3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch", "Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch\Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch.xproj", "{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch", "src\Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch\Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch.xproj", "{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.EventHubs", "Microsoft.Extensions.Diagnostics.Outputs.EventHubs\Microsoft.Extensions.Diagnostics.Outputs.EventHubs.xproj", "{7072DB92-0FDA-4B87-ABFD-897882C9284A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.EventHubs", "src\Microsoft.Extensions.Diagnostics.Outputs.EventHubs\Microsoft.Extensions.Diagnostics.Outputs.EventHubs.xproj", "{7072DB92-0FDA-4B87-ABFD-897882C9284A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.OmsEvent", "Microsoft.Extensions.Diagnostics.Outputs.OmsEvent\Microsoft.Extensions.Diagnostics.Outputs.OmsEvent.xproj", "{B254AD24-EBDF-4871-8A69-184D167923F0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.OmsEvent", "src\Microsoft.Extensions.Diagnostics.Outputs.OmsEvent\Microsoft.Extensions.Diagnostics.Outputs.OmsEvent.xproj", "{B254AD24-EBDF-4871-8A69-184D167923F0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.TableStorage", "Microsoft.Extensions.Diagnostics.Outputs.TableStorage\Microsoft.Extensions.Diagnostics.Outputs.TableStorage.xproj", "{B56C3023-E73E-43C4-859A-8AD328E675ED}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.TableStorage", "src\Microsoft.Extensions.Diagnostics.Outputs.TableStorage\Microsoft.Extensions.Diagnostics.Outputs.TableStorage.xproj", "{B56C3023-E73E-43C4-859A-8AD328E675ED}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.EventSource", "Microsoft.Extensions.Diagnostics.Inputs.EventSource\Microsoft.Extensions.Diagnostics.Inputs.EventSource.xproj", "{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.EventSource", "src\Microsoft.Extensions.Diagnostics.Inputs.EventSource\Microsoft.Extensions.Diagnostics.Inputs.EventSource.xproj", "{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter", "Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter.xproj", "{02D7E06C-E535-4BDC-8990-7A403DA546D9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter", "src\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter.xproj", "{02D7E06C-E535-4BDC-8990-7A403DA546D9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights", "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights.xproj", "{EF3B9B49-1372-4A4B-9E20-A2C1ADABEB64}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights", "src\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights.xproj", "{EF3B9B49-1372-4A4B-9E20-A2C1ADABEB64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp", "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp.csproj", "{F0DC8BED-405A-42C7-8D65-A46385F859F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp", "src\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp.csproj", "{F0DC8BED-405A-42C7-8D65-A46385F859F9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B56C3023-E73E-43C4-859A-8AD328E675ED} = {B56C3023-E73E-43C4-859A-8AD328E675ED}
 		{B254AD24-EBDF-4871-8A69-184D167923F0} = {B254AD24-EBDF-4871-8A69-184D167923F0}
@@ -55,11 +55,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagno
 		{49A23DFF-CE13-4413-A024-65247B30D09C} = {49A23DFF-CE13-4413-A024-65247B30D09C}
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.Trace", "Microsoft.Extensions.Diagnostics.Inputs.Trace\Microsoft.Extensions.Diagnostics.Inputs.Trace.xproj", "{03836F90-8D65-4A93-834C-5CE22F3292B5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.Trace", "src\Microsoft.Extensions.Diagnostics.Inputs.Trace\Microsoft.Extensions.Diagnostics.Inputs.Trace.xproj", "{03836F90-8D65-4A93-834C-5CE22F3292B5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.StdOutput", "Microsoft.Extensions.Diagnostics.Outputs.StdOutput\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.xproj", "{49A23DFF-CE13-4413-A024-65247B30D09C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.StdOutput", "src\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.xproj", "{49A23DFF-CE13-4413-A024-65247B30D09C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore", "Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore\Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore.xproj", "{8DD84071-078D-4B93-9BC5-968F0F67CCA3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore", "src\Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore\Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore.xproj", "{8DD84071-078D-4B93-9BC5-968F0F67CCA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
