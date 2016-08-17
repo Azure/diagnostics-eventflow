@@ -193,3 +193,4 @@ ModelManifest.xml
 
 /.vs/restore.dg
 project.lock.json
+/src/Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore/HealthReport.csv
