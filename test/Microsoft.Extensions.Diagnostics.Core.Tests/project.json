@@ -8,7 +8,8 @@
     "xunit": "2.1.0",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Extensions.Diagnostics.Core": { "target": "project" },
-    "Microsoft.Extensions.Diagnostics.Inputs.Trace": { "target": "project" }
+    "Microsoft.Extensions.Diagnostics.Inputs.Trace": { "target": "project" },
+    "Moq": "4.6.36-alpha"
   },
   "testRunner": "xunit",
   "frameworks": {

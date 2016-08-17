@@ -7,10 +7,10 @@ using System.Diagnostics.Tracing;
 
 namespace Microsoft.Extensions.Diagnostics.Tests
 {
-    [EventSource(Name ="Mock EventSource")]
-    public class MockEventSource : EventSource
+    [EventSource(Name ="UnitTest EventSource")]
+    public class UnitTestEventSource : EventSource
     {
-        public static MockEventSource Log = new MockEventSource();
+        public static UnitTestEventSource Log = new UnitTestEventSource();
 
         [Event(1, Level = EventLevel.Informational)]
         public void SendInformation(string msg)

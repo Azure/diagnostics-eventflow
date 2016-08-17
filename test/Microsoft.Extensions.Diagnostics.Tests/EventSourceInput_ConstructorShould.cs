@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using Microsoft.Extensions.Configuration;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Tests
@@ -14,25 +15,15 @@ namespace Microsoft.Extensions.Diagnostics.Tests
         public void CreateInstance()
         {
             // Setup
-            IConfiguration dummyConfigure = new DummyConfiguration();
-            IHealthReporter dummyHealthReporter = new DummyHealthReporter();
+            Mock<IConfiguration> configurationMock = new Mock<IConfiguration>();
+            Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
+            // Execute
+            ObservableEventListener target = new ObservableEventListener(
+                configurationMock.Object,
+                healthReporterMock.Object);
 
-            try
-            {
-                // Execute
-                ObservableEventListener target = new ObservableEventListener(
-                    dummyConfigure,
-                    dummyHealthReporter);
-
-                // Verify
-                Assert.NotNull(target);
-            }
-            finally
-            {
-                // Teardown
-                dummyConfigure = null;
-                dummyHealthReporter = null;
-            }
+            // Verify
+            Assert.NotNull(target);
         }
     }
 }
