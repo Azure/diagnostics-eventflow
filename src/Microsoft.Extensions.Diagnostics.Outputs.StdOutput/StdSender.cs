@@ -1,4 +1,8 @@
-﻿using System;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,30 +16,25 @@ namespace Microsoft.Extensions.Diagnostics.Outputs.StdOutput
 
         public StdSender(IHealthReporter healthReporter) : base(healthReporter)
         {
-            this.healthReporter.ReportMessage($"Initializing.", TraceTag);
-            this.healthReporter.ReportMessage($"Initialized.", TraceTag);
         }
 
         public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             try
             {
-                this.healthReporter.ReportMessage($"Entering SendEvents in batch.", TraceTag);
-                Parallel.ForEach(events, e =>
+                foreach (EventData evt in events)
                 {
-                    this.healthReporter.ReportMessage($"Sending an event.", TraceTag);
-                    string eventString = JsonConvert.SerializeObject(events);
+                    string eventString = JsonConvert.SerializeObject(evt);
                     string output = $"[{transmissionSequenceNumber}] {eventString}";
 
                     Console.WriteLine(output);
-                    this.healthReporter.ReportMessage($"Event Sent.", TraceTag);
-                });
-
+                }
                 return Task.CompletedTask;
             }
-            finally
+            catch (Exception ex)
             {
-                this.healthReporter.ReportMessage($"Exit SendEvents in batch.", TraceTag);
+                this.healthReporter.ReportProblem($"Fail to send events in batch. Error details: {ex.ToString()}");
+                return Task.FromException(ex);
             }
         }
     }

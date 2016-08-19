@@ -36,10 +36,16 @@
   <ItemGroup>
     <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Core.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Core</Name>  
     </Reference>
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.Trace\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.Trace.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Inputs.Trace</Name>
     </Reference>
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.dll">
+      <Name>Microsoft.Extensions.Diagnostics.Outputs.StdOutput</Name>
+    </Reference>
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.CsvHealthReporter\bin\Debug\net45\Microsoft.Extensions.Diagnostics.CsvHealthReporter.dll">
+      <Name>Microsoft.Extensions.Diagnostics.CsvHealthReporter</Name>
     </Reference>
     <!--~-->
     <Reference Include="System" />

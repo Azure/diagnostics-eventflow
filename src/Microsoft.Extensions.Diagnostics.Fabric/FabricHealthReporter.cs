@@ -41,20 +41,25 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
             this.nodeName = nodeContext.NodeName;
         }
 
-        public void ReportHealthy()
+        public void ReportHealthy(string description = "Healthy", string context = null)
         {
-            this.ReportHealth(HealthState.Ok, string.Empty);
+            ReportMessage(HealthState.Ok, description);
         }
 
-        public void ReportProblem(string problemDescription)
+        public void ReportProblem(string description, string context = null)
         {
-            this.ReportHealth(HealthState.Warning, problemDescription);
+            ReportMessage(HealthState.Error, description);
         }
 
-        private void ReportHealth(HealthState healthState, string problemDescription)
+        public void ReportWarning(string description, string context = null)
+        {
+            ReportMessage(HealthState.Warning, description);
+        }
+
+        private void ReportMessage(HealthState healthState, string description)
         {
             HealthInformation healthInformation = new HealthInformation(this.entityIdentifier, "Connectivity", healthState);
-            healthInformation.Description = problemDescription;
+            healthInformation.Description = description;
 
             DeployedServicePackageHealthReport healthReport = new DeployedServicePackageHealthReport(
                 this.applicatioName,
@@ -65,24 +70,9 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
             this.fabricClient.HealthManager.ReportHealth(healthReport);
         }
 
-        public void ReportProblem(string problemDescription, string category = null)
-        {
-            ReportHealth(HealthState.Error, problemDescription);
-        }
-
-        public void ReportMessage(string description, string category = null)
-        {
-            ReportHealth(HealthState.Ok, description);
-        }
-
-        public void ReportWarning(string description, string category = null)
-        {
-            ReportHealth(HealthState.Warning, description);
-        }
-
         public void Dispose()
         {
-            // Nothing
+            // Recycle resource when necessary.
         }
     }
 }

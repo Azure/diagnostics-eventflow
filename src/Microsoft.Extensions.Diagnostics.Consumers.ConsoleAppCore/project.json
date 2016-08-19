@@ -5,7 +5,8 @@
   },
 
   "dependencies": {
-    "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
+    "Microsoft.Extensions.Diagnostics.Core": { "target": "project"},
+    "Microsoft.Extensions.Diagnostics.CsvHealthReporter": {"target": "project"},
     "Microsoft.Extensions.Diagnostics.Inputs.Trace": "1.0.0-*",
     "Microsoft.Extensions.Diagnostics.Outputs.StdOutput": "1.0.0-*",
     "Microsoft.NETCore.App": {

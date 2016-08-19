@@ -1,7 +1,11 @@
-﻿using System;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Diagnostics.Core.Implementations;
+using Microsoft.Extensions.Diagnostics.HealthReporters;
 using Microsoft.Extensions.Diagnostics.Inputs;
 using Microsoft.Extensions.Diagnostics.Outputs.StdOutput;
 
@@ -12,7 +16,7 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
         static void Main(string[] args)
         {
             // HealthReporter
-            using (IHealthReporter reporter = new CsvFileHealthReport("HealthReport.csv", HealthReportLevels.Message))
+            using (IHealthReporter reporter = new CsvFileHealthReporter("HealthReport.csv", HealthReportLevel.Message))
             {
                 // Inputs
                 List<IObservable<EventData>> inputs = new List<IObservable<EventData>>();

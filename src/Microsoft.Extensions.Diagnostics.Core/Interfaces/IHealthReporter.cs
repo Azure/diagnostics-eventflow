@@ -9,9 +9,8 @@ namespace Microsoft.Extensions.Diagnostics
 {
     public interface IHealthReporter : IDisposable
     {
-        void ReportHealthy();
-        void ReportProblem(string problemDescription, string category = null);
-        void ReportMessage(string description, string category = null);
-        void ReportWarning(string description, string category = null);
+        void ReportHealthy(string description = null, string context = null);
+        void ReportProblem(string description, string context = null);
+        void ReportWarning(string description, string context = null);
     }
 }
