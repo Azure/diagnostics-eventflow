@@ -206,7 +206,7 @@ namespace Microsoft.Extensions.Diagnostics
 
         private static void ReportItemCreationFailed(IHealthReporter healthReporter, string itemType, Exception e = null)
         {
-            string errorMessage = $"{nameof(DiagnosticsPipelineFactory)}: item factory for item {itemType} could not be found. No items of this type will be created.";
+            string errorMessage = $"{nameof(DiagnosticsPipelineFactory)}: item of type '{itemType}' could not be created";
             if (e != null)
             {
                 errorMessage += Environment.NewLine + e.ToString();
