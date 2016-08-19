@@ -41,8 +41,6 @@ namespace Microsoft.Extensions.Diagnostics
 
         public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
-            // TODO: support higher-level AI concepts like metrics, dependency calls, and requests
-
             if (this.telemetryClient == null || events == null || events.Count == 0)
             {
                 return Task.FromResult<object>(null);

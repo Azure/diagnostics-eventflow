@@ -24,10 +24,15 @@ namespace Microsoft.Extensions.Diagnostics
 
         public void Execute(Action work)
         {
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            if (TooEarly(now))
+            {
+                return;
+            }
+
             lock (this.lockObject)
             {
-                DateTimeOffset now = DateTimeOffset.UtcNow;
-                if (this.lastExecutionTime != null && (now - this.lastExecutionTime) < this.throttlingTimeSpan)
+                if (TooEarly(now))
                 {
                     return;
                 }
@@ -35,6 +40,11 @@ namespace Microsoft.Extensions.Diagnostics
                 this.lastExecutionTime = now;
             }
             work();
+        }
+
+        private bool TooEarly(DateTimeOffset now)
+        {
+            return this.lastExecutionTime != null && (now - this.lastExecutionTime) < this.throttlingTimeSpan;
         }
     }
 }

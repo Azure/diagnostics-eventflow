@@ -3,16 +3,14 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Moq;
-using Xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Microsoft.Extensions.Diagnostics.Outputs;
 using Microsoft.Extensions.Diagnostics.Metadata;
+
+using Moq;
+using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Tests
 {

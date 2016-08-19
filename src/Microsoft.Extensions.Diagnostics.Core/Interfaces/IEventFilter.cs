@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Diagnostics
 {
     public interface IEventFilter<EventDataType>
     {
+        // Returns false if the event should be discarded.
         bool Filter(EventDataType eventData);
     }
 }

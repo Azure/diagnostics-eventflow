@@ -242,23 +242,24 @@ namespace Microsoft.Extensions.Diagnostics
             out IDictionary<string, string> filterFactories)
         {
             // TODO: finalize the set of "well-known" pipeline elements
-
+            // CONSIDER: make event the well-known pipeline elements overridable
             // TODO: add proper PublicKeyToken to factory references when compiling relase bits
+
 
             Debug.Assert(configuration != null);
             Debug.Assert(healthReporter != null);
 
             inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            inputFactories["EventSource"] = "Microsoft.Extensions.Diagnostics.ObservableEventListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.EventSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
-            inputFactories["PerformanceCounter"] = "Microsoft.Extensions.Diagnostics.PerformanceCounterListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
+            inputFactories["EventSource"] = "Microsoft.Extensions.Diagnostics.ObservableEventListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.EventSource, Culture=neutral, PublicKeyToken=null";
+            inputFactories["PerformanceCounter"] = "Microsoft.Extensions.Diagnostics.PerformanceCounterListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=null";
 
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            outputFactories["ApplicationInsights"] = "Microsoft.Extensions.Diagnostics.ApplicationInsightsSenderFactory, Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
-            outputFactories["StdOutput"] = "Microsoft.Extensions.Diagnostics.Outputs.StdOutputFactory, Microsoft.Extensions.Diagnostics.Outputs.StdOutput, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
+            outputFactories["ApplicationInsights"] = "Microsoft.Extensions.Diagnostics.ApplicationInsightsSenderFactory, Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=null";
+            outputFactories["StdOutput"] = "Microsoft.Extensions.Diagnostics.Outputs.StdOutputFactory, Microsoft.Extensions.Diagnostics.Outputs.StdOutput, Culture=neutral, PublicKeyToken=null";
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            filterFactories["metadata"] = "Microsoft.Extensions.Diagnostics.EventMetadataFilterFactory, Microsoft.Extensions.Diagnostics.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
+            filterFactories["metadata"] = "Microsoft.Extensions.Diagnostics.EventMetadataFilterFactory, Microsoft.Extensions.Diagnostics.Core, Culture=neutral, PublicKeyToken=null";
 
             // TODO: implement 3rd party input/output/filter instantiation driven by the contents of "extensions" section
         }
