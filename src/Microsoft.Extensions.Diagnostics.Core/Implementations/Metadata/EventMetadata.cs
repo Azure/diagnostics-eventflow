@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 {
     public class EventMetadata
     {
-        public string MetadataKind { get; private set; }
+        public string MetadataType { get; private set; }
         public string IncludeCondition { get; set; }
         
         public IDictionary<string, string> Properties { get; private set; }
@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
         public EventMetadata(string metadataKind)
         {
             Requires.NotNullOrWhiteSpace(metadataKind, nameof(metadataKind));
-            this.MetadataKind = metadataKind;
+            this.MetadataType = metadataKind;
             this.Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
                 return false;
             }
 
-            if (MetadataKind != other.MetadataKind || IncludeCondition != other.IncludeCondition)
+            if (MetadataType != other.MetadataType || IncludeCondition != other.IncludeCondition)
             {
                 return false;
             }
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.Diagnostics.Metadata
 
         public override int GetHashCode()
         {
-            return this.MetadataKind.GetHashCode() ^ this.IncludeCondition.GetHashCode();
+            return this.MetadataType.GetHashCode() ^ this.IncludeCondition.GetHashCode();
         }
     }
 }

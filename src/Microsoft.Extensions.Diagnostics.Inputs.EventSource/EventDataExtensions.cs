@@ -53,12 +53,12 @@ namespace Microsoft.Extensions.Diagnostics
             {
             }
 
-            eventSourceEvent.GetPayloadData(eventData);
+            eventSourceEvent.ExtractPayloadData(eventData);
 
             return eventData;
         }
 
-        private static void GetPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData)
+        private static void ExtractPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData)
         {
             if (eventSourceEvent.Payload == null || eventSourceEvent.PayloadNames == null)
             {

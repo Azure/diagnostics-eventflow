@@ -5,7 +5,7 @@
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
-    public static class MetadataKind
+    public static class MetadataType
     {
         public static readonly string Metric = "metric";
         public static readonly string Request = "request";

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Validation;
 
@@ -102,7 +101,7 @@ namespace Microsoft.Extensions.Diagnostics
 
         private void EnableAsNecessary(EventSource eventSource)
         {
-            EventSourceConfiguration provider = this.EventSources.Where(p => p.ProviderName == eventSource.Name).FirstOrDefault();
+            EventSourceConfiguration provider = this.EventSources.FirstOrDefault(p => p.ProviderName == eventSource.Name);
             if (provider != null)
             {
                 this.EnableEvents(eventSource, provider.Level, provider.Keywords);

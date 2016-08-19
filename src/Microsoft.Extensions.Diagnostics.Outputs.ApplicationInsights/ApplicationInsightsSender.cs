@@ -56,13 +56,13 @@ namespace Microsoft.Extensions.Diagnostics
                     IEnumerable<EventMetadata> multiMetadata;
                     bool handled = false;
 
-                    if (e.GetMetadata(MetadataKind.Metric, out singleMetadata, out multiMetadata))
+                    if (e.TryGetMetadata(MetadataType.Metric, out singleMetadata, out multiMetadata))
                     {
                         TrackMetric(e, singleMetadata, multiMetadata);
                         handled = true;
                     }
 
-                    if (e.GetMetadata(MetadataKind.Request, out singleMetadata, out multiMetadata))
+                    if (e.TryGetMetadata(MetadataType.Request, out singleMetadata, out multiMetadata))
                     {
                         TrackRequest(e, singleMetadata, multiMetadata);
                     }

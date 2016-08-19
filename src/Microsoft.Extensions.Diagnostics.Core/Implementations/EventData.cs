@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Diagnostics
         //
         // If only one instance of the metadata exists, it will be returned via singleMetadata parameter
         // If multiple instances exist, it will be returned via multiMetatada parameter.
-        public bool GetMetadata(string metadataKind, out EventMetadata singleMetadata, out IEnumerable<EventMetadata> multiMetadata)
+        public bool TryGetMetadata(string metadataKind, out EventMetadata singleMetadata, out IEnumerable<EventMetadata> multiMetadata)
         {
             Requires.NotNull(metadataKind, nameof(metadataKind));
             multiMetadata = null;
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Diagnostics
         {
             Requires.NotNull(newMetadata, nameof(newMetadata));
 
-            string metadataKind = newMetadata.MetadataKind;
+            string metadataKind = newMetadata.MetadataType;
             // CONSIDER: should metadataKind string be interned?
 
             if (this.metadata == null)

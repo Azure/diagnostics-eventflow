@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
                 metadata.Properties.Add("importance", "can be discarded");
                 expectedFilters[0] = new EventMetadataFilter(metadata);
 
-                metadata = new EventMetadata(MetadataKind.Metric);
+                metadata = new EventMetadata(MetadataType.Metric);
                 metadata.IncludeCondition = "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure";
                 metadata.Properties.Add("metricName", "StatefulRunAsyncFailure");
                 metadata.Properties.Add("metricValue", "1.0");
