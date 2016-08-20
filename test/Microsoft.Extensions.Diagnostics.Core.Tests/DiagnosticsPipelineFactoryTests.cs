@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
 
                 var healthReporterMock = new Mock<IHealthReporter>();
 
-                var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration, healthReporterMock.Object) as DiagnosticsPipeline<EventData>;
+                var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration, healthReporterMock.Object) as DiagnosticsPipeline;
                 Assert.NotNull(pipeline);
 
                 healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(0));

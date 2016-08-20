@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
         {
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
             {
-                DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
+                DiagnosticsPipeline pipeline = new DiagnosticsPipeline(
                     null,
                     new List<TraceInput>(),
                     new List<EventSink<EventData>>());
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
             // Setup
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             Mock<IEventSender<EventData>> mockOutput = new Mock<IEventSender<EventData>>();
-            DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(
+            DiagnosticsPipeline pipeline = new DiagnosticsPipeline(
                 healthReporterMock.Object,
                 new IObservable<EventData>[] { new TraceInput(healthReporterMock.Object) },
                 new EventSink<EventData>[] { new EventSink<EventData>(mockOutput.Object, null) }
