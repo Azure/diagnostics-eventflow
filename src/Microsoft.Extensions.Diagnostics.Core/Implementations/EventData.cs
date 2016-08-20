@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics
     // Note: this class is not thread-safe. Since it will not be used concurrently, we do not want 
     // to pay the cost of synchronized access to its members.
     //
-    public class EventData
+    public class EventData: IDeepCloneable<EventData>
     {
         private Dictionary<string, object> payload;
         private Dictionary<string, object> metadata;
@@ -120,6 +120,22 @@ namespace Microsoft.Extensions.Diagnostics
         public object GetPropertyValue(string propertyName)
         {
             throw new NotImplementedException("Just make the parser work for now. This method needs to be implemented to make evaluators work.");
+        }
+
+        public EventData DeepClone()
+        {
+            var other = new EventData();
+            other.ActivityID = this.ActivityID;
+            other.EventId = this.EventId;
+            other.EventName = this.EventName;
+            other.Keywords = this.Keywords;
+            other.Level = this.Level;
+            other.Message = this.Message;
+            other.ProviderName = this.ProviderName;
+            other.Timestamp = this.Timestamp;
+            other.payload = new Dictionary<string, object>(this.payload);
+            other.metadata = new Dictionary<string, object>(this.metadata);
+            return other;
         }
     }
 }

@@ -10,16 +10,16 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class DiagnosticsPipeline<EventDataType>: IDisposable
+    public class DiagnosticsPipeline: IDisposable
     {
-        private IEnumerable<ConcurrentEventProcessor<EventDataType>> processors;
+        private IEnumerable<ConcurrentEventProcessor> processors;
         private List<IDisposable> subscriptions;
         private bool disposed;
 
         public DiagnosticsPipeline(
             IHealthReporter healthReporter,
-            IReadOnlyCollection<IObservable<EventDataType>> inputs, 
-            IReadOnlyCollection<EventSink<EventDataType>> sinks)
+            IReadOnlyCollection<IObservable<EventData>> inputs, 
+            IReadOnlyCollection<EventSink<EventData>> sinks)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(inputs, nameof(inputs));
@@ -30,11 +30,15 @@ namespace Microsoft.Extensions.Diagnostics
             this.Inputs = inputs;
             this.Sinks = sinks;
 
-            this.processors = sinks.Select(sink => new ConcurrentEventProcessor<EventDataType>(
+            // TODO: cloning should be used only if there are more than one sink and any of them have output-specific filters.
+            bool useCloning = sinks.Count() > 1; 
+
+            this.processors = sinks.Select(sink => new ConcurrentEventProcessor(
                     eventBufferSize: 1000,
                     maxConcurrency: 4,
                     batchSize: 100,
                     noEventsDelay: TimeSpan.FromMilliseconds(500),
+                    cloneReceivedEvents: useCloning,
                     sink: sink,
                     healthReporter: healthReporter));
 
@@ -69,7 +73,7 @@ namespace Microsoft.Extensions.Diagnostics
             }
         }
 
-        public IReadOnlyCollection<IObservable<EventDataType>> Inputs { get; private set; }
-        public IReadOnlyCollection<EventSink<EventDataType>> Sinks { get; private set; }
+        public IReadOnlyCollection<IObservable<EventData>> Inputs { get; private set; }
+        public IReadOnlyCollection<EventSink<EventData>> Sinks { get; private set; }
     }
 }

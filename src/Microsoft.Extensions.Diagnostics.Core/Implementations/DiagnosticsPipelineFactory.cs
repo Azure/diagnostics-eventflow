@@ -90,11 +90,13 @@ namespace Microsoft.Extensions.Diagnostics
 
 
             // Step 4: assemble and return the pipeline
+
+            // TODO: the globabl filters should really be executed just once, instead of separately for every output.
             IReadOnlyCollection<EventSink<EventData>> sinks = outputCreationResult.Select(outputResult =>
                 new EventSink<EventData>(outputResult.Item, globalFilters.Concat(outputResult.Children))
             ).ToList();
 
-            DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(healthReporter, inputs, sinks);
+            DiagnosticsPipeline pipeline = new DiagnosticsPipeline(healthReporter, inputs, sinks);
             return pipeline;
         }
 

@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore
                 List<EventDataSender> outputs = new List<EventDataSender>();
                 outputs.Add(new StdSender(reporter));
 
-                DiagnosticsPipeline<EventData> pipeline = new DiagnosticsPipeline<EventData>(reporter, inputs,
+                DiagnosticsPipeline pipeline = new DiagnosticsPipeline(reporter, inputs,
                     new EventSink<EventData>[] {
                     new EventSink<EventData>(new StdSender(reporter), null)
                 });
