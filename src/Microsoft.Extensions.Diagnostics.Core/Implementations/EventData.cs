@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.Diagnostics
     public class EventData: IDeepCloneable<EventData>
     {
         private Dictionary<string, object> payload;
+
         private Dictionary<string, object> metadata;
 
         public DateTimeOffset Timestamp { get; set; }
