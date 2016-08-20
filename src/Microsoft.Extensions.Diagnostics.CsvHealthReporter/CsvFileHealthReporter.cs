@@ -7,39 +7,55 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Diagnostics.HealthReporters
 {
-    // TODO: Consider making this class singleton to avoid being intialized by end users.
     public class CsvFileHealthReporter : IHealthReporter
     {
         #region Fields
+        private static readonly string TraceTag = nameof(CsvFileHealthReporter);
         private readonly object _locker = new object();
         private HealthReportLevel _logLevel;
-        private string _fileName;
+        private string _logFilePath;
         private FileStream _fileStream;
         private StreamWriter _streamWriter;
         #endregion
 
-        // TODO: Considering expose IConfiguration instead of HealthReportLevel when there is full configuration story.
-        public CsvFileHealthReporter(string fileName, HealthReportLevel logLevel)
+        public CsvFileHealthReporter(string configurationFilePath)
         {
-            Validation.Requires.NotNullOrWhiteSpace(fileName, nameof(fileName));
-            _fileName = fileName;
-            _logLevel = logLevel;
+            Validation.Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
+
+            IConfigurationBuilder builder = new ConfigurationBuilder()
+                .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false);
+            IConfiguration configuration = builder.Build();
+
+            _logFilePath = configuration["healthReporter:logFilePath"];
+            string logLevelString = configuration["healthReporter:logLevel"] ?? "Warning";
+            string csvFileHealthReporterWarning = null;
+            if (!Enum.TryParse(logLevelString, out _logLevel))
+            {
+                csvFileHealthReporterWarning = $"Log level parse fail. Please check the value of: {logLevelString}.";
+                _logLevel = HealthReportLevel.Error;
+            }
 
             try
             {
-                _fileStream = new FileStream(_fileName, FileMode.Append);
+                _fileStream = new FileStream(_logFilePath, FileMode.Append);
             }
             catch (IOException)
             {
                 // In case file is locked by other process, give it another shoot
-                _fileName = $"{Path.GetFileNameWithoutExtension(_fileName)}_{Path.GetRandomFileName()}{Path.GetExtension(_fileName)}";
-                _fileStream = new FileStream(_fileName, FileMode.Append);
+                _logFilePath = $"{Path.GetFileNameWithoutExtension(_logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(_logFilePath)}";
+                _fileStream = new FileStream(_logFilePath, FileMode.Append);
             }
 
             _streamWriter = new StreamWriter(_fileStream, Encoding.UTF8);
+
+            if (!string.IsNullOrEmpty(csvFileHealthReporterWarning))
+            {
+                ReportProblem(csvFileHealthReporterWarning, TraceTag);
+            }
         }
 
         public void ReportHealthy(string description = null, string context = null)
@@ -66,9 +82,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
                     return;
                 }
                 context = context ?? string.Empty;
-                string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.SortableDateTimePattern);
+                string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
                 string message = $"{timestamp},{context.Replace(',', '_')},{level},{text}";
-                WriteLine(_fileName, message);
+                WriteLine(_logFilePath, message);
             }
             catch
             {

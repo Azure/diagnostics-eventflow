@@ -2,7 +2,10 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
+    "Microsoft.Extensions.Diagnostics.Core": {
+      "target": "project"
+    },
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "NETStandard.Library": "1.6.0"
   },
 
@@ -10,6 +13,6 @@
     "netstandard1.6": {
       "imports": "dnxcore50"
     },
-    "net45": {}
+    "net451": {}
   }
 }

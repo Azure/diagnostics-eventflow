@@ -1,0 +1,6 @@
+﻿{
+  "healthReporter": {
+    "logFilePath": "HealthReport.csv",
+    "logLevel": "Message"
+  }
+}
