@@ -6,6 +6,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Extensions.Diagnostics.Core": { "target": "project" },
+    "Microsoft.Extensions.Diagnostics.CsvHealthReporter": { "target": "project" },
     "Microsoft.Extensions.Diagnostics.Inputs.Trace": { "target": "project" },
     "Microsoft.Extensions.Diagnostics.Inputs.EventSource": { "target": "project" },
     "Microsoft.Extensions.Diagnostics.Outputs.StdOutput": { "target": "project" },    

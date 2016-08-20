@@ -22,7 +22,12 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
         private StreamWriter _streamWriter;
         #endregion
 
-        public CsvFileHealthReporter(string configurationFilePath)
+        public CsvFileHealthReporter(IConfiguration configuration, StreamWriter streamWriter = null)
+        {
+            Initialize(configuration, streamWriter);
+        }
+
+        public CsvFileHealthReporter(string configurationFilePath, StreamWriter streamWriter = null)
         {
             Validation.Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
 
@@ -30,12 +35,17 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
                 .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false);
             IConfiguration configuration = builder.Build();
 
+            Initialize(configuration, streamWriter);
+        }
+
+        private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
+        {
             _logFilePath = configuration["healthReporter:logFilePath"];
             string logLevelString = configuration["healthReporter:logLevel"] ?? "Warning";
-            string csvFileHealthReporterWarning = null;
+            string selfError = null;
             if (!Enum.TryParse(logLevelString, out _logLevel))
             {
-                csvFileHealthReporterWarning = $"Log level parse fail. Please check the value of: {logLevelString}.";
+                selfError = $"Log level parse fail. Please check the value of: {logLevelString}.";
                 _logLevel = HealthReportLevel.Error;
             }
 
@@ -50,11 +60,11 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
                 _fileStream = new FileStream(_logFilePath, FileMode.Append);
             }
 
-            _streamWriter = new StreamWriter(_fileStream, Encoding.UTF8);
+            _streamWriter = streamWriter ?? new StreamWriter(_fileStream, Encoding.UTF8);
 
-            if (!string.IsNullOrEmpty(csvFileHealthReporterWarning))
+            if (!string.IsNullOrEmpty(selfError))
             {
-                ReportProblem(csvFileHealthReporterWarning, TraceTag);
+                ReportProblem(selfError, TraceTag);
             }
         }
 
