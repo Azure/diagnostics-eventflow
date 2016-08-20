@@ -10,38 +10,45 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class DiagnosticsPipeline<EventDataType>: IDisposable
+    public class DiagnosticsPipeline: IDisposable
     {
-        private IEnumerable<ConcurrentEventProcessor<EventDataType>> processors;
+        private IEnumerable<ConcurrentEventProcessor> processors;
         private List<IDisposable> subscriptions;
         private bool disposed;
 
         public DiagnosticsPipeline(
             IHealthReporter healthReporter,
-            IReadOnlyCollection<IObservable<EventDataType>> sources, 
-            IReadOnlyCollection<EventSink<EventDataType>> sinks)
+            IReadOnlyCollection<IObservable<EventData>> inputs, 
+            IReadOnlyCollection<EventSink<EventData>> sinks)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
-            Requires.NotNull(sources, nameof(sources));
-            Requires.Argument(sources.Count > 0, nameof(sources), "There must be at least one source");
+            Requires.NotNull(inputs, nameof(inputs));
+            Requires.Argument(inputs.Count > 0, nameof(inputs), "There must be at least one input");
             Requires.NotNull(sinks, nameof(sinks));
             Requires.Argument(sinks.Count > 0, nameof(sinks), "There must be at least one sink");
 
-            this.processors = sinks.Select(sink => new ConcurrentEventProcessor<EventDataType>(
+            this.Inputs = inputs;
+            this.Sinks = sinks;
+
+            // TODO: cloning should be used only if there are more than one sink and any of them have output-specific filters.
+            bool useCloning = sinks.Count() > 1; 
+
+            this.processors = sinks.Select(sink => new ConcurrentEventProcessor(
                     eventBufferSize: 1000,
                     maxConcurrency: 4,
                     batchSize: 100,
                     noEventsDelay: TimeSpan.FromMilliseconds(500),
+                    cloneReceivedEvents: useCloning,
                     sink: sink,
                     healthReporter: healthReporter));
 
-            this.subscriptions = new List<IDisposable>(sources.Count * sinks.Count);
+            this.subscriptions = new List<IDisposable>(inputs.Count * sinks.Count);
 
-            foreach(var source in sources)
+            foreach(var input in inputs)
             {
                 foreach (var processor in this.processors)
                 {
-                    this.subscriptions.Add(source.Subscribe(processor));
+                    this.subscriptions.Add(input.Subscribe(processor));
                 }
             }
 
@@ -65,5 +72,8 @@ namespace Microsoft.Extensions.Diagnostics
                 processor.Dispose();
             }
         }
+
+        public IReadOnlyCollection<IObservable<EventData>> Inputs { get; private set; }
+        public IReadOnlyCollection<EventSink<EventData>> Sinks { get; private set; }
     }
 }

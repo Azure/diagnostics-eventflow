@@ -26,6 +26,11 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
         // No need to set ProcessIdCounterName or ProcessIdCounterCategory
         public bool UseDotNetInstanceNameConvention { get; set; }
 
+        public PerformanceCounterConfiguration()
+        {
+            this.CollectionIntervalInSeconds = 30;
+        }
+
         public virtual bool Validate()
         {
             // CONSIDER: for well-known categories like Process and all .NET categories we could just assume default ProcessIdCounterName

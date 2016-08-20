@@ -6,14 +6,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Configuration;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public interface IEventFilter<EventDataType>
+    public class EventMetadataFilterConfiguration: ItemConfiguration
     {
-        // Returns false if the event should be discarded.
-        bool Filter(EventDataType eventData);
+        // Indicates metadata kind
+        public string Metadata { get; set; }
+
+        public string Include { get; set; }
     }
 }

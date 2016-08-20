@@ -14,25 +14,30 @@ using Validation;
 namespace Microsoft.Extensions.Diagnostics
 {
 
-    public class ConcurrentEventProcessor<EventDataType> : IObserver<EventDataType>, IDisposable
+    public class ConcurrentEventProcessor: IObserver<EventData>, IDisposable 
     {
+        private delegate void OnNewEvent(EventData e);
+
         private static readonly TimeSpan EventLossReportInterval = TimeSpan.FromSeconds(5);
+
         private readonly int capacityWarningThreshold;
-        private BlockingCollection<EventDataType> events;
+        private BlockingCollection<EventData> events;
         private CancellationTokenSource cts;
         private uint maxConcurrency;
         private int batchSize;
         private TimeSpan noEventsDelay;
-        private EventSink<EventDataType> sink;
+        private EventSink<EventData> sink;
         private TimeSpanThrottle eventLossThrottle;
         private IHealthReporter healthReporter;
+        private OnNewEvent newEventHandler;
 
         public ConcurrentEventProcessor(
             int eventBufferSize,
             uint maxConcurrency,
             int batchSize,
             TimeSpan noEventsDelay,
-            EventSink<EventDataType> sink,
+            bool cloneReceivedEvents,
+            EventSink<EventData> sink,
             IHealthReporter healthReporter)
         {
             Requires.Range(eventBufferSize > 0, nameof(eventBufferSize));
@@ -41,7 +46,7 @@ namespace Microsoft.Extensions.Diagnostics
             Requires.NotNull(sink, nameof(sink));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            this.events = new BlockingCollection<EventDataType>(eventBufferSize);
+            this.events = new BlockingCollection<EventData>(eventBufferSize);
 
             this.maxConcurrency = maxConcurrency;
             this.batchSize = batchSize;
@@ -49,6 +54,7 @@ namespace Microsoft.Extensions.Diagnostics
             this.sink = sink;
             this.capacityWarningThreshold = (int)Math.Ceiling(0.9m * eventBufferSize);
             this.healthReporter = healthReporter;
+            this.newEventHandler = cloneReceivedEvents ? (OnNewEvent) this.OnNewEventWithCloning : this.OnNewEventSimple;
 
             // Probably does not make sense to report event loss more often than once per second.
             this.eventLossThrottle = new TimeSpanThrottle(TimeSpan.FromSeconds(1));
@@ -75,14 +81,9 @@ namespace Microsoft.Extensions.Diagnostics
             this.sink.Dispose();
         }
 
-        public void OnNext(EventDataType eData)
+        public void OnNext(EventData eData)
         {
-            if (!this.events.TryAdd(eData))
-            {
-                // Just drop the event. 
-                this.eventLossThrottle.Execute(
-                    () => { this.healthReporter.ReportProblem("Diagnostic events buffer overflow occurred. Some diagnostics data was lost."); });
-            }
+            this.newEventHandler(eData);
         }
 
         public void OnError(Exception error)
@@ -101,6 +102,28 @@ namespace Microsoft.Extensions.Diagnostics
             this.Dispose();
         }
 
+        private void OnNewEventSimple(EventData eData)
+        {
+            if (!this.events.TryAdd(eData))
+            {
+                // Just drop the event. 
+                this.eventLossThrottle.Execute(
+                    () => { this.healthReporter.ReportProblem("Diagnostic events buffer overflow occurred. Some diagnostics data was lost."); });
+            }
+        }
+
+        private void OnNewEventWithCloning(EventData eData)
+        {
+            eData = eData.DeepClone();
+
+            if (!this.events.TryAdd(eData))
+            {
+                // Just drop the event. 
+                this.eventLossThrottle.Execute(
+                    () => { this.healthReporter.ReportProblem("Diagnostic events buffer overflow occurred. Some diagnostics data was lost."); });
+            }
+        }
+
         private async Task EventConsumerAsync(CancellationToken cancellationToken)
         {
             List<Task> transmitterTasks = new List<Task>((int)this.maxConcurrency);
@@ -113,7 +136,7 @@ namespace Microsoft.Extensions.Diagnostics
                     Task.WaitAny(transmitterTasks.ToArray());
                 }
 
-                IEnumerable<EventDataType> eventsToFilter;
+                IEnumerable<EventData> eventsToFilter;
                 int eventsFetched;
                 if (!this.GetBatch(cancellationToken, out eventsToFilter, out eventsFetched))
                 {
@@ -121,7 +144,7 @@ namespace Microsoft.Extensions.Diagnostics
                 }
 
                 // Filter and decorate events
-                ConcurrentBag<EventDataType> eventsToSend = FilterAndDecorate(cancellationToken, eventsToFilter);
+                ConcurrentBag<EventData> eventsToSend = FilterAndDecorate(cancellationToken, eventsToFilter);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     break;
@@ -133,11 +156,11 @@ namespace Microsoft.Extensions.Diagnostics
 
 #if NET45
                 Task transmitterTask = Task.Run(
-                    () => this.sink.Sender.SendEventsAsync(eventsToSend.ToList(), transmissionSequenceNumber++, cancellationToken),
+                    () => this.sink.Output.SendEventsAsync(eventsToSend.ToList(), transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);
 #elif NETSTANDARD1_6
                 Task transmitterTask = Task.Run(
-                    () => this.sink.Sender.SendEventsAsync(eventsToSend, transmissionSequenceNumber++, cancellationToken),
+                    () => this.sink.Output.SendEventsAsync(eventsToSend, transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);
 #endif
                 transmitterTasks.Add(transmitterTask);
@@ -158,15 +181,15 @@ namespace Microsoft.Extensions.Diagnostics
             }
         }
 
-        private ConcurrentBag<EventDataType> FilterAndDecorate(CancellationToken cancellationToken, IEnumerable<EventDataType> eventsToFilter)
+        private ConcurrentBag<EventData> FilterAndDecorate(CancellationToken cancellationToken, IEnumerable<EventData> eventsToFilter)
         {
-            ConcurrentBag<EventDataType> eventsToSend;
-            IEnumerable<IEventFilter<EventDataType>> filters = this.sink.Filters;
+            ConcurrentBag<EventData> eventsToSend;
+            IEnumerable<IEventFilter<EventData>> filters = this.sink.Filters;
             if (filters != null)
             {
                 ParallelOptions parallelOptions = new ParallelOptions();
                 parallelOptions.CancellationToken = cancellationToken;
-                eventsToSend = new ConcurrentBag<EventDataType>();
+                eventsToSend = new ConcurrentBag<EventData>();
                 Parallel.ForEach(eventsToFilter, parallelOptions, eventData =>
                 {
                     if (filters.All(f => f.Filter(eventData)))
@@ -177,7 +200,7 @@ namespace Microsoft.Extensions.Diagnostics
             }
             else
             {
-                eventsToSend = new ConcurrentBag<EventDataType>(eventsToFilter);
+                eventsToSend = new ConcurrentBag<EventData>(eventsToFilter);
             }
 
             return eventsToSend;
@@ -192,11 +215,11 @@ namespace Microsoft.Extensions.Diagnostics
             }
         }
 
-        private bool GetBatch(CancellationToken cancellationToken, out IEnumerable<EventDataType> eventsToSend, out int eventsFetched)
+        private bool GetBatch(CancellationToken cancellationToken, out IEnumerable<EventData> eventsToSend, out int eventsFetched)
         {
             // Consider: reuse event buffers
-            List<EventDataType> events = new List<EventDataType>(this.batchSize);
-            EventDataType eData;
+            List<EventData> events = new List<EventData>(this.batchSize);
+            EventData eData;
             eventsFetched = 0;
             eventsToSend = null;
 

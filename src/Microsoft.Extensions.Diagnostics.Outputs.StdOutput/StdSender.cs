@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Microsoft.Extensions.Diagnostics.Outputs.StdOutput
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
     public class StdSender : EventDataSender
     {

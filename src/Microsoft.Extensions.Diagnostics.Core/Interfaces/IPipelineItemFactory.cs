@@ -3,11 +3,13 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace Microsoft.Extensions.Diagnostics.Metadata
+using System;
+using Microsoft.Extensions.Configuration;
+
+namespace Microsoft.Extensions.Diagnostics
 {
-    public static class MetadataKind
+    public interface IPipelineItemFactory<out ItemType>
     {
-        public static readonly string Metric = nameof(Metric);
-        public static readonly string Request = nameof(Request);
+        ItemType CreateItem(IConfiguration configuration, IHealthReporter healthReporter);
     }
 }

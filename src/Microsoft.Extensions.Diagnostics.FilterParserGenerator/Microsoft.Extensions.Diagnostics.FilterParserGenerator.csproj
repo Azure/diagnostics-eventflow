@@ -98,6 +98,12 @@
     <Compile Include="..\Microsoft.Extensions.Diagnostics.Core\Implementations\FilterEvaluators\RegexEvaluator.cs">
       <Link>RegexEvaluator.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Extensions.Diagnostics.Core\Implementations\Metadata\EventMetadata.cs">
+      <Link>EventMetadata.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Extensions.Diagnostics.Core\Interfaces\IDeepCloneable.cs">
+      <Link>IDeepCloneable.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Extensions.Diagnostics.Outputs.StdOutput;
+using Microsoft.Extensions.Diagnostics.Outputs;
 using Moq;
 using Xunit;
 

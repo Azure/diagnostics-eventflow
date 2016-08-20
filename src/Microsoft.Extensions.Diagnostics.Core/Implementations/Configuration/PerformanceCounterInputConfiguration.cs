@@ -3,12 +3,12 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace Microsoft.Extensions.Diagnostics.Metadata
+using System.Collections.Generic;
+
+namespace Microsoft.Extensions.Diagnostics.Configuration
 {
-    public interface IRequestMetadata
+    public class PerformanceCounterInputConfiguration: ItemConfiguration
     {
-        string RequestNameProperty { get; set; }
-        string DurationProperty { get; set; }
-        string IsSuccessProperty { get; set; }
+        public List<PerformanceCounterConfiguration> Counters { get; set; }
     }
 }

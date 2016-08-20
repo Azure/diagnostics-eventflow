@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Core.Tests
 {
-    public class DiagnosticPipeline
+    public class DiagnosticPipelineTests
     {
         [Fact(DisplayName = "DiagnosticsPipeline constructor should require health reporter")]
         public void ConstructorShouldRequireHealthReport()

@@ -5,10 +5,13 @@
 
 namespace Microsoft.Extensions.Diagnostics.Metadata
 {
-    public interface IMetricMetadata
+    public static class MetadataType
     {
-        string MetricName { get; set; }
-        string MetricValueProperty { get; set; }
-        double MetricValue { get; set; }
+        public static readonly string Metric = "metric";
+        public static readonly string Request = "request";
+
+        // TODO: add some validation for well-known metadata
+
+        // CONSIDER: strongly-typed classes that define properties for well-known metadata
     }
 }

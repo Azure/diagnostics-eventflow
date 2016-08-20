@@ -11,19 +11,19 @@ namespace Microsoft.Extensions.Diagnostics
 {
     public class EventSink<EventDataType>: IDisposable
     {
-        public EventSink(IEventSender<EventDataType> sender, IEnumerable<IEventFilter<EventDataType>> filters)
+        public EventSink(IEventSender<EventDataType> output, IEnumerable<IEventFilter<EventDataType>> filters)
         {
-            Requires.NotNull(sender, nameof(sender));
-            this.Sender = sender;
+            Requires.NotNull(output, nameof(output));
+            this.Output = output;
             this.Filters = filters;
         }
 
-        public IEventSender<EventDataType> Sender { get; private set; }
+        public IEventSender<EventDataType> Output { get; private set; }
         public IEnumerable<IEventFilter<EventDataType>> Filters { get; private set; }
 
         public void Dispose()
         {
-            (Sender as IDisposable)?.Dispose();
+            (Output as IDisposable)?.Dispose();
 
             if (Filters != null)
             {

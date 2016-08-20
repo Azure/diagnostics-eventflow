@@ -80,10 +80,8 @@ namespace Microsoft.Extensions.Diagnostics
                         if (counter.SampleNextValue(out counterValue))
                         {
                             EventData d = new EventData();
-                            d.Payload = new Dictionary<string, object>();
                             d.Payload[MetricValueProperty] = counterValue;
                             d.Timestamp = DateTimeOffset.UtcNow;
-                            d.SetMetadata(MetadataKind.Metric, counter.Metadata);
                             this.subject.OnNext(d);
                         }
                     }
@@ -126,8 +124,6 @@ namespace Microsoft.Extensions.Diagnostics
             private string lastInstanceName;
 
             public PerformanceCounterConfiguration Configuration { get; private set; }
-            public PerformanceCounterMetricMetadata Metadata { get; private set; }
-            
 
             public TrackedPerformanceCounter(PerformanceCounterConfiguration configuration)
             {
@@ -136,12 +132,6 @@ namespace Microsoft.Extensions.Diagnostics
                 this.Configuration = configuration;
                 this.lastAccessedOn = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
                 this.disposed = false;
-
-                this.Metadata = new PerformanceCounterMetricMetadata()
-                {
-                    MetricName = configuration.MetricName,
-                    MetricValueProperty = PerformanceCounterListener.MetricValueProperty
-                };
             }
 
             public bool SampleNextValue(out float newValue)

@@ -8,29 +8,30 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class EventMetadataFilter<TMetadata>: IEventFilter<EventData> where TMetadata : EventMetadata
+    public class EventMetadataFilter: IEventFilter<EventData>
     {
-        private EventMetadataCollection<TMetadata> metadataCollection;
-        private string metadataKind;
+        private EventMetadata metadata;
 
-        public EventMetadataFilter(EventMetadataCollection<TMetadata> metadataCollection, string metadataKind)
+        public EventMetadataFilter(EventMetadata metadata)
         {
-            Requires.NotNull(metadataCollection, nameof(metadataCollection));
-            Requires.NotNullOrWhiteSpace(metadataKind, nameof(metadataKind));
-
-            this.metadataCollection = metadataCollection;
-            this.metadataKind = metadataKind;
+            Requires.NotNull(metadata, nameof(metadata));
+            this.metadata = metadata;
         }
 
         public bool Filter(EventData eventData)
         {
-            TMetadata metadata = this.metadataCollection.GetMetadata(eventData.ProviderName, eventData.EventName);
-            if (metadata != null)
-            {
-                eventData.SetMetadata(this.metadataKind, metadata);
-            }
-
+            this.metadata.TryApplying(eventData);
             return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj as EventMetadataFilter)?.metadata.Equals(this.metadata) ?? false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.metadata.GetHashCode();
         }
     }
 }
