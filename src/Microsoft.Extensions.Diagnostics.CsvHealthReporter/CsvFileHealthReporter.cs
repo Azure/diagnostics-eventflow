@@ -21,12 +21,13 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
         private StreamWriter _streamWriter;
         #endregion
 
-        public CsvFileHealthReporter(IConfiguration configuration, StreamWriter streamWriter = null)
+        // This constructor is used for unit tests.
+        internal CsvFileHealthReporter(IConfiguration configuration, StreamWriter streamWriter = null)
         {
             Initialize(configuration, streamWriter);
         }
 
-        public CsvFileHealthReporter(string configurationFilePath, StreamWriter streamWriter = null)
+        public CsvFileHealthReporter(string configurationFilePath)
         {
             Validation.Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
 
@@ -34,7 +35,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
                 .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false);
             IConfiguration configuration = builder.Build();
 
-            Initialize(configuration, streamWriter);
+            Initialize(configuration, null);
         }
 
         private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
