@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics
 {
@@ -118,9 +119,69 @@ namespace Microsoft.Extensions.Diagnostics
             }
         }
 
-        public object GetPropertyValue(string propertyName)
+        /// <summary>
+        /// Given the property name, retrieve the value from EventData.
+        /// If the property name is not any common property of EventData, we will look up the payload.
+        ///
+        /// There can be a problem if some property in payload has the same name with common property (Timestamp for example).
+        /// In this case, we can add some more functionality like append the propertyName with @, which means look property in payload.
+        /// </summary>
+        /// <param name="propertyName">The propertyName</param>
+        /// <param name="value">The value of the property. Null if the property doesn't exist</param>
+        /// <returns>True if find the property. False if the property doesn't exist</returns>
+        public bool TryGetPropertyValue(string propertyName, out object value)
         {
-            throw new NotImplementedException("Just make the parser work for now. This method needs to be implemented to make evaluators work.");
+            // TODO: Fine tuning this piece of logic. .Net core doesn't support creating delegate. If we use reflection to get the property at run time, performance can be an critical issue in this case.
+            // However, the current implementation also has too many comparison, which may not be better than caching the PropertyInfo() and call GetValue()
+            value = null;
+            try
+            {
+                if (propertyName.Equals(nameof(Timestamp), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.Timestamp;
+                }
+                else if (propertyName.Equals(nameof(ProviderName), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.ProviderName;
+                }
+                else if (propertyName.Equals(nameof(EventId), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.EventId;
+                }
+                else if (propertyName.Equals(nameof(Message), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.Message;
+                }
+                else if (propertyName.Equals(nameof(Level), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.Level;
+                }
+                else if (propertyName.Equals(nameof(Keywords), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.Keywords;
+                }
+                else if (propertyName.Equals(nameof(EventName), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.EventName;
+                }
+                else if (propertyName.Equals(nameof(ActivityID), StringComparison.OrdinalIgnoreCase))
+                {
+                    value = this.ActivityID;
+                }
+                else if (Payload.TryGetValue(propertyName, out value))
+                {
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public EventData DeepClone()

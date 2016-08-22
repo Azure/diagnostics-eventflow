@@ -28,8 +28,8 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
                 throw new ArgumentNullException(nameof(e));
             }
 
-            object eventPropertyValue = e.GetPropertyValue(this.propertyName);
-            if (eventPropertyValue == null)
+            object eventPropertyValue;
+            if (!e.TryGetPropertyValue(this.propertyName, out eventPropertyValue))
             {
                 return false;
             }
