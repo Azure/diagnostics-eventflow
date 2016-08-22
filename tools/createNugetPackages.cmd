@@ -5,9 +5,7 @@ for /f %%a in ('dir %~dp0..\src\project.json /b /s ^| find /v "Consumers"') do d
 GOTO END
 
 :NOSUFFIX
-ECHO Please provide verison suffix.
-ECHO.For example:
-ECHO.createNugetPackages 20160818
+for /f %%a in ('dir %~dp0..\src\project.json /b /s ^| find /v "Consumers"') do dotnet pack %%a --no-build -c Release -o "%~dp0..\nugets"
 GOTO END
 
 :END
