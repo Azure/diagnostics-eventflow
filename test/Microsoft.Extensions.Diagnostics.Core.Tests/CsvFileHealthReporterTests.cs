@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
                         // Verify
                         streamWriterMock.Verify(
                             s => s.WriteLine(
-                                It.Is<string>(msg => msg.EndsWith("Log level parse fail. Please check the value of: WrongLevel."))),
+                                It.Is<string>(msg => msg.EndsWith("Log level parse fail. Please check the value of: WrongLevel.\r\n"))),
                             Times.Exactly(1));
                     }
                 }
