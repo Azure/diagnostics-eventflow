@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
 
         public override string SemanticsString
         {
-            get { return string.Format(CultureInfo.InvariantCulture, "(__EqualityEvaluator:{0}={1})", this.propertyName, this.value); }
+            get { return string.Format(CultureInfo.InvariantCulture, "(__EqualityEvaluator:{0}=={1})", this.propertyName, this.value); }
         }
 
         public override bool Evaluate(EventData e)
@@ -30,8 +30,8 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
             }
             fullyEvaluated = true;
 
-            object eventPropertyValue = e.GetPropertyValue(this.propertyName);
-            if (eventPropertyValue == null)
+            object eventPropertyValue;
+            if (!e.TryGetPropertyValue(this.propertyName, out eventPropertyValue))
             {
                 fullyEvaluated = false;
                 return false;

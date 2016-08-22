@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
 {
     public class DiagnosticPipelineTests
     {
-        [Fact(DisplayName = "DiagnosticsPipeline constructor should require health reporter")]
+        [Fact]
         public void ConstructorShouldRequireHealthReport()
         {
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
             Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
         }
 
-        [Fact(DisplayName = "DiagnosticPipeline should pass 1 input to 1 output")]
+        [Fact]
         public async void ShouldPassOneInputToOneOutput()
         {
             // Setup

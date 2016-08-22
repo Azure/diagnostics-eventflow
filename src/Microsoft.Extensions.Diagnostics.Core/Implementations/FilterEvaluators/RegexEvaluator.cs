@@ -42,8 +42,8 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
                 return false;
             }
 
-            object propertyValue = e.GetPropertyValue(this.propertyName);
-            if (propertyValue == null)
+            object propertyValue;
+            if (!e.TryGetPropertyValue(this.propertyName, out propertyValue))
             {
                 return false;
             }

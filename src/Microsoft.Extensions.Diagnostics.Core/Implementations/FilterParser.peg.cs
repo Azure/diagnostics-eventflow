@@ -397,33 +397,51 @@ namespace
             {
                 var startCursor1 = cursor;
                 IParseResult<string> r6 = null;
-                r6 = this.ParseLiteral(ref cursor, "!(");
+                r6 = this.ParseLiteral(ref cursor, "!");
                 if (r6 != null)
                 {
                     IParseResult<IList<string>> r7 = null;
                     r7 = this._(ref cursor);
                     if (r7 != null)
                     {
-                        IParseResult<FilterEvaluator> r8 = null;
-                        var expStart = cursor;
-                        r8 = this.orExp(ref cursor);
-                        var expEnd = cursor;
-                        var exp = ValueOrDefault(r8);
+                        IParseResult<string> r8 = null;
+                        r8 = this.ParseLiteral(ref cursor, "(");
                         if (r8 != null)
                         {
                             IParseResult<IList<string>> r9 = null;
                             r9 = this._(ref cursor);
                             if (r9 != null)
                             {
-                                IParseResult<string> r10 = null;
-                                r10 = this.ParseLiteral(ref cursor, ")");
+                                IParseResult<FilterEvaluator> r10 = null;
+                                var expStart = cursor;
+                                r10 = this.orExp(ref cursor);
+                                var expEnd = cursor;
+                                var exp = ValueOrDefault(r10);
                                 if (r10 != null)
                                 {
-                                    r0 = this.ReturnHelper<FilterEvaluator>(startCursor1, ref cursor, state =>
-                                        #line 22 "FilterParser.peg"
-                             new NegationEvaluator(exp)
-                                        #line default
-                                        );
+                                    IParseResult<IList<string>> r11 = null;
+                                    r11 = this._(ref cursor);
+                                    if (r11 != null)
+                                    {
+                                        IParseResult<string> r12 = null;
+                                        r12 = this.ParseLiteral(ref cursor, ")");
+                                        if (r12 != null)
+                                        {
+                                            r0 = this.ReturnHelper<FilterEvaluator>(startCursor1, ref cursor, state =>
+                                                #line 22 "FilterParser.peg"
+                                  new NegationEvaluator(exp)
+                                                #line default
+                                                );
+                                        }
+                                        else
+                                        {
+                                            cursor = startCursor1;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        cursor = startCursor1;
+                                    }
                                 }
                                 else
                                 {

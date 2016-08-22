@@ -19,7 +19,7 @@ andExp <FilterEvaluator> -memoize
 primaryExp <FilterEvaluator>
   = basicExp
   / "(" _ exp:orExp _ ")" { exp }
-  / "!(" _ exp:orExp _ ")" { new NegationEvaluator(exp) }
+  / "!" _ "(" _ exp:orExp _ ")" { new NegationEvaluator(exp) }
 
 basicExp <FilterEvaluator>
   = p:property _ o:operator _ v:(value / quotedText) { EventPropertyExpressionEvaluatorFactory.CreateEvaluator(p, o, v) }
