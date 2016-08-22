@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
         private static readonly string TraceTag = nameof(CsvFileHealthReporter);
         private readonly object _locker = new object();
         private HealthReportLevel _logLevel;
-        private string _logFilePath;
         private FileStream _fileStream;
         private StreamWriter _streamWriter;
         #endregion
@@ -40,32 +39,32 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
 
         private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
         {
-            _logFilePath = configuration["healthReporter:logFilePath"];
+            string logFilePath = configuration["healthReporter:logFilePath"];
 
             StringBuilder selfError = new StringBuilder();
             // Set default value for HealthReport.csv
-            if (string.IsNullOrWhiteSpace(_logFilePath))
+            if (string.IsNullOrWhiteSpace(logFilePath))
             {
-                _logFilePath = "HealthReport.csv";
-                selfError.AppendLine($"logFilePath is not specified in configuration file. Fall back to default path: {_logFilePath}");
+                logFilePath = "HealthReport.csv";
+                selfError.AppendLine($"logFilePath is not specified in configuration file. Fall back to default path: {logFilePath}");
             }
 
             string logLevelString = configuration["healthReporter:logLevel"] ?? "Warning";
             if (!Enum.TryParse(logLevelString, out _logLevel))
             {
-                selfError.AppendLine($"Log level parse fail. Please check the value of: {logLevelString}.");
+                selfError.AppendLine($"Failed to parse log level. Please check the value of: {logLevelString}.");
                 _logLevel = HealthReportLevel.Error;
             }
 
             try
             {
-                _fileStream = new FileStream(_logFilePath, FileMode.Append);
+                _fileStream = new FileStream(logFilePath, FileMode.Append);
             }
             catch (IOException)
             {
-                // In case file is locked by other process, give it another shoot
-                _logFilePath = $"{Path.GetFileNameWithoutExtension(_logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(_logFilePath)}";
-                _fileStream = new FileStream(_logFilePath, FileMode.Append);
+                // In case file is locked by other process, give it another shot
+                logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
+                _fileStream = new FileStream(logFilePath, FileMode.Append);
             }
 
             _streamWriter = streamWriter ?? new StreamWriter(_fileStream, Encoding.UTF8);
@@ -107,8 +106,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
             }
             catch
             {
-                // Crash prevention from with in CsvFileHealthReporter.
-                // Reason: Not to carsh the main pipeline event if the health report doesn't work.
+                // Suppress exception to prevent CsvFileHealthReporter from crashing its consumer
             }
         }
 
