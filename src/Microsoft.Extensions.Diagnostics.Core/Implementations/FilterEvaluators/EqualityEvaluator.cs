@@ -37,8 +37,8 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
                 return false;
             }
 
-            EnsureLastInterpretedRhsValue(eventPropertyValue);
-            if (this.LastInterpretedValue == null)
+            var interpretedValue = GetOrAddInterpretedRHSValue(eventPropertyValue);
+            if (interpretedValue == null)
             {
                 fullyEvaluated = false;
                 return false;
@@ -46,11 +46,11 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
 
             if (eventPropertyValue is string)
             {
-                return string.Equals((string)eventPropertyValue, (string)this.LastInterpretedValue, StringComparison.OrdinalIgnoreCase);
+                return string.Equals((string)eventPropertyValue, (string)interpretedValue, StringComparison.OrdinalIgnoreCase);
             }
             else
             {
-                return eventPropertyValue.Equals(this.LastInterpretedValue);
+                return eventPropertyValue.Equals(interpretedValue);
             }
         }
     }
