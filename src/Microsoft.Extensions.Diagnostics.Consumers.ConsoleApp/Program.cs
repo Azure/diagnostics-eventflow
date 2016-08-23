@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthReporters;
 using Microsoft.Extensions.Diagnostics.Inputs;
 using Microsoft.Extensions.Diagnostics.Outputs;
@@ -16,30 +17,72 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
         static void Main(string[] args)
         {
             // HealthReporter
-            using (IHealthReporter reporter = new CsvFileHealthReporter("HealthReport.csv", HealthReportLevel.Message))
+            using (TemporaryFile configFile = CreateConfigFile())
             {
-                // Inputs
-                List<IObservable<EventData>> inputs = new List<IObservable<EventData>>();
-                inputs.Add(new TraceInput(reporter));
+                using (IHealthReporter reporter = new CsvFileHealthReporter("HealthReport.csv", HealthReportLevel.Message))
+                {
+                    ConfigurationBuilder builder = new ConfigurationBuilder();
+                    builder.AddJsonFile(configFile.FilePath);
+                    var configuration = builder.Build();
 
-                // Senders
-                List<EventDataSender> outputs = new List<EventDataSender>();
-                outputs.Add(new StdSender(reporter));
+                    var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration, reporter) as DiagnosticsPipeline;
 
-                DiagnosticsPipeline pipeline = new DiagnosticsPipeline(reporter, inputs,
-                    new EventSink<EventData>[] {
-                    new EventSink<EventData>(new StdSender(reporter), null)
-                });
+                    // Build up the pipeline
+                    Console.WriteLine("Pipeline is created.");
 
-                // Build up the pipeline
-                Console.WriteLine("Pipeline is created.");
+                    // Send a trace to the pipeline
+                    Trace.TraceInformation("This is a message from trace . . .");
+                    MyEventSource.Log.Message("This is a message from EventSource ...");
 
-                // Send a trace to the pipeline
-                Trace.TraceInformation("This is a message from trace . . .");
+                    // Check the result
+                    Console.WriteLine("Press any key to continue . . .");
+                    Console.ReadKey(true);
+                }
+            }
+        }
 
-                // Check the result
-                Console.WriteLine("Press any key to continue . . .");
-                Console.ReadKey(true);
+        private static TemporaryFile CreateConfigFile()
+        {
+            TemporaryFile configFile = new TemporaryFile();
+
+            try
+            {
+                string pipelineConfiguration = @"
+                    {
+                        ""inputs"": [
+                            {
+                                ""type"": ""EventSource"",
+                                ""sources"": [
+                                    { ""providerName"": ""MyEventSource"" }
+                                ]
+                            },
+                            {
+                                ""type"": ""Trace""
+                            }
+                        ],
+
+                        ""filters"": [
+                        ],
+
+                        ""outputs"": [
+                            {
+                                ""type"": ""StdOutput"",
+
+                                ""filters"": [
+                                ]
+                            }
+                        ],
+
+                        ""schema-version"": ""2016-08-11"",
+                    }";
+
+                configFile.Write(pipelineConfiguration);
+                return configFile;
+            }
+            catch (Exception)
+            {
+                configFile.Dispose();
+                throw;
             }
         }
     }
