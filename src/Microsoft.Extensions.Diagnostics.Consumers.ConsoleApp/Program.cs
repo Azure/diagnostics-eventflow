@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
         {
             // HealthReporter
             using (TemporaryFile configFile = CreateConfigFile())
-            using (IHealthReporter reporter = new CsvFileHealthReporter("HealthReport.csv", HealthReportLevel.Message))
+            using (IHealthReporter reporter = new CsvHealthReporter(configFile.FilePath))
             {
                 ConfigurationBuilder builder = new ConfigurationBuilder();
                 builder.AddJsonFile(configFile.FilePath);
