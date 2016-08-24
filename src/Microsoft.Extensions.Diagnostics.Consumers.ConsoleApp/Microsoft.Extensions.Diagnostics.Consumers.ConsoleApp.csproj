@@ -47,7 +47,7 @@
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.dll">
       <Name>Microsoft.Extensions.Diagnostics.Outputs.StdOutput</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.CsvHealthReporter\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.CsvHealthReporter.dll">
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.CsvHealthReporter\bin\$(Configuration)\net451\Microsoft.Extensions.Diagnostics.CsvHealthReporter.dll">
       <Name>Microsoft.Extensions.Diagnostics.CsvHealthReporter</Name>
     </Reference>
     <!--~-->
@@ -105,6 +105,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
+    <None Include="FileReportConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

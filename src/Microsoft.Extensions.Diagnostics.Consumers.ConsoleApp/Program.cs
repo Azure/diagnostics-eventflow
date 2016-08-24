@@ -18,26 +18,24 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
         {
             // HealthReporter
             using (TemporaryFile configFile = CreateConfigFile())
+            using (IHealthReporter reporter = new CsvHealthReporter(configFile.FilePath))
             {
-                using (IHealthReporter reporter = new CsvFileHealthReporter("HealthReport.csv", HealthReportLevel.Message))
-                {
-                    ConfigurationBuilder builder = new ConfigurationBuilder();
-                    builder.AddJsonFile(configFile.FilePath);
-                    var configuration = builder.Build();
+                ConfigurationBuilder builder = new ConfigurationBuilder();
+                builder.AddJsonFile(configFile.FilePath);
+                var configuration = builder.Build();
 
-                    var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration, reporter) as DiagnosticsPipeline;
+                var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration, reporter) as DiagnosticsPipeline;
 
-                    // Build up the pipeline
-                    Console.WriteLine("Pipeline is created.");
+                // Build up the pipeline
+                Console.WriteLine("Pipeline is created.");
 
-                    // Send a trace to the pipeline
-                    Trace.TraceInformation("This is a message from trace . . .");
-                    MyEventSource.Log.Message("This is a message from EventSource ...");
+                // Send a trace to the pipeline
+                Trace.TraceInformation("This is a message from trace . . .");
+                MyEventSource.Log.Message("This is a message from EventSource ...");
 
-                    // Check the result
-                    Console.WriteLine("Press any key to continue . . .");
-                    Console.ReadKey(true);
-                }
+                // Check the result
+                Console.WriteLine("Press any key to continue . . .");
+                Console.ReadKey(true);
             }
         }
 

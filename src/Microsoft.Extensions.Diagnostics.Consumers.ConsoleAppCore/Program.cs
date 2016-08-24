@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore
         public static void Main(string[] args)
         {
             // HealthReporter
-            using (IHealthReporter reporter = new CsvFileHealthReporter("HealthReport.csv", HealthReportLevel.Message))
+            using (IHealthReporter reporter = new CsvHealthReporter("FileReportConfig.json"))
             {
                 // Listeners
                 List<IObservable<EventData>> inputs = new List<IObservable<EventData>>();
