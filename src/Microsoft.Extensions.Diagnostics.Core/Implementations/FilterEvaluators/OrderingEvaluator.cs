@@ -34,27 +34,27 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
                 return false;
             }
 
-            EnsureLastInterpretedRhsValue(eventPropertyValue);
+            var interpretedValue = GetOrAddInterpretedRHSValue(eventPropertyValue);
 
             bool retval;
 
-            if (this.LastInterpretedValue == null)
+            if (interpretedValue == null)
             {
                 retval = false;
             }
             else if (eventPropertyValue is string)
             {
-                retval = IsMatch(string.Compare((string)eventPropertyValue, (string)this.LastInterpretedValue, StringComparison.OrdinalIgnoreCase));
+                retval = IsMatch(string.Compare((string)eventPropertyValue, (string)interpretedValue, StringComparison.OrdinalIgnoreCase));
             }
             else if (eventPropertyValue is bool || eventPropertyValue is Guid)
             {
-                // bool and Guid do implement IComparable, but we do not want to use that implementation here, the evaluation
-                // for these types should always return false.
+                // bool and Guid do implement IComparable, but we do not want to use that implementation here, because we expect user only
+                // use equality/inequality operator but not ordering operator for such types. The evaluation for these types always return false.
                 retval = false;
             }
             else if (eventPropertyValue is IComparable)
             {
-                retval = IsMatch(((IComparable)eventPropertyValue).CompareTo(this.LastInterpretedValue));
+                retval = IsMatch(((IComparable)eventPropertyValue).CompareTo(interpretedValue));
             }
             else
             {

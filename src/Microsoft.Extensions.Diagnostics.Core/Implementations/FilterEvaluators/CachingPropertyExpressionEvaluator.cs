@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -11,48 +12,40 @@ namespace Microsoft.Extensions.Diagnostics.FilterEvaluators
 {
     internal abstract class CachingPropertyExpressionEvaluator : EventPropertyExpressionEvaluator
     {
-        // Different ETW events may have properties with the same names but different types, so we need to try to interpret the RHS value
-        // according to property type of a particular event we are evaluating.
-        // We use the dictionary below to cache interpreted values.
-        // If the entry (key) exists, but the cached value is null, it means we tried, but failed to interpret the RHS value as a value of given type.
-        private Lazy<IDictionary<Type, object>> interpretedValueCache = new Lazy<IDictionary<Type, object>>(() => new Dictionary<Type, object>());
-        private Type lastInterpretedValueType;  // The type used to interpret the expression right-hand side value
+        // Different events may have properties with the same names but different types, so we need to try to interpret the RHS value
+        // according to property type of a particular event we are evaluating. If the entry (key) exists, but the cached value is null,
+        // it means we tried, but failed to interpret the RHS value as a value of given type.
+        //
+        // The cache will be accessed by multiple threads. If we use a general dictionary as the cache, thread safety is not ensured.
+        // Given the fact that there are much more read operations than write, using a lock on read operation is not efficient.
+        // Thus we use the ImmutableDictionary as the cache. It's guaranteed a cache instance is immutable, so there is no need to lock when read the cache.
+        private IImmutableDictionary<Type, object> interpretedValueCache = ImmutableDictionary<Type, object>.Empty;
+        private object lockObj = new object();
 
         public CachingPropertyExpressionEvaluator(string propertyName, string value) : base(propertyName, value)
         {
         }
 
-        protected object LastInterpretedValue { get; private set; }    // Most recently used, interpreted value as specified in the right-hand side of the expression
-
-        protected void EnsureLastInterpretedRhsValue(object eventPropertyValue)
+        protected object GetOrAddInterpretedRHSValue(object eventPropertyValue)
         {
-            if (eventPropertyValue == null)
+            object value;
+            Type lhsValueType = eventPropertyValue.GetType();
+
+            if (!interpretedValueCache.TryGetValue(lhsValueType, out value))
             {
-                throw new ArgumentNullException(nameof(eventPropertyValue));
+                lock(lockObj)
+                {
+                    if (!interpretedValueCache.TryGetValue(lhsValueType, out value))
+                    {
+                        var interpretedValue = InterpretRhsValue(lhsValueType);
+                        interpretedValueCache = interpretedValueCache.Add(lhsValueType, interpretedValue);
+
+                        return interpretedValue;
+                    }
+                }
             }
 
-            Type eventPropertyValueType = eventPropertyValue.GetType();
-            if (eventPropertyValueType == this.lastInterpretedValueType)
-            {
-                return;
-            }
-
-            IDictionary<Type, object> valueCache = this.interpretedValueCache.Value;
-
-            // Make sure we do not lose the currently interpreted value
-            if (this.lastInterpretedValueType != null)
-            {
-                valueCache[this.lastInterpretedValueType] = this.LastInterpretedValue;
-            }
-
-            object newInterpretedValue = null;
-            if (!valueCache.TryGetValue(eventPropertyValueType, out newInterpretedValue))
-            {
-                newInterpretedValue = InterpretRhsValue(eventPropertyValueType);
-            }
-
-            this.lastInterpretedValueType = eventPropertyValueType;
-            this.LastInterpretedValue = newInterpretedValue;
+            return value;
         }
 
         private object InterpretRhsValue(Type eventPropertyValueType)
