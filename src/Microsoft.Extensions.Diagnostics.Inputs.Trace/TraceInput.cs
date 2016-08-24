@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Diagnostics.Inputs
 {
@@ -13,15 +14,22 @@ namespace Microsoft.Extensions.Diagnostics.Inputs
 
         private SimpleSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
-        public TraceInput(IHealthReporter healthReporter)
+        public TraceInput(IConfigurationSection configuration, IHealthReporter healthReporter)
         {
+            Validation.Assumes.True("Trace".Equals(configuration["type"], StringComparison.Ordinal), "Invalid trace configuration.");
             Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
+
             this.healthReporter = healthReporter;
 
             subject = new SimpleSubject<EventData>();
 
-            // TODO: Understand configure and apply event filters.
-
+            string traceLevelString = configuration["traceLevel"];
+            SourceLevels traceLevel = SourceLevels.Error;
+            if (!Enum.TryParse(traceLevelString, out traceLevel))
+            {
+                healthReporter.ReportWarning($"Invalid trace level in configuration: {traceLevelString}. Fall back to default: {traceLevel}");
+            }
+            Filter = new EventTypeFilter(traceLevel);
             Trace.Listeners.Add(this);
             this.healthReporter.ReportHealthy($"{nameof(TraceInput)} initialized.", TraceTag);
         }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthReporters;
 using Microsoft.Extensions.Diagnostics.Inputs;
 using Microsoft.Extensions.Diagnostics.Outputs;
@@ -17,11 +18,15 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore
         public static void Main(string[] args)
         {
             // HealthReporter
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder.AddJsonFile("config.json");
+            var configuration = configBuilder.Build();
+
             using (IHealthReporter reporter = new CsvHealthReporter("FileReportConfig.json"))
             {
                 // Listeners
                 List<IObservable<EventData>> inputs = new List<IObservable<EventData>>();
-                inputs.Add(new TraceInput(reporter));
+                inputs.Add((new TraceInputFactory()).CreateItem(configuration, reporter));
 
                 // Senders
                 List<EventDataSender> outputs = new List<EventDataSender>();
@@ -37,6 +42,8 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore
 
                 // Send a trace to the pipeline
                 Trace.TraceInformation("This is a message from trace . . .");
+                Trace.TraceWarning("This is a warning from trace . . .");
+
 
                 // Check the result
                 Console.WriteLine("Press any key to continue . . .");

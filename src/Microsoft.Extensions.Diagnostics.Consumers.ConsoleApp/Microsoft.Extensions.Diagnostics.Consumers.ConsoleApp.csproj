@@ -38,7 +38,7 @@
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Core\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Core.dll">
       <Name>Microsoft.Extensions.Diagnostics.Core</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.Trace\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.Trace.dll">
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.Trace\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Inputs.Trace.dll">
       <Name>Microsoft.Extensions.Diagnostics.Inputs.Trace</Name>
     </Reference>
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.EventSource.dll">
@@ -105,6 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="FileReportConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
