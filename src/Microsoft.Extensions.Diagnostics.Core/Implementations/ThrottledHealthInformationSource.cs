@@ -8,12 +8,12 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class ThrottledHealthReporter
+    public class ThrottledHealthInformationSource
     {
         protected readonly IHealthReporter healthReporter;
         private TimeSpanThrottle errorReportingThrottle;
 
-        public ThrottledHealthReporter(IHealthReporter healthReporter)
+        public ThrottledHealthInformationSource(IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             this.healthReporter = healthReporter;

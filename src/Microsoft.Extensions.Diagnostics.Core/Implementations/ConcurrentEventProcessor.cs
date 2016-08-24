@@ -14,7 +14,7 @@ using Validation;
 namespace Microsoft.Extensions.Diagnostics
 {
 
-    public class ConcurrentEventProcessor: IObserver<EventData>, IDisposable 
+    internal class ConcurrentEventProcessor: IObserver<EventData>, IDisposable 
     {
         private delegate void OnNewEvent(EventData e);
 
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Diagnostics
         private uint maxConcurrency;
         private int batchSize;
         private TimeSpan noEventsDelay;
-        private EventSink<EventData> sink;
+        private EventSink sink;
         private TimeSpanThrottle eventLossThrottle;
         private IHealthReporter healthReporter;
         private OnNewEvent newEventHandler;
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Diagnostics
             int batchSize,
             TimeSpan noEventsDelay,
             bool cloneReceivedEvents,
-            EventSink<EventData> sink,
+            EventSink sink,
             IHealthReporter healthReporter)
         {
             Requires.Range(eventBufferSize > 0, nameof(eventBufferSize));
@@ -184,7 +184,7 @@ namespace Microsoft.Extensions.Diagnostics
         private ConcurrentBag<EventData> FilterAndDecorate(CancellationToken cancellationToken, IEnumerable<EventData> eventsToFilter)
         {
             ConcurrentBag<EventData> eventsToSend;
-            IEnumerable<IEventFilter<EventData>> filters = this.sink.Filters;
+            IEnumerable<IFilter> filters = this.sink.Filters;
             if (filters != null)
             {
                 ParallelOptions parallelOptions = new ParallelOptions();

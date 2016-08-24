@@ -3,14 +3,14 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+
 namespace Microsoft.Extensions.Diagnostics
 {
-    using System;
-
     /// <summary>
     /// Allows time-based throttling the execution of a method/delegate. Only one execution per given time span is performed.
     /// </summary>
-    public class TimeSpanThrottle
+    internal class TimeSpanThrottle
     {
         private TimeSpan throttlingTimeSpan;
         private DateTimeOffset? lastExecutionTime;

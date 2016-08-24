@@ -9,7 +9,7 @@ using Microsoft.Extensions.Diagnostics.Configuration;
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Filters
 {
     public class EventMetadataFilterFactory: IPipelineItemFactory<EventMetadataFilter>
     {

@@ -3,15 +3,11 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace Microsoft.Extensions.Diagnostics.Metadata
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public static class MetadataType
+    public class ApplicationInsightsMetadataTypes
     {
         public static readonly string Metric = "metric";
         public static readonly string Request = "request";
-
-        // TODO: add some validation for well-known metadata
-
-        // CONSIDER: strongly-typed classes that define properties for well-known metadata
     }
 }

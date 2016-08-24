@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public abstract class EventDataSender: ThrottledHealthReporter, IEventSender<EventData>
+    public abstract class OutputBase: ThrottledHealthInformationSource, IOutput
     {
-        public EventDataSender(IHealthReporter healthReporter) : base(healthReporter) { }
+        public OutputBase(IHealthReporter healthReporter) : base(healthReporter) { }
 
         protected delegate void ProcessPayload<T>(T value);
 

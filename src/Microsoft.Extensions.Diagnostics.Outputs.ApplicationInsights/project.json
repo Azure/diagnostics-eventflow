@@ -9,5 +9,11 @@
 
   "frameworks": {
     "net45": {}
+  },
+
+  "packOptions": {
+    "tags": [
+      "Microsoft.Extensions.Diagnostics"
+    ] 
   }
 }

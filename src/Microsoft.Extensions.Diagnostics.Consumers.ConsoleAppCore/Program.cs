@@ -29,12 +29,12 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore
                 inputs.Add((new TraceInputFactory()).CreateItem(configuration, reporter));
 
                 // Senders
-                List<EventDataSender> outputs = new List<EventDataSender>();
-                outputs.Add(new StdSender(reporter));
+                List<OutputBase> outputs = new List<OutputBase>();
+                outputs.Add(new StdOutput(reporter));
 
                 DiagnosticsPipeline pipeline = new DiagnosticsPipeline(reporter, inputs,
-                    new EventSink<EventData>[] {
-                    new EventSink<EventData>(new StdSender(reporter), null)
+                    new EventSink[] {
+                    new EventSink(new StdOutput(reporter), null)
                 });
 
                 // Build up the pipeline

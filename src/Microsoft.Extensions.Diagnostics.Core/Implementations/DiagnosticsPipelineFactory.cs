@@ -52,9 +52,9 @@ namespace Microsoft.Extensions.Diagnostics
 
             // Step 2: instantiate global filters (if any)
             IConfigurationSection globalFilterConfigurationSection = configuration.GetSection("filters");
-            List<ItemWithChildren<IEventFilter<EventData>, object>> globalFilterCreationResult;
+            List<ItemWithChildren<IFilter, object>> globalFilterCreationResult;
             // It completely fine to have a pipeline with no globals filters section, or an empty one
-            ProcessSection<IEventFilter<EventData>, object>(
+            ProcessSection<IFilter, object>(
                 globalFilterConfigurationSection, 
                 healthReporter, 
                 filterFactories,
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Diagnostics
                 childSectionName: null, 
                 isOptional: true, 
                 createdItems: out globalFilterCreationResult);
-            List<IEventFilter<EventData>> globalFilters = globalFilterCreationResult.Select(item => item.Item).ToList();
+            List<IFilter> globalFilters = globalFilterCreationResult.Select(item => item.Item).ToList();
 
 
             // Step 3: instantiate outputs
@@ -74,8 +74,8 @@ namespace Microsoft.Extensions.Diagnostics
                 return EmptyDisposable.Instance;
             }
 
-            List<ItemWithChildren<IEventSender<EventData>, IEventFilter<EventData>>> outputCreationResult;
-            if (!ProcessSection<IEventSender<EventData>, IEventFilter<EventData>>(
+            List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
+            if (!ProcessSection<IOutput, IFilter>(
                 outputConfigurationSection,
                 healthReporter,
                 outputFactories,
@@ -92,8 +92,8 @@ namespace Microsoft.Extensions.Diagnostics
             // Step 4: assemble and return the pipeline
 
             // TODO: the globabl filters should really be executed just once, instead of separately for every output.
-            IReadOnlyCollection<EventSink<EventData>> sinks = outputCreationResult.Select(outputResult =>
-                new EventSink<EventData>(outputResult.Item, globalFilters.Concat(outputResult.Children))
+            IReadOnlyCollection<EventSink> sinks = outputCreationResult.Select(outputResult =>
+                new EventSink(outputResult.Item, globalFilters.Concat(outputResult.Children))
             ).ToList();
 
             DiagnosticsPipeline pipeline = new DiagnosticsPipeline(healthReporter, inputs, sinks);
@@ -252,16 +252,16 @@ namespace Microsoft.Extensions.Diagnostics
             Debug.Assert(healthReporter != null);
 
             inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            inputFactories["EventSource"] = "Microsoft.Extensions.Diagnostics.ObservableEventListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.EventSource, Culture=neutral, PublicKeyToken=null";
-            inputFactories["PerformanceCounter"] = "Microsoft.Extensions.Diagnostics.PerformanceCounterListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=null";
+            inputFactories["EventSource"] = "Microsoft.Extensions.Diagnostics.Inputs.EventSourceInputFactory, Microsoft.Extensions.Diagnostics.Inputs.EventSource, Culture=neutral, PublicKeyToken=null";
+            inputFactories["PerformanceCounter"] = "Microsoft.Extensions.Diagnostics.PerformanceCounterInputFactory, Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=null";
             inputFactories["Trace"] = "Microsoft.Extensions.Diagnostics.Inputs.TraceInputFactory, Microsoft.Extensions.Diagnostics.Inputs.Trace, Culture=neutral, PublicKeyToken=null";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            outputFactories["ApplicationInsights"] = "Microsoft.Extensions.Diagnostics.ApplicationInsightsSenderFactory, Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=null";
+            outputFactories["ApplicationInsights"] = "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsightsOutputFactory, Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=null";
             outputFactories["StdOutput"] = "Microsoft.Extensions.Diagnostics.Outputs.StdOutputFactory, Microsoft.Extensions.Diagnostics.Outputs.StdOutput, Culture=neutral, PublicKeyToken=null";
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            filterFactories["metadata"] = "Microsoft.Extensions.Diagnostics.EventMetadataFilterFactory, Microsoft.Extensions.Diagnostics.Core, Culture=neutral, PublicKeyToken=null";
+            filterFactories["metadata"] = "Microsoft.Extensions.Diagnostics.Filters.EventMetadataFilterFactory, Microsoft.Extensions.Diagnostics.Core, Culture=neutral, PublicKeyToken=null";
 
             // TODO: implement 3rd party input/output/filter instantiation driven by the contents of "extensions" section
         }

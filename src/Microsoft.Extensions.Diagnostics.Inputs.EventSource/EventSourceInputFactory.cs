@@ -3,20 +3,21 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.Configuration;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Inputs
 {
-    public class ApplicationInsightsSenderFactory: IPipelineItemFactory<ApplicationInsightsSender>
+    public class EventSourceInputFactory: IPipelineItemFactory<EventSourceInput>
     {
-        public ApplicationInsightsSender CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        public EventSourceInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            return new ApplicationInsightsSender(configuration, healthReporter);
+            return new EventSourceInput(configuration, healthReporter);
         }
     }
 }

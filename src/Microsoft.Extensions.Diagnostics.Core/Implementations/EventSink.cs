@@ -9,17 +9,17 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class EventSink<EventDataType>: IDisposable
+    public class EventSink: IDisposable
     {
-        public EventSink(IEventSender<EventDataType> output, IEnumerable<IEventFilter<EventDataType>> filters)
+        public EventSink(IOutput output, IEnumerable<IFilter> filters)
         {
             Requires.NotNull(output, nameof(output));
             this.Output = output;
             this.Filters = filters;
         }
 
-        public IEventSender<EventDataType> Output { get; private set; }
-        public IEnumerable<IEventFilter<EventDataType>> Filters { get; private set; }
+        public IOutput Output { get; private set; }
+        public IEnumerable<IFilter> Filters { get; private set; }
 
         public void Dispose()
         {

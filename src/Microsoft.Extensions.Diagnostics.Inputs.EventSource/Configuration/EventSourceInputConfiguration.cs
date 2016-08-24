@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Diagnostics.Configuration
 {
-    public class EventSourceInputConfiguration: ItemConfiguration
+    internal class EventSourceInputConfiguration: ItemConfiguration
     {
         public List<EventSourceConfiguration> Sources { get; set; }
     }

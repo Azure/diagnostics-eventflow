@@ -7,8 +7,8 @@
     <ProjectGuid>{2D19BF76-04E1-4969-AD66-984160D38E2C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Fabric</RootNamespace>
-    <AssemblyName>Microsoft.Extensions.Diagnostics.Fabric</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.ServiceFabric</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.Diagnostics.ServiceFabric</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -109,7 +109,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FabricHealthReporter.cs" />
+    <Compile Include="ServiceFabricHealthReporter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

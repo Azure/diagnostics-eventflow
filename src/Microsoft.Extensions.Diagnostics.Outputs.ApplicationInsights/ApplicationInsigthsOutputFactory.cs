@@ -3,20 +3,19 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public class PerformanceCounterListenerFactory: IPipelineItemFactory<PerformanceCounterListener>
+    public class ApplicationInsightsOutputFactory: IPipelineItemFactory<ApplicationInsightsOutput>
     {
-        public PerformanceCounterListener CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        public ApplicationInsightsOutput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            // TODO: implement
-            throw new NotImplementedException();
+            return new ApplicationInsightsOutput(configuration, healthReporter);
         }
     }
 }

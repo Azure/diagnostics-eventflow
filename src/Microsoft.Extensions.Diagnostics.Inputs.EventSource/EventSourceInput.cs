@@ -7,30 +7,48 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Inputs
 {
-    public class ObservableEventListener : EventListener, IObservable<EventData>, IDisposable
+    public class EventSourceInput : EventListener, IObservable<EventData>, IDisposable
     {
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
         private List<EventSource> eventSourcesPresentAtConstruction;        
         private SimpleSubject<EventData> subject;
 
-        public ObservableEventListener(List<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
+        public EventSourceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            Requires.NotNull(eventSources, nameof(eventSources));
+            Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            IConfiguration sourcesConfiguration = configuration.GetSection("sources");
+            if (sourcesConfiguration == null)
+            {
+                healthReporter.ReportProblem($"{nameof(EventSourceInput)}: required configuration section 'sources' is missing");
+                return;
+            }
+            var eventSourceConfigurations = new List<EventSourceConfiguration>();
+            try
+            {
+                sourcesConfiguration.Bind(eventSourceConfigurations);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"{nameof(EventSourceInput)}: configuration is invalid");
+                return;
+            }
 
             this.healthReporter = healthReporter;
             this.subject = new SimpleSubject<EventData>();
 
-            this.EventSources = eventSources;
+            this.EventSources = eventSourceConfigurations;
             if (this.EventSources.Count == 0)
             {
-                healthReporter.ReportWarning($"{nameof(ObservableEventListener)}: no event sources configured");
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured");
                 return;
             }
 

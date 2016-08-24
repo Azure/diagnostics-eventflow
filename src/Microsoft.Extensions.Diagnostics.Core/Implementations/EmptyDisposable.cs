@@ -7,7 +7,7 @@ using System;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class EmptyDisposable: IDisposable
+    internal class EmptyDisposable: IDisposable
     {
         public static readonly EmptyDisposable Instance = new EmptyDisposable();
 

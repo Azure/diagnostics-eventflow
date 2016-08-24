@@ -2,13 +2,14 @@
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
+
 using System;
 using System.Fabric;
 using System.Fabric.Health;
 
-namespace Microsoft.Extensions.Diagnostics.Fabric
+namespace Microsoft.Extensions.Diagnostics.ServiceFabric
 {
-    public class FabricHealthReporter : IHealthReporter
+    public class ServiceFabricHealthReporter : IHealthReporter
     {
         private FabricClient fabricClient;
         private Uri applicatioName;
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.Diagnostics.Fabric
         private string entityIdentifier;
         private HealthState problemHealthState;
 
-        public FabricHealthReporter(string entityIdentifier, HealthState problemHealthState = HealthState.Warning)
+        public ServiceFabricHealthReporter(string entityIdentifier, HealthState problemHealthState = HealthState.Warning)
         {
             if (string.IsNullOrWhiteSpace(entityIdentifier))
             {

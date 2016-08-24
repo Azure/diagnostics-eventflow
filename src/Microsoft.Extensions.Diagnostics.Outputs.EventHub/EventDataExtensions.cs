@@ -1,8 +1,13 @@
-﻿using System.Text;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using System.Text;
 using Newtonsoft.Json;
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
 
-namespace Microsoft.Extensions.Diagnostics.Outputs.EventHubs
+namespace Microsoft.Extensions.Diagnostics.Outputs.EventHub
 {
     internal static class EventDataExtensions
     {

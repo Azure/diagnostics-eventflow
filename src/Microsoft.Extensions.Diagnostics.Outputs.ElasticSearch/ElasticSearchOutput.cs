@@ -12,9 +12,9 @@ using Microsoft.Extensions.Configuration;
 using Nest;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public class ElasticSearchSender : EventDataSender
+    public class ElasticSearchOutput : OutputBase
     {
         private const string Dot = ".";
         private const string Dash = "-";
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Diagnostics
         private ElasticSearchConnectionData connectionData;
         // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing        
 
-        public ElasticSearchSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public ElasticSearchOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Diagnostics
             }
             catch (Exception e)
             {
-                this.ReportProblem($"{nameof(ElasticSearchSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                this.ReportProblem($"{nameof(ElasticSearchOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.Diagnostics
             bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
             if (!serviceUriIsValid)
             {
-                healthReporter.ReportProblem($"{nameof(ElasticSearchSender)}:  configuration is missing required 'serviceUri' parameter");
+                healthReporter.ReportProblem($"{nameof(ElasticSearchOutput)}:  configuration is missing required 'serviceUri' parameter");
                 return null;
             }
 
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Diagnostics
             string password = configuration["password"];
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
             {
-                healthReporter.ReportProblem($"{nameof(ElasticSearchSender)}:  configuration is missing Elastic Search credentials");
+                healthReporter.ReportProblem($"{nameof(ElasticSearchOutput)}:  configuration is missing Elastic Search credentials");
                 return null;
             }
 
@@ -170,7 +170,7 @@ namespace Microsoft.Extensions.Diagnostics
         {
             Debug.Assert(!response.IsValid);
 
-            string errorMessage = $"{nameof(ElasticSearchSender)}: request resulted in an error: ";
+            string errorMessage = $"{nameof(ElasticSearchOutput)}: request resulted in an error: ";
 
             if (response.ServerError != null)
             {

@@ -2,6 +2,7 @@
 //  Copyright (c) Microsoft Corporation.  All rights reserved.
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,11 +11,11 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public class StdSender : EventDataSender
+    public class StdOutput : OutputBase
     {
-        public static readonly string TraceTag = nameof(StdSender);
+        public static readonly string TraceTag = nameof(StdOutput);
 
-        public StdSender(IHealthReporter healthReporter) : base(healthReporter)
+        public StdOutput(IHealthReporter healthReporter) : base(healthReporter)
         {
         }
 
