@@ -15,14 +15,13 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
     {
         #region Fields
         public const string DefaultHealthReportName = "HealthReport.csv";
-        public const HealthReportLevel DefaultHealthReportLevel = HealthReportLevel.Error;
         private static readonly string TraceTag = nameof(CsvHealthReporter);
         private readonly object _locker = new object();
         private FileStream _fileStream;
         #endregion
 
         #region Properties
-        internal HealthReportLevel LogLevel { get; private set; }
+        internal HealthReportLevel LogLevel { get; private set; } = HealthReportLevel.Error;
         internal bool IsExternalStreamWriter { get; private set; }
         internal StreamWriter StreamWriter { get; private set; }
         #endregion
@@ -61,15 +60,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
         private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
         {
             StringBuilder errorBuilder = new StringBuilder();
-
-            string logLevelString = configuration["healthReporter:logLevel"] ?? "Warning";
+            string logLevelString = configuration["healthReporter:logLevel"];
             HealthReportLevel logLevel;
-            if (!Enum.TryParse(logLevelString, out logLevel))
+            if (Enum.TryParse(logLevelString, out logLevel))
+            {
+                LogLevel = logLevel;
+            }
+            else
             {
                 errorBuilder.AppendLine($"Failed to parse log level. Please check the value of: {logLevelString}.");
-                logLevel = DefaultHealthReportLevel;
             }
-            LogLevel = logLevel;
 
             if (IsExternalStreamWriter)
             {
@@ -93,17 +93,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
                 }
                 catch (IOException)
                 {
-                    try
-                    {
-                        // In case file is locked by other process, give it another shot
-                        logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
-                        _fileStream = new FileStream(logFilePath, FileMode.Append);
-                    }
-                    catch
-                    {
-                        // Suppress exception to prevent HealthReporter from crashing its consumer
-                        _fileStream = null;
-                    }
+                    // In case file is locked by other process, give it another shot.
+                    logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
+                    _fileStream = new FileStream(logFilePath, FileMode.Append);
                 }
 
                 if (_fileStream != null)
@@ -144,12 +136,31 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
                 }
                 context = context ?? string.Empty;
                 string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
-                string message = $"{timestamp},{context.Replace(',', '_')},{level},{text}";
+                string message = $"{timestamp},{EscapeComma(context)},{level},{ EscapeComma(text)}";
                 WriteLine(message);
             }
             catch
             {
                 // Suppress exception to prevent HealthReporter from crashing its consumer
+            }
+        }
+
+        /// <summary>
+        /// Escape comma in a string by quotes the text.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private string EscapeComma(string text)
+        {
+            if (text.Contains(","))
+            {
+                text = text.Replace("\"", "\"\"");
+                text = string.Format(CultureInfo.CurrentCulture, "\"{0}\"", text);
+                return text;
+            }
+            else
+            {
+                return text;
             }
         }
 
@@ -163,14 +174,19 @@ namespace Microsoft.Extensions.Diagnostics.HealthReporters
 
         public void Dispose()
         {
-            if (StreamWriter != null)
+            if (!IsExternalStreamWriter)
             {
-                StreamWriter.Dispose();
+                if (StreamWriter != null)
+                {
+                    StreamWriter.Dispose();
+                    StreamWriter = null;
+                }
             }
 
             if (_fileStream != null)
             {
                 _fileStream.Dispose();
+                _fileStream = null;
             }
         }
         #endregion

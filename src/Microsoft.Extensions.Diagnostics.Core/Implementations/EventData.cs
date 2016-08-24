@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
-using System.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics
 {

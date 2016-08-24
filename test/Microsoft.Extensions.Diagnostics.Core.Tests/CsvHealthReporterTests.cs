@@ -328,6 +328,34 @@ namespace Microsoft.Extensions.Diagnostics.Tests
             }
         }
 
+        [Fact]
+        public void ShouldEscapeCommaInMessage()
+        {
+            string logFileKey = "healthReporter:logFilePath";
+            string logLevelKey = "healthReporter:logLevel";
+            string healthReporter = "HealthReport.csv";
+
+            // Setup
+            Mock<IConfiguration> configMock = new Mock<IConfiguration>();
+            configMock.Setup(c => c[logLevelKey]).Returns("Message");
+            configMock.Setup(c => c[logFileKey]).Returns(healthReporter);
+
+            // Exercise
+            using (Stream memoryStream = new MemoryStream())
+            {
+                var streamWriterMock = new Mock<StreamWriter>(memoryStream);
+                using (CsvHealthReporter target = new CsvHealthReporter(configMock.Object, streamWriterMock.Object))
+                {
+                    target.ReportProblem("Error message, with comma.", "UnitTest");
+                    // Verify
+                    streamWriterMock.Verify(
+                        s => s.WriteLine(
+                            It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error message, with comma.\""))),
+                        Times.Exactly(1));
+                }
+            }
+        }
+
         private static void TryDeleteFile(string fileName)
         {
             // Clean up
