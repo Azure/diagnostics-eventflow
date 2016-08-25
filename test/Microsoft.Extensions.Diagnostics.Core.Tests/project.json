@@ -5,17 +5,18 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Microsoft.Extensions.Configuration": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.Diagnostics.Core": { "target": "project" },
     "Microsoft.Extensions.Diagnostics.CsvHealthReporter": { "target": "project" },
-    "Microsoft.Extensions.Diagnostics.Inputs.Trace": { "target": "project" },
     "Microsoft.Extensions.Diagnostics.Inputs.EventSource": { "target": "project" },
-    "Microsoft.Extensions.Diagnostics.Outputs.StdOutput": { "target": "project" },    
+    "Microsoft.Extensions.Diagnostics.Inputs.Trace": { "target": "project" },
+    "Microsoft.Extensions.Diagnostics.Outputs.StdOutput": { "target": "project" },
     "Moq": "4.6.36-alpha",
     "System.ComponentModel.Primitives": "4.1.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",
     "xunit": "2.2.0-beta2-build3300",
-    "Microsoft.Extensions.Configuration": "1.0.0",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0"
+    "xunit.runner.visualstudio": "2.2.0-beta2-build1149"
   },
   "testRunner": "xunit",
   "frameworks": {
@@ -33,8 +34,7 @@
     },
     "net46": {
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1",
-        "xunit.runner.visualstudio": "2.2.0-beta2-build1149"
+        "Microsoft.NETCore.Platforms": "1.0.1"
       }
     }
   }
