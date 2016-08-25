@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.Diagnostics
         public IDisposable Subscribe(IObserver<SubjectType> observer)
         {
             Requires.NotNull(observer, nameof(observer));
-            lock(this.lockObject)
+            lock (this.lockObject)
             {
                 if (IsCompleted)
                 {
@@ -85,12 +85,12 @@ namespace Microsoft.Extensions.Diagnostics
 
         public void Unsubscribe(IObserver<SubjectType> observer)
         {
-            lock(this.lockObject)
+            lock (this.lockObject)
             {
                 if (!IsCompleted)
                 {
                     this.observers = this.observers.Remove(observer);
-                }                
+                }
             }
         }
 
@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.Diagnostics
             lock (this.lockObject)
             {
                 currentObservers = this.observers;
-                this.observers = null;                
+                this.observers = null;
             }
 
             // Wait for observer notifications to complete before completing them (i.e. calling OnCompleted or OnError).
@@ -135,6 +135,6 @@ namespace Microsoft.Extensions.Diagnostics
                     this.parentSubject = null;
                 }
             }
-        }        
+        }
     }
 }

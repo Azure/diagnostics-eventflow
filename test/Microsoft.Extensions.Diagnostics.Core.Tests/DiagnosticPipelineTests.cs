@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Inputs;
 using Moq;
 using Xunit;
@@ -34,11 +35,14 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
         public async void ShouldPassOneInputToOneOutput()
         {
             // Setup
+            var configurationSectionMock = new Mock<IConfigurationSection>();
+            configurationSectionMock.Setup(cs => cs["type"]).Returns("Trace");
+            configurationSectionMock.Setup(cs => cs["traceLevel"]).Returns("All");
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             Mock<IEventSender<EventData>> mockOutput = new Mock<IEventSender<EventData>>();
             DiagnosticsPipeline pipeline = new DiagnosticsPipeline(
                 healthReporterMock.Object,
-                new IObservable<EventData>[] { new TraceInput(healthReporterMock.Object) },
+                new IObservable<EventData>[] { new TraceInput(configurationSectionMock.Object, healthReporterMock.Object) },
                 new EventSink<EventData>[] { new EventSink<EventData>(mockOutput.Object, null) }
                 );
 

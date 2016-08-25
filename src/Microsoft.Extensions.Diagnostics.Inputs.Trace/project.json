@@ -2,15 +2,19 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
-    "NETStandard.Library": "1.6.0",
-    "System.Diagnostics.TraceSource": "4.0.0"
+    "Microsoft.Extensions.Diagnostics.Core": {
+      "target": "project"
+    }
   },
 
   "frameworks": {
     "netstandard1.6": {
-      "imports": "dnxcore50"
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "System.Diagnostics.TraceSource": "4.0.0"
+      }
     },
-    "net46": {}
+    "net45": {}
   }
 }
