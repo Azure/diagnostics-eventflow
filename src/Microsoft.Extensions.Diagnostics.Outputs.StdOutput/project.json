@@ -3,15 +3,17 @@
 
   "dependencies": {
     "Microsoft.Extensions.Diagnostics.Core": "1.0.0-*",
-    "NETStandard.Library": "1.6.0",
     "Newtonsoft.Json": "9.0.1"
   },
 
   "frameworks": {
     "netstandard1.6": {
-      "imports": "dnxcore50"
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0"
+      }
     },
-    "net46": {}
+    "net45": {}
   },
 
   "packOptions": {

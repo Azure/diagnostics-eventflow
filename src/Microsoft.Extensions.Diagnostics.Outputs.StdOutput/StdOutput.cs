@@ -30,12 +30,12 @@ namespace Microsoft.Extensions.Diagnostics.Outputs
 
                     Console.WriteLine(output);
                 }
-                return Task.CompletedTask;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 this.healthReporter.ReportProblem($"Fail to send events in batch. Error details: {ex.ToString()}");
-                return Task.FromException(ex);
+                throw;
             }
         }
     }
