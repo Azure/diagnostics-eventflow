@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.Outputs.Tests
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
 
             // Execute
-            StdSender sender = new StdSender(healthReporterMock.Object);
+            Outputs.StdOutput sender = new Outputs.StdOutput(healthReporterMock.Object);
 
             // Verify
             Assert.NotNull(sender);
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Diagnostics.Outputs.Tests
         {
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
             {
-                StdSender target = new StdSender(null);
+                Outputs.StdOutput target = new Outputs.StdOutput(null);
             });
 
             Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);

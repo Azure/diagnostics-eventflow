@@ -13,5 +13,11 @@
       "imports": "dnxcore50"
     },
     "net45": {}
+  },
+
+  "packOptions": {
+    "tags": [
+      "Microsoft.Extensions.Diagnostics"
+    ]
   }
 }

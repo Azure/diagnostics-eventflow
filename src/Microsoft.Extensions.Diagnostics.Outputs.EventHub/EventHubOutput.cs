@@ -12,17 +12,16 @@ using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using Validation;
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
-using Microsoft.Extensions.Diagnostics.Outputs.EventHubs;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs.EventHub
 {
 
-    public class EventHubSender : EventDataSender
+    public class EventHubOutput : OutputBase
     {
         private const int ConcurrentConnections = 4;
         private EventHubConnectionData connectionData;
 
-        public EventHubSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public EventHubOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -35,14 +34,14 @@ namespace Microsoft.Extensions.Diagnostics
             string serviceBusConnectionString = configuration["serviceBusConnectionString"];
             if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
             {
-                healthReporter.ReportProblem($"{nameof(EventHubSender)}: configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
+                healthReporter.ReportProblem($"{nameof(EventHubOutput)}: configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
                 return null;
             }
 
             string eventHubName = configuration["eventHubName"];
             if (string.IsNullOrWhiteSpace(eventHubName))
             {
-                healthReporter.ReportProblem($"{nameof(EventHubSender)}: configuration parameter 'eventHubName' must not be empty");
+                healthReporter.ReportProblem($"{nameof(EventHubOutput)}: configuration parameter 'eventHubName' must not be empty");
                 return null;
             }
 
@@ -95,7 +94,7 @@ namespace Microsoft.Extensions.Diagnostics
             }
             catch (Exception e)
             {
-                this.ReportProblem($"{nameof(EventHubSender)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                this.ReportProblem($"{nameof(EventHubOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 

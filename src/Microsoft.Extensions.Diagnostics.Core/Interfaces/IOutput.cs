@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public interface IEventSender<EventDataType>
+    public interface IOutput
     {
-        Task SendEventsAsync(IReadOnlyCollection<EventDataType> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
+        Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
     }
 }

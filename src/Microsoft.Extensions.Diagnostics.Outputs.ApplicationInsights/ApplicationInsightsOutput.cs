@@ -15,15 +15,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public class ApplicationInsightsSender : EventDataSender
+    public class ApplicationInsightsOutput : OutputBase
     {
         private const string AppInsightsKeyName = "InstrumentationKey";
 
         private readonly TelemetryClient telemetryClient;
 
-        public ApplicationInsightsSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public ApplicationInsightsOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -54,13 +54,13 @@ namespace Microsoft.Extensions.Diagnostics
                     IEnumerable<EventMetadata> multiMetadata;
                     bool handled = false;
 
-                    if (e.TryGetMetadata(MetadataType.Metric, out singleMetadata, out multiMetadata))
+                    if (e.TryGetMetadata(ApplicationInsightsMetadataTypes.Metric, out singleMetadata, out multiMetadata))
                     {
                         TrackMetric(e, singleMetadata, multiMetadata);
                         handled = true;
                     }
 
-                    if (e.TryGetMetadata(MetadataType.Request, out singleMetadata, out multiMetadata))
+                    if (e.TryGetMetadata(ApplicationInsightsMetadataTypes.Request, out singleMetadata, out multiMetadata))
                     {
                         TrackRequest(e, singleMetadata, multiMetadata);
                     }

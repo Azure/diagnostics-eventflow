@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Diagnostics
         public DiagnosticsPipeline(
             IHealthReporter healthReporter,
             IReadOnlyCollection<IObservable<EventData>> inputs, 
-            IReadOnlyCollection<EventSink<EventData>> sinks)
+            IReadOnlyCollection<EventSink> sinks)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(inputs, nameof(inputs));
@@ -74,6 +74,6 @@ namespace Microsoft.Extensions.Diagnostics
         }
 
         public IReadOnlyCollection<IObservable<EventData>> Inputs { get; private set; }
-        public IReadOnlyCollection<EventSink<EventData>> Sinks { get; private set; }
+        public IReadOnlyCollection<EventSink> Sinks { get; private set; }
     }
 }

@@ -7,7 +7,6 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
 {
     public class PerformanceCounterConfiguration
     {
-        public string MetricName { get; set; }
         public string CounterCategory { get; set; }
         public string CounterName { get; set; }
         public int CollectionIntervalInSeconds { get; set; }
@@ -35,8 +34,7 @@ namespace Microsoft.Extensions.Diagnostics.Configuration
         {
             // CONSIDER: for well-known categories like Process and all .NET categories we could just assume default ProcessIdCounterName
             // when configuration is missing.
-            return !string.IsNullOrWhiteSpace(MetricName) 
-                && !string.IsNullOrWhiteSpace(CounterCategory) 
+            return !string.IsNullOrWhiteSpace(CounterCategory) 
                 && !string.IsNullOrWhiteSpace(CounterName)
                 && (UseDotNetInstanceNameConvention || !string.IsNullOrWhiteSpace(ProcessIdCounterName));
         }

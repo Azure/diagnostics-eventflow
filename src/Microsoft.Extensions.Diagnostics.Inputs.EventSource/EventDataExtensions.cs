@@ -11,7 +11,7 @@ using System.Text;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Inputs
 {
     internal static class EventDataExtensions
     {

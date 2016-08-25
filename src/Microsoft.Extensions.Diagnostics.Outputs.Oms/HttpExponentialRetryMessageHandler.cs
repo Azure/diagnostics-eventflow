@@ -8,12 +8,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
     /// <summary>
     /// Implements a message handler that employs exponential backoff retry policy for HTTP requests
     /// </summary>
-    public class HttpExponentialRetryMessageHandler: DelegatingHandler
+    internal class HttpExponentialRetryMessageHandler: DelegatingHandler
     {
         private const int MaxRetries = 3;
         private readonly TimeSpan[] AttemptDelays = new[] { TimeSpan.FromMilliseconds(500), TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5) };

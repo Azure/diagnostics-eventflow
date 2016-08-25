@@ -16,7 +16,7 @@ using Validation;
 
 namespace Microsoft.Extensions.Diagnostics
 {
-    public class TableStorageSender : EventDataSender
+    public class TableStorageSender : OutputBase
     {
         private const int MaxConcurrentPartitions = 4;
         private const string KeySegmentSeparator = "_";

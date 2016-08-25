@@ -6,9 +6,10 @@
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
-using Microsoft.Extensions.Diagnostics.Outputs;
+using Microsoft.Extensions.Diagnostics.Filters;
+using Microsoft.Extensions.Diagnostics.Inputs;
 using Microsoft.Extensions.Diagnostics.Metadata;
-
+using Microsoft.Extensions.Diagnostics.Outputs;
 using Moq;
 using Xunit;
 
@@ -74,7 +75,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
                 healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(0));
 
                 Assert.Equal(pipeline.Inputs.Count, 1);
-                var eventSourceInput = pipeline.Inputs.First() as ObservableEventListener;
+                var eventSourceInput = pipeline.Inputs.First() as EventSourceInput;
                 Assert.NotNull(eventSourceInput);
 
                 var expectedEventSources = new EventSourceConfiguration[2];
@@ -83,9 +84,9 @@ namespace Microsoft.Extensions.Diagnostics.Tests
                 Assert.True(eventSourceInput.EventSources.SequenceEqual(expectedEventSources));
 
                 Assert.Equal(pipeline.Sinks.Count, 1);
-                EventSink<EventData> sink = pipeline.Sinks.First();
+                EventSink sink = pipeline.Sinks.First();
 
-                var stdSender = sink.Output as StdSender;
+                var stdSender = sink.Output as StdOutput;
                 Assert.NotNull(stdSender);
 
                 var expectedFilters = new EventMetadataFilter[2];
@@ -94,7 +95,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
                 metadata.Properties.Add("importance", "can be discarded");
                 expectedFilters[0] = new EventMetadataFilter(metadata);
 
-                metadata = new EventMetadata(MetadataType.Metric);
+                metadata = new EventMetadata("metric");
                 metadata.IncludeCondition = "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure";
                 metadata.Properties.Add("metricName", "StatefulRunAsyncFailure");
                 metadata.Properties.Add("metricValue", "1.0");

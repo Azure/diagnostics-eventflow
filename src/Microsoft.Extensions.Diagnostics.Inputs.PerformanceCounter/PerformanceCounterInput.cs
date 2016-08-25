@@ -11,12 +11,11 @@ using System.Runtime.Versioning;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.Configuration;
-using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Inputs
 {
-    public class PerformanceCounterListener: ThrottledHealthReporter, IObservable<EventData>, IDisposable
+    public class PerformanceCounterInput: ThrottledHealthInformationSource, IObservable<EventData>, IDisposable
     {
         private const int SampleIntervalSeconds = 10;
         internal static readonly string MetricValueProperty = "Value";
@@ -26,7 +25,7 @@ namespace Microsoft.Extensions.Diagnostics
         private Timer collectionTimer;
         private List<TrackedPerformanceCounter> trackedPerformanceCounters;
         
-        public PerformanceCounterListener(IConfiguration configuration, IHealthReporter healthReporter): base(healthReporter)
+        public PerformanceCounterInput(IConfiguration configuration, IHealthReporter healthReporter): base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -50,7 +49,7 @@ namespace Microsoft.Extensions.Diagnostics
                 {
                     if (!counterConfiguration.Validate())
                     {
-                        healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: configuration for counter {counterConfiguration.CounterName} is invalid");
+                        healthReporter.ReportProblem($"{nameof(PerformanceCounterInput)}: configuration for counter {counterConfiguration.CounterName} is invalid");
                     }
                     else
                     {
@@ -60,7 +59,7 @@ namespace Microsoft.Extensions.Diagnostics
             }
             catch(Exception e)
             {
-                healthReporter.ReportProblem($"{nameof(PerformanceCounterListener)}: an error occurred when reading configuration{Environment.NewLine}{e.ToString()}");
+                healthReporter.ReportProblem($"{nameof(PerformanceCounterInput)}: an error occurred when reading configuration{Environment.NewLine}{e.ToString()}");
                 return;
             }
 
@@ -88,7 +87,7 @@ namespace Microsoft.Extensions.Diagnostics
                     catch (Exception e)
                     {
                         this.ReportProblem(
-                            $"{nameof(PerformanceCounterListener)}: an error occurred when sampling performance counter {counter.Configuration.CounterName} "
+                            $"{nameof(PerformanceCounterInput)}: an error occurred when sampling performance counter {counter.Configuration.CounterName} "
                             + $"in category {counter.Configuration.CounterCategory}{Environment.NewLine}{e.ToString()}");
                     }
                 }                

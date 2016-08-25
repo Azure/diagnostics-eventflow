@@ -6,9 +6,9 @@
 using Microsoft.Extensions.Diagnostics.Metadata;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Filters
 {
-    public class EventMetadataFilter: IEventFilter<EventData>
+    public class EventMetadataFilter: IFilter
     {
         private EventMetadata metadata;
 

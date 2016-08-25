@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
                 DiagnosticsPipeline pipeline = new DiagnosticsPipeline(
                     null,
                     new List<TraceInput>(),
-                    new List<EventSink<EventData>>());
+                    new List<EventSink>());
             });
 
             Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
@@ -39,11 +39,11 @@ namespace Microsoft.Extensions.Diagnostics.Core.Tests
             configurationSectionMock.Setup(cs => cs["type"]).Returns("Trace");
             configurationSectionMock.Setup(cs => cs["traceLevel"]).Returns("All");
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
-            Mock<IEventSender<EventData>> mockOutput = new Mock<IEventSender<EventData>>();
+            Mock<IOutput> mockOutput = new Mock<IOutput>();
             DiagnosticsPipeline pipeline = new DiagnosticsPipeline(
                 healthReporterMock.Object,
                 new IObservable<EventData>[] { new TraceInput(configurationSectionMock.Object, healthReporterMock.Object) },
-                new EventSink<EventData>[] { new EventSink<EventData>(mockOutput.Object, null) }
+                new EventSink[] { new EventSink(mockOutput.Object, null) }
                 );
 
             // Execrise

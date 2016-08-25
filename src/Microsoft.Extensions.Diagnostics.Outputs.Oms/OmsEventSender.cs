@@ -15,9 +15,9 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Validation;
 
-namespace Microsoft.Extensions.Diagnostics
+namespace Microsoft.Extensions.Diagnostics.Outputs
 {
-    public class OmsEventSender : EventDataSender
+    public class OmsEventSender : OutputBase
     {
         const string OmsDataUploadResource = "/api/logs";
         const string OmsDataUploadUrl = OmsDataUploadResource + "?api-version=2016-04-01";
