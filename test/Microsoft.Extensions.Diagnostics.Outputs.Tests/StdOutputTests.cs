@@ -1,31 +1,30 @@
 ﻿using System;
-using Microsoft.Extensions.Diagnostics.Outputs;
 using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Outputs.Tests
 {
-    public class StdOutput
+    public class StdOutputTests
     {
-        [Fact(DisplayName = "StdOutput constructor should create the instance")]
+        [Fact]
         public void ConstructorShouldCreateTheInstance()
         {
             // Setup
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
 
             // Execute
-            Outputs.StdOutput sender = new Outputs.StdOutput(healthReporterMock.Object);
+            StdOutput sender = new StdOutput(healthReporterMock.Object);
 
             // Verify
             Assert.NotNull(sender);
         }
 
-        [Fact(DisplayName = "StdOutput constructor should require a health reporter")]
+        [Fact]
         public void ConstructorShouldRequireHealthReporter()
         {
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
             {
-                Outputs.StdOutput target = new Outputs.StdOutput(null);
+                StdOutput target = new StdOutput(null);
             });
 
             Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);

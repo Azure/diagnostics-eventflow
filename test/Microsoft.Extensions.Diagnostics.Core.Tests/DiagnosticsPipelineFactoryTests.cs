@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
 {
     public class DiagnosticsPipelineFactoryTests
     {
-        [Fact(DisplayName = "DiagnosticPipelineFactory should create pipeline from valid configuration")]
+        [Fact]
         public void ShouldInstantiatePipelineFromValidConfiguration()
         {
             string pipelineConfiguration = @"

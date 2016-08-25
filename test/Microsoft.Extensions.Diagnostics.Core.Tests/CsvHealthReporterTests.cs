@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
 {
     public class CsvHealthReporterTests
     {
-        [Fact(DisplayName = "CsvFileHealthReporter constructor should require configure file path")]
+        [Fact]
         public void ConstructorShouldRequireConfigFile()
         {
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
@@ -86,8 +86,8 @@ namespace Microsoft.Extensions.Diagnostics.Tests
             }
         }
 
-        [Fact(DisplayName = "CsvFileHealthReporter handles invalid filter level")]
-        public void ConfigureWrongFilterLevel()
+        [Fact]
+        public void ConstructorShouldHandleWrongFilterLevel()
         {
             string logFileKey = "healthReporter:logFilePath";
             string logLevelKey = "healthReporter:logLevel";
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
         }
 
         [Fact]
-        public void ShouldWriteMessage()
+        public void ReportHealthyShouldWriteMessage()
         {
             string logFileKey = "healthReporter:logFilePath";
             string logLevelKey = "healthReporter:logLevel";
@@ -153,7 +153,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
         }
 
         [Fact]
-        public void ShouldWriteWarning()
+        public void ReportWarningShouldWriteWarning()
         {
             string logFileKey = "healthReporter:logFilePath";
             string logLevelKey = "healthReporter:logLevel";
@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
         }
 
         [Fact]
-        public void ShouldWriteError()
+        public void ReportProblemShouldWriteError()
         {
             string logFileKey = "healthReporter:logFilePath";
             string logLevelKey = "healthReporter:logLevel";
@@ -209,7 +209,7 @@ namespace Microsoft.Extensions.Diagnostics.Tests
         }
 
         [Fact]
-        public void ShouldFilterOutMessage()
+        public void ReporterShouldFilterOutMessage()
         {
             string logFileKey = "healthReporter:logFilePath";
             string logLevelKey = "healthReporter:logLevel";
