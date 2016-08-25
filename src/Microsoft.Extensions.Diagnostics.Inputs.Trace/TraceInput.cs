@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.Inputs
 
         private SimpleSubject<EventData> _subject;
         private readonly IHealthReporter healthReporter;
-        public TraceInput(IConfigurationSection configuration, IHealthReporter healthReporter)
+        public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Validation.Requires.NotNull(configuration, nameof(configuration));
             Validation.Assumes.True("Trace".Equals(configuration["type"], StringComparison.Ordinal), "Invalid trace configuration");

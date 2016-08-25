@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Diagnostics.Inputs.Tests
         [Fact]
         public void ConstructorShouldRequireHealthReporter()
         {
-            var configurationMock = new Mock<IConfigurationSection>();
+            var configurationMock = new Mock<IConfiguration>();
             configurationMock.Setup(section => section["type"]).Returns("Trace");
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
             {
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Diagnostics.Inputs.Tests
         [Fact]
         public void ConstructorShouldCheckConfigurationSectionType()
         {
-            var configurationMock = new Mock<IConfigurationSection>();
+            var configurationMock = new Mock<IConfiguration>();
             configurationMock.Setup(section => section["type"]).Returns("Trace");
             var healthReporterMock = new Mock<IHealthReporter>();
             TraceInput target = null;
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Diagnostics.Inputs.Tests
         [Fact]
         public void TraceShouldSubmitTheData()
         {
-            var configurationMock = new Mock<IConfigurationSection>();
+            var configurationMock = new Mock<IConfiguration>();
             configurationMock.Setup(section => section["type"]).Returns("Trace");
             configurationMock.Setup(section => section["traceLevel"]).Returns("All");
             var healthReporterMock = new Mock<IHealthReporter>();
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.Diagnostics.Inputs.Tests
         [Fact]
         public void TraceShouldNotSubmitFilteredData()
         {
-            var configurationMock = new Mock<IConfigurationSection>();
+            var configurationMock = new Mock<IConfiguration>();
             configurationMock.Setup(section => section["type"]).Returns("Trace");
             configurationMock.Setup(section => section["traceLevel"]).Returns("Off");
             var healthReporterMock = new Mock<IHealthReporter>();

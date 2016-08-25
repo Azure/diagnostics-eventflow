@@ -254,7 +254,7 @@ namespace Microsoft.Extensions.Diagnostics
             inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             inputFactories["EventSource"] = "Microsoft.Extensions.Diagnostics.ObservableEventListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.EventSource, Culture=neutral, PublicKeyToken=null";
             inputFactories["PerformanceCounter"] = "Microsoft.Extensions.Diagnostics.PerformanceCounterListenerFactory, Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=null";
-
+            inputFactories["Trace"] = "Microsoft.Extensions.Diagnostics.Inputs.TraceInputFactory, Microsoft.Extensions.Diagnostics.Inputs.Trace, Culture=neutral, PublicKeyToken=null";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             outputFactories["ApplicationInsights"] = "Microsoft.Extensions.Diagnostics.ApplicationInsightsSenderFactory, Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=null";

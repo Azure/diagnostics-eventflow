@@ -15,11 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.Inputs
             Validation.Requires.NotNull(configuration, nameof(configuration));
             Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            IConfigurationSection traceSection = configuration
-                .GetSection("inputs")
-                .GetChildren()
-                .FirstOrDefault(s => s["type"] == "Trace");
-            return new TraceInput(traceSection, healthReporter);
+            return new TraceInput(configuration, healthReporter);
         }
     }
 }

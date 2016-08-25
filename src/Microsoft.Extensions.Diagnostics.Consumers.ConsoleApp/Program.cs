@@ -3,12 +3,9 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthReporters;
-using Microsoft.Extensions.Diagnostics.Inputs;
-using Microsoft.Extensions.Diagnostics.Outputs;
 
 namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
 {
@@ -55,7 +52,8 @@ namespace Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp
                                 ]
                             },
                             {
-                                ""type"": ""Trace""
+                                ""type"": ""Trace"",
+                                ""traceLevel"": ""All""
                             }
                         ],
 
