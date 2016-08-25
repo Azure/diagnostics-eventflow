@@ -1,3 +1,4 @@
+$ErrorActionPreference = "Stop"
 $installerName = "installer.exe"
 
 Write-Host "Downloading .Net Core SDK"
