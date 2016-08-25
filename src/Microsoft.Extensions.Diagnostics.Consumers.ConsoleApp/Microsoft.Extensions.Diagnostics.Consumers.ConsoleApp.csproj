@@ -44,7 +44,7 @@
     <Reference Include="..\Microsoft.Extensions.Diagnostics.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Inputs.EventSource.dll">
       <Name>Microsoft.Extensions.Diagnostics.Inputs.EventSource</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\bin\$(Configuration)\net46\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.dll">
+    <Reference Include="..\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\bin\$(Configuration)\net45\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.dll">
       <Name>Microsoft.Extensions.Diagnostics.Outputs.StdOutput</Name>
     </Reference>
     <Reference Include="..\Microsoft.Extensions.Diagnostics.CsvHealthReporter\bin\$(Configuration)\net451\Microsoft.Extensions.Diagnostics.CsvHealthReporter.dll">
