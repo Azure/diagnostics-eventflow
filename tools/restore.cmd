@@ -1,5 +1,5 @@
 @ECHO OFF
 dotnet restore %~dp0..\
 pushd %~dp0..
-tools\nuget.exe restore "src\Microsoft.Extensions.Diagnostics.FilterParserGenerator\Microsoft.Extensions.Diagnostics.FilterParserGenerator.csproj" -PackagesDirectory packages
+tools\nuget.exe restore "src\Microsoft.Diagnostics.EventFlow.FilterParserGenerator\Microsoft.Diagnostics.EventFlow.FilterParserGenerator.csproj" -PackagesDirectory packages
 popd

@@ -1,0 +1,18 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "frameworks": {
+    "net45": {}
+  },
+
+  "packOptions": {
+    "tags": [
+      "Microsoft.Diagnostics.EventFlow"
+    ]
+  }
+}

@@ -9,26 +9,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Inputs", "Inputs", "{47200F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ouputs", "Ouputs", "{5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Core", "src\Microsoft.Extensions.Diagnostics.Core\Microsoft.Extensions.Diagnostics.Core.xproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Core", "src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.xproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DF757591-70DA-4367-AC08-396B170629F5} = {DF757591-70DA-4367-AC08-396B170629F5}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Consumers", "Consumers", "{D67068AF-16BB-4037-BE4E-B642419089BA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Consumers.ASPNET", "src\Microsoft.Extensions.Diagnostics.Consumers.ASPNET\Microsoft.Extensions.Diagnostics.Consumers.ASPNET.xproj", "{0EB2C089-06A7-495D-8909-E00C88E112D3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Consumers.ASPNET", "src\Microsoft.Diagnostics.EventFlow.Consumers.ASPNET\Microsoft.Diagnostics.EventFlow.Consumers.ASPNET.xproj", "{0EB2C089-06A7-495D-8909-E00C88E112D3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch", "src\Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch\Microsoft.Extensions.Diagnostics.Outputs.ElasticSearch.xproj", "{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch", "src\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.xproj", "{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.TableStorage", "src\Microsoft.Extensions.Diagnostics.Outputs.TableStorage\Microsoft.Extensions.Diagnostics.Outputs.TableStorage.xproj", "{B56C3023-E73E-43C4-859A-8AD328E675ED}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.TableStorage", "src\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.xproj", "{B56C3023-E73E-43C4-859A-8AD328E675ED}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.EventSource", "src\Microsoft.Extensions.Diagnostics.Inputs.EventSource\Microsoft.Extensions.Diagnostics.Inputs.EventSource.xproj", "{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.EventSource", "src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.xproj", "{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter", "src\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter\Microsoft.Extensions.Diagnostics.Inputs.PerformanceCounter.xproj", "{02D7E06C-E535-4BDC-8990-7A403DA546D9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter", "src\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.xproj", "{02D7E06C-E535-4BDC-8990-7A403DA546D9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights", "src\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights\Microsoft.Extensions.Diagnostics.Outputs.ApplicationInsights.xproj", "{EF3B9B49-1372-4A4B-9E20-A2C1ADABEB64}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights", "src\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.xproj", "{EF3B9B49-1372-4A4B-9E20-A2C1ADABEB64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp", "src\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp\Microsoft.Extensions.Diagnostics.Consumers.ConsoleApp.csproj", "{F0DC8BED-405A-42C7-8D65-A46385F859F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp", "src\Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp\Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp.csproj", "{F0DC8BED-405A-42C7-8D65-A46385F859F9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B56C3023-E73E-43C4-859A-8AD328E675ED} = {B56C3023-E73E-43C4-859A-8AD328E675ED}
 		{B254AD24-EBDF-4871-8A69-184D167923F0} = {B254AD24-EBDF-4871-8A69-184D167923F0}
@@ -43,19 +43,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagno
 		{49A23DFF-CE13-4413-A024-65247B30D09C} = {49A23DFF-CE13-4413-A024-65247B30D09C}
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.Trace", "src\Microsoft.Extensions.Diagnostics.Inputs.Trace\Microsoft.Extensions.Diagnostics.Inputs.Trace.xproj", "{03836F90-8D65-4A93-834C-5CE22F3292B5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.Trace", "src\Microsoft.Diagnostics.EventFlow.Inputs.Trace\Microsoft.Diagnostics.EventFlow.Inputs.Trace.xproj", "{03836F90-8D65-4A93-834C-5CE22F3292B5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.StdOutput", "src\Microsoft.Extensions.Diagnostics.Outputs.StdOutput\Microsoft.Extensions.Diagnostics.Outputs.StdOutput.xproj", "{49A23DFF-CE13-4413-A024-65247B30D09C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutput", "src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.xproj", "{49A23DFF-CE13-4413-A024-65247B30D09C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore", "src\Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore\Microsoft.Extensions.Diagnostics.Consumers.ConsoleAppCore.xproj", "{8DD84071-078D-4B93-9BC5-968F0F67CCA3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore", "src\Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore\Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore.xproj", "{8DD84071-078D-4B93-9BC5-968F0F67CCA3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{86A33E36-2266-4E31-8D91-1F720C9A1F27}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Core.Tests", "test\Microsoft.Extensions.Diagnostics.Core.Tests\Microsoft.Extensions.Diagnostics.Core.Tests.xproj", "{06D5E2CB-446F-4C92-9E76-17088B0B9ED7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Core.Tests", "test\Microsoft.Diagnostics.EventFlow.Core.Tests\Microsoft.Diagnostics.EventFlow.Core.Tests.xproj", "{06D5E2CB-446F-4C92-9E76-17088B0B9ED7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.Tests", "test\Microsoft.Extensions.Diagnostics.Outputs.Tests\Microsoft.Extensions.Diagnostics.Outputs.Tests.xproj", "{F66B606A-E2D9-49B1-A3A1-8C1B746435A2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.Tests", "test\Microsoft.Diagnostics.EventFlow.Outputs.Tests\Microsoft.Diagnostics.EventFlow.Outputs.Tests.xproj", "{F66B606A-E2D9-49B1-A3A1-8C1B746435A2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Inputs.Tests", "test\Microsoft.Extensions.Diagnostics.Inputs.Tests\Microsoft.Extensions.Diagnostics.Inputs.Tests.xproj", "{4F92132C-C455-40DD-A02D-A204FCF9DF50}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.Tests", "test\Microsoft.Diagnostics.EventFlow.Inputs.Tests\Microsoft.Diagnostics.EventFlow.Inputs.Tests.xproj", "{4F92132C-C455-40DD-A02D-A204FCF9DF50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E7AA4B2F-C884-48F2-B521-4355D84F6CEF}"
 	ProjectSection(SolutionItems) = preProject
@@ -66,19 +66,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E7AA
 		tools\scorch.cmd = tools\scorch.cmd
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.CsvHealthReporter", "src\Microsoft.Extensions.Diagnostics.CsvHealthReporter\Microsoft.Extensions.Diagnostics.CsvHealthReporter.xproj", "{959AF666-E881-4758-918E-E7A76C0971EF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.CsvHealthReporter", "src\Microsoft.Diagnostics.EventFlow.CsvHealthReporter\Microsoft.Diagnostics.EventFlow.CsvHealthReporter.xproj", "{959AF666-E881-4758-918E-E7A76C0971EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.FilterParserGenerator", "src\Microsoft.Extensions.Diagnostics.FilterParserGenerator\Microsoft.Extensions.Diagnostics.FilterParserGenerator.csproj", "{DF757591-70DA-4367-AC08-396B170629F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.FilterParserGenerator", "src\Microsoft.Diagnostics.EventFlow.FilterParserGenerator\Microsoft.Diagnostics.EventFlow.FilterParserGenerator.csproj", "{DF757591-70DA-4367-AC08-396B170629F5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform Support", "Platform Support", "{23A17E0F-86FD-4C55-A448-9A43C4C5E451}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Incubation", "Incubation", "{DF3A81C9-6084-4945-B493-39B9A78572C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.ServiceFabric", "src\Microsoft.Extensions.Diagnostics.ServiceFabric\Microsoft.Extensions.Diagnostics.ServiceFabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.ServiceFabric", "src\Microsoft.Diagnostics.EventFlow.ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.csproj", "{2D19BF76-04E1-4969-AD66-984160D38E2C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.EventHub", "src\Microsoft.Extensions.Diagnostics.Outputs.EventHub\Microsoft.Extensions.Diagnostics.Outputs.EventHub.xproj", "{7072DB92-0FDA-4B87-ABFD-897882C9284A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.EventHub", "src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.xproj", "{7072DB92-0FDA-4B87-ABFD-897882C9284A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Diagnostics.Outputs.Oms", "src\Microsoft.Extensions.Diagnostics.Outputs.Oms\Microsoft.Extensions.Diagnostics.Outputs.Oms.xproj", "{B254AD24-EBDF-4871-8A69-184D167923F0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Outputs.Oms", "src\Microsoft.Diagnostics.EventFlow.Outputs.Oms\Microsoft.Diagnostics.EventFlow.Outputs.Oms.xproj", "{B254AD24-EBDF-4871-8A69-184D167923F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
