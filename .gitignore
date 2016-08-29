@@ -193,6 +193,6 @@ ModelManifest.xml
 
 /.vs/restore.dg
 project.lock.json
-/src/Microsoft.Extensions.EventFlow.Consumers.ConsoleAppCore/HealthReport.csv
-/src/Microsoft.Extensions.EventFlow.FilterParserGenerator/FilterParser.peg.cs
+/src/Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore/HealthReport.csv
+/src/Microsoft.Diagnostics.EventFlow.FilterParserGenerator/FilterParser.peg.cs
 /nugets/
