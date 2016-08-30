@@ -6,7 +6,7 @@
 using System;
 using System.Fabric;
 using System.Fabric.Health;
-using Microsoft.Extensions.Diagnostics;
+using Microsoft.Diagnostics.EventFlow;
 
 namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 {

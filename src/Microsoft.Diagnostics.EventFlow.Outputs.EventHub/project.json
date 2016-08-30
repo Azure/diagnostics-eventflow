@@ -10,7 +10,7 @@
   },
 
   "frameworks": {
-    "net45": {}
+    "net451": {}
   },
 
   "packOptions": {
