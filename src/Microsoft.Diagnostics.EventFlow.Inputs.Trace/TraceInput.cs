@@ -13,7 +13,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     {
         public static readonly string TraceTag = nameof(TraceInput);
 
-        private SimpleSubject<EventData> _subject;
+        private SimpleSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
         public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -23,7 +23,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             this.healthReporter = healthReporter;
 
-            _subject = new SimpleSubject<EventData>();
+            this.subject = new SimpleSubject<EventData>();
 
             string traceLevelString = configuration["traceLevel"];
             SourceLevels traceLevel = SourceLevels.Error;
@@ -45,7 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     ProviderName = nameof(TraceInput),
                     Message = message
                 };
-                this._subject.OnNext(data);
+                this.subject.OnNext(data);
             }
             catch (Exception ex)
             {
@@ -55,13 +55,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
-            return _subject.Subscribe(observer);
+            return this.subject.Subscribe(observer);
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _subject.Dispose();
+            this.subject.Dispose();
         }
     }
 }
