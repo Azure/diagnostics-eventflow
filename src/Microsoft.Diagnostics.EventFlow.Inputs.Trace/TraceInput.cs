@@ -19,7 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Validation.Requires.NotNull(configuration, nameof(configuration));
-            Validation.Assumes.True("Trace".Equals(configuration["type"], StringComparison.Ordinal), "Invalid trace configuration");
+            Validation.Assumes.True("Trace".Equals(configuration["type"], StringComparison.OrdinalIgnoreCase), "Invalid trace configuration");
             Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
@@ -41,7 +41,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         {
             SubmitEventData(message, null);
         }
-
 
         public override void Fail(string message)
         {
@@ -165,7 +164,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
             catch (Exception ex)
             {
-                ReportException(ex);
+                this.healthReporter?.ReportProblem($"Failed to write message. Error: {ex.ToString()}", TraceTag);
             }
         }
 
@@ -183,11 +182,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public override void Write(string message)
         {
             WriteLine(message);
-        }
-
-        private void ReportException(Exception ex)
-        {
-            this.healthReporter?.ReportProblem($"Fail to write message. Error: {ex.ToString()}", TraceTag);
         }
     }
 }

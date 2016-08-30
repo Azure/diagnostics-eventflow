@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -83,6 +84,173 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Trace.TraceInformation("Message for unit test");
                 subjectMock.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(0));
             }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideWriteLine()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                target.WriteLine("UnitTest info");
+                subject.Verify(s => s.OnNext(It.Is<EventData>(data => data.Message.Equals("UnitTest info"))), Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideFail()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = "Failure message";
+                target.Fail(message);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message) && data.Level.Equals("Error"))),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideFailWithDetails()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = "Failure message";
+                string details = "Details";
+                target.Fail(message, details);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message + Environment.NewLine + details) && data.Level.Equals("Error"))),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideTraceSingleData()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = "Message";
+                int id = (new Random()).Next();
+                target.TraceData(null, null, TraceEventType.Warning, id, message);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message) && data.EventId == id)),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideTraceMultipleData()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = "Message";
+                string message2 = "Message2";
+                int id = (new Random()).Next();
+                target.TraceData(null, null, TraceEventType.Warning, id, message, message2);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Message.Equals($"{message}, {message2}") && data.EventId == id)),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideTraceSingleEvent()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = GetRandomString();
+                int id = (new Random()).Next();
+                target.TraceEvent(null, null, TraceEventType.Warning, id, message);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message) && data.EventId == id)),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputShouldOverrideTraceEventWithFormat()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = GetRandomString();
+                string format = "{0}_{0}";
+                int id = (new Random()).Next();
+                target.TraceEvent(null, null, TraceEventType.Warning, id, format, message);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Message.Equals($"{message}_{message}") && data.EventId == id)),
+                    Times.Exactly(1));
+            }
+        }
+
+#if NET46
+        [Fact]
+        public void TraceInputShouldOverrideTraceTransfer()
+        {
+            var configurationMock = new Mock<IConfiguration>();
+            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = GetRandomString();
+                int id = (new Random()).Next();
+                Guid relatedId = Guid.NewGuid();
+                target.TraceTransfer(null, null, id, message, relatedId);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.EventId == id && data.ActivityID.Equals(relatedId.ToString()))),
+                    Times.Exactly(1));
+            }
+        }
+#endif
+
+        private static string GetRandomString()
+        {
+            string path = Path.GetRandomFileName();
+            path = path.Replace(".", "");
+            return path;
         }
     }
 }
