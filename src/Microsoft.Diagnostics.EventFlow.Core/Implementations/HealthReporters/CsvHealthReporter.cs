@@ -73,7 +73,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         #region Methods
         public virtual string GetReportFileName(string prefix)
         {
-            return $"{prefix}_{DateTime.Today.ToString("yyyyMMdd")}.csv";
+            return $"{prefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
         }
 
         private void Initialize(CsvHealthReporterConfiguration configuration, StreamWriter streamWriter)
