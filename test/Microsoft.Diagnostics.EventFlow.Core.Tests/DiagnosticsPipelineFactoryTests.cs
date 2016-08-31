@@ -87,7 +87,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""category"": ""healthReporter"",
                             ""type"": ""CustomHealthReporter"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         }
                     ],
                     ""healthReporter"": {

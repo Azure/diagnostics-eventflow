@@ -6,7 +6,7 @@
 using System;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Diagnostics.EventFlow.Tests
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class CustomHealthReporter: IHealthReporter
     {
