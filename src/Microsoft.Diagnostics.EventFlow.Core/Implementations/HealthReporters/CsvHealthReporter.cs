@@ -13,6 +13,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 {
     public class CsvHealthReporter : IHealthReporter
     {
+        internal enum HealthReportLevel
+        {
+            Message,
+            Warning,
+            Error
+        }
+
         #region Fields
         public const string DefaultHealthReportName = "HealthReport.csv";
         private static readonly string TraceTag = nameof(CsvHealthReporter);

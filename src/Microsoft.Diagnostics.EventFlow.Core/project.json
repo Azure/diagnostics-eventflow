@@ -4,6 +4,7 @@
   "dependencies": {
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.Binder": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "NETStandard.Library": "1.6.0",
     "System.Collections.Immutable": "1.2.0",
     "System.Threading.Tasks.Parallel": "4.0.0",
@@ -13,11 +14,11 @@
   "frameworks": {
     "netstandard1.6": {
       "imports": "dnxcore50",
-      "dependencies": {
-        "System.Dynamic.Runtime": "4.0.11"
-      }
+        "dependencies": {
+            "System.Dynamic.Runtime": "4.0.11"
+        }
     },
-    "net45": {
+    "net451": {
     }
   },
 

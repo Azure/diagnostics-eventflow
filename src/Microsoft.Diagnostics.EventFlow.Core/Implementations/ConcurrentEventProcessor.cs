@@ -154,7 +154,7 @@ namespace Microsoft.Diagnostics.EventFlow
                     continue;
                 }
 
-#if NET45
+#if NET451
                 Task transmitterTask = Task.Run(
                     () => this.sink.Output.SendEventsAsync(eventsToSend.ToList(), transmissionSequenceNumber++, cancellationToken),
                     cancellationToken);

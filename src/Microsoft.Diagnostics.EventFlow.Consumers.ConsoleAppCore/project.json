@@ -6,7 +6,6 @@
 
   "dependencies": {
     "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
-    "Microsoft.Diagnostics.EventFlow.CsvHealthReporter": "1.0.0-*",
     "Microsoft.Diagnostics.EventFlow.Inputs.Trace": "1.0.0-*",
     "Microsoft.Diagnostics.EventFlow.Outputs.StdOutput": "1.0.0-*",
     "Microsoft.NETCore.App": {

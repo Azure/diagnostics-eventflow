@@ -13,27 +13,22 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp
     {
         static void Main(string[] args)
         {
-            // HealthReporter
-            using (TemporaryFile configFile = CreateConfigFile())
-            using (IHealthReporter reporter = new CsvHealthReporter(configFile.FilePath))
-            {
-                ConfigurationBuilder builder = new ConfigurationBuilder();
-                builder.AddJsonFile(configFile.FilePath);
-                var configuration = builder.Build();
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.AddJsonFile("config.json");
+            var configuration = builder.Build();
 
-                var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration, reporter) as DiagnosticsPipeline;
+            var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration);
 
-                // Build up the pipeline
-                Console.WriteLine("Pipeline is created.");
+            // Build up the pipeline
+            Console.WriteLine("Pipeline is created.");
 
-                // Send a trace to the pipeline
-                Trace.TraceInformation("This is a message from trace . . .");
-                MyEventSource.Log.Message("This is a message from EventSource ...");
+            // Send a trace to the pipeline
+            Trace.TraceInformation("This is a message from trace . . .");
+            MyEventSource.Log.Message("This is a message from EventSource ...");
 
-                // Check the result
-                Console.WriteLine("Press any key to continue . . .");
-                Console.ReadKey(true);
-            }
+            // Check the result
+            Console.WriteLine("Press any key to continue . . .");
+            Console.ReadKey(true);
         }
 
         private static TemporaryFile CreateConfigFile()

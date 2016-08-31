@@ -3,21 +3,31 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Validation;
-using Microsoft.Diagnostics.EventFlow.Configuration;
 using System.Diagnostics;
+using System.Linq;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.HealthReporters;
+using Microsoft.Extensions.Configuration;
+using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
     public class DiagnosticsPipelineFactory
     {
-        public static IDisposable CreatePipeline(IConfiguration configuration, IHealthReporter healthReporter)
+        public static DiagnosticsPipeline CreatePipeline(string jsonConfigFilePath)
+        {
+            IConfiguration config = new ConfigurationBuilder().AddJsonFile(jsonConfigFilePath).Build();
+
+            return CreatePipeline(config);
+        }
+
+        public static DiagnosticsPipeline CreatePipeline(IConfiguration configuration)
         {
             Requires.NotNull(configuration, nameof(configuration));
+
+            IHealthReporter healthReporter = CreateHealthReporter(configuration);
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             IDictionary<string, string> inputFactories;
@@ -28,10 +38,11 @@ namespace Microsoft.Diagnostics.EventFlow
 
             // Step 1: instantiate inputs
             IConfigurationSection inputConfigurationSection = configuration.GetSection("inputs");
-            if (inputConfigurationSection == null)
+            if (inputConfigurationSection.GetChildren().Count() == 0)
             {
-                healthReporter.ReportProblem($"{nameof(DiagnosticsPipelineFactory)}: 'inputs' configuration section missing");
-                return EmptyDisposable.Instance;
+                var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: 'inputs' configuration section missing";
+                healthReporter.ReportProblem(errMsg);
+                throw new Exception(errMsg);
             }
 
             List<ItemWithChildren<IObservable<EventData>, object>> inputCreationResult;
@@ -44,7 +55,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 isOptional:false, 
                 createdItems: out inputCreationResult))
             {
-                return EmptyDisposable.Instance;
+                throw new Exception("Failed to create pipeline from 'input' section");
             }
             List<IObservable<EventData>> inputs = inputCreationResult.Select(item => item.Item).ToList();
             Debug.Assert(inputs.Count > 0);
@@ -67,11 +78,13 @@ namespace Microsoft.Diagnostics.EventFlow
 
             // Step 3: instantiate outputs
             IConfigurationSection outputConfigurationSection = configuration.GetSection("outputs");
-            if (outputConfigurationSection == null)
+            if (outputConfigurationSection.GetChildren().Count() == 0)
             {
-                healthReporter.ReportProblem($"{nameof(DiagnosticsPipelineFactory)}: 'outputs' configuration section missing");
                 DisposeOf(inputs);
-                return EmptyDisposable.Instance;
+
+                var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: 'outputs' configuration section missing";
+                healthReporter.ReportProblem(errMsg);
+                throw new Exception(errMsg);
             }
 
             List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
@@ -85,7 +98,8 @@ namespace Microsoft.Diagnostics.EventFlow
                 createdItems: out outputCreationResult))
             {
                 DisposeOf(inputs);
-                return EmptyDisposable.Instance;
+
+                throw new Exception("Failed to create pipeline from 'output' section");
             }
 
 
@@ -100,9 +114,43 @@ namespace Microsoft.Diagnostics.EventFlow
             return pipeline;
         }
 
+        private static IHealthReporter CreateHealthReporter(IConfiguration configuration)
+        {
+            // The GetSection() method never returns null. We will have to call the GetChildren() method to determine if the configuration is empty.
+            IConfiguration healthReporterConfiguration = configuration.GetSection("healthReporter");
+            string healthReporterType = healthReporterConfiguration["type"];
+
+            if (string.IsNullOrEmpty(healthReporterType)
+                || healthReporterType.Equals("CsvHealthReporter", StringComparison.OrdinalIgnoreCase))
+            {
+                if (healthReporterConfiguration.GetChildren().Count() == 0)
+                {
+                    healthReporterConfiguration = new ConfigurationBuilder().AddInMemoryCollection().Build();
+                }
+
+                return new CsvHealthReporter(healthReporterConfiguration);
+            }
+
+            // 3rd party HealthReporter, look up the "extensions" section and create the instance dynamically
+            IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
+            foreach (var extension in extensionsConfiguration.GetChildren())
+            {
+                if (string.Equals(extension["category"], "healthReporter", StringComparison.OrdinalIgnoreCase)
+                    &&  string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
+                {
+                    var type = Type.GetType(extension["qualifiedTypeName"]);
+
+                    // Consider: Make IHealthReporter an abstract class, so the inherited classes are ensured to have a constructor with parameter IConfiguration
+                    return Activator.CreateInstance(type, healthReporterConfiguration) as IHealthReporter;
+                }
+            }
+
+            return null;
+        }
+
         private static bool ProcessSection<PipelineItemType, PipelineItemChildType>(
             IConfigurationSection configurationSection,
-            IHealthReporter healthReporter,            
+            IHealthReporter healthReporter,
             IDictionary<string, string> itemFactories,
             IDictionary<string, string> childFactories,
             string childSectionName,
@@ -111,7 +159,7 @@ namespace Microsoft.Diagnostics.EventFlow
         {
             Debug.Assert(isOptional || configurationSection != null);
             Debug.Assert(!string.IsNullOrWhiteSpace(configurationSection.Key));
-            Debug.Assert(healthReporter != null);            
+            Debug.Assert(healthReporter != null);
             Debug.Assert(itemFactories != null);
             Debug.Assert((string.IsNullOrEmpty(childSectionName) && childFactories == null) || (!string.IsNullOrEmpty(childSectionName) && childFactories != null));
 
@@ -194,7 +242,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 else
                 {
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, null));
-                }                
+                }
             }
 
             if (createdItems.Count == 0 && !isOptional)

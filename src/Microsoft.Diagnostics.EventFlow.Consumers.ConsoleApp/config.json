@@ -128,9 +128,9 @@
 
   "extensions": [
     {
-      "name": "myFilter",
-      "type": "filter",
-      "factory": "MyApplication.Diagnostics.MyFilterFactory, MyApplication.Diagnostics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+      "category": "filterFactory",
+      "type": "myFilter",
+      "qualifiedTypeName": "MyApplication.Diagnostics.MyFilterFactory, MyApplication.Diagnostics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
     }
   ]
 }

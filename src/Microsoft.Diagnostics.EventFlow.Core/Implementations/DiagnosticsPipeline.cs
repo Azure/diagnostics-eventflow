@@ -29,6 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             this.Inputs = inputs;
             this.Sinks = sinks;
+            this.HealthReporter = healthReporter;
 
             // TODO: cloning should be used only if there are more than one sink and any of them have output-specific filters.
             bool useCloning = sinks.Count() > 1; 
@@ -71,9 +72,12 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 processor.Dispose();
             }
+
+            HealthReporter.Dispose();
         }
 
         public IReadOnlyCollection<IObservable<EventData>> Inputs { get; private set; }
         public IReadOnlyCollection<EventSink> Sinks { get; private set; }
+        public IHealthReporter HealthReporter { get; private set; }
     }
 }

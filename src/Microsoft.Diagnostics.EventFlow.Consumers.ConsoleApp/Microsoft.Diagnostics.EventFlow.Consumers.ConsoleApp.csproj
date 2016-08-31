@@ -35,20 +35,17 @@
   </PropertyGroup>
   <ItemGroup>
     <!--Workaround: Visual Studio doens't resolve P2P Reference from .NET project to .NET Core project-->
-    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net45\Microsoft.Diagnostics.EventFlow.Core.dll">
+    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Core.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Core</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net45\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll">
+    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Inputs.Trace</Name>
     </Reference>
     <Reference Include="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Inputs.EventSource</Name>
     </Reference>
-    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net45\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll">
+    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Outputs.StdOutput</Name>
-    </Reference>
-    <Reference Include="..\Microsoft.Diagnostics.EventFlow.CsvHealthReporter\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.CsvHealthReporter.dll">
-      <Name>Microsoft.Diagnostics.EventFlow.CsvHealthReporter</Name>
     </Reference>
     <!--~-->
     <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -112,7 +109,6 @@
     <None Include="FileReportConfig.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
