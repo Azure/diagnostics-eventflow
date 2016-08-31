@@ -85,7 +85,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             int.TryParse(configuration["throttleTimeSpan"], out throttleTimeSpan); // Will return 0 if failed to parse
             throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(throttleTimeSpan));
 
-            string logLevelString = configuration["healthReporter:logLevel"];
             string logLevelString = configuration?.MinReportLevel;
             HealthReportLevel logLevel;
             if (Enum.TryParse(logLevelString, out logLevel))
@@ -155,12 +154,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         public void ReportHealthy(string description = null, string context = null)
         {
-            ReportText(HealthReportLevel.Warning, description, context);
+            ReportText(HealthReportLevel.Message, description, context);
         }
 
         public void ReportProblem(string description, string context = null)
         {
-            ReportText(HealthReportLevel.Warning, description, context);
+            ReportText(HealthReportLevel.Error, description, context);
         }
 
         public void ReportWarning(string description, string context = null)
@@ -199,9 +198,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         {
             if (text.Contains(","))
             {
-                text = text.Replace("\"", "\"\"");
-                text = string.Format(CultureInfo.CurrentCulture, "\"{0}\"", text);
-                return text;
+                return "\"" + text.Replace("\"", "\"\"") + "\"";
             }
             else
             {
