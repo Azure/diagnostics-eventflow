@@ -6,7 +6,7 @@ using Microsoft.Diagnostics.EventFlow;
 using Microsoft.Diagnostics.EventFlow.FilterEvaluators;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Azure.Fabric.DiagnosticEvents.UnitTests.FilterParsing
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 {
     // The InequalityEvaluator is a very simple modification of the EqualityEvaluator. Therefore, the set of tests
     // for the InequalityEvaluator is limited, meant to be a "smoke test" set rather than something more comprehensive.

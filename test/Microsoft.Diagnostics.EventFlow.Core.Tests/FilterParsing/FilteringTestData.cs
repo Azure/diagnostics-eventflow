@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Diagnostics.EventFlow;
 
-namespace Microsoft.VisualStudio.Azure.Fabric.DiagnosticEvents.UnitTests.FilterParsing
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 {
     internal static class FilteringTestData
     {

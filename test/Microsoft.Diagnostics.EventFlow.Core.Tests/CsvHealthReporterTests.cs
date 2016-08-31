@@ -10,7 +10,7 @@ using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Diagnostics.EventFlow.Tests
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class CsvHealthReporterTests
     {

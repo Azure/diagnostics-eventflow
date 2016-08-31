@@ -6,7 +6,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Diagnostics.EventFlow.Tests
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class TemporaryFile : IDisposable
     {

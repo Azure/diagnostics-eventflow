@@ -6,7 +6,7 @@ using System;
 using Microsoft.Diagnostics.EventFlow;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Azure.Fabric.DiagnosticEvents.UnitTests.FilterParsing
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 {
     public class AlternativeTests
     {

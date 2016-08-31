@@ -5,7 +5,7 @@
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.Diagnostics.EventFlow.Tests.FilterParsing
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class EventDataTests
     {

@@ -13,7 +13,7 @@ using Microsoft.Diagnostics.EventFlow.Outputs;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Diagnostics.EventFlow.Tests
+namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class DiagnosticsPipelineFactoryTests
     {
