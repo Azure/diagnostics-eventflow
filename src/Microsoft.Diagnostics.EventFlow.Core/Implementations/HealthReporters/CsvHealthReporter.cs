@@ -21,7 +21,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         }
 
         #region Fields
-        public const string DefaultHealthReportName = "HealthReport.csv";
+        public const string DefaultHealthReporterPrefix = "HealthReport";
         private static readonly string TraceTag = nameof(CsvHealthReporter);
         private readonly object _locker = new object();
         private FileStream _fileStream;
@@ -35,6 +35,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         #endregion
 
         #region Constructors
+        public CsvHealthReporter(CsvHealthReporterConfiguration configuration, StreamWriter streamWriter = null)
+        {
+            IsExternalStreamWriter = streamWriter != null;
+            Initialize(configuration, streamWriter);
+        }
+
         /// <summary>
         /// Create a CsvHealthReporter with configuration.
         /// </summary>
@@ -60,12 +66,17 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false);
             IConfiguration configuration = builder.Build();
 
-            Initialize(configuration, streamWriter);
+            Initialize(configuration.GetSection("healthReporter"), streamWriter);
         }
         #endregion
 
         #region Methods
-        private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
+        public virtual string GetReportFileName(string prefix)
+        {
+            return $"{prefix}_{DateTime.Today.ToString("yyyyMMdd")}.csv";
+        }
+
+        private void Initialize(CsvHealthReporterConfiguration configuration, StreamWriter streamWriter)
         {
             StringBuilder errorBuilder = new StringBuilder();
 
@@ -75,6 +86,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(throttleTimeSpan));
 
             string logLevelString = configuration["healthReporter:logLevel"];
+            string logLevelString = configuration?.MinReportLevel;
             HealthReportLevel logLevel;
             if (Enum.TryParse(logLevelString, out logLevel))
             {
@@ -95,12 +107,20 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 string logFilePath = null;
                 try
                 {
-                    logFilePath = configuration["healthReporter:logFilePath"];
-                    // Set default value for HealthReport.csv
-                    if (string.IsNullOrWhiteSpace(logFilePath))
+                    if (!string.IsNullOrEmpty(configuration.LogFileFolder))
                     {
-                        logFilePath = DefaultHealthReportName;
-                        errorBuilder.AppendLine($"logFilePath is not specified in configuration file. Fall back to default path: {logFilePath}");
+                        logFilePath = Path.Combine(configuration.LogFileFolder, GetReportFileName(configuration.LogFilePrefix));
+                    }
+                    else
+                    {
+                        logFilePath = configuration.LogFilePrefix;
+                        // Set default value for HealthReport.csv
+                        if (string.IsNullOrWhiteSpace(logFilePath))
+                        {
+                            logFilePath = DefaultHealthReporterPrefix;
+                            errorBuilder.AppendLine($"{nameof(configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {logFilePath}");
+                        }
+                        logFilePath = GetReportFileName(logFilePath);
                     }
 
                     _fileStream = new FileStream(logFilePath, FileMode.Append);
@@ -123,6 +143,14 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 ReportProblem(selfErrorString, TraceTag);
             }
+        }
+
+        private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
+        {
+            CsvHealthReporterConfiguration boundConfiguration = new CsvHealthReporterConfiguration();
+            configuration.Bind(boundConfiguration);
+
+            Initialize(boundConfiguration, streamWriter);
         }
 
         public void ReportHealthy(string description = null, string context = null)

@@ -4,9 +4,10 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
 
@@ -48,7 +49,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 }
                 finally
                 {
-                    TryDeleteFile(CsvHealthReporter.DefaultHealthReportName);
+                    TryDeleteFiles(CsvHealthReporter.DefaultHealthReporterPrefix);
                 }
             }
         }
@@ -80,7 +81,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     finally
                     {
                         // Clean up
-                        TryDeleteFile(CsvHealthReporter.DefaultHealthReportName);
+                        TryDeleteFiles(CsvHealthReporter.DefaultHealthReporterPrefix);
                     }
                 }
             }
@@ -89,20 +90,23 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         // TEMPORARILY DISABLED [Fact]
         public void ConstructorShouldHandleWrongFilterLevel()
         {
-            string logFileKey = "healthReporter:logFilePath";
-            string logLevelKey = "healthReporter:logLevel";
-            string healthReporter = "HealthReport.csv";
-
             // Setup
-            Mock<IConfiguration> configMock = new Mock<IConfiguration>();
-            configMock.Setup(c => c[logLevelKey]).Returns("WrongLevel");
-            configMock.Setup(c => c[logFileKey]).Returns(healthReporter);
+            string logFileFolderKey = "LogFileFolder";
+            string logFilePrefixKey = "LogFilePrefix";
+            string logLevelKey = "MinReportLevel";
+            string healthReporter = "HealthReport";
+
+            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+                { logFileFolderKey, string.Empty },
+                { logFilePrefixKey, healthReporter},
+                { logLevelKey, "WrongLevel"}
+            }).Build();
 
             // Exercise
             using (Stream memoryStream = new MemoryStream())
             {
                 var streamWriterMock = new Mock<StreamWriter>(memoryStream);
-                using (CsvHealthReporter target = new CsvHealthReporter(configMock.Object, streamWriterMock.Object))
+                using (CsvHealthReporter target = new CsvHealthReporter(configuration, streamWriterMock.Object))
                 {
                     // Verify
                     streamWriterMock.Verify(
@@ -116,14 +120,17 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         // TEMPORARILY DISABLED [Fact]
         public void ReportHealthyShouldWriteMessage()
         {
-            string logFileKey = "healthReporter:logFilePath";
-            string logLevelKey = "healthReporter:logLevel";
-            string healthReporter = "HealthReport.csv";
-
             // Setup
-            Mock<IConfiguration> configMock = new Mock<IConfiguration>();
-            configMock.Setup(c => c[logLevelKey]).Returns("Message");
-            configMock.Setup(c => c[logFileKey]).Returns(healthReporter);
+            string logFileFolderKey = "LogFileFolder";
+            string logFilePrefixKey = "LogFilePrefix";
+            string logLevelKey = "MinReportLevel";
+            string healthReporter = "HealthReport";
+
+            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+                { logFileFolderKey, string.Empty },
+                { logFilePrefixKey, healthReporter},
+                { logLevelKey, "Message"}
+            }).Build();
 
             // Exercise
             try
@@ -131,7 +138,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 using (Stream memoryStream = new MemoryStream())
                 {
                     var streamWriterMock = new Mock<StreamWriter>(memoryStream);
-                    using (CsvHealthReporter target = new CsvHealthReporter(configMock.Object, streamWriterMock.Object))
+                    using (CsvHealthReporter target = new CsvHealthReporter(configuration, streamWriterMock.Object))
                     {
                         target.ReportHealthy("Healthy message.", "UnitTest");
                         // Verify
@@ -155,20 +162,23 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         [Fact]
         public void ReportWarningShouldWriteWarning()
         {
-            string logFileKey = "healthReporter:logFilePath";
-            string logLevelKey = "healthReporter:logLevel";
-            string healthReporter = "HealthReport.csv";
-
             // Setup
-            Mock<IConfiguration> configMock = new Mock<IConfiguration>();
-            configMock.Setup(c => c[logLevelKey]).Returns("Message");
-            configMock.Setup(c => c[logFileKey]).Returns(healthReporter);
+            string logFileFolderKey = "LogFileFolder";
+            string logFilePrefixKey = "LogFilePrefix";
+            string logLevelKey = "MinReportLevel";
+            string healthReporter = "HealthReport";
+
+            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+                { logFileFolderKey, string.Empty },
+                { logFilePrefixKey, healthReporter},
+                { logLevelKey, "Message"}
+            }).Build();
 
             // Exercise
             using (Stream memoryStream = new MemoryStream())
             {
                 var streamWriterMock = new Mock<StreamWriter>(memoryStream);
-                using (CsvHealthReporter target = new CsvHealthReporter(configMock.Object, streamWriterMock.Object))
+                using (CsvHealthReporter target = new CsvHealthReporter(configuration, streamWriterMock.Object))
                 {
                     target.ReportWarning("Warning message.", "UnitTest");
                     // Verify
@@ -211,20 +221,23 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         // TEMPORARILY DISABLED [Fact]
         public void ReporterShouldFilterOutMessage()
         {
-            string logFileKey = "healthReporter:logFilePath";
-            string logLevelKey = "healthReporter:logLevel";
-            string healthReporter = "HealthReport.csv";
-
             // Setup
-            Mock<IConfiguration> configMock = new Mock<IConfiguration>();
-            configMock.Setup(c => c[logLevelKey]).Returns("Warning");
-            configMock.Setup(c => c[logFileKey]).Returns(healthReporter);
+            string logFileFolderKey = "LogFileFolder";
+            string logFilePrefixKey = "LogFilePrefix";
+            string logLevelKey = "MinReportLevel";
+            string healthReporter = "HealthReport";
+
+            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+                { logFileFolderKey, string.Empty },
+                { logFilePrefixKey, healthReporter},
+                { logLevelKey, "Warning"}
+            }).Build();
 
             // Exercise
             using (Stream memoryStream = new MemoryStream())
             {
                 var streamWriterMock = new Mock<StreamWriter>(memoryStream);
-                using (CsvHealthReporter target = new CsvHealthReporter(configMock.Object, streamWriterMock.Object))
+                using (CsvHealthReporter target = new CsvHealthReporter(configuration, streamWriterMock.Object))
                 {
                     target.ReportHealthy("Supposed to be filtered.", "UnitTest");
                     // Verify that message is filtered out.
@@ -274,7 +287,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
             finally
             {
-                TryDeleteFile(CsvHealthReporter.DefaultHealthReportName);
+                TryDeleteFiles(CsvHealthReporter.DefaultHealthReporterPrefix);
             }
         }
 
@@ -310,8 +323,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
     }
   ],
   ""healthReporter"": {
-    ""logFilePath"": ""TestHealthReport.csv"",
-    ""logLevel"": ""@Level""
+    ""logFileFolder"": ""..\\App_Data\\"",
+    ""logFilePrefix"": ""TestHealthReport"",
+    ""minReportLevel"": ""@Level""
   }
 }
 ";
@@ -356,12 +370,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
-        private static void TryDeleteFile(string fileName)
+        private static void TryDeleteFiles(string startWith, string extension = ".csv")
         {
             // Clean up
-            if (File.Exists(fileName))
+            string[] targets = Directory.GetFiles(Directory.GetCurrentDirectory(), $"{startWith}*{extension}");
+            foreach (string file in targets)
             {
-                File.Delete(fileName);
+                File.Delete(file);
             }
         }
     }
