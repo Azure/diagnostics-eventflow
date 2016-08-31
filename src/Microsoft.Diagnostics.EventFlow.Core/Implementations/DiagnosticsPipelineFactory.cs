@@ -38,10 +38,11 @@ namespace Microsoft.Diagnostics.EventFlow
 
             // Step 1: instantiate inputs
             IConfigurationSection inputConfigurationSection = configuration.GetSection("inputs");
-            if (inputConfigurationSection == null)
+            if (inputConfigurationSection.GetChildren().Count() == 0)
             {
-                healthReporter.ReportProblem($"{nameof(DiagnosticsPipelineFactory)}: 'inputs' configuration section missing");
-                return null;
+                var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: 'inputs' configuration section missing";
+                healthReporter.ReportProblem(errMsg);
+                throw new Exception(errMsg);
             }
 
             List<ItemWithChildren<IObservable<EventData>, object>> inputCreationResult;
@@ -54,7 +55,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 isOptional:false, 
                 createdItems: out inputCreationResult))
             {
-                return null;
+                throw new Exception("Failed to create pipeline from 'input' section");
             }
             List<IObservable<EventData>> inputs = inputCreationResult.Select(item => item.Item).ToList();
             Debug.Assert(inputs.Count > 0);
@@ -77,11 +78,13 @@ namespace Microsoft.Diagnostics.EventFlow
 
             // Step 3: instantiate outputs
             IConfigurationSection outputConfigurationSection = configuration.GetSection("outputs");
-            if (outputConfigurationSection == null)
+            if (outputConfigurationSection.GetChildren().Count() == 0)
             {
-                healthReporter.ReportProblem($"{nameof(DiagnosticsPipelineFactory)}: 'outputs' configuration section missing");
                 DisposeOf(inputs);
-                return null;
+
+                var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: 'outputs' configuration section missing";
+                healthReporter.ReportProblem(errMsg);
+                throw new Exception(errMsg);
             }
 
             List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
@@ -95,7 +98,8 @@ namespace Microsoft.Diagnostics.EventFlow
                 createdItems: out outputCreationResult))
             {
                 DisposeOf(inputs);
-                return null;
+
+                throw new Exception("Failed to create pipeline from 'output' section");
             }
 
 
@@ -112,7 +116,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
         private static IHealthReporter CreateHealthReporter(IConfiguration configuration)
         {
-            // The GetSection() method never return null. We will have to call the GetChildren() method to determine if the configuration is empty.
+            // The GetSection() method never returns null. We will have to call the GetChildren() method to determine if the configuration is empty.
             IConfiguration healthReporterConfiguration = configuration.GetSection("healthReporter");
             string healthReporterType = healthReporterConfiguration["type"];
 
@@ -121,8 +125,6 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 if (healthReporterConfiguration.GetChildren().Count() == 0)
                 {
-                    // TODO: We may need to construct a default configuration for the CsvHealthReporter.
-                    // Especially the CsvHealthReporter configuration is going to be changed and it's not ensured everything will have a default value.
                     healthReporterConfiguration = new ConfigurationBuilder().AddInMemoryCollection().Build();
                 }
 
@@ -136,7 +138,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 if (string.Equals(extension["category"], "healthReporter", StringComparison.OrdinalIgnoreCase)
                     &&  string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
                 {
-                    var type = Type.GetType(extension["assemblyQualifiedName"]);
+                    var type = Type.GetType(extension["qualifiedTypeName"]);
 
                     // Consider: Make IHealthReporter an abstract class, so the inherited classes are ensured to have a constructor with parameter IConfiguration
                     return Activator.CreateInstance(type, healthReporterConfiguration) as IHealthReporter;

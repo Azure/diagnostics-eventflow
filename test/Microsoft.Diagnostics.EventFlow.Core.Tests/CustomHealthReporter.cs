@@ -6,11 +6,11 @@
 using System;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Diagnostics.EventFlow.Tests.Mocks
+namespace Microsoft.Diagnostics.EventFlow.Tests
 {
-    public class HealthReporterMock: IHealthReporter
+    public class CustomHealthReporter: IHealthReporter
     {
-        public HealthReporterMock(IConfiguration configuration)
+        public CustomHealthReporter(IConfiguration configuration)
         {
 
         }

@@ -11,7 +11,6 @@ using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Microsoft.Diagnostics.EventFlow.Outputs;
-using Microsoft.Diagnostics.EventFlow.Tests.Mocks;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -87,12 +86,12 @@ namespace Microsoft.Diagnostics.EventFlow.Tests
                     ""extensions"": [
                         {
                             ""category"": ""healthReporter"",
-                            ""type"": ""HealthReporterMock"",
-                            ""assemblyQualifiedName"": ""Microsoft.Diagnostics.EventFlow.Tests.Mocks.HealthReporterMock, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""type"": ""CustomHealthReporter"",
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         }
                     ],
                     ""healthReporter"": {
-                        ""type"": ""HealthReporterMock"",
+                        ""type"": ""CustomHealthReporter"",
                     }
                 }";
 
@@ -108,7 +107,7 @@ namespace Microsoft.Diagnostics.EventFlow.Tests
                 using (var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration))
                 {
                     Assert.NotNull(pipeline);
-                    Assert.True(pipeline.HealthReporter is HealthReporterMock);
+                    Assert.True(pipeline.HealthReporter is CustomHealthReporter);
                 }
             }
         }
