@@ -75,11 +75,11 @@ namespace Microsoft.Diagnostics.EventFlow
                 // CONSIDER exposing TableRequestOptions and OperationContext for the batch operation
                 await this.cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
 
-                this.ReportHealthy();
+                this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportProblem($"{nameof(TableStorageSender)}: diagnostics data upload has failed{Environment.NewLine}{e.ToString()}");
+                this.healthReporter.ReportProblem($"{nameof(TableStorageSender)}: diagnostics data upload has failed{Environment.NewLine}{e.ToString()}");
             }
         }
 

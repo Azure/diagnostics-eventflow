@@ -4,7 +4,8 @@
       "type": "EventSource",
       "sources": [
         { "providerName": "Microsoft-ServiceFabric-Services" },
-        { "providerName": "MyCompany-AirTrafficControlApplication-Frontend" }
+        { "providerName": "MyCompany-AirTrafficControlApplication-Frontend" },
+        { "providerName": "MyEventSource" }
       ]
     },
     {

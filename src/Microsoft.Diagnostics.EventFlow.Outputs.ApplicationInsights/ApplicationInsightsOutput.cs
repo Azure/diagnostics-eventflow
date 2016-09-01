@@ -76,11 +76,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 telemetryClient.Flush();
 
-                this.ReportHealthy();
+                this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                this.healthReporter.ReportProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
 
             return Task.FromResult<object>(null);

@@ -15,7 +15,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class PerformanceCounterInput: ThrottledHealthInformationSource, IObservable<EventData>, IDisposable
+    public class PerformanceCounterInput: IObservable<EventData>, IDisposable
     {
         private const int SampleIntervalSeconds = 10;
         internal static readonly string MetricValueProperty = "Value";
@@ -24,14 +24,16 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private object syncObject;
         private Timer collectionTimer;
         private List<TrackedPerformanceCounter> trackedPerformanceCounters;
-        
-        public PerformanceCounterInput(IConfiguration configuration, IHealthReporter healthReporter): base(healthReporter)
+        private IHealthReporter healthReporter;
+
+        public PerformanceCounterInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.syncObject = new object();
             this.subject = new SimpleSubject<EventData>();
+            this.healthReporter = healthReporter;
 
             // The CLR Process ID counter used for process ID to counter instance name mapping for CLR counters will not read correctly
             // until at least one garbage collection is performed, so we will force one now. 
@@ -86,7 +88,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     }
                     catch (Exception e)
                     {
-                        this.ReportProblem(
+                        healthReporter.ReportProblem(
                             $"{nameof(PerformanceCounterInput)}: an error occurred when sampling performance counter {counter.Configuration.CounterName} "
                             + $"in category {counter.Configuration.CounterCategory}{Environment.NewLine}{e.ToString()}");
                     }

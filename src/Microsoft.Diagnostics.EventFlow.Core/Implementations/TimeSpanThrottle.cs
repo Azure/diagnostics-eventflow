@@ -22,6 +22,11 @@ namespace Microsoft.Diagnostics.EventFlow
             this.lockObject = new object();
         }
 
+        /// <summary>
+        /// Only one action can be triggered during a given timespan.
+        /// If the timespan is zero or negative, then there is no throttling.
+        /// </summary>
+        /// <param name="work">The action to be executed</param>
         public void Execute(Action work)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
@@ -44,7 +49,9 @@ namespace Microsoft.Diagnostics.EventFlow
 
         private bool TooEarly(DateTimeOffset now)
         {
-            return this.lastExecutionTime != null && (now - this.lastExecutionTime) < this.throttlingTimeSpan;
+            return throttlingTimeSpan.TotalMilliseconds <= 0
+                ? false
+                : this.lastExecutionTime != null && (now - this.lastExecutionTime) < this.throttlingTimeSpan;
         }
     }
 }

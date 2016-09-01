@@ -7,12 +7,19 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public abstract class OutputBase: ThrottledHealthInformationSource, IOutput
+    public abstract class OutputBase : IOutput
     {
-        public OutputBase(IHealthReporter healthReporter) : base(healthReporter) { }
+        protected IHealthReporter healthReporter;
+
+        public OutputBase(IHealthReporter healthReporter)
+        {
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+            this.healthReporter = healthReporter;
+        }
 
         protected delegate void ProcessPayload<T>(T value);
 

@@ -77,11 +77,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     this.ReportEsRequestError(response, "Bulk upload");
                 }
 
-                this.ReportHealthy();
+                this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportProblem($"{nameof(ElasticSearchOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                this.healthReporter.ReportProblem($"{nameof(ElasticSearchOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 errorMessage += "No further error information is available";
             }
 
-            this.ReportProblem(errorMessage);
+            this.healthReporter.ReportProblem(errorMessage);
         }
 
         private class ElasticSearchConnectionData

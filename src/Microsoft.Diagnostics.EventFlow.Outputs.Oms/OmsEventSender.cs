@@ -91,16 +91,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 HttpResponseMessage response = await this.connectionData.HttpClient.SendAsync(request, cancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
-                    this.ReportHealthy();
+                    this.healthReporter.ReportHealthy();
                 }
                 else
                 {
-                    this.ReportProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
+                    this.healthReporter.ReportProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
                 }
             }
             catch (Exception e)
             {
-                this.ReportProblem($"An error occurred while sending data to OMS: {e.ToString()}");
+                this.healthReporter.ReportProblem($"An error occurred while sending data to OMS: {e.ToString()}");
             }
         }
 

@@ -90,11 +90,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.EventHub
 
                 await hubClient.SendBatchAsync(batch);
 
-                this.ReportHealthy();
+                this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.ReportProblem($"{nameof(EventHubOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                this.healthReporter.ReportProblem($"{nameof(EventHubOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
             }
         }
 

@@ -25,6 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private static readonly string TraceTag = nameof(CsvHealthReporter);
         private readonly object _locker = new object();
         private FileStream _fileStream;
+        private TimeSpanThrottle throttle;
         #endregion
 
         #region Properties
@@ -67,6 +68,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
         {
             StringBuilder errorBuilder = new StringBuilder();
+
+            // TODO: Add to CsvHealthReporterConfiguration
+            int throttleTimeSpan;
+            int.TryParse(configuration["throttleTimeSpan"], out throttleTimeSpan); // Will return 0 if failed to parse
+            throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(throttleTimeSpan));
+
             string logLevelString = configuration["healthReporter:logLevel"];
             HealthReportLevel logLevel;
             if (Enum.TryParse(logLevelString, out logLevel))
@@ -120,12 +127,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         public void ReportHealthy(string description = null, string context = null)
         {
-            ReportText(HealthReportLevel.Message, description, context);
+            ReportText(HealthReportLevel.Warning, description, context);
         }
 
         public void ReportProblem(string description, string context = null)
         {
-            ReportText(HealthReportLevel.Error, description, context);
+            ReportText(HealthReportLevel.Warning, description, context);
         }
 
         public void ReportWarning(string description, string context = null)
@@ -135,21 +142,24 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private void ReportText(HealthReportLevel level, string text, string context = null)
         {
-            try
+            throttle.Execute(() =>
             {
-                if (level < LogLevel)
+                try
                 {
-                    return;
+                    if (level < LogLevel)
+                    {
+                        return;
+                    }
+                    context = context ?? string.Empty;
+                    string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
+                    string message = $"{timestamp},{EscapeComma(context)},{level},{ EscapeComma(text)}";
+                    WriteLine(message);
                 }
-                context = context ?? string.Empty;
-                string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
-                string message = $"{timestamp},{EscapeComma(context)},{level},{ EscapeComma(text)}";
-                WriteLine(message);
-            }
-            catch
-            {
-                // Suppress exception to prevent HealthReporter from crashing its consumer
-            }
+                catch
+                {
+                    // Suppress exception to prevent HealthReporter from crashing its consumer
+                }
+            });
         }
 
         /// <summary>
