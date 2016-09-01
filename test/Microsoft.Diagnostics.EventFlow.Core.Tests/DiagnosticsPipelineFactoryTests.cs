@@ -58,7 +58,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
             finally
             {
-                TryDeleteFile(CsvHealthReporter.DefaultHealthReportName);
+                TryDeleteFile(CsvHealthReporter.DefaultHealthReporterPrefix);
             }
 
         }
@@ -207,16 +207,17 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
             finally
             {
-                TryDeleteFile(CsvHealthReporter.DefaultHealthReportName);
+                TryDeleteFile(CsvHealthReporter.DefaultHealthReporterPrefix);
             }
         }
 
-        private static void TryDeleteFile(string fileName)
+        private static void TryDeleteFile(string startWith, string extension = ".csv")
         {
             // Clean up
-            if (File.Exists(fileName))
+            string[] targets = Directory.GetFiles(Directory.GetCurrentDirectory(), $"{startWith}*{extension}");
+            foreach (string file in targets)
             {
-                File.Delete(fileName);
+                File.Delete(file);
             }
         }
     }

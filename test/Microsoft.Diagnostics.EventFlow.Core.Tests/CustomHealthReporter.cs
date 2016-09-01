@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
-    public class CustomHealthReporter: IHealthReporter
+    public class CustomHealthReporter : IHealthReporter
     {
         public CustomHealthReporter(IConfiguration configuration)
         {
@@ -21,17 +21,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
         public void ReportHealthy(string description = null, string context = null)
         {
-            throw new NotImplementedException();
         }
 
         public void ReportProblem(string description, string context = null)
         {
-            throw new NotImplementedException();
         }
 
         public void ReportWarning(string description, string context = null)
         {
-            throw new NotImplementedException();
         }
     }
 }

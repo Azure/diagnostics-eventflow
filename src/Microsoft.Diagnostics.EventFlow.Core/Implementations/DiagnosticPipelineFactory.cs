@@ -147,7 +147,7 @@ namespace Microsoft.Diagnostics.EventFlow
             foreach (var extension in extensionsConfiguration.GetChildren())
             {
                 if (string.Equals(extension["category"], "healthReporter", StringComparison.OrdinalIgnoreCase)
-                    &&  string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
+                    && string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
                 {
                     var type = Type.GetType(extension["qualifiedTypeName"], throwOnError: true);
 
@@ -228,6 +228,7 @@ namespace Microsoft.Diagnostics.EventFlow
                         childFactories,
                         childFactories: null,       // Only one level of nexting is supported
                         childSectionName: null,
+                        isOptional: true,
                         createdItems: out children);
 
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, children.Select(c => c.Item).ToList()));
@@ -286,7 +287,7 @@ namespace Microsoft.Diagnostics.EventFlow
         }
 
         private static void CreateItemFactories(
-            IConfiguration configuration, 
+            IConfiguration configuration,
             IHealthReporter healthReporter,
             out IDictionary<string, string> inputFactories,
             out IDictionary<string, string> outputFactories,

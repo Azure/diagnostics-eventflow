@@ -7,6 +7,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
+using Microsoft.Diagnostics.EventFlow.Core.Implementations;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.HealthReporters
@@ -23,8 +25,10 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         #region Fields
         public const string DefaultHealthReporterPrefix = "HealthReport";
         private static readonly string TraceTag = nameof(CsvHealthReporter);
-        private readonly object _locker = new object();
-        private FileStream _fileStream;
+        private readonly object locker = new object();
+        private FileStream fileStream;
+        private CsvHealthReporterConfiguration configuration;
+        private ManualResetEventSlim streamCreationEventWaiterSlim = new ManualResetEventSlim(false);
         private TimeSpanThrottle throttle;
         #endregion
 
@@ -62,9 +66,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             Validation.Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
             IsExternalStreamWriter = streamWriter != null;
 
-            IConfigurationBuilder builder = new ConfigurationBuilder()
-                .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false);
-            IConfiguration configuration = builder.Build();
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false).Build();
 
             Initialize(configuration.GetSection("healthReporter"), streamWriter);
         }
@@ -80,12 +83,22 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         {
             StringBuilder errorBuilder = new StringBuilder();
 
+            this.configuration = configuration;
+            // Set default value for HealthReport file prefix
+            if (string.IsNullOrWhiteSpace(this.configuration.LogFilePrefix))
+            {
+                this.configuration.LogFilePrefix = DefaultHealthReporterPrefix;
+                errorBuilder.AppendLine($"{nameof(this.configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.configuration.LogFilePrefix}");
+            }
             // TODO: Add to CsvHealthReporterConfiguration
             int throttleTimeSpan;
             int.TryParse(configuration["throttleTimeSpan"], out throttleTimeSpan); // Will return 0 if failed to parse
             throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(throttleTimeSpan));
 
-            string logLevelString = configuration?.MinReportLevel;
+            string logLevelString = this.configuration?.MinReportLevel;
+
+
+
             HealthReportLevel logLevel;
             if (Enum.TryParse(logLevelString, out logLevel))
             {
@@ -98,43 +111,14 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             if (IsExternalStreamWriter)
             {
+                this.streamCreationEventWaiterSlim.Set();
                 Validation.Requires.NotNull(streamWriter, nameof(streamWriter));
                 StreamWriter = streamWriter;
             }
             else
             {
-                string logFilePath = null;
-                try
-                {
-                    if (!string.IsNullOrEmpty(configuration.LogFileFolder))
-                    {
-                        logFilePath = Path.Combine(configuration.LogFileFolder, GetReportFileName(configuration.LogFilePrefix));
-                    }
-                    else
-                    {
-                        logFilePath = configuration.LogFilePrefix;
-                        // Set default value for HealthReport.csv
-                        if (string.IsNullOrWhiteSpace(logFilePath))
-                        {
-                            logFilePath = DefaultHealthReporterPrefix;
-                            errorBuilder.AppendLine($"{nameof(configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {logFilePath}");
-                        }
-                        logFilePath = GetReportFileName(logFilePath);
-                    }
-
-                    _fileStream = new FileStream(logFilePath, FileMode.Append);
-                }
-                catch (IOException)
-                {
-                    // In case file is locked by other process, give it another shot.
-                    logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
-                    _fileStream = new FileStream(logFilePath, FileMode.Append);
-                }
-
-                if (_fileStream != null)
-                {
-                    StreamWriter = streamWriter ?? new StreamWriter(_fileStream, Encoding.UTF8);
-                }
+                BuildStreamWriterFromConfiguration();
+                UtcMidnightNotifier.DayChanged += UtcMidnightNotifier_DayChanged;
             }
 
             string selfErrorString = errorBuilder.ToString();
@@ -142,6 +126,71 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 ReportProblem(selfErrorString, TraceTag);
             }
+        }
+
+        private void BuildStreamWriterFromConfiguration()
+        {
+            string logFilePath = GetFullFilePath(this.configuration);
+            if (TryCreateFileStream(logFilePath))
+            {
+                if (this.fileStream != null)
+                {
+                    try
+                    {
+                        this.streamCreationEventWaiterSlim.Reset();
+                        StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+                    }
+                    finally
+                    {
+                        this.streamCreationEventWaiterSlim.Set();
+                    }
+                }
+            }
+        }
+
+        private string GetFullFilePath(CsvHealthReporterConfiguration configuration)
+        {
+            string logFilePath;
+            logFilePath = GetReportFileName(configuration.LogFilePrefix);
+            if (!string.IsNullOrEmpty(configuration.LogFileFolder))
+            {
+                logFilePath = Path.Combine(configuration.LogFileFolder, logFilePath);
+            }
+            return Path.GetFullPath(logFilePath);
+        }
+
+        /// <summary>
+        /// Create a new file stream when fullFilePath is different than the current file stream.
+        /// </summary>
+        /// <param name="fullFilePath">New path to the health reporter.</param>
+        /// <param name="fileStream">New FileStream when creation executed.</param>
+        /// <returns>Return true when creation successfully executed. Otherwise, return false.</returns>
+        private bool TryCreateFileStream(string fullFilePath)
+        {
+            Validation.Requires.NotNullOrWhiteSpace(fullFilePath, nameof(fullFilePath));
+            if (this.fileStream != null && Path.GetFullPath(this.fileStream.Name).Equals(fullFilePath, StringComparison.OrdinalIgnoreCase))
+            {
+                // Do not create new file stream when the current stream and the new stream pointing to the same path.
+                return false;
+            }
+
+            try
+            {
+                fileStream = new FileStream(fullFilePath, FileMode.Append);
+            }
+            catch (IOException)
+            {
+                // In case file is locked by other process, give it another shot.
+                fullFilePath = $"{Path.GetFileNameWithoutExtension(fullFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(fullFilePath)}";
+                fileStream = new FileStream(fullFilePath, FileMode.Append);
+            }
+            return true;
+        }
+
+        private void UtcMidnightNotifier_DayChanged(object sender, EventArgs e)
+        {
+            // Change file name
+            BuildStreamWriterFromConfiguration();
         }
 
         private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
@@ -208,10 +257,15 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private void WriteLine(string text)
         {
-            lock (_locker)
+            ThreadStart ts = new ThreadStart(() =>
             {
-                StreamWriter.WriteLine(text);
-            }
+                this.streamCreationEventWaiterSlim.Wait();
+                lock (locker)
+                {
+                    StreamWriter.WriteLine(text);
+                }
+            });
+            ts.Invoke();
         }
 
         public void Dispose()
@@ -225,11 +279,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 }
             }
 
-            if (_fileStream != null)
+            if (fileStream != null)
             {
-                _fileStream.Dispose();
-                _fileStream = null;
+                fileStream.Dispose();
+                fileStream = null;
             }
+
+            UtcMidnightNotifier.DayChanged -= UtcMidnightNotifier_DayChanged;
         }
         #endregion
     }
