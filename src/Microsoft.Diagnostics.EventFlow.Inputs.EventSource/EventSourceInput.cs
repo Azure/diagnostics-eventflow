@@ -31,10 +31,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 healthReporter.ReportProblem($"{nameof(EventSourceInput)}: required configuration section 'sources' is missing");
                 return;
             }
-            var eventSourceConfigurations = new List<EventSourceConfiguration>();
+            var eventSources = new List<EventSourceConfiguration>();
             try
             {
-                sourcesConfiguration.Bind(eventSourceConfigurations);
+                sourcesConfiguration.Bind(eventSources);
             }
             catch
             {
@@ -42,24 +42,18 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
 
-            this.healthReporter = healthReporter;
-            this.subject = new SimpleSubject<EventData>();
-
-            this.EventSources = eventSourceConfigurations;
-            if (this.EventSources.Count == 0)
-            {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured");
-                return;
-            }
-
-            lock (this)  // See OnEventSourceCreated() for explanation why we are locking on 'this' here.
-            {
-                EnableInitialSources();
-                this.constructed = true;
-            }
+            Initialize(eventSources, healthReporter);
         }
 
-        public IReadOnlyCollection<EventSourceConfiguration> EventSources { get; private set; }
+        public EventSourceInput(IReadOnlyCollection<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
+        {
+            Requires.NotNull(eventSources, nameof(eventSources));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            Initialize(eventSources, healthReporter);
+        }
+
+        public IEnumerable<EventSourceConfiguration> EventSources { get; private set; }
 
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
@@ -123,6 +117,25 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             if (provider != null)
             {
                 this.EnableEvents(eventSource, provider.Level, provider.Keywords);
+            }
+        }
+
+        private void Initialize(IReadOnlyCollection<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
+        {
+            this.healthReporter = healthReporter;
+            this.subject = new SimpleSubject<EventData>();
+
+            this.EventSources = eventSources;
+            if (this.EventSources.Count() == 0)
+            {
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured");
+                return;
+            }
+
+            lock (this)  // See OnEventSourceCreated() for explanation why we are locking on 'this' here.
+            {
+                EnableInitialSources();
+                this.constructed = true;
             }
         }
     }

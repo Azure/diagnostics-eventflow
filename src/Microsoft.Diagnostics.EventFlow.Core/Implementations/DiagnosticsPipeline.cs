@@ -32,7 +32,7 @@ namespace Microsoft.Diagnostics.EventFlow
             this.HealthReporter = healthReporter;
 
             // TODO: cloning should be used only if there are more than one sink and any of them have output-specific filters.
-            bool useCloning = sinks.Count() > 1; 
+            bool useCloning = sinks.Count > 1; 
 
             this.processors = sinks.Select(sink => new ConcurrentEventProcessor(
                     eventBufferSize: 1000,

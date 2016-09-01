@@ -13,7 +13,6 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
     public class EventMetadata
     {
         public string MetadataType { get; private set; }
-        public string IncludeCondition { get; set; }
         
         public IDictionary<string, string> Properties { get; private set; }
 
@@ -22,15 +21,6 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             Requires.NotNullOrWhiteSpace(metadataKind, nameof(metadataKind));
             this.MetadataType = metadataKind;
             this.Properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        public bool TryApplying(EventData e)
-        {
-            // TODO: evaluate IncludeContition and determine if the metadata applies
-            // If yes, call e.SetMetadata(this) and return true
-            // If not, return false
-            // CONSIDER: allow empty condition as means of saying "always apply"
-            return false;
         }
 
         // Rather than throwing KeyNotFoundException we simply return null if the property does not exist.
@@ -52,7 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
                 return false;
             }
 
-            if (MetadataType != other.MetadataType || IncludeCondition != other.IncludeCondition)
+            if (MetadataType != other.MetadataType)
             {
                 return false;
             }
@@ -65,7 +55,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
 
         public override int GetHashCode()
         {
-            return this.MetadataType.GetHashCode() ^ this.IncludeCondition.GetHashCode();
+            return this.MetadataType.GetHashCode();
         }
     }
 }

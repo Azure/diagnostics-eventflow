@@ -8,7 +8,7 @@
     "NETStandard.Library": "1.6.0",
     "System.Collections.Immutable": "1.2.0",
     "System.Threading.Tasks.Parallel": "4.0.0",
-    "Validation": "2.3.5"
+    "Validation": "2.3.7"
   },
 
   "frameworks": {

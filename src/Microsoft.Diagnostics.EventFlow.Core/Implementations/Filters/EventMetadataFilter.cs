@@ -8,30 +8,39 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Filters
 {
-    public class EventMetadataFilter: IFilter
+    public class EventMetadataFilter: IncludeConditionFilter
     {
         private EventMetadata metadata;
 
-        public EventMetadataFilter(EventMetadata metadata)
+        public EventMetadataFilter(EventMetadata metadata, string includeCondition = null): base(includeCondition)
         {
             Requires.NotNull(metadata, nameof(metadata));
             this.metadata = metadata;
         }
 
-        public bool Filter(EventData eventData)
+        public override FilterResult Evaluate(EventData eventData)
         {
-            this.metadata.TryApplying(eventData);
-            return true;
+            if (this.Evaluator.Evaluate(eventData))
+            {
+                eventData.SetMetadata(this.metadata);
+            }
+            return FilterResult.KeepEvent;
         }
 
         public override bool Equals(object obj)
         {
-            return (obj as EventMetadataFilter)?.metadata.Equals(this.metadata) ?? false;
+            EventMetadataFilter other = obj as EventMetadataFilter;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return other.IncludeCondition == this.IncludeCondition && other.metadata.Equals(this.metadata);
         }
 
         public override int GetHashCode()
         {
-            return this.metadata.GetHashCode();
+            return this.IncludeCondition.GetHashCode() ^ this.metadata.GetHashCode();
         }
     }
 }

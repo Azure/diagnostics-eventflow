@@ -194,8 +194,14 @@ namespace Microsoft.Diagnostics.EventFlow
             other.Message = this.Message;
             other.ProviderName = this.ProviderName;
             other.Timestamp = this.Timestamp;
-            other.payload = new Dictionary<string, object>(this.payload);
-            other.metadata = new Dictionary<string, object>(this.metadata);
+            if (this.payload != null)
+            {
+                other.payload = new Dictionary<string, object>(this.payload);
+            }
+            if (this.metadata != null)
+            {
+                other.metadata = new Dictionary<string, object>(this.metadata);
+            }
             return other;
         }
     }

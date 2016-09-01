@@ -5,7 +5,7 @@
     "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
     "NETStandard.Library": "1.6.0",
     "Newtonsoft.Json": "9.0.1",
-    "Validation": "2.3.5",
+    "Validation": "2.3.7",
     "WindowsAzure.ServiceBus": "3.3.2"
   },
 

@@ -310,6 +310,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=null";
+            filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=null";
 
             // TODO: implement 3rd party input/output/filter instantiation driven by the contents of "extensions" section
         }

@@ -4,7 +4,7 @@
 
 namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
 {
-    internal abstract class FilterEvaluator
+    public abstract class FilterEvaluator
     {
         public abstract string SemanticsString { get; }
 

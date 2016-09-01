@@ -184,15 +184,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                         var expectedFilters = new EventMetadataFilter[2];
                         var metadata = new EventMetadata("importance");
-                        metadata.IncludeCondition = "Level == Verbose";
                         metadata.Properties.Add("importance", "can be discarded");
                         expectedFilters[0] = new EventMetadataFilter(metadata);
+                        expectedFilters[0].IncludeCondition = "Level == Verbose";
 
                         metadata = new EventMetadata("metric");
-                        metadata.IncludeCondition = "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure";
                         metadata.Properties.Add("metricName", "StatefulRunAsyncFailure");
                         metadata.Properties.Add("metricValue", "1.0");
                         expectedFilters[1] = new EventMetadataFilter(metadata);
+                        expectedFilters[1].IncludeCondition = "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure";
 
                         Assert.True(sink.Filters.SequenceEqual(expectedFilters));
                     }

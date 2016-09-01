@@ -5,11 +5,9 @@
 
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
-    public class EventMetadataFilterConfiguration: ItemConfiguration
+    public class EventMetadataFilterConfiguration: IncludeConditionFilterConfiguration
     {
         // Indicates metadata kind
-        public string Metadata { get; set; }
-
-        public string Include { get; set; }
+        public string Metadata { get; set; }        
     }
 }

@@ -35,7 +35,8 @@ namespace Microsoft.Diagnostics.EventFlow.Filters
                 return null;
             }
 
-            var metadata = new EventMetadata(metadataFilterConfiguration.Metadata);
+            var metadata = new EventMetadata(metadataFilterConfiguration.Metadata);            
+            var filter = new EventMetadataFilter(metadata, metadataFilterConfiguration.Include);
 
             foreach (var configurationProperty in configuration.AsEnumerable())
             {
@@ -55,21 +56,16 @@ namespace Microsoft.Diagnostics.EventFlow.Filters
 
                 // Do not store generic metadata filter properties
                 if ( nameof(EventMetadataFilterConfiguration.Metadata).Equals(propertyName, StringComparison.OrdinalIgnoreCase)
-                  || nameof(ItemConfiguration.Type).Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+                  || nameof(ItemConfiguration.Type).Equals(propertyName, StringComparison.OrdinalIgnoreCase)
+                  || nameof(EventMetadataFilterConfiguration.Include).Equals(propertyName, StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
-                }
-
-                if (nameof(EventMetadataFilterConfiguration.Include).Equals(propertyName, StringComparison.OrdinalIgnoreCase))
-                {
-                    metadata.IncludeCondition = configurationProperty.Value;
                     continue;
                 }
 
                 metadata.Properties[propertyName] = configurationProperty.Value;
             }
 
-            return new EventMetadataFilter(metadata);
+            return filter;
         }
     }
 }

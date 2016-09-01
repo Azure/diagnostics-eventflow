@@ -192,7 +192,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 eventsToSend = new ConcurrentBag<EventData>();
                 Parallel.ForEach(eventsToFilter, parallelOptions, eventData =>
                 {
-                    if (filters.All(f => f.Filter(eventData)))
+                    if (filters.All(f => f.Evaluate(eventData) == FilterResult.KeepEvent))
                     {
                         eventsToSend.Add(eventData);
                     }
