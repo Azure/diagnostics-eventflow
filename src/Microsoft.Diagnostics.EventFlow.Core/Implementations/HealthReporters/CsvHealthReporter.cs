@@ -117,7 +117,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             else
             {
-                BuildStreamWriterFromConfiguration();
+                BuildNewStreamWriter();
                 UtcMidnightNotifier.DayChanged += UtcMidnightNotifier_DayChanged;
             }
 
@@ -128,9 +128,17 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
         }
 
-        private void BuildStreamWriterFromConfiguration()
+        internal void BuildNewStreamWriter()
         {
             string logFilePath = GetFullFilePath(this.configuration);
+
+            // Create the folder if not exist.
+            string logFileFolder = Path.GetDirectoryName(logFilePath);
+            if (!Directory.Exists(logFileFolder))
+            {
+                Directory.CreateDirectory(logFileFolder);
+            }
+
             if (TryCreateFileStream(logFilePath))
             {
                 if (this.fileStream != null)
@@ -138,6 +146,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     try
                     {
                         this.streamCreationEventWaiterSlim.Reset();
+                        if (StreamWriter != null)
+                        {
+                            StreamWriter.Flush();
+                            StreamWriter.Dispose();
+                        }
                         StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
                     }
                     finally
@@ -189,8 +202,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private void UtcMidnightNotifier_DayChanged(object sender, EventArgs e)
         {
-            // Change file name
-            BuildStreamWriterFromConfiguration();
+            // Create a new stream.
+            BuildNewStreamWriter();
         }
 
         private void Initialize(IConfiguration configuration, StreamWriter streamWriter)

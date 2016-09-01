@@ -77,6 +77,11 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.ServiceFabric", "src\Microsoft.Diagnostics.EventFlow.ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.xproj", "{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster", "src\Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster\Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster.csproj", "{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245} = {F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark", "src\Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark\Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark.csproj", "{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Signing", "src\Microsoft.Diagnostics.EventFlow.Signing\Microsoft.Diagnostics.EventFlow.Signing.csproj", "{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}"
@@ -246,6 +251,14 @@ Global
 		{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}.Release|x64.ActiveCfg = Release|Any CPU
 		{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}.Release|x64.Build.0 = Release|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Debug|x64.Build.0 = Debug|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Release|x64.ActiveCfg = Release|Any CPU
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}.Release|x64.Build.0 = Release|Any CPU
 		{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -285,6 +298,7 @@ Global
 		{7072DB92-0FDA-4B87-ABFD-897882C9284A} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
 		{B254AD24-EBDF-4871-8A69-184D167923F0} = {DF3A81C9-6084-4945-B493-39B9A78572C2}
 		{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58} = {23A17E0F-86FD-4C55-A448-9A43C4C5E451}
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE} = {FC86C736-6428-431B-B83F-940BF7182757}
 	EndGlobalSection
