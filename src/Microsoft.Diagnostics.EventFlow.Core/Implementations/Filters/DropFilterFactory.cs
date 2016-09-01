@@ -8,7 +8,7 @@ using Microsoft.Diagnostics.EventFlow.Filters;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventFlow.Core.Implementations.Filters
+namespace Microsoft.Diagnostics.EventFlow.Filters
 {
     public class DropFilterFactory: IPipelineItemFactory<DropFilter>
     {
