@@ -4,8 +4,7 @@
 // ------------------------------------------------------------
 using System;
 using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Diagnostics.EventFlow.HealthReporters;
+using System.Net.Http;
 
 namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp
 {
@@ -13,67 +12,22 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp
     {
         static void Main(string[] args)
         {
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.AddJsonFile("config.json");
-            var configuration = builder.Build();
-
-            var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration);
-
-            // Build up the pipeline
-            Console.WriteLine("Pipeline is created.");
-
-            // Send a trace to the pipeline
-            Trace.TraceInformation("This is a message from trace . . .");
-            MyEventSource.Log.Message("This is a message from EventSource ...");
-
-            // Check the result
-            Console.WriteLine("Press any key to continue . . .");
-            Console.ReadKey(true);
-        }
-
-        private static TemporaryFile CreateConfigFile()
-        {
-            TemporaryFile configFile = new TemporaryFile();
-
-            try
+            using (IDisposable pipeline = DiagnosticsPipelineFactory.CreatePipeline("config.json"))
             {
-                string pipelineConfiguration = @"
-                    {
-                        ""inputs"": [
-                            {
-                                ""type"": ""EventSource"",
-                                ""sources"": [
-                                    { ""providerName"": ""MyEventSource"" }
-                                ]
-                            },
-                            {
-                                ""type"": ""Trace"",
-                                ""traceLevel"": ""All""
-                            }
-                        ],
+                // Build up the pipeline
+                Console.WriteLine("Pipeline is created.");
 
-                        ""filters"": [
-                        ],
+                // Send a trace to the pipeline
+                Trace.TraceInformation("This is a message from trace . . .");
+                MyEventSource.Log.Message("This is a message from EventSource ...");
 
-                        ""outputs"": [
-                            {
-                                ""type"": ""StdOutput"",
+                // Make a simple get request to bing.com just to generate some HTTP trace
+                HttpClient client = new HttpClient();
+                client.GetStringAsync("http://www.bing.com").Wait();
 
-                                ""filters"": [
-                                ]
-                            }
-                        ],
-
-                        ""schema-version"": ""2016-08-11"",
-                    }";
-
-                configFile.Write(pipelineConfiguration);
-                return configFile;
-            }
-            catch (Exception)
-            {
-                configFile.Dispose();
-                throw;
+                // Check the result
+                Console.WriteLine("Press any key to continue . . .");
+                Console.ReadKey(true);
             }
         }
     }
