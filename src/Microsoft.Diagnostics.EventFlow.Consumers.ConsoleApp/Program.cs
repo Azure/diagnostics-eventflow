@@ -12,7 +12,7 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp
     {
         static void Main(string[] args)
         {
-            using (IDisposable pipeline = DiagnosticsPipelineFactory.CreatePipeline("config.json"))
+            using (DiagnosticsPipeline pipeline = DiagnosticsPipelineFactory.CreatePipeline("config.json"))
             {
                 // Build up the pipeline
                 Console.WriteLine("Pipeline is created.");
