@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
-using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster
 {
@@ -18,6 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster
         CsvHealthReporter reporter;
         volatile int hit = 0;
         DispatcherTimer hitReporter = new DispatcherTimer();
+        ManualNewReportTrigger manualTrigger = new ManualNewReportTrigger();
 
         public MainWindow()
         {
@@ -35,13 +34,14 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster
 
         private void btnStart_Clicked(object sender, RoutedEventArgs e)
         {
-            IConfiguration section = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>() {
-               { "LogFileFolder", tbLogFileFolder.Text.Trim() },
-               { "LogFilePrefix", tbLogFilePrefix.Text.Trim()},
-               { "MinReportLevel", tbMinReportLevel.Text.Trim() }
-            }).Build();
+            CsvHealthReporterConfiguration configuration = new CsvHealthReporterConfiguration()
+            {
+                LogFileFolder = tbLogFileFolder.Text.Trim(),
+                LogFilePrefix = tbLogFilePrefix.Text.Trim(),
+                MinReportLevel = tbMinReportLevel.Text.Trim()
+            };
 
-            reporter = new CustomHealthReporter(section);
+            reporter = new CustomHealthReporter(configuration, this.manualTrigger);
             int intervalInMs;
             if (!int.TryParse(tbMessageInterval.Text, out intervalInMs))
             {
@@ -70,7 +70,7 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster
 
         private void btnSwitch_Clicked(object sender, RoutedEventArgs e)
         {
-            reporter.BuildNewStreamWriter();
+            this.manualTrigger?.TriggerChange();
         }
 
         private void btnStop_Clicked(object sender, RoutedEventArgs e)

@@ -5,18 +5,34 @@
 
 using System;
 using System.Threading;
+using Microsoft.Diagnostics.EventFlow.Core.Implementations.HealthReporters;
 #if NET451
 using Microsoft.Win32;
 #endif
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Implementations
 {
-    internal static class UtcMidnightNotifier
+    internal class UtcMidnightNotifier : INewReportTrigger
     {
-        private static Timer timer;
-        public static event EventHandler<EventArgs> DayChanged;
+        private Timer timer;
 
-        static UtcMidnightNotifier()
+        public event EventHandler<EventArgs> DayChanged;
+        public event EventHandler<EventArgs> Triggered;
+
+        private static Lazy<UtcMidnightNotifier> instance = new Lazy<UtcMidnightNotifier>(() =>
+        {
+            return new UtcMidnightNotifier();
+        });
+
+        public static UtcMidnightNotifier Instance
+        {
+            get
+            {
+                return instance.Value;
+            }
+        }
+
+        private UtcMidnightNotifier()
         {
             CreateNewTimer();
 
@@ -26,7 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Implementations
 #endif
         }
 
-        private static void CreateNewTimer()
+        private void CreateNewTimer()
         {
             timer = new Timer(state =>
             {
@@ -41,12 +57,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Implementations
             return difference;
         }
 
-        private static void OnDayChanged()
+        private void OnDayChanged()
         {
-            DayChanged?.Invoke(null, EventArgs.Empty);
+            DayChanged?.Invoke(this, EventArgs.Empty);
+            Triggered?.Invoke(this, EventArgs.Empty);
         }
 
-        private static void OnSystemTimeChanged(object sender, EventArgs e)
+        private void OnSystemTimeChanged(object sender, EventArgs e)
         {
             CreateNewTimer();
         }

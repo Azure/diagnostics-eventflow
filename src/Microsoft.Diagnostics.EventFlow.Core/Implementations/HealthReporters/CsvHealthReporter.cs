@@ -4,11 +4,13 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Core.Implementations;
+using Microsoft.Diagnostics.EventFlow.Core.Implementations.HealthReporters;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.HealthReporters
@@ -22,27 +24,29 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             Error
         }
 
-        #region Fields
+        #region Constants
         public const string DefaultHealthReporterPrefix = "HealthReport";
+        #endregion
+
+        #region Fields
         private static readonly string TraceTag = nameof(CsvHealthReporter);
-        private readonly object locker = new object();
+        private readonly BlockingCollection<string> reportCollection = new BlockingCollection<string>();
         private FileStream fileStream;
-        private CsvHealthReporterConfiguration configuration;
-        private ManualResetEventSlim streamCreationEventWaiterSlim = new ManualResetEventSlim(false);
+        private bool newStreamRequested = false;
+        private INewReportTrigger newReportTrigger = null;
         private TimeSpanThrottle throttle;
         #endregion
 
         #region Properties
+        protected CsvHealthReporterConfiguration Configuration { get; private set; }
         internal HealthReportLevel LogLevel { get; private set; } = HealthReportLevel.Error;
-        internal bool IsExternalStreamWriter { get; private set; }
         internal StreamWriter StreamWriter { get; private set; }
         #endregion
 
         #region Constructors
-        public CsvHealthReporter(CsvHealthReporterConfiguration configuration, StreamWriter streamWriter = null)
+        public CsvHealthReporter(CsvHealthReporterConfiguration configuration)
         {
-            IsExternalStreamWriter = streamWriter != null;
-            Initialize(configuration, streamWriter);
+            Initialize(configuration);
         }
 
         /// <summary>
@@ -50,10 +54,15 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// </summary>
         /// <param name="configuration">CsvHealthReporter configuration.</param>
         /// <param name="streamWriter">When provided, used to overwrite the stream writer created by the configuration.</param>
-        public CsvHealthReporter(IConfiguration configuration, StreamWriter streamWriter = null)
+        public CsvHealthReporter(IConfiguration configuration)
         {
-            IsExternalStreamWriter = streamWriter != null;
-            Initialize(configuration, streamWriter);
+            Initialize(configuration);
+        }
+
+        internal CsvHealthReporter(CsvHealthReporterConfiguration configuration, INewReportTrigger newReportTrigger)
+        {
+            Validation.Requires.NotNull(newReportTrigger, nameof(newReportTrigger));
+            Initialize(configuration, newReportTrigger);
         }
 
         /// <summary>
@@ -61,44 +70,54 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// </summary>
         /// <param name="configurationFilePath">CsvHealthReporter configuration file path.</param>
         /// <param name="streamWriter">When provided, used to overwrite the stream writer created by the configuration.</param>
-        public CsvHealthReporter(string configurationFilePath, StreamWriter streamWriter = null)
+        public CsvHealthReporter(string configurationFilePath)
         {
             Validation.Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
-            IsExternalStreamWriter = streamWriter != null;
 
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false).Build();
 
-            Initialize(configuration.GetSection("healthReporter"), streamWriter);
+            Initialize(configuration.GetSection("healthReporter"));
         }
         #endregion
 
         #region Methods
-        public virtual string GetReportFileName(string prefix)
+        public virtual string GetReportFileName()
         {
-            return $"{prefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            return $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
         }
 
-        private void Initialize(CsvHealthReporterConfiguration configuration, StreamWriter streamWriter)
+        private void Initialize(CsvHealthReporterConfiguration configuration, INewReportTrigger newReportTrigger = null)
         {
-            StringBuilder errorBuilder = new StringBuilder();
+            // Prepare the configuration, set default values, handle invalid values.
+            ProcessConfiguration(configuration);
 
-            this.configuration = configuration;
+            // Create the writer.
+            this.StreamWriter = CreateStreamWriter();
+
+            // Hook up the mid-night stream writer updater.
+            this.newReportTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
+            this.newReportTrigger.Triggered += RequestNewHealthReport;
+
+            // Start the consumer of the report items in the collection.
+            StartConsumer();
+        }
+
+        private void ProcessConfiguration(CsvHealthReporterConfiguration configuration)
+        {
+            this.Configuration = configuration;
             // Set default value for HealthReport file prefix
-            if (string.IsNullOrWhiteSpace(this.configuration.LogFilePrefix))
+            if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
             {
-                this.configuration.LogFilePrefix = DefaultHealthReporterPrefix;
-                errorBuilder.AppendLine($"{nameof(this.configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.configuration.LogFilePrefix}");
+                this.Configuration.LogFilePrefix = DefaultHealthReporterPrefix;
+                ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
             }
             // TODO: Add to CsvHealthReporterConfiguration
             int throttleTimeSpan;
             int.TryParse(configuration["throttleTimeSpan"], out throttleTimeSpan); // Will return 0 if failed to parse
             throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(throttleTimeSpan));
 
-            string logLevelString = this.configuration?.MinReportLevel;
-
-
-
+            string logLevelString = this.Configuration?.MinReportLevel;
             HealthReportLevel logLevel;
             if (Enum.TryParse(logLevelString, out logLevel))
             {
@@ -106,34 +125,50 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             else
             {
-                errorBuilder.AppendLine($"Failed to parse log level. Please check the value of: {logLevelString}.");
-            }
-
-            if (IsExternalStreamWriter)
-            {
-                this.streamCreationEventWaiterSlim.Set();
-                Validation.Requires.NotNull(streamWriter, nameof(streamWriter));
-                StreamWriter = streamWriter;
-            }
-            else
-            {
-                BuildNewStreamWriter();
-                UtcMidnightNotifier.DayChanged += UtcMidnightNotifier_DayChanged;
-            }
-
-            string selfErrorString = errorBuilder.ToString();
-            if (!string.IsNullOrEmpty(selfErrorString))
-            {
-                ReportProblem(selfErrorString, TraceTag);
+                // The severity has to be at least the same as the default level of error.
+                ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}.", TraceTag);
             }
         }
 
-        internal void BuildNewStreamWriter()
+        /// <summary>
+        /// Start the consumer of the report item collection, write items into the stream.
+        /// </summary>
+        private void StartConsumer()
         {
-            string logFilePath = GetFullFilePath(this.configuration);
+            Task.Run(() =>
+            {
+                foreach (string text in this.reportCollection.GetConsumingEnumerable())
+                {
+                    this.StreamWriter?.WriteLine(text);
+                    if (this.newStreamRequested)
+                    {
+                        try
+                        {
+                            this.StreamWriter = CreateStreamWriter();
+                        }
+                        finally
+                        {
+                            this.newStreamRequested = false;
+                        }
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Create the stream writer for the health reporter.
+        /// </summary>
+        /// <returns></returns>
+        private StreamWriter CreateStreamWriter()
+        {
+            string logFilePath = GetReportFileName();
+            string logFileFolder = Configuration.LogFileFolder ?? ".";
+            logFileFolder = Path.GetFullPath(logFileFolder);
+
+            // Get the full path.
+            logFilePath = Path.Combine(logFileFolder, logFilePath);
 
             // Create the folder if not exist.
-            string logFileFolder = Path.GetDirectoryName(logFilePath);
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);
@@ -143,33 +178,16 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 if (this.fileStream != null)
                 {
-                    try
+                    if (this.StreamWriter != null)
                     {
-                        this.streamCreationEventWaiterSlim.Reset();
-                        if (StreamWriter != null)
-                        {
-                            StreamWriter.Flush();
-                            StreamWriter.Dispose();
-                        }
-                        StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+                        this.StreamWriter.Flush();
+                        this.StreamWriter.Dispose();
+                        this.StreamWriter = null;
                     }
-                    finally
-                    {
-                        this.streamCreationEventWaiterSlim.Set();
-                    }
+                    return new StreamWriter(this.fileStream, Encoding.UTF8);
                 }
             }
-        }
-
-        private string GetFullFilePath(CsvHealthReporterConfiguration configuration)
-        {
-            string logFilePath;
-            logFilePath = GetReportFileName(configuration.LogFilePrefix);
-            if (!string.IsNullOrEmpty(configuration.LogFileFolder))
-            {
-                logFilePath = Path.Combine(configuration.LogFileFolder, logFilePath);
-            }
-            return Path.GetFullPath(logFilePath);
+            return null;
         }
 
         /// <summary>
@@ -189,7 +207,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             try
             {
-                fileStream = new FileStream(fullFilePath, FileMode.Append);
+                // Do not dispose the existing FileStream yet to avoid exception on flushing the StreamWriter.
+                this.fileStream = new FileStream(fullFilePath, FileMode.Append);
             }
             catch (IOException)
             {
@@ -200,18 +219,17 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             return true;
         }
 
-        private void UtcMidnightNotifier_DayChanged(object sender, EventArgs e)
+        private void RequestNewHealthReport(object sender, EventArgs e)
         {
-            // Create a new stream.
-            BuildNewStreamWriter();
+            this.newStreamRequested = true;
         }
 
-        private void Initialize(IConfiguration configuration, StreamWriter streamWriter)
+        private void Initialize(IConfiguration configuration, INewReportTrigger newReportTrigger = null)
         {
             CsvHealthReporterConfiguration boundConfiguration = new CsvHealthReporterConfiguration();
             configuration.Bind(boundConfiguration);
 
-            Initialize(boundConfiguration, streamWriter);
+            Initialize(boundConfiguration, newReportTrigger);
         }
 
         public void ReportHealthy(string description = null, string context = null)
@@ -270,26 +288,15 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private void WriteLine(string text)
         {
-            ThreadStart ts = new ThreadStart(() =>
-            {
-                this.streamCreationEventWaiterSlim.Wait();
-                lock (locker)
-                {
-                    StreamWriter.WriteLine(text);
-                }
-            });
-            ts.Invoke();
+            this.reportCollection.Add(text);
         }
 
         public void Dispose()
         {
-            if (!IsExternalStreamWriter)
+            if (StreamWriter != null)
             {
-                if (StreamWriter != null)
-                {
-                    StreamWriter.Dispose();
-                    StreamWriter = null;
-                }
+                StreamWriter.Dispose();
+                StreamWriter = null;
             }
 
             if (fileStream != null)
@@ -298,7 +305,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 fileStream = null;
             }
 
-            UtcMidnightNotifier.DayChanged -= UtcMidnightNotifier_DayChanged;
+            if (newReportTrigger != null)
+            {
+                this.newReportTrigger.Triggered -= RequestNewHealthReport;
+                this.newReportTrigger = null;
+            }
         }
         #endregion
     }
