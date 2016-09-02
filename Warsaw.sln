@@ -77,7 +77,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.ServiceFabric", "src\Microsoft.Diagnostics.EventFlow.ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.xproj", "{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster", "src\Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster\Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster.csproj", "{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster", "test\Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster\Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster.csproj", "{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245} = {F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}
 	EndProjectSection
@@ -98,6 +98,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.Event
 		{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58} = {E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}
 		{49A23DFF-CE13-4413-A024-65247B30D09C} = {49A23DFF-CE13-4413-A024-65247B30D09C}
 	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalTests", "FunctionalTests", "{05441E68-B217-475A-8E81-DB36614D1823}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -298,7 +299,7 @@ Global
 		{7072DB92-0FDA-4B87-ABFD-897882C9284A} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
 		{B254AD24-EBDF-4871-8A69-184D167923F0} = {DF3A81C9-6084-4945-B493-39B9A78572C2}
 		{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58} = {23A17E0F-86FD-4C55-A448-9A43C4C5E451}
-		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E} = {D67068AF-16BB-4037-BE4E-B642419089BA}
+		{242D4BE6-4CA8-4288-8843-65DF84BBBD3E} = {05441E68-B217-475A-8E81-DB36614D1823}
 		{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE} = {FC86C736-6428-431B-B83F-940BF7182757}
 	EndGlobalSection

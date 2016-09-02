@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster")]
+[assembly: AssemblyTitle("Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster")]
+[assembly: AssemblyProduct("Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

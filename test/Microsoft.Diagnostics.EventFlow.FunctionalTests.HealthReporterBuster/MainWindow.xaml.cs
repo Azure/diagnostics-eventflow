@@ -1,11 +1,16 @@
-﻿using System;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 
-namespace Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster
+namespace Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

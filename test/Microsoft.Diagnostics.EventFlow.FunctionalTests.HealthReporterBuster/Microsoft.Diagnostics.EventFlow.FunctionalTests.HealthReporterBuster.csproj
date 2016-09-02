@@ -7,8 +7,8 @@
     <ProjectGuid>{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster</RootNamespace>
-    <AssemblyName>Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster</AssemblyName>
+    <RootNamespace>Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster</RootNamespace>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,8 +35,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Core.dll">
-      <Name>Microsoft.Diagnostics.EventFlow.Core</Name>
+    <Reference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Core.dll">
+      <!--<Name>Microsoft.Diagnostics.EventFlow.Core</Name>-->
     </Reference>
     <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.Configuration.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>
@@ -104,7 +104,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -112,7 +114,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
