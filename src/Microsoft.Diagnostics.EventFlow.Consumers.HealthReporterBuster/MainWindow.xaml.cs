@@ -42,6 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.HealthReporterBuster
             };
 
             reporter = new CustomHealthReporter(configuration, this.manualTrigger);
+            reporter.Activate();
             int intervalInMs;
             if (!int.TryParse(tbMessageInterval.Text, out intervalInMs))
             {

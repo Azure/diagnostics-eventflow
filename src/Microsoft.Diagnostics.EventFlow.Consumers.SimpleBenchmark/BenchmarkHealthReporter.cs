@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
 using System.Threading;
 
 namespace Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark
@@ -42,6 +43,12 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark
             this.healthyCount = 0;
             this.warningCount = 0;
             this.problemCount = 0;
+        }
+
+        public bool Activate()
+        {
+            // Always activated
+            return true;
         }
     }
 }

@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -40,7 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         #region Properties
         protected CsvHealthReporterConfiguration Configuration { get; private set; }
         internal HealthReportLevel LogLevel { get; private set; } = HealthReportLevel.Error;
-        internal StreamWriter StreamWriter { get; private set; }
+        internal StreamWriter StreamWriter;
         #endregion
 
         #region Constructors
@@ -92,30 +93,26 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Prepare the configuration, set default values, handle invalid values.
             ProcessConfiguration(configuration);
 
-            // Create the writer.
-            this.StreamWriter = CreateStreamWriter();
-
             // Hook up the mid-night stream writer updater.
             this.newReportTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
             this.newReportTrigger.Triggered += RequestNewHealthReport;
-
-            // Start the consumer of the report items in the collection.
-            StartConsumer();
         }
 
         private void ProcessConfiguration(CsvHealthReporterConfiguration configuration)
         {
             this.Configuration = configuration;
-            // Set default value for HealthReport file prefix
-            if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
+
+            if (configuration.ThrottleTimeSpan == null || !configuration.ThrottleTimeSpan.HasValue)
             {
-                this.Configuration.LogFilePrefix = DefaultHealthReporterPrefix;
-                ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
+                configuration.ThrottleTimeSpan = 0;
+                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(0));
+                // Force to report error until LogLevel is set by configuration.
+                ReportProblem($"{nameof(configuration.ThrottleTimeSpan)} is not specified in configuration file. Fall back to default value: {this.Configuration.ThrottleTimeSpan.Value}");
             }
-            // TODO: Add to CsvHealthReporterConfiguration
-            int throttleTimeSpan;
-            int.TryParse(configuration["throttleTimeSpan"], out throttleTimeSpan); // Will return 0 if failed to parse
-            throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(throttleTimeSpan));
+            else
+            {
+                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(configuration.ThrottleTimeSpan.Value));
+            }
 
             string logLevelString = this.Configuration?.MinReportLevel;
             HealthReportLevel logLevel;
@@ -128,38 +125,59 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 // The severity has to be at least the same as the default level of error.
                 ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}.", TraceTag);
             }
+
+            // Set default value for HealthReport file prefix
+            if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
+            {
+                this.Configuration.LogFilePrefix = DefaultHealthReporterPrefix;
+                ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
+            }
+
         }
 
         /// <summary>
-        /// Start the consumer of the report item collection, write items into the stream.
+        /// Start to write the health reports. Note: Avoid calling this from the reporter constructor 
+        /// because CreateStreamWriter calls into virtual mehtod of GetReportFileName().
         /// </summary>
-        private void StartConsumer()
+        /// <returns>Returns true when the reporter is activated.</returns>
+        public bool Activate()
         {
-            Task.Run(() =>
+            try
             {
-                foreach (string text in this.reportCollection.GetConsumingEnumerable())
+                StreamWriter = CreateStreamWriter();
+                // Start the consumer of the report items in the collection.
+                Task.Run(() =>
                 {
-                    this.StreamWriter?.WriteLine(text);
-                    if (this.newStreamRequested)
+                    // Create the stream writer
+                    foreach (string text in this.reportCollection.GetConsumingEnumerable())
                     {
-                        try
+                        if (this.newStreamRequested)
                         {
-                            this.StreamWriter = CreateStreamWriter();
+                            try
+                            {
+                                this.StreamWriter = CreateStreamWriter();
+                            }
+                            finally
+                            {
+                                this.newStreamRequested = false;
+                            }
                         }
-                        finally
-                        {
-                            this.newStreamRequested = false;
-                        }
+                        this.StreamWriter.WriteLine(text);
                     }
-                }
-            });
+                });
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
         /// Create the stream writer for the health reporter.
         /// </summary>
         /// <returns></returns>
-        private StreamWriter CreateStreamWriter()
+        internal virtual StreamWriter CreateStreamWriter()
         {
             string logFilePath = GetReportFileName();
             string logFileFolder = Configuration.LogFileFolder ?? ".";
@@ -249,24 +267,30 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private void ReportText(HealthReportLevel level, string text, string context = null)
         {
-            throttle.Execute(() =>
+            Debug.Assert(this.throttle != null);
+            this.throttle.Execute(() =>
             {
-                try
-                {
-                    if (level < LogLevel)
-                    {
-                        return;
-                    }
-                    context = context ?? string.Empty;
-                    string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
-                    string message = $"{timestamp},{EscapeComma(context)},{level},{ EscapeComma(text)}";
-                    WriteLine(message);
-                }
-                catch
-                {
-                    // Suppress exception to prevent HealthReporter from crashing its consumer
-                }
+                WriteLine(level, text, context);
             });
+        }
+
+        private void WriteLine(HealthReportLevel level, string text, string context = null)
+        {
+            try
+            {
+                if (level < LogLevel)
+                {
+                    return;
+                }
+                context = context ?? string.Empty;
+                string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
+                string message = timestamp + ',' + EscapeComma(context) + ',' + level + ',' + EscapeComma(text);
+                WriteLine(message);
+            }
+            catch
+            {
+                // Suppress exception to prevent HealthReporter from crashing its consumer
+            }
         }
 
         /// <summary>
@@ -293,7 +317,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         public void Dispose()
         {
-            if (StreamWriter != null)
+            if (this.StreamWriter != null)
             {
                 StreamWriter.Dispose();
                 StreamWriter = null;

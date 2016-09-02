@@ -5,5 +5,6 @@
         public string LogFileFolder { get; set; }
         public string LogFilePrefix { get; set; }
         public string MinReportLevel { get; set; }
+        public int? ThrottleTimeSpan { get; set; }
     }
 }
