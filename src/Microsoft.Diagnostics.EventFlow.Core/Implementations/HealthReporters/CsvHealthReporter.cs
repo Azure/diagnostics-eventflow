@@ -133,6 +133,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
             }
 
+            // Set default value for health reports
+            if (string.IsNullOrWhiteSpace(this.Configuration.LogFileFolder))
+            {
+                this.Configuration.LogFileFolder = ".";
+            }
         }
 
         /// <summary>
@@ -180,7 +185,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         internal virtual StreamWriter CreateStreamWriter()
         {
             string logFilePath = GetReportFileName();
-            string logFileFolder = Configuration.LogFileFolder ?? ".";
+            string logFileFolder = Configuration.LogFileFolder;
             logFileFolder = Path.GetFullPath(logFileFolder);
 
             // Get the full path.
@@ -284,6 +289,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 }
                 context = context ?? string.Empty;
                 string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
+                // Verified string concatenation has better performance than format, interpolation, String.Join or StringBuilder here.
                 string message = timestamp + ',' + EscapeComma(context) + ',' + level + ',' + EscapeComma(text);
                 WriteLine(message);
             }

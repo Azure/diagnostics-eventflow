@@ -29,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             IHealthReporter healthReporter = CreateHealthReporter(configuration);
             Requires.NotNull(healthReporter, nameof(healthReporter));
-            healthReporter.Activate();
+            (healthReporter as CsvHealthReporter)?.Activate();
 
             IDictionary<string, string> inputFactories;
             IDictionary<string, string> outputFactories;

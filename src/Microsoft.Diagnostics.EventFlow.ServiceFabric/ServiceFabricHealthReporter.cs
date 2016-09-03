@@ -75,11 +75,5 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
         {
             // Recycle resource when necessary.
         }
-
-        public bool Activate()
-        {
-            // Always activated.
-            return true;
-        }
     }
 }

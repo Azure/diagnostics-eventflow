@@ -44,11 +44,5 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark
             this.warningCount = 0;
             this.problemCount = 0;
         }
-
-        public bool Activate()
-        {
-            // Always activated
-            return true;
-        }
     }
 }

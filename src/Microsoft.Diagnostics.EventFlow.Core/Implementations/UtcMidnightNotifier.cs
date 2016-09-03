@@ -65,7 +65,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Implementations
 
         private void OnSystemTimeChanged(object sender, EventArgs e)
         {
+            Timer tempRef = this.timer;
             CreateNewTimer();
+            tempRef.Dispose();
         }
     }
 }
