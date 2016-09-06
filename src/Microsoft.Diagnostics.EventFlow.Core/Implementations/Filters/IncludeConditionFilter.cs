@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
 using Microsoft.Diagnostics.EventFlow.FilterEvaluators;
 
 namespace Microsoft.Diagnostics.EventFlow.Filters
@@ -33,7 +34,14 @@ namespace Microsoft.Diagnostics.EventFlow.Filters
                 }
                 else
                 {
-                    this.Evaluator = parser.Parse(value);
+                    try
+                    {
+                        this.Evaluator = parser.Parse(value);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new ArgumentException($"Failed to parse filter condition: {value}", e);
+                    }
                 }
                 this.includeCondition = value;
             }

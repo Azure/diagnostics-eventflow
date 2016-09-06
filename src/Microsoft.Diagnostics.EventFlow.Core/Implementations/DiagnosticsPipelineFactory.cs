@@ -40,38 +40,36 @@ namespace Microsoft.Diagnostics.EventFlow
             IConfigurationSection inputConfigurationSection = configuration.GetSection("inputs");
             if (inputConfigurationSection.GetChildren().Count() == 0)
             {
-                var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: 'inputs' configuration section missing";
-                healthReporter.ReportProblem(errMsg);
-                throw new Exception(errMsg);
+                ReportSectionEmptyAndThrow(healthReporter, inputConfigurationSection);
             }
 
             List<ItemWithChildren<IObservable<EventData>, object>> inputCreationResult;
-            if (!ProcessSection<IObservable<EventData>, object>(
-                inputConfigurationSection, 
-                healthReporter, 
+            ProcessSection<IObservable<EventData>, object>(
+                inputConfigurationSection,
+                healthReporter,
                 inputFactories,
                 childFactories: null,
-                childSectionName: null, 
-                isOptional:false, 
-                createdItems: out inputCreationResult))
-            {
-                throw new Exception("Failed to create pipeline from 'input' section");
-            }
+                childSectionName: null,
+                createdItems: out inputCreationResult);
+
             List<IObservable<EventData>> inputs = inputCreationResult.Select(item => item.Item).ToList();
-            Debug.Assert(inputs.Count > 0);
+            if (inputs.Count == 0)
+            {
+                ReportNoItemsCreatedAndThrow(healthReporter, inputConfigurationSection);
+            }
 
 
             // Step 2: instantiate global filters (if any)
             IConfigurationSection globalFilterConfigurationSection = configuration.GetSection("filters");
             List<ItemWithChildren<IFilter, object>> globalFilterCreationResult;
+
             // It completely fine to have a pipeline with no globals filters section, or an empty one
             ProcessSection<IFilter, object>(
-                globalFilterConfigurationSection, 
-                healthReporter, 
+                globalFilterConfigurationSection,
+                healthReporter,
                 filterFactories,
                 childFactories: null,
-                childSectionName: null, 
-                isOptional: true, 
+                childSectionName: null,
                 createdItems: out globalFilterCreationResult);
             List<IFilter> globalFilters = globalFilterCreationResult.Select(item => item.Item).ToList();
 
@@ -82,24 +80,23 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 DisposeOf(inputs);
 
-                var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: 'outputs' configuration section missing";
-                healthReporter.ReportProblem(errMsg);
-                throw new Exception(errMsg);
+                ReportSectionEmptyAndThrow(healthReporter, outputConfigurationSection);
             }
 
             List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
-            if (!ProcessSection<IOutput, IFilter>(
+            ProcessSection<IOutput, IFilter>(
                 outputConfigurationSection,
                 healthReporter,
                 outputFactories,
                 filterFactories,
                 childSectionName: "filters",
-                isOptional: false,
-                createdItems: out outputCreationResult))
+                createdItems: out outputCreationResult);
+
+            List<IOutput> outputs = outputCreationResult.Select(item => item.Item).ToList();
+            if (outputs.Count == 0)
             {
                 DisposeOf(inputs);
-
-                throw new Exception("Failed to create pipeline from 'output' section");
+                ReportNoItemsCreatedAndThrow(healthReporter, outputConfigurationSection);
             }
 
 
@@ -138,7 +135,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 if (string.Equals(extension["category"], "healthReporter", StringComparison.OrdinalIgnoreCase)
                     &&  string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
                 {
-                    var type = Type.GetType(extension["qualifiedTypeName"]);
+                    var type = Type.GetType(extension["qualifiedTypeName"], throwOnError: true);
 
                     // Consider: Make IHealthReporter an abstract class, so the inherited classes are ensured to have a constructor with parameter IConfiguration
                     return Activator.CreateInstance(type, healthReporterConfiguration) as IHealthReporter;
@@ -148,16 +145,14 @@ namespace Microsoft.Diagnostics.EventFlow
             return null;
         }
 
-        private static bool ProcessSection<PipelineItemType, PipelineItemChildType>(
+        private static void ProcessSection<PipelineItemType, PipelineItemChildType>(
             IConfigurationSection configurationSection,
             IHealthReporter healthReporter,
             IDictionary<string, string> itemFactories,
             IDictionary<string, string> childFactories,
             string childSectionName,
-            bool isOptional,
             out List<ItemWithChildren<PipelineItemType, PipelineItemChildType>> createdItems)
         {
-            Debug.Assert(isOptional || configurationSection != null);
             Debug.Assert(!string.IsNullOrWhiteSpace(configurationSection.Key));
             Debug.Assert(healthReporter != null);
             Debug.Assert(itemFactories != null);
@@ -165,20 +160,12 @@ namespace Microsoft.Diagnostics.EventFlow
 
             createdItems = new List<ItemWithChildren<PipelineItemType, PipelineItemChildType>>();
 
-            if (isOptional && configurationSection == null)
+            if (configurationSection == null)
             {
-                return true;
+                return;
             }
 
             List<IConfigurationSection> itemConfigurationFragments = configurationSection.GetChildren().ToList();
-            if (itemConfigurationFragments.Count == 0)
-            {
-                if (!isOptional)
-                {
-                    ReportSectionEmpty(configurationSection, healthReporter);
-                }
-                return isOptional;
-            }
 
             foreach (var itemFragment in itemConfigurationFragments)
             {
@@ -189,35 +176,28 @@ namespace Microsoft.Diagnostics.EventFlow
                 }
                 catch
                 {
-                    ReportInvalidConfigurationFragment(healthReporter, itemFragment);
-                    continue;
+                    ReportInvalidConfigurationFragmentAndThrow(healthReporter, itemFragment);
                 }
 
                 string itemFactoryTypeName;
                 if (!itemFactories.TryGetValue(itemConfiguration.Type, out itemFactoryTypeName))
                 {
-                    ReportUnknownItemType(configurationSection, healthReporter, itemConfiguration);
-                    continue;
+                    ReportUnknownItemTypeAndThrow(healthReporter, configurationSection, itemConfiguration);
                 }
 
                 IPipelineItemFactory<PipelineItemType> factory;
-                PipelineItemType item;
+                PipelineItemType item = default(PipelineItemType);
                 try
                 {
-                    var itemFactoryType = Type.GetType(itemFactoryTypeName);
-                    factory = Activator.CreateInstance(itemFactoryType) as IPipelineItemFactory<PipelineItemType>; 
-                    if (factory == null)
-                    {
-                        ReportItemCreationFailed(healthReporter, itemConfiguration.Type);
-                    }
+                    var itemFactoryType = Type.GetType(itemFactoryTypeName, throwOnError: true);
+                    factory = Activator.CreateInstance(itemFactoryType) as IPipelineItemFactory<PipelineItemType>;
                     item = factory.CreateItem(itemFragment, healthReporter);
                 }
                 catch (Exception e)
                 {
-                    ReportItemCreationFailed(healthReporter, itemConfiguration.Type, e);
-                    continue;
+                    ReportItemCreationFailedAndThrow(healthReporter, itemConfiguration.Type, e);
                 }
-                 
+
                 // The factory will do its own error reporting, so if it returns null, no further error reporting is necessary.
                 if (item == null)
                 {
@@ -229,12 +209,11 @@ namespace Microsoft.Diagnostics.EventFlow
                 {
                     IConfigurationSection childrenSection = itemFragment.GetSection(childSectionName);
                     ProcessSection<PipelineItemChildType, object>(
-                        childrenSection, 
-                        healthReporter, 
-                        childFactories, 
+                        childrenSection,
+                        healthReporter,
+                        childFactories,
                         childFactories: null,       // Only one level of nexting is supported
                         childSectionName: null,
-                        isOptional: true, 
                         createdItems: out children);
 
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, children.Select(c => c.Item).ToList()));
@@ -244,44 +223,46 @@ namespace Microsoft.Diagnostics.EventFlow
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, null));
                 }
             }
-
-            if (createdItems.Count == 0 && !isOptional)
-            {
-                ReportNoItemsCreated(configurationSection, healthReporter);
-                return false;
-            }
-
-            return true;
         }
 
-        private static void ReportItemCreationFailed(IHealthReporter healthReporter, string itemType, Exception e = null)
+        private static void ReportItemCreationFailedAndThrow(IHealthReporter healthReporter, string itemType, Exception e = null)
         {
-            string errorMessage = $"{nameof(DiagnosticsPipelineFactory)}: item of type '{itemType}' could not be created";
+            string errMsg = $"{nameof(DiagnosticsPipelineFactory)}: item of type '{itemType}' could not be created";
             if (e != null)
             {
-                errorMessage += Environment.NewLine + e.ToString();
+                errMsg += Environment.NewLine + e.ToString();
             }
-            healthReporter.ReportWarning(errorMessage);
+            healthReporter.ReportProblem(errMsg);
+            throw new Exception(errMsg);
         }
 
-        private static void ReportInvalidConfigurationFragment(IHealthReporter healthReporter, IConfigurationSection itemFragment)
+        private static void ReportInvalidConfigurationFragmentAndThrow(IHealthReporter healthReporter, IConfigurationSection itemFragment)
         {
-            healthReporter.ReportWarning($"{nameof(DiagnosticsPipelineFactory)}: invalid configuration fragment:{Environment.NewLine}{itemFragment.Value}");
+            // It would be ideal to print the whole fragment, but we didn't find a way to serialize the configuration. So we give the configuration path instead.
+            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: invalid configuration fragment '{itemFragment.Path}'";
+            healthReporter.ReportProblem(errMsg);
+            throw new Exception(errMsg);
         }
 
-        private static void ReportSectionEmpty(IConfigurationSection configurationSection, IHealthReporter healthReporter)
+        private static void ReportSectionEmptyAndThrow(IHealthReporter healthReporter, IConfigurationSection configurationSection)
         {
-            healthReporter.ReportWarning($"{nameof(DiagnosticsPipelineFactory)}: '{configurationSection.Key}' configuration section is empty");
+            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: '{configurationSection.Key}' configuration section is empty";
+            healthReporter.ReportProblem(errMsg);
+            throw new Exception(errMsg);
         }
 
-        private static void ReportNoItemsCreated(IConfigurationSection configurationSection, IHealthReporter healthReporter)
+        private static void ReportNoItemsCreatedAndThrow(IHealthReporter healthReporter, IConfigurationSection configurationSection)
         {
-            healthReporter.ReportWarning($"{nameof(DiagnosticsPipelineFactory)}: could not create any pipeline items out of configuration section '{configurationSection.Key}'");
+            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: could not create any pipeline items out of configuration section '{configurationSection.Key}'";
+            healthReporter.ReportProblem(errMsg);
+            throw new Exception(errMsg);
         }
 
-        private static void ReportUnknownItemType(IConfigurationSection configurationSection, IHealthReporter healthReporter, ItemConfiguration itemConfiguration)
+        private static void ReportUnknownItemTypeAndThrow(IHealthReporter healthReporter, IConfigurationSection configurationSection, ItemConfiguration itemConfiguration)
         {
-            healthReporter.ReportWarning($"{nameof(DiagnosticsPipelineFactory)}: unknown type '{itemConfiguration.Type}' in configuration section '{configurationSection.Key}'");
+            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: unknown type '{itemConfiguration.Type}' in configuration section '{configurationSection.Path}'";
+            healthReporter.ReportProblem(errMsg);
+            throw new Exception(errMsg);
         }
 
         private static void CreateItemFactories(
@@ -301,7 +282,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=null";
-            inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=null";
+            inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=null";
             inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=null";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

@@ -9,14 +9,14 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class PerformanceCounterListenerFactory: IPipelineItemFactory<PerformanceCounterInput>
+    public class PerformanceCounterInputFactory: IPipelineItemFactory<PerformanceCounterInput>
     {
         public PerformanceCounterInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            // TODO: implement
-            throw new NotImplementedException();
+            return new PerformanceCounterInput(configuration, healthReporter);
         }
     }
 }

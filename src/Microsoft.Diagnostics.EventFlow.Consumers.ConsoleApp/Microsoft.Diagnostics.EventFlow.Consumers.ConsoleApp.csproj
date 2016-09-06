@@ -44,6 +44,9 @@
     <Reference Include="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Inputs.EventSource</Name>
     </Reference>
+    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll">
+      <Name>Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter</Name>
+    </Reference>
     <Reference Include="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Outputs.StdOutput</Name>
     </Reference>
