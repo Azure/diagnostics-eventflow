@@ -58,7 +58,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
             finally
             {
-                TryDeleteFile(CsvHealthReporter.DefaultHealthReporterPrefix);
+                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix);
             }
 
         }
@@ -207,7 +207,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
             finally
             {
-                TryDeleteFile(CsvHealthReporter.DefaultHealthReporterPrefix);
+                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix);
             }
         }
 

@@ -20,7 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string LogFileFolderKey = "LogFileFolder";
         private const string LogFilePrefixKey = "LogFilePrefix";
         private const string LogLevelKey = "MinReportLevel";
-        private const string ThrottleTimeSpanKey = "throttleTimeSpan";
+        private const string ThrottleTimeSpanKey = "ThrottlingPeriodMsec";
         private const int DefaultDelay = 100;
 
         [Fact]
@@ -38,7 +38,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             // Setup
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, string.Empty },
+                { LogFileFolderKey, "." },
                 { LogFilePrefixKey, HealthReporter},
                 { LogLevelKey, "WrongLevel"}
             }).Build();
@@ -59,7 +59,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             // Setup
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, string.Empty },
+                { LogFileFolderKey, "." },
                 { LogFilePrefixKey, HealthReporter},
                 { LogLevelKey, "Message"}
             }).Build();
@@ -83,7 +83,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             // Setup
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, string.Empty },
+                { LogFileFolderKey, "." },
                 { LogFilePrefixKey, HealthReporter},
                 { LogLevelKey, "Message"}
             }).Build();
@@ -106,7 +106,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public async void ReportProblemShouldWriteError()
         {
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, string.Empty },
+                { LogFileFolderKey, "." },
                 { LogFilePrefixKey, HealthReporter},
                 { LogLevelKey, "Message"}
             }).Build();
@@ -130,7 +130,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             // Setup
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, string.Empty },
+                { LogFileFolderKey, "." },
                 { LogFilePrefixKey, HealthReporter},
                 { LogLevelKey, "Warning"},
                 { ThrottleTimeSpanKey, "0"}
@@ -206,7 +206,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             // Setup
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, string.Empty },
+                { LogFileFolderKey, "." },
                 { LogFilePrefixKey, HealthReporter},
                 { LogLevelKey, "Message"}
             }).Build();

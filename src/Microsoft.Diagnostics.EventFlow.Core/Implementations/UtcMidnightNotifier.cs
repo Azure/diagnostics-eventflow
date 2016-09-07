@@ -5,19 +5,19 @@
 
 using System;
 using System.Threading;
-using Microsoft.Diagnostics.EventFlow.Core.Implementations.HealthReporters;
+using Microsoft.Diagnostics.EventFlow.HealthReporters;
 #if NET451
 using Microsoft.Win32;
 #endif
 
-namespace Microsoft.Diagnostics.EventFlow.Core.Implementations
+namespace Microsoft.Diagnostics.EventFlow
 {
-    internal class UtcMidnightNotifier : INewReportTrigger
+    internal class UtcMidnightNotifier : INewReportFileTrigger
     {
         private Timer timer;
 
         public event EventHandler<EventArgs> DayChanged;
-        public event EventHandler<EventArgs> Triggered;
+        public event EventHandler<EventArgs> NewReportFileRequested;
 
         private static Lazy<UtcMidnightNotifier> instance = new Lazy<UtcMidnightNotifier>(() =>
         {
@@ -53,21 +53,23 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Implementations
         private static TimeSpan GetSleepTime()
         {
             DateTime midnightTonight = DateTime.UtcNow.Date.AddDays(1);
-            TimeSpan difference = (midnightTonight - DateTime.Now);
+            TimeSpan difference = (midnightTonight - DateTime.UtcNow);
             return difference;
         }
 
         private void OnDayChanged()
         {
             DayChanged?.Invoke(this, EventArgs.Empty);
-            Triggered?.Invoke(this, EventArgs.Empty);
+            NewReportFileRequested?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnSystemTimeChanged(object sender, EventArgs e)
         {
-            Timer tempRef = this.timer;
+            if (timer != null)
+            {
+                timer.Dispose();
+            }
             CreateNewTimer();
-            tempRef.Dispose();
         }
     }
 }

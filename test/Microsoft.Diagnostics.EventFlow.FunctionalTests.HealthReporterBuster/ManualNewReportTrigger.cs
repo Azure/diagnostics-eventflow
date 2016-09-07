@@ -4,17 +4,17 @@
 // ------------------------------------------------------------
 
 using System;
-using Microsoft.Diagnostics.EventFlow.Core.Implementations.HealthReporters;
+using Microsoft.Diagnostics.EventFlow.HealthReporters;
 
 namespace Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster
 {
-    internal class ManualNewReportTrigger : INewReportTrigger
+    internal class ManualNewReportTrigger : INewReportFileTrigger
     {
-        public event EventHandler<EventArgs> Triggered;
+        public event EventHandler<EventArgs> NewReportFileRequested;
 
         public void TriggerChange()
         {
-            Triggered?.Invoke(this, EventArgs.Empty);
+            NewReportFileRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

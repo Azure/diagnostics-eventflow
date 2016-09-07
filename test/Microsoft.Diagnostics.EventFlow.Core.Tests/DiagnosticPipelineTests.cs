@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
-using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
@@ -28,7 +28,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     null,
                     new List<EventSink>());
             });
-
+            
             Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
         }
 
@@ -46,11 +46,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             };
 
             using (UnitTestInput unitTestInput = new UnitTestInput())
-            using (DiagnosticsPipeline pipeline = new DiagnosticsPipeline(
+            using (DiagnosticPipeline pipeline = new DiagnosticPipeline(
                 healthReporterMock.Object,
                 new IObservable<EventData>[] { unitTestInput },
                 null,
-                new EventSink[] { new EventSink(mockOutput.Object, null) }
+                new EventSink[] { new EventSink(mockOutput.Object, null) },
                 settings))
             {
 

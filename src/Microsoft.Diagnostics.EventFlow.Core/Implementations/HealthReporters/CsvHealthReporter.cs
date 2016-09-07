@@ -10,13 +10,12 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Diagnostics.EventFlow.Core.Implementations;
-using Microsoft.Diagnostics.EventFlow.Core.Implementations.HealthReporters;
 using Microsoft.Extensions.Configuration;
+using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 {
-    public class CsvHealthReporter : IHealthReporter
+    public class CsvHealthReporter : IHealthReporter, IRequireActivation
     {
         internal enum HealthReportLevel
         {
@@ -26,16 +25,18 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         }
 
         #region Constants
-        public const string DefaultHealthReporterPrefix = "HealthReport";
+        internal const string DefaultLogFilePrefix = "HealthReport";
         #endregion
 
         #region Fields
         private static readonly string TraceTag = nameof(CsvHealthReporter);
-        private readonly BlockingCollection<string> reportCollection = new BlockingCollection<string>();
+        private BlockingCollection<string> reportCollection;
         private FileStream fileStream;
         private bool newStreamRequested = false;
-        private INewReportTrigger newReportTrigger = null;
+        private INewReportFileTrigger newReportFileTrigger = null;
         private TimeSpanThrottle throttle;
+        private Task writingTask;
+        private bool disposed = false;
         #endregion
 
         #region Properties
@@ -45,6 +46,10 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Create a CsvHealthReporter with configuration.
+        /// </summary>
+        /// <param name="configuration">CsvHealthReporter configuration.</param>
         public CsvHealthReporter(CsvHealthReporterConfiguration configuration)
         {
             Initialize(configuration);
@@ -54,31 +59,30 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// Create a CsvHealthReporter with configuration.
         /// </summary>
         /// <param name="configuration">CsvHealthReporter configuration.</param>
-        /// <param name="streamWriter">When provided, used to overwrite the stream writer created by the configuration.</param>
         public CsvHealthReporter(IConfiguration configuration)
+            : this(configuration.ToCsvHealthReporterConfiguration())
         {
-            Initialize(configuration);
-        }
-
-        internal CsvHealthReporter(CsvHealthReporterConfiguration configuration, INewReportTrigger newReportTrigger)
-        {
-            Validation.Requires.NotNull(newReportTrigger, nameof(newReportTrigger));
-            Initialize(configuration, newReportTrigger);
         }
 
         /// <summary>
         /// Create a CsvHealthReporter with path to configuration file.
         /// </summary>
         /// <param name="configurationFilePath">CsvHealthReporter configuration file path.</param>
-        /// <param name="streamWriter">When provided, used to overwrite the stream writer created by the configuration.</param>
         public CsvHealthReporter(string configurationFilePath)
         {
-            Validation.Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
+            Requires.NotNullOrWhiteSpace(configurationFilePath, nameof(configurationFilePath));
 
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddJsonFile(configurationFilePath, optional: false, reloadOnChange: false).Build();
 
-            Initialize(configuration.GetSection("healthReporter"));
+            Initialize((configuration.GetSection("healthReporter")).ToCsvHealthReporterConfiguration());
+        }
+
+        // Constructor for testing purpose.
+        internal CsvHealthReporter(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger)
+        {
+            Requires.NotNull(newReportTrigger, nameof(newReportTrigger));
+            Initialize(configuration, newReportTrigger);
         }
         #endregion
 
@@ -88,30 +92,23 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             return $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
         }
 
-        private void Initialize(CsvHealthReporterConfiguration configuration, INewReportTrigger newReportTrigger = null)
+        private void Initialize(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger = null)
         {
+            this.reportCollection = new BlockingCollection<string>();
+
             // Prepare the configuration, set default values, handle invalid values.
-            ProcessConfiguration(configuration);
-
-            // Hook up the mid-night stream writer updater.
-            this.newReportTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
-            this.newReportTrigger.Triggered += RequestNewHealthReport;
-        }
-
-        private void ProcessConfiguration(CsvHealthReporterConfiguration configuration)
-        {
             this.Configuration = configuration;
 
-            if (configuration.ThrottleTimeSpan == null || !configuration.ThrottleTimeSpan.HasValue)
+            if (configuration.ThrottlingPeriodMsec == null || !configuration.ThrottlingPeriodMsec.HasValue)
             {
-                configuration.ThrottleTimeSpan = 0;
+                configuration.ThrottlingPeriodMsec = 0;
                 this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(0));
                 // Force to report error until LogLevel is set by configuration.
-                ReportProblem($"{nameof(configuration.ThrottleTimeSpan)} is not specified in configuration file. Fall back to default value: {this.Configuration.ThrottleTimeSpan.Value}");
+                ReportProblem($"{nameof(configuration.ThrottlingPeriodMsec)} is not specified in configuration file. Falling back to default value: {this.Configuration.ThrottlingPeriodMsec.Value}", TraceTag);
             }
             else
             {
-                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(configuration.ThrottleTimeSpan.Value));
+                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(configuration.ThrottlingPeriodMsec.Value));
             }
 
             string logLevelString = this.Configuration?.MinReportLevel;
@@ -123,58 +120,75 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             else
             {
                 // The severity has to be at least the same as the default level of error.
-                ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}.", TraceTag);
+                ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}. Falling back to default value: {this.Configuration.MinReportLevel}", TraceTag);
             }
 
             // Set default value for HealthReport file prefix
             if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
             {
-                this.Configuration.LogFilePrefix = DefaultHealthReporterPrefix;
-                ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Fall back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
+                this.Configuration.LogFilePrefix = DefaultLogFilePrefix;
+                ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
             }
 
             // Set default value for health reports
             if (string.IsNullOrWhiteSpace(this.Configuration.LogFileFolder))
             {
                 this.Configuration.LogFileFolder = ".";
+                ReportWarning($"{nameof(this.Configuration.LogFileFolder)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFileFolder}", TraceTag);
+
             }
+
+            this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
+            this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
         }
 
         /// <summary>
-        /// Start to write the health reports. Note: Avoid calling this from the reporter constructor 
-        /// because CreateStreamWriter calls into virtual mehtod of GetReportFileName().
+        /// Starts to write the health reports.
         /// </summary>
-        /// <returns>Returns true when the reporter is activated.</returns>
-        public bool Activate()
+        /// <remarks>
+        /// Avoid calling this from the reporter constructor 
+        /// because CreateStreamWriter calls into virtual mehtod of GetReportFileName().
+        /// </remarks>
+        public void Activate()
         {
-            try
+            VerifyObjectIsNotDisposed();
+            StreamWriter = CreateStreamWriter();
+            Assumes.NotNull(StreamWriter);
+
+            // Start the consumer of the report items in the collection.
+            this.writingTask = Task.Run(() =>
             {
-                StreamWriter = CreateStreamWriter();
-                // Start the consumer of the report items in the collection.
-                Task.Run(() =>
+                // Create the stream writer
+                foreach (string text in this.reportCollection.GetConsumingEnumerable())
                 {
-                    // Create the stream writer
-                    foreach (string text in this.reportCollection.GetConsumingEnumerable())
+                    if (this.newStreamRequested)
                     {
-                        if (this.newStreamRequested)
+                        try
                         {
-                            try
-                            {
-                                this.StreamWriter = CreateStreamWriter();
-                            }
-                            finally
-                            {
-                                this.newStreamRequested = false;
-                            }
+                            this.StreamWriter = CreateStreamWriter();
+                            Assumes.NotNull(StreamWriter);
                         }
-                        this.StreamWriter.WriteLine(text);
+                        finally
+                        {
+                            this.newStreamRequested = false;
+                        }
                     }
-                });
-                return true;
-            }
-            catch
+                    this.StreamWriter.WriteLine(text);
+                }
+
+                if (this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted)
+                {
+                    this.reportCollection.Dispose();
+                    this.reportCollection = null;
+                }
+            });
+        }
+
+        private void VerifyObjectIsNotDisposed()
+        {
+            if (disposed)
             {
-                return false;
+                throw new ObjectDisposedException(TraceTag);
             }
         }
 
@@ -187,91 +201,80 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             string logFilePath = GetReportFileName();
             string logFileFolder = Configuration.LogFileFolder;
             logFileFolder = Path.GetFullPath(logFileFolder);
-
-            // Get the full path.
-            logFilePath = Path.Combine(logFileFolder, logFilePath);
-
-            // Create the folder if not exist.
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);
             }
+            logFilePath = Path.Combine(logFileFolder, logFilePath);
 
-            if (TryCreateFileStream(logFilePath))
+            // Do not create new file stream when targeting the same path.
+            if (this.fileStream != null &&
+                this.StreamWriter != null &&
+                Path.GetFullPath(this.fileStream.Name).Equals(logFilePath, StringComparison.OrdinalIgnoreCase))
             {
-                if (this.fileStream != null)
+                return this.StreamWriter;
+            }
+
+            // Flush the current stream.
+            if (this.fileStream != null)
+            {
+                this.fileStream.Flush();
+                if (this.StreamWriter != null)
                 {
-                    if (this.StreamWriter != null)
-                    {
-                        this.StreamWriter.Flush();
-                        this.StreamWriter.Dispose();
-                        this.StreamWriter = null;
-                    }
-                    return new StreamWriter(this.fileStream, Encoding.UTF8);
+                    this.StreamWriter.Flush();
+                    this.StreamWriter.Dispose();
+                    this.StreamWriter = null;
                 }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Create a new file stream when fullFilePath is different than the current file stream.
-        /// </summary>
-        /// <param name="fullFilePath">New path to the health reporter.</param>
-        /// <param name="fileStream">New FileStream when creation executed.</param>
-        /// <returns>Return true when creation successfully executed. Otherwise, return false.</returns>
-        private bool TryCreateFileStream(string fullFilePath)
-        {
-            Validation.Requires.NotNullOrWhiteSpace(fullFilePath, nameof(fullFilePath));
-            if (this.fileStream != null && Path.GetFullPath(this.fileStream.Name).Equals(fullFilePath, StringComparison.OrdinalIgnoreCase))
-            {
-                // Do not create new file stream when the current stream and the new stream pointing to the same path.
-                return false;
+                this.fileStream.Dispose();
+                this.fileStream = null;
             }
 
+            // Create a new stream writer
             try
             {
-                // Do not dispose the existing FileStream yet to avoid exception on flushing the StreamWriter.
-                this.fileStream = new FileStream(fullFilePath, FileMode.Append);
+                this.fileStream = new FileStream(logFilePath, FileMode.Append);
             }
             catch (IOException)
             {
                 // In case file is locked by other process, give it another shot.
-                fullFilePath = $"{Path.GetFileNameWithoutExtension(fullFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(fullFilePath)}";
-                fileStream = new FileStream(fullFilePath, FileMode.Append);
+                logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
+                this.fileStream = new FileStream(logFilePath, FileMode.Append);
             }
-            return true;
+
+            return new StreamWriter(this.fileStream, Encoding.UTF8);
         }
 
-        private void RequestNewHealthReport(object sender, EventArgs e)
+
+        private void OnNewReportFileRequested(object sender, EventArgs e)
         {
             this.newStreamRequested = true;
         }
 
-        private void Initialize(IConfiguration configuration, INewReportTrigger newReportTrigger = null)
-        {
-            CsvHealthReporterConfiguration boundConfiguration = new CsvHealthReporterConfiguration();
-            configuration.Bind(boundConfiguration);
-
-            Initialize(boundConfiguration, newReportTrigger);
-        }
-
         public void ReportHealthy(string description = null, string context = null)
         {
+            VerifyObjectIsNotDisposed();
             ReportText(HealthReportLevel.Message, description, context);
         }
 
         public void ReportProblem(string description, string context = null)
         {
+            VerifyObjectIsNotDisposed();
             ReportText(HealthReportLevel.Error, description, context);
         }
 
         public void ReportWarning(string description, string context = null)
         {
+            VerifyObjectIsNotDisposed();
             ReportText(HealthReportLevel.Warning, description, context);
         }
 
         private void ReportText(HealthReportLevel level, string text, string context = null)
         {
+            if (level < LogLevel)
+            {
+                return;
+            }
+
             Debug.Assert(this.throttle != null);
             this.throttle.Execute(() =>
             {
@@ -281,22 +284,16 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private void WriteLine(HealthReportLevel level, string text, string context = null)
         {
-            try
+            if (this.writingTask != null && this.writingTask.IsFaulted)
             {
-                if (level < LogLevel)
-                {
-                    return;
-                }
-                context = context ?? string.Empty;
-                string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
-                // Verified string concatenation has better performance than format, interpolation, String.Join or StringBuilder here.
-                string message = timestamp + ',' + EscapeComma(context) + ',' + level + ',' + EscapeComma(text);
-                WriteLine(message);
+                throw new InvalidOperationException("Failed to write health report.", writingTask.Exception);
             }
-            catch
-            {
-                // Suppress exception to prevent HealthReporter from crashing its consumer
-            }
+
+            context = context ?? string.Empty;
+            string timestamp = DateTime.UtcNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat.UniversalSortableDateTimePattern);
+            // Verified string concatenation has better performance than format, interpolation, String.Join or StringBuilder here.
+            string message = timestamp + ',' + EscapeComma(context) + ',' + level + ',' + EscapeComma(text);
+            this.reportCollection.Add(message);
         }
 
         /// <summary>
@@ -316,30 +313,43 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
         }
 
-        private void WriteLine(string text)
-        {
-            this.reportCollection.Add(text);
-        }
-
         public void Dispose()
         {
-            if (this.StreamWriter != null)
+            Dispose(true);
+            GC.SuppressFinalize(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
             {
-                StreamWriter.Dispose();
-                StreamWriter = null;
+                return;
             }
 
-            if (fileStream != null)
+            if (disposing)
             {
-                fileStream.Dispose();
-                fileStream = null;
+                if (this.StreamWriter != null)
+                {
+                    this.StreamWriter.Dispose();
+                    this.StreamWriter = null;
+                }
+
+                if (this.fileStream != null)
+                {
+                    this.fileStream.Dispose();
+                    this.fileStream = null;
+                }
+
+                if (this.newReportFileTrigger != null)
+                {
+                    this.newReportFileTrigger.NewReportFileRequested -= OnNewReportFileRequested;
+                    this.newReportFileTrigger = null;
+                }
+
+                this.reportCollection.CompleteAdding();
             }
 
-            if (newReportTrigger != null)
-            {
-                this.newReportTrigger.Triggered -= RequestNewHealthReport;
-                this.newReportTrigger = null;
-            }
+            disposed = true;
         }
         #endregion
     }

@@ -29,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             IHealthReporter healthReporter = CreateHealthReporter(configuration);
             Requires.NotNull(healthReporter, nameof(healthReporter));
-            (healthReporter as CsvHealthReporter)?.Activate();
+            (healthReporter as IRequireActivation)?.Activate();
 
             IDictionary<string, string> inputFactories;
             IDictionary<string, string> outputFactories;
@@ -229,7 +229,6 @@ namespace Microsoft.Diagnostics.EventFlow
                         childFactories,
                         childFactories: null,       // Only one level of nexting is supported
                         childSectionName: null,
-                        isOptional: true,
                         createdItems: out children);
 
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, children.Select(c => c.Item).ToList()));
