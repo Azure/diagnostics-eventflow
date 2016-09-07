@@ -49,7 +49,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     builder.AddJsonFile(configFile.FilePath);
                     var configuration = builder.Build();
 
-                    using (var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration))
+                    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
                     {
                         Assert.NotNull(pipeline);
                         Assert.True(pipeline.HealthReporter is CsvHealthReporter);
@@ -104,7 +104,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                 var mocked = new Mock<IHealthReporter>();
                 var isHP = mocked is IHealthReporter;
-                using (var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration))
+                using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
                 {
                     Assert.NotNull(pipeline);
                     Assert.True(pipeline.HealthReporter is CustomHealthReporter);
@@ -152,6 +152,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     ],
 
                     ""schema-version"": ""2016-08-11"",
+
+                    ""settings"": {
+                        ""maxConcurrency"": ""2"",
+                        ""pipelineCompletionTimeoutMsec"": ""1000""
+                    }
                 }";
 
             try
@@ -163,7 +168,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     builder.AddJsonFile(configFile.FilePath);
                     var configuration = builder.Build();
 
-                    using (var pipeline = DiagnosticsPipelineFactory.CreatePipeline(configuration))
+                    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
                     {
                         Assert.NotNull(pipeline);
 
@@ -176,25 +181,27 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         expectedEventSources[1] = new EventSourceConfiguration { ProviderName = "MyCompany-AirTrafficControlApplication-Frontend" };
                         Assert.True(eventSourceInput.EventSources.SequenceEqual(expectedEventSources));
 
+                        var metadata = new EventMetadata("importance");
+                        metadata.Properties.Add("importance", "can be discarded");
+                        var metadataFilter = new EventMetadataFilter(metadata);
+                        metadataFilter.IncludeCondition = "Level == Verbose";
+                        Assert.True(pipeline.GlobalFilters.Count == 1);
+                        Assert.True(pipeline.GlobalFilters.First().Equals(metadataFilter));
+
                         Assert.Equal(pipeline.Sinks.Count, 1);
                         EventSink sink = pipeline.Sinks.First();
 
                         var stdSender = sink.Output as StdOutput;
-                        Assert.NotNull(stdSender);
-
-                        var expectedFilters = new EventMetadataFilter[2];
-                        var metadata = new EventMetadata("importance");
-                        metadata.Properties.Add("importance", "can be discarded");
-                        expectedFilters[0] = new EventMetadataFilter(metadata);
-                        expectedFilters[0].IncludeCondition = "Level == Verbose";
+                        Assert.NotNull(stdSender);                       
 
                         metadata = new EventMetadata("metric");
                         metadata.Properties.Add("metricName", "StatefulRunAsyncFailure");
                         metadata.Properties.Add("metricValue", "1.0");
-                        expectedFilters[1] = new EventMetadataFilter(metadata);
-                        expectedFilters[1].IncludeCondition = "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure";
+                        metadataFilter = new EventMetadataFilter(metadata);
+                        metadataFilter.IncludeCondition = "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure";
 
-                        Assert.True(sink.Filters.SequenceEqual(expectedFilters));
+                        Assert.True(sink.Filters.Count == 1);
+                        Assert.True(sink.Filters.First().Equals(metadataFilter));
                     }
                 }
             }

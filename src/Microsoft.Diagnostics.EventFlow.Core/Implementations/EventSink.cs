@@ -11,7 +11,7 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public class EventSink: IDisposable
     {
-        public EventSink(IOutput output, IEnumerable<IFilter> filters)
+        public EventSink(IOutput output, IReadOnlyCollection<IFilter> filters)
         {
             Requires.NotNull(output, nameof(output));
             this.Output = output;
@@ -19,7 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow
         }
 
         public IOutput Output { get; private set; }
-        public IEnumerable<IFilter> Filters { get; private set; }
+        public IReadOnlyCollection<IFilter> Filters { get; private set; }
 
         public void Dispose()
         {

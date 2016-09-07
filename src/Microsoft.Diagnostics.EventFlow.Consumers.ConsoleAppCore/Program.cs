@@ -32,10 +32,11 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore
                 List<OutputBase> outputs = new List<OutputBase>();
                 outputs.Add(new StdOutput(reporter));
 
-                DiagnosticsPipeline pipeline = new DiagnosticsPipeline(reporter, inputs,
-                    new EventSink[] {
-                    new EventSink(new StdOutput(reporter), null)
-                });
+                DiagnosticPipeline pipeline = new DiagnosticPipeline(
+                    reporter, 
+                    inputs,
+                    null,
+                    new EventSink[] { new EventSink(new StdOutput(reporter), null) });
 
                 // Build up the pipeline
                 Console.WriteLine("Pipeline is created.");

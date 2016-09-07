@@ -14,16 +14,16 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public class DiagnosticsPipelineFactory
+    public class DiagnosticPipelineFactory
     {
-        public static DiagnosticsPipeline CreatePipeline(string jsonConfigFilePath)
+        public static DiagnosticPipeline CreatePipeline(string jsonConfigFilePath)
         {
             IConfiguration config = new ConfigurationBuilder().AddJsonFile(jsonConfigFilePath).Build();
 
             return CreatePipeline(config);
         }
 
-        public static DiagnosticsPipeline CreatePipeline(IConfiguration configuration)
+        public static DiagnosticPipeline CreatePipeline(IConfiguration configuration)
         {
             Requires.NotNull(configuration, nameof(configuration));
 
@@ -102,12 +102,26 @@ namespace Microsoft.Diagnostics.EventFlow
 
             // Step 4: assemble and return the pipeline
 
-            // TODO: the globabl filters should really be executed just once, instead of separately for every output.
             IReadOnlyCollection<EventSink> sinks = outputCreationResult.Select(outputResult =>
-                new EventSink(outputResult.Item, globalFilters.Concat(outputResult.Children))
+                new EventSink(outputResult.Item, outputResult.Children)
             ).ToList();
 
-            DiagnosticsPipeline pipeline = new DiagnosticsPipeline(healthReporter, inputs, sinks);
+
+            var pipelineSettings = new DiagnosticPipelineConfiguration();
+            IConfigurationSection settingsConfigurationSection = configuration.GetSection("settings");
+            try
+            {
+                if (settingsConfigurationSection.GetChildren().Count() != 0)
+                {
+                    settingsConfigurationSection.Bind(pipelineSettings);
+                }
+            }
+            catch
+            {
+                ReportInvalidPipelineConfiguration(healthReporter);
+            }
+
+            DiagnosticPipeline pipeline = new DiagnosticPipeline(healthReporter, inputs, globalFilters, sinks, pipelineSettings, disposeDependencies: true);
             return pipeline;
         }
 
@@ -227,7 +241,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
         private static void ReportItemCreationFailedAndThrow(IHealthReporter healthReporter, string itemType, Exception e = null)
         {
-            string errMsg = $"{nameof(DiagnosticsPipelineFactory)}: item of type '{itemType}' could not be created";
+            string errMsg = $"{nameof(DiagnosticPipelineFactory)}: item of type '{itemType}' could not be created";
             if (e != null)
             {
                 errMsg += Environment.NewLine + e.ToString();
@@ -239,30 +253,36 @@ namespace Microsoft.Diagnostics.EventFlow
         private static void ReportInvalidConfigurationFragmentAndThrow(IHealthReporter healthReporter, IConfigurationSection itemFragment)
         {
             // It would be ideal to print the whole fragment, but we didn't find a way to serialize the configuration. So we give the configuration path instead.
-            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: invalid configuration fragment '{itemFragment.Path}'";
+            var errMsg = $"{nameof(DiagnosticPipelineFactory)}: invalid configuration fragment '{itemFragment.Path}'";
             healthReporter.ReportProblem(errMsg);
             throw new Exception(errMsg);
         }
 
         private static void ReportSectionEmptyAndThrow(IHealthReporter healthReporter, IConfigurationSection configurationSection)
         {
-            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: '{configurationSection.Key}' configuration section is empty";
+            var errMsg = $"{nameof(DiagnosticPipelineFactory)}: '{configurationSection.Key}' configuration section is empty";
             healthReporter.ReportProblem(errMsg);
             throw new Exception(errMsg);
         }
 
         private static void ReportNoItemsCreatedAndThrow(IHealthReporter healthReporter, IConfigurationSection configurationSection)
         {
-            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: could not create any pipeline items out of configuration section '{configurationSection.Key}'";
+            var errMsg = $"{nameof(DiagnosticPipelineFactory)}: could not create any pipeline items out of configuration section '{configurationSection.Key}'";
             healthReporter.ReportProblem(errMsg);
             throw new Exception(errMsg);
         }
 
         private static void ReportUnknownItemTypeAndThrow(IHealthReporter healthReporter, IConfigurationSection configurationSection, ItemConfiguration itemConfiguration)
         {
-            var errMsg = $"{nameof(DiagnosticsPipelineFactory)}: unknown type '{itemConfiguration.Type}' in configuration section '{configurationSection.Path}'";
+            var errMsg = $"{nameof(DiagnosticPipelineFactory)}: unknown type '{itemConfiguration.Type}' in configuration section '{configurationSection.Path}'";
             healthReporter.ReportProblem(errMsg);
             throw new Exception(errMsg);
+        }
+
+        private static void ReportInvalidPipelineConfiguration(IHealthReporter healthReporter)
+        {
+            var errMsg = $"{nameof(DiagnosticPipelineFactory)}: pipeline settings configuration section is invalid--will use default settings for the diagnostic pipeline";
+            healthReporter.ReportWarning(errMsg);
         }
 
         private static void CreateItemFactories(
@@ -306,7 +326,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
         private class ItemWithChildren<ItemType, ChildType>
         {
-            public ItemWithChildren(ItemType item, IEnumerable<ChildType> children)
+            public ItemWithChildren(ItemType item, IReadOnlyCollection<ChildType> children)
             {
                 Debug.Assert(item != null);
                 Item = item;
@@ -314,7 +334,7 @@ namespace Microsoft.Diagnostics.EventFlow
             }
 
             public ItemType Item;
-            public IEnumerable<ChildType> Children;
+            public IReadOnlyCollection<ChildType> Children;
         }
     }
 }
