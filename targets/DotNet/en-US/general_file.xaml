@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+<Rule
+	Name="ConfigurationGeneralFile"
+	DisplayName="General"
+	PageTemplate="generic"
+	Description="Project item general properties"
+	xmlns="http://schemas.microsoft.com/build/2009/properties">
+	<Rule.DataSource>
+		<DataSource Persistence="ProjectFile" HasConfigurationCondition="False" ItemType="{}{AnyType}" />
+	</Rule.DataSource>
+  <DynamicEnumProperty Name="{}{ItemType}" DisplayName="Item Type" Visible="False"
+                       Description="Item type determines the build tool or the file"
+                       EnumProvider="ItemTypes" />
+
+  <StringProperty Name="DependentUpon" Visible="False" />
+  <BoolProperty Name="Visible" Visible="false" />
+  <StringProperty Name="Link" Visible="false" />
+
+   <StringProperty
+      Name="Generator"
+      Category="Advanced"
+      DisplayName="Custom Tool"
+      Description="Specifies the tool that transforms a file at design time and places the output of that transformation into another file. For example, a dataset (.xsd) file comes with a default custom tool." 
+      Visible="False" />
+   <StringProperty
+      Name="CustomToolNamespace"
+      Category="Advanced"
+      DisplayName="Custom Tool Namespace"
+      Description="The namespace into which the output of the custom tool is placed." 
+      Visible="False" />
+
+  <StringProperty Name="LastGenOutput" Visible="false" Description="The filename of the last file generated as a result of the SFG." />
+  <BoolProperty Name="DesignTime" Visible="false" Description="A value indicating whether this file has a designer." />
+  <BoolProperty Name="AutoGen" Visible="false" Description="A value indicating whether this is a generated file." />
+
+  <StringProperty Name="Extension" ReadOnly="True" Visible="False">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="{}{AnyType}" PersistedName="Extension" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+</Rule>

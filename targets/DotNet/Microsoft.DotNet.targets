@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)\Microsoft.DotNet.Common.Targets" />
+
+  <PropertyGroup>
+    <AddItemTemplatesGuid>{1FAF1D54-1A80-4E4F-9050-D6B7965CD433}</AddItemTemplatesGuid>
+  </PropertyGroup>
+  
+  <!-- Capabilities for this project.  Conditions should be based on platform|configuration only. -->
+  <ItemGroup>
+    <ProjectCapability Include="DotNetCoreApplication" />    
+  </ItemGroup>
+
+  <ItemGroup>   
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\general.browseobject.xaml" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\general.browseobject.xaml')">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\general.browseobject.xaml" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\general.browseobject.xaml')">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+</Project>

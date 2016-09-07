@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+<Rule
+	Name="Content"
+	DisplayName="General"
+	PageTemplate="generic"
+	Description="Content file"
+	xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" HasConfigurationCondition="False" ItemType="Content" />
+  </Rule.DataSource>
+  
+  <DynamicEnumProperty Name="{}{ItemType}" DisplayName="Build Action"  Category="Advanced" Visible="False"
+                     Description="How the file relates to the build and deployment processes."
+                     EnumProvider="ItemTypes" />
+  <StringProperty
+      Name="Identity"
+      DisplayName="File Name"
+      ReadOnly="true"
+      Category=""
+      Description="Name of the file or folder.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="Content" PersistedName="Identity" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <StringProperty
+      Name="FullPath"
+      DisplayName="Full Path"
+      ReadOnly="true"
+      Category=""
+      Description="Location of the file.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="Content" PersistedName="FullPath" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <StringProperty Name="Extension" ReadOnly="True" Visible="False">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="Content" PersistedName="Extension" />
+    </StringProperty.DataSource>
+  </StringProperty>
+  <BoolProperty Name="Visible" Visible="false" />
+  <StringProperty Name="DependentUpon" Visible="false" />
+  <StringProperty Name="Link" Visible="false" />
+  <BoolProperty Name="AutoGen" Visible="false" Description="A value indicating whether this is a generated file." />
+
+  <!-- Note that this is necessary to keep Roslyn from crashing -->
+  <EnumProperty Name="SubType" Visible="false">
+      <EnumValue Name="Designer" />
+      <EnumValue Name="Component" />
+      <EnumValue Name="Control" />
+      <EnumValue Name="Form" />
+      <EnumValue Name="Code" />
+  </EnumProperty>
+</Rule>

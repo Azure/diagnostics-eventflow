@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+<Rule
+  Name="TypeScript"
+  DisplayName="TypeScript File"
+  PageTemplate="generic"
+  Description="TypeScript files"
+  xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" HasConfigurationCondition="False" ItemType="TypeScriptCompile" />
+  </Rule.DataSource>
+  
+    <StringProperty
+      Name="Identity"
+      DisplayName="File Name"
+      ReadOnly="true"
+      Category=""
+      Description="Name of the file or folder.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="TypeScriptCompile" PersistedName="Identity" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <StringProperty
+      Name="FullPath"
+      DisplayName="Full Path"
+      ReadOnly="true"
+      Category=""
+      Description="Location of the file.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="TypeScriptCompile" PersistedName="FullPath" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <StringProperty Name="Extension" ReadOnly="True" Visible="False">
+    <StringProperty.DataSource>
+      <DataSource Persistence="Intrinsic" ItemType="TypeScriptCompile" PersistedName="Extension" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+  <EnumProperty
+    Name="{}{ItemType}"
+    DisplayName="Package Action"
+    Category="General"
+    ReadOnly="True"
+    Visible="False"
+    F1Keyword="javascript.project.property.packageaction"
+    Description="Specifies the action taken on this file when an app package is produced.">
+    <EnumValue Name="TypeScriptCompile" DisplayName="TypeScriptCompile" IsDefault="true"/>
+    <EnumValue Name="None" DisplayName="None" />
+    <EnumValue Name="Content" DisplayName="Content" />
+    <EnumValue Name="AppxManifest" DisplayName="App Manifest" />
+    <EnumValue Name="PRIResource" DisplayName="Resource" />
+
+    <EnumProperty.DataSource>
+      <DataSource Persistence="ProjectFile" Label="Configuration" SourceType="Item" ItemType="TypeScriptCompile" HasConfigurationCondition="false" />
+    </EnumProperty.DataSource>
+  </EnumProperty>
+
+  <BoolProperty Name="Visible" Visible="false" />
+  <StringProperty Name="DependentUpon" Visible="false" />
+  <StringProperty Name="Link" Visible="false" />
+  <BoolProperty Name="AutoGen" Visible="false" Description="A value indicating whether this is a generated file." />
+  <EnumProperty Name="SubType" Visible="false">
+    <EnumValue Name="Designer" />
+    <EnumValue Name="Component" />
+    <EnumValue Name="Control" />
+    <EnumValue Name="Form" />
+    <EnumValue Name="Code" />
+  </EnumProperty>
+
+</Rule>

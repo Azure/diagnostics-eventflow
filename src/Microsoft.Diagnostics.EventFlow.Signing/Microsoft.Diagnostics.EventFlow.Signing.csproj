@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.props" Condition="Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.Diagnostics.EventFlow.Signing</RootNamespace>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.Signing</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>CS2008</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.props'))" />
+    <Error Condition="!Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets'))" />
+  </Target>
+  <Import Project="..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets" Condition="Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets')" />
+  <!--
+    The signing task expect the assemblies to sign under some certain folder. So before signing, we move the assemblies to
+    the expected folder. After signing, we move the signed assemblies back to its original place for nuget packaging.
+  -->
+  <Target Name="MoveAssembliesBeforeSigning" Condition="'$(SignType)'!=''" BeforeTargets="SignFiles">
+    <ItemGroup>
+      <FullAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Core.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net46\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
+      <CoreAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Core.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
+    </ItemGroup>
+    <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
+    <Move SourceFiles="@(CoreAssemblies)" DestinationFolder="$(OutputPath)\core" />
+  </Target>
+  <ItemGroup>
+    <!--We can't use wildcard here since it's expanded before build, which is empty.-->
+    <FilesToSign Include="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;">
+      <Authenticode>Microsoft</Authenticode>
+      <StrongName>StrongName</StrongName>
+    </FilesToSign>
+  </ItemGroup>
+  <Target Name="MoveSignedAssembliesBack" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
+    <!--Full framework assemblies-->
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451"/>
+    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net46"/>
+    <!--.Net core assemblies-->
+    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
+    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6"/>
+    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6"/>
+    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6"/>
+    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
+    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

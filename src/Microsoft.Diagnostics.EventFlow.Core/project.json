@@ -14,12 +14,17 @@
   "frameworks": {
     "netstandard1.6": {
       "imports": "dnxcore50",
-        "dependencies": {
-            "System.Dynamic.Runtime": "4.0.11"
-        }
+      "dependencies": {
+        "System.Dynamic.Runtime": "4.0.11"
+      }
     },
     "net451": {
     }
+  },
+
+  "buildOptions": {
+    "keyFile": "../../PublicKey.snk",
+    "delaySign": true
   },
 
   "packOptions": {

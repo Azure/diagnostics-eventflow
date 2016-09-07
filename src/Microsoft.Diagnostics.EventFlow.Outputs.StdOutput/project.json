@@ -16,6 +16,11 @@
     "net451": {}
   },
 
+  "buildOptions": {
+    "keyFile": "../../PublicKey.snk",
+    "delaySign": true
+  },
+
   "packOptions": {
     "tags": [
       "Microsoft.Diagnostics.EventFlow"

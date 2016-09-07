@@ -12,8 +12,12 @@
 
     }
   },
+
   "buildOptions": {
-    "platform": "x64"
+    "platform": "x64",
+    "keyFile": "../../PublicKey.snk",
+    "delaySign": true
   },
+
   "packOptions": { "tags": [ "Microsoft.Diagnostics.EventFlow" ] }
 }

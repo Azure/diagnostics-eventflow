@@ -1,0 +1,492 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.DotNet.Publishing.targets  
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your web deploy projects from the command-line or the IDE.
+
+This file defines the steps in the standard build process to deploy web application projects.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project
+    xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- The build process can be extended in a similar way as MS.Common.targets -->
+
+  <PropertyGroup>
+    <ImportByWildcardBeforeMicrosoftWebPublishingTargets Condition="'$(ImportByWildcardBeforeMicrosoftWebPublishingTargets)'==''">true</ImportByWildcardBeforeMicrosoftWebPublishingTargets>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\$(MSBuildThisFileName)\ImportBefore\*" Condition="'$(ImportByWildcardBeforeMicrosoftWebPublishingTargets)' == 'true' and exists('$(MSBuildThisFileDirectory)\$(MSBuildThisFileName)\ImportBefore')"/>
+
+
+  <!--
+  ***********************************************************************************************
+  Including the tasks
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <WebPublishTasksDir Condition=" '$(WebPublishTasksDir)'=='' ">$(MSBuildThisFileDirectory)..\Web\</WebPublishTasksDir>
+    <DotNetTasksDir Condition=" '$(DotNetTasksDir)'=='' ">$(MSBuildThisFileDirectory)</DotNetTasksDir>
+  </PropertyGroup>
+  <UsingTask TaskName="MSDeploy" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll"/>
+  <UsingTask TaskName="VSMSDeploy" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll"/>
+  <UsingTask TaskName="NormalizeServiceUrl" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll"/>
+  <UsingTask TaskName="InvokePowerShell" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll"/>
+  <UsingTask TaskName="ValidateParameter" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll"/>
+  <UsingTask TaskName="GetAllPublishProperties" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll"/>
+  <UsingTask TaskName="Publish" AssemblyFile="$(DotNetTasksDir)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="PublishTelemetry" AssemblyFile="$(WebPublishTasksDir)Microsoft.Web.Publishing.Tasks.dll" />
+
+  <!--
+  ***********************************************************************************************
+  Import the publish profile
+  ***********************************************************************************************
+ -->
+  <PropertyGroup Condition="'$(PublishProfile)' != ''">
+    <PublishProfileRootFolder Condition="'$(PublishProfileRootFolder)' == '' ">$(MSBuildProjectDirectory)\Properties\PublishProfiles\</PublishProfileRootFolder>
+    <PublishProfileName Condition="'$(PublishProfileName)' == ''">$([System.IO.Path]::GetFileNameWithoutExtension($(PublishProfile)))</PublishProfileName>
+    <WebPublishProfileFile Condition="'$(WebPublishProfileFile)' == ''">$(PublishProfileRootFolder)$(PublishProfileName).pubxml</WebPublishProfileFile>
+  </PropertyGroup>
+  <Import Project="$(WebPublishProfileFile)" Condition="Exists($(WebPublishProfileFile))"/>
+
+
+  <!--
+  ***********************************************************************************************
+  Global Properties
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>  
+    <PublishTempFolderName Condition="'$(PublishTempFolderName)' == ''">$([System.IO.Path]::GetFileNameWithoutExtension($(MSBuildProjectFullPath)))$(MSBuildProjectFullPath.Length)</PublishTempFolderName>
+    <PublishOutputPathNoTrailingSlash Condition="'$(PublishOutputPathNoTrailingSlash)' == ''">$([System.IO.Path]::GetTempPath())PublishTemp\$(PublishTempFolderName)</PublishOutputPathNoTrailingSlash>
+    <PublishOutputPath Condition="'$(PublishOutputPath)' == ''">$(PublishOutputPathNoTrailingSlash)\</PublishOutputPath>
+    <PowerShellScriptFile Condition= "'$(PowerShellScriptFile)'=='' ">$([System.String]::Copy('$(WebPublishProfileFile)').Replace('.pubxml','-publish.ps1'))</PowerShellScriptFile>
+  </PropertyGroup>
+
+
+  <!--
+  ***********************************************************************************************
+  TARGET : WebPublish
+  ***********************************************************************************************
+ -->
+  <Target Name="WebPublish" AfterTargets="Build" Condition=" '$(DeployOnBuild)'=='true' ">
+    
+    <MSBuild Projects ="$(MSBuildProjectFullPath)"
+       Targets="CIPublish" />
+  </Target>
+
+  <!--
+  ***********************************************************************************************
+  TARGET: GatherAllFilesToPublish
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <GatherAllFilesToPublishDependsOn>
+        $(GatherAllFilesToPublishDependsOn);
+        GetSDKToolingInfoTarget
+    </GatherAllFilesToPublishDependsOn>
+  </PropertyGroup>
+  <Target Name="GatherAllFilesToPublish"
+        DependsOnTargets="$(GatherAllFilesToPublishDependsOn)">
+   
+    <!-- Dnu bundle arguments -->
+    <PropertyGroup>
+      <!-- Dnu bundle arguments begin -->      
+      <KPackWorkingDirectory Condition=" '$(KPackWorkingDirectory)'=='' ">$(MSBuildProjectDirectory)</KPackWorkingDirectory>
+      
+      <!-- Setting the default webroot in the case of CI build scenarios -->
+      <WebRoot Condition="'$(WebRoot)' == '' ">wwwroot</WebRoot>
+      <WwwRootOut Condition= "'$(WwwRootOut)'=='' ">$(WebRoot)</WwwRootOut>
+      <QuietFlag Condition=" '$(QuietFlag)'=='' And '$(DeployOnBuild)'!='true' ">true</QuietFlag>
+      <NoBuildFlag Condition="'$(NoBuildFlag)'==''">true</NoBuildFlag>
+      
+      <!-- If compile source is set, then no-source flag is passed to Dnu bundle -->
+      <NoSourceFlag Condition=" '$(NoSourceFlag)'=='' And '$(CompileSource)'=='true' ">true</NoSourceFlag>
+      <NativeFlag Condition=" '$(NativeFlag)'=='' And '$(Native)'=='true' ">true</NativeFlag>
+      <IncludeSymbolsFlag Condition=" '$(IncludeSymbolsFlag)'=='' And '$(IncludeSymbols)'=='true' ">true</IncludeSymbolsFlag>
+      <PublishConfiguration Condition=" '$(PublishConfiguration)'=='' And '$(LastUsedBuildConfiguration)'!='' ">$(LastUsedBuildConfiguration)</PublishConfiguration>
+      <!-- Setting the default publish configuration to $(Configuration) -->
+      <PublishConfiguration Condition=" '$(PublishConfiguration)'=='' ">$(Configuration)</PublishConfiguration>
+      <PublishConfiguration Condition=" '$(PublishConfiguration)'=='' ">Release</PublishConfiguration>
+      
+      <AzureEnvironmentVariable Condition="'$(_destinationType)' == 'AzureWebSite' And '$(SDKToolingIdentifier)' == 'DNX' ">DNU_PUBLISH_AZURE=1</AzureEnvironmentVariable>
+      <AzureEnvironmentVariable Condition="'$(_destinationType)' == 'AzureWebSite' And '$(SDKToolingIdentifier)' == 'DotNetCore' ">DOTNET_CONFIGURE_AZURE=1</AzureEnvironmentVariable>
+
+      <BuildOutDirNoSlash>$(OutDir.TrimEnd('\'))</BuildOutDirNoSlash>      
+      <!-- Dnu bundle arguments end -->
+
+      <IgnoreProjectGuid Condition="'$(IgnoreProjectGuid)' != 'true'">false</IgnoreProjectGuid>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <DnuPublishEnvironmentVariables Include="$(AzureEnvironmentVariable)" />
+      <DnuPublishEnvironmentVariables Include="$(DnuPublishEnvironmentVariables)" />
+    </ItemGroup>
+
+    <!-- If an external tools path has not been set, set it to the default -->
+    <DefaultExternalToolsPath  ProjectFolder="$(MSBuildProjectDirectory)" Condition="'$(ExternalToolsPath)' == ''">
+      <Output PropertyName="ExternalToolsPath" TaskParameter="ExternalToolsPath"></Output>
+    </DefaultExternalToolsPath>
+
+    <GetRuntimeVersion 
+      Condition="'$(IgnoreDNXRuntime)' != 'true'"
+      RuntimeVersionOverride="$(PublishDNXVersion)"
+      TargetDNXVersion="$(_DefaultDNXVersion)"
+      RuntimeToolingVersion="$(SDKToolingVersion)"
+      Want64Bit="$(Bundle64BitRuntime)"
+      WantCoreClr="$(BundleCoreClrRuntime)">
+      <Output PropertyName="FinalPublishVersion" TaskParameter="RuntimeVersion"></Output>
+    </GetRuntimeVersion>
+
+    <Exec
+      Condition="Exists('$(PublishOutputPath)')"
+      Command="rmdir /S /Q &quot;$(PublishOutputPath)&quot;"
+      WorkingDirectory="$(MSBuildProjectDirectory)" />
+      
+    <Publish
+      RuntimeToolingDirectory ="$(SDKToolingDirectory)"
+      ProjectFolder="$(MSBuildProjectDirectory)"
+      Project="$(KPackWorkingDirectory)"
+      Runtime="$(FinalPublishVersion)"
+      WwwRoot="$(WebRoot)"
+      WwwRootOut="$(WwwRootOut)"
+      NoSource="$(NoSourceFlag)"
+      Quiet="$(QuietFlag)"
+      IncludeSymbols ="$(IncludeSymbolsFlag)"
+      Native ="$(NativeFlag)"
+      Configuration="$(PublishConfiguration)"
+      Out="$(PublishOutputPathNoTrailingSlash)"
+      ExternalToolsPath="$(ExternalToolsPath)"
+      IsFilePreview="$(FilePreview)" 
+      IISCommand="$(IISCommand)"
+      SDKToolingIdentifier="$(SDKToolingIdentifier)"
+      PublishFramework="$(PublishFramework)"
+      PublishRuntime="$(PublishRuntime)"
+      NoBuild="$(NoBuildFlag)"
+      BuildOutDirectory ="$(BuildOutDirNoSlash)" 
+      EnvironmentVariables="@(DnuPublishEnvironmentVariables)"/>
+
+    <PublishTelemetry
+      IgnoreProjectGuid="$(IgnoreProjectGuid)"
+      WebConfigFilePath="$(PublishOutputPathNoTrailingSlash)\web.config"
+      ProjectRootPath="$(MSBuildProjectDirectory)"
+      ProjectGuid="$(ProjectGuid)" />
+    
+  </Target>
+
+  
+ <!--
+  ***********************************************************************************************
+  TARGET: FileSystem Publish
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <FileSystemPublishDependsOn>
+      $(FileSystemPublishDependsOn);
+      GatherAllFilesToPublish;
+    </FileSystemPublishDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="FileSystemPublish"
+        DependsOnTargets="$(FileSystemPublishDependsOn)">
+    
+    <MSBuild Projects ="$(MSBuildProjectFullPath)"
+       Targets="PowerShellPublish" />
+    
+  </Target>
+
+  <!--
+  ***********************************************************************************************
+  TARGET : MSDeploy Publish
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <MSDeployPublishDependsOn>
+      $(MSDeployPublishDependsOn);
+      GatherAllFilesToPublish;
+      GenerateSkipRuleForAppData
+    </MSDeployPublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="MSDeployPublish" DependsOnTargets="$(MSDeployPublishDependsOn)">
+    
+      <MSBuild Projects ="$(MSBuildProjectFullPath)"
+        Targets="VSMSDeployPublish"
+        Condition="'$(FilePreview)' == 'true'"/>
+
+    <!-- Powershell scripts does not support previewing file changes.-->
+    <MSBuild Projects ="$(MSBuildProjectFullPath)"
+       Targets="PowerShellPublish"
+       Condition="'$(FilePreview)' != 'true'" />
+  </Target>
+
+<!--
+  ***********************************************************************************************
+  TARGET : VSMSDeploy Publish
+  ***********************************************************************************************
+ -->
+  <Target Name="VSMSDeployPublish" Condition="'$(FilePreview)' == 'true'" >
+  
+    <ValidateParameter
+      ParameterName="MsDeployServiceUrl"
+      ParameterValue="$(MsDeployServiceUrl)"/>
+    
+    <!-- Normalize service url such as convert a server name to format like https://<server>:8172/msdeploy.axd-->
+    <NormalizeServiceUrl ServiceUrl="$(MsDeployServiceUrl)" UseWMSVC="true" UseRemoteAgent="false">
+      <Output TaskParameter="ResultUrl" PropertyName="MsDeployServiceUrl" />
+    </NormalizeServiceUrl>
+    
+    <!-- For DNX projects we need to publish the IIS root -->
+    <PropertyGroup>
+      <PublishOutputPath Condition=" '$(SDKToolingIdentifier)' == 'DNX' ">$(PublishOutputPath)$(WebRoot)</PublishOutputPath>
+    </PropertyGroup>
+    
+    <!--  Data Passed to MSDeploy -->
+    <ItemGroup>
+      <MsDeploySourceProviderSetting Include="IisApp">
+        <Path>$(PublishOutputPath)</Path>
+      </MsDeploySourceProviderSetting>
+      <MsDeployDestinationProviderSetting Include="IisApp">
+        <Path>$(DeployIisAppPath)</Path>
+        <ComputerName>$(MsDeployServiceUrl)</ComputerName>
+        <UserName>$(UserName)</UserName>
+        <Password>$(Password)</Password>
+        <IncludeAcls>False</IncludeAcls>
+        <AuthType>Basic</AuthType>
+      </MsDeployDestinationProviderSetting>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <PublishEnableLinks Condition=" '$(PublishEnableLinks)' == '' And '$(SDKToolingIdentifier)' == 'DNX' ">contentLibExtension</PublishEnableLinks>
+
+      <RetryAttemptsForDeployment Condition=" '$(RetryAttemptsForDeployment)' == '' ">2</RetryAttemptsForDeployment>
+      <MsDeployDoNotDeleteRule Condition="$(SkipExtraFilesOnServer) == 'true'">DoNotDeleteRule</MsDeployDoNotDeleteRule>
+      <_EnableRuleList>$(MsDeployDoNotDeleteRule)</_EnableRuleList>
+
+      <MSDeployUseChecksum Condition=" '$(MSDeployUseChecksum)' == '' ">false</MSDeployUseChecksum>
+      <AllowUntrustedCertificate Condition=" '$(AllowUntrustedCertificate)' == '' ">false</AllowUntrustedCertificate>
+
+      <!-- UserAgent string sent to msdeploy -->
+      <_MSDeployUserAgentSource Condition=" '$(BuildingInsideVisualStudio)' != 'true'">$(VisualStudioVersion):CmdLine</_MSDeployUserAgentSource>
+      <_MSDeployUserAgentSource Condition=" '$(BuildingInsideVisualStudio)' == 'true'">$(VisualStudioVersion):PublishDialog</_MSDeployUserAgentSource>
+      <_MSDeployUserAgent>VS$(_MSDeployUserAgentSource)</_MSDeployUserAgent>
+    </PropertyGroup>
+
+    <VSMSDeploy
+        Condition=" '$(FilePreview)' == 'true'"
+        Source="@(MsDeploySourceProviderSetting)"
+        Destination="@(MsDeployDestinationProviderSetting)"
+        EnableLink="$(PublishEnableLinks)"
+        AllowUntrustedCertificate="$(AllowUntrustedCertificate)"
+        BuildingInsideVisualStudio="$(BuildingInsideVisualStudio)"
+        SkipExtraFilesOnServer="$(SkipExtraFilesOnServer)"
+        SkipRuleItems="@(MsDeploySkipRules)"
+        WhatIf="$(FilePreview)"
+        RetryAttempts="$(RetryAttemptsForDeployment)"
+        EnableMSDeployBackup="$(EnableMSDeployBackup)"
+        UseChecksum="$(MSDeployUseChecksum)"
+        UserAgent="$(_MSDeployUserAgent)"
+        InvokedByPublish="true">
+      <Output TaskParameter="Result" PropertyName="_PublishResult" />
+    </VSMSDeploy>
+  
+  </Target>
+  
+    <!--
+  ***********************************************************************************************
+  TARGET : Package Publish
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <PackagePublishDependsOn>
+      $(PackagePublishDependsOn);
+      GatherAllFilesToPublish
+    </PackagePublishDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="PackagePublish" DependsOnTargets="$(PackagePublishDependsOn)">
+
+    <MSBuild Projects ="$(MSBuildProjectFullPath)"
+      Targets="PowerShellPublish"/>
+
+  </Target>
+
+  <!--
+  ***********************************************************************************************
+  TARGET : CI Publish
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <DefaultPublishDependsOn>
+      $(DefaultPublishDependsOn);
+      GatherAllFilesToPublish
+    </DefaultPublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CIPublish" DependsOnTargets="$(DefaultPublishDependsOn)">
+
+    <PropertyGroup>
+      <PublishPowerShellVersion Condition="'$(PublishPowerShellVersion)' == '' And '$(SDKToolingIdentifier)' == 'DNX'">1.0.1</PublishPowerShellVersion>
+      <PublishPowerShellVersion Condition="'$(PublishPowerShellVersion)' == '' And '$(SDKToolingIdentifier)' == 'DotNetCore'">1.2.0</PublishPowerShellVersion>
+      <PowerShellScriptFile Condition= "'$(PowerShellScriptFile)'=='' ">$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\Web\Powershell\$(PublishPowerShellVersion)\default-publish.ps1))</PowerShellScriptFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(WebPublishMethod)'=='' Or '$(WebPublishMethod)'=='FileSystem'">
+      <WebPublishProfileFile Condition=" '$(WebPublishProfileFile)'=='' ">$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\Web\Powershell\$(PublishPowerShellVersion)\fileSystem.pubxml))</WebPublishProfileFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(WebPublishMethod)'=='Package'">
+      <WebPublishProfileFile Condition=" '$(WebPublishProfileFile)'=='' ">$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\Web\Powershell\$(PublishPowerShellVersion)\package.pubxml))</WebPublishProfileFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(WebPublishMethod)'=='MSDeploy'">
+      <WebPublishProfileFile Condition=" '$(WebPublishProfileFile)'=='' ">$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\Web\Powershell\$(PublishPowerShellVersion)\MSDeploy.pubxml))</WebPublishProfileFile>
+    </PropertyGroup>
+    
+    <MSBuild Projects ="$(MSBuildProjectFullPath)"
+      Targets="PowerShellPublish"
+      Properties="UsePowerShell=true;
+      FilePreview=false;
+      ProjectGuid=$(ProjectGuid);
+      PowerShellScriptFile=$(PowerShellScriptFile);
+      WebPublishProfileFile=$(WebPublishProfileFile);
+      SDKToolingIdentifier=$(SDKToolingIdentifier);
+      SDKToolingExe=$(SDKToolingExe);" />
+
+    <ItemGroup>
+      <SourceFiles Include="$(PowerShellScriptFile)"/>
+      <SourceFiles Include="$(WebPublishProfileFile)"/>
+      <SourceFiles Include="$(MSBuildProjectDirectory)\Properties\PublishProfiles\*.*"/>
+    </ItemGroup>
+    
+    <Copy
+        SourceFiles="@(SourceFiles)"
+        DestinationFolder="$(OutDir)\$(Configuration)\PublishProfiles\" />
+  </Target>
+
+  <!--
+  ***********************************************************************************************
+  TARGET : Custom Publish
+  ***********************************************************************************************
+ -->
+  <PropertyGroup>
+    <CustomPublishDependsOn>
+      $(CustomPublishDependsOn);
+      GatherAllFilesToPublish;
+    </CustomPublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CustomPublish"
+          DependsOnTargets="$(CustomPublishDependsOn)">
+
+    <MSBuild Projects ="$(MSBuildProjectFullPath)"
+       Targets="PowerShellPublish" />
+  </Target>
+  
+    <!--
+  ***********************************************************************************************
+  TARGET : PowerShell Publish
+  ***********************************************************************************************
+ -->
+  
+  <Target Name="PowerShellPublish" Condition=" '$(FilePreview)' != 'true' And '$(UsePowerShell)' == 'true' " >
+
+    <GetAllPublishProperties
+          PublishProfilePath="$(WebPublishProfileFile)" >
+      <Output TaskParameter="AllPublishProperties" ItemName="_PublishProperties" />
+    </GetAllPublishProperties>
+
+    <ItemGroup>
+      <PublishPropertiesOverride Include="%(_PublishProperties.Identity)">
+        <Value>$(%(_PublishProperties.Identity))</Value>
+      </PublishPropertiesOverride>
+    </ItemGroup>
+
+    <InvokePowerShell 
+                  Condition="Exists('$(PowerShellScriptFile)')"
+                  Script="$(PowerShellScriptFile)"
+                  PublishProfilePath="$(WebPublishProfileFile)"
+                  PackOutput="$(PublishOutputPath)" 
+                  ProjectPath="$(MSBuildProjectDirectory)"
+                  ProjectGuid ="$(ProjectGuid)"
+                  Password ="$(Password)"
+                  MSDeployPath ="$(MSDeployPath)"
+                  SDKToolingIdentifier="$(SDKToolingIdentifier)"
+                  SDKToolingExe="$(SDKToolingExe)"
+                  PublishPropertiesOverride ="@(PublishPropertiesOverride)"/>
+  </Target>
+
+  <!--================================================-->
+  <!--Create skip rules used in sample script generation as well as publish-->
+  <!--================================================-->
+  <Target Name="GenerateSkipRuleForAppData" Condition="$(ExcludeApp_Data) == 'true'">
+    <EscapeTextForRegularExpressions Text="$(PublishOutputPath)">
+      <Output TaskParameter="Result" PropertyName="_Escaped_PublishOutputPath" />
+    </EscapeTextForRegularExpressions>
+    <ItemGroup>
+      <MsDeploySkipRules Include="SkipAppDataOnDeploy">
+        <SkipAction></SkipAction>
+        <ObjectName>dirPath</ObjectName>
+        <AbsolutePath>$(_Escaped_PublishOutputPath)\\App_Data$</AbsolutePath>
+        <Apply>Source</Apply>
+        <XPath></XPath>
+      </MsDeploySkipRules>
+    </ItemGroup>
+  </Target>
+
+  <!--
+  ***********************************************************************************************
+  Item Definitions
+  ***********************************************************************************************
+ -->
+
+  <ItemDefinitionGroup>
+    <MsDeploySourceProviderSetting>
+      <Path></Path>
+      <ComputerName></ComputerName>
+      <!--<Wmsvc></Wmsvc>  Not supported yet-->
+      <UserName></UserName>
+      <Password></Password>
+      <EncryptPassword></EncryptPassword>
+      <IncludeAcls></IncludeAcls>
+      <authType></authType>
+      <prefetchPayload></prefetchPayload>
+    </MsDeploySourceProviderSetting>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <MsDeployDestinationProviderSetting>
+      <Path></Path>
+      <ComputerName></ComputerName>
+      <!--<Wmsvc></Wmsvc>  Not supported yet-->
+      <UserName></UserName>
+      <Password></Password>
+      <EncryptPassword></EncryptPassword>
+      <IncludeAcls></IncludeAcls>
+      <authType></authType>
+      <prefetchPayload></prefetchPayload>
+    </MsDeployDestinationProviderSetting>
+  </ItemDefinitionGroup>
+  <!--
+  DeploymentSkipRule(string skipAction, string objectName, string absolutePath, string XPath);-->
+  <ItemDefinitionGroup>
+    <MsDeploySkipRules>
+      <SkipAction></SkipAction>
+      <ObjectName></ObjectName>
+      <AbsolutePath></AbsolutePath>
+      <XPath></XPath>
+      <KeyAttribute></KeyAttribute>
+      <!--Source, Destination, Both(the default)-->
+      <Apply></Apply>
+    </MsDeploySkipRules>
+  </ItemDefinitionGroup>
+
+  <!-- The build process can be extended in a similar way as MS.Common.targets -->
+  <PropertyGroup>
+    <ImportByWildcardAfterMicrosoftWebPublishingTargets Condition="'$(ImportByWildcardAfterMicrosoftWebPublishingTargets)'==''">true</ImportByWildcardAfterMicrosoftWebPublishingTargets>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\$(MSBuildThisFileName)\ImportAfter\*" Condition="'$(ImportByWildcardAfterMicrosoftWebPublishingTargets)' == 'true' and exists('$(MSBuildThisFileDirectory)\$(MSBuildThisFileName)\ImportAfter')"/>
+</Project>

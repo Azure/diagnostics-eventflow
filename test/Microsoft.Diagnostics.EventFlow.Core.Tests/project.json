@@ -36,5 +36,9 @@
         "Microsoft.NETCore.Platforms": "1.0.1"
       }
     }
+  },
+  "buildOptions": {
+    "keyFile": "../../PublicKey.snk",
+    "delaySign": true
   }
 }

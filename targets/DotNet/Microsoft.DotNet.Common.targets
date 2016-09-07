@@ -1,0 +1,368 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="DesignTimeHostBuild" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="GetSDKToolingInfo" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="Dnx" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="GetRuntimeVersion" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="DefaultExternalToolsPath" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="GetBuildOptions" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="GetDotNetProjectDependencies" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="GenerateDependencyFragmentFile" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  <UsingTask TaskName="GetTransitiveNonDotNetProjectDependencies" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>  
+
+  <UsingTask TaskName="GetBuiltProjectOutputGroup" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+
+
+  <PropertyGroup>
+    <!-- Disable common capabilities that come from Microsoft.Common.Targets. Must be done prior to the Import -->
+    <DefineCommonCapabilities>false</DefineCommonCapabilities>
+
+    <!-- The project file should have paths set for these, but if not we default to the standard paths under the project -->
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
+
+    <!-- DNX only produces assemblies -->
+    <OutputType>Library</OutputType>
+
+    <!-- The output assembly is the name of the directory the project is in -->
+    <AssemblyName>$([System.IO.Path]::GetFileName('$(MSBuildProjectDirectory)'))</AssemblyName>
+
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.Targets" />
+
+  <PropertyGroup>
+    <!-- This property returns "the" project output for this project, as is seen in traditional MSBuild projects like csproj or vbproj.
+         Since DotNet projects have multiple target outputs, there is nothing meaningful we can return. Microsoft.Common.Targets defaults
+         this property to a meaningless value, which gets picked up by ResolveProjectReferences if you have a csproj/vbproj -> xproj reference.
+         We don't want that to happen, so this ensures ResolveProjectReferences will no-op in such a scenario. -->
+    <TargetPath></TargetPath>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_ParentDirectoryContainingGlobalJson>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))</_ParentDirectoryContainingGlobalJson>
+    <_RelativeDirectoryToRealOutput Condition="'$(_ParentDirectoryContainingGlobalJson)' == ''">$(MSBuildProjectName)</_RelativeDirectoryToRealOutput>
+    <_RelativeDirectoryToRealOutput Condition="'$(_ParentDirectoryContainingGlobalJson)' != ''">$([MSBuild]::MakeRelative($(_ParentDirectoryContainingGlobalJson),$(MSBuildProjectDirectory)))</_RelativeDirectoryToRealOutput>
+  </PropertyGroup>
+
+  <!-- Returns the full target path being built by this project, including the configuration-specific folder. -->
+  <Target Name="GetTargetDir" Returns="$(TargetDir)\$(_RelativeDirectoryToRealOutput)\bin\$(Configuration)" />
+
+  <!-- Capabilities for this project.  Conditions should be based on platform|configuration only. -->
+  <ItemGroup>
+    <ProjectCapability Include="AllTargetOutputGroups" />
+    <ProjectCapability Include="VisualStudioWellKnownOutputGroups" />
+    <ProjectCapability Include="OutputGroups" />
+    <ProjectCapability Include="ProjectJsonConfigurations" />
+    <ProjectCapability Include="DNX" />   <!--this is for backwards compat for identifying K projects -->
+    <ProjectCapability Include="DotNetCore" />
+    <ProjectCapability Include="DotNetProject" />
+    <ProjectCapability Include="ReferencesFolder"/>
+    <ProjectCapability Include="RelativePathDerivedDefaultNamespace"/>
+    <ProjectCapability Include="CSharp"/>
+    <ProjectCapability Include="TypeScript"/>
+    <ProjectCapability Include="SingleFileGenerators" />
+    <ProjectCapability Include="FileSystemBasedDotnetProject" />
+  </ItemGroup>
+
+   <!-- Want to fallback to en-us xaml rules if rules for the current Langname are not install. Unfotuantely, just fixing $(LangName) works for msbuild command line
+        but doesn't work when CPS loads the rules. So instead, all the rules are duplicated with the appropriate condition.
+    -->
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\general.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\general.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\ProjectItemsSchema.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\ProjectItemsSchema.xaml')"/>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\ProjectItemsSchema.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\ProjectItemsSchema.xaml')"/>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\debugger_general.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\debugger_general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\debugger_general.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\debugger_general.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\ProjectDebugger.xaml" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\ProjectDebugger.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\ProjectDebugger.xaml" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\ProjectDebugger.xaml')">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\general_file.xaml" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\general_file.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\general_file.xaml" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\general_file.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\scc.xaml" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\scc.xaml')">
+      <Context>Invisible</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\scc.xaml" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\scc.xaml')">
+      <Context>Invisible</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\csharp.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\csharp.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\csharp.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\csharp.xaml')">
+      <Context>File</Context>
+    </PropertyPageSchema>
+
+    <!--
+       Note: Keep in mind that different Contexts associated with a xaml rule file, have different expectations
+          in terms of how many files can be specified:
+            - For BrowseObject context a unique file should be specified for each data source type:
+                * <DataSource Persistence="ProjectFile" Label="Configuration" HasConfigurationCondition="false" />
+                  is a project level datasource associated with the project itself
+                * <DataSource Persistence="ProjectFile" HasConfigurationCondition="False" ItemType="Content" />
+                  is a project level data source associated only with Content item types
+
+                so if you specify another xaml rule that duplicate ItemType or has no item type specified (i.e.
+                rule for project itself) there will be runtime error and no browse object properties at all.
+
+            - For Project context as many xaml rules can be defined as needed.
+
+      BrowseObject properties are used in properties pane (F4) and via DTE.Project.Properties.Item("prop name").
+
+      If in other project system based on DotNet you would need to override some xaml rules
+      that should have Context=BrowseObject, make sure you move it out of this file to Microsoft.DotNet.Targets.
+      Browse files should be unique per Persistence + ItemType in DataSource, thus to override, each project system
+      targets should define their own BrowseObject files.
+
+      Keep in mind, all overriden xaml files should be kept in sync with core dotnet xaml files to enable properties
+      that were added to core xaml rules, otherwise some core functionality might be broken.
+
+      !!!Note!!! Never call directly members of generated cs file for BrowseObject xaml files, since if they are overriden
+      in other project system, there will be type mismatch. Overriden files should have their own names for xaml Rule,
+      which would end up into different generated class.
+    -->
+    <PropertyPageSchema Include="
+                        $(MSBuildThisFileDirectory)$(LangName)\Content.xaml;
+                        $(MSBuildThisFileDirectory)$(LangName)\folder.xaml;
+                        $(MSBuildThisFileDirectory)$(LangName)\none.xaml;
+                        $(MSBuildThisFileDirectory)$(LangName)\EmbeddedResource.xaml;
+                        $(MSBuildThisFileDirectory)$(LangName)\typescript.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\Content.xaml')">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="
+                        $(MSBuildThisFileDirectory)en-us\Content.xaml;
+                        $(MSBuildThisFileDirectory)en-us\folder.xaml;
+                        $(MSBuildThisFileDirectory)en-us\none.xaml;
+                        $(MSBuildThisFileDirectory)en-us\EmbeddedResource.xaml;
+                        $(MSBuildThisFileDirectory)en-us\typescript.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\Content.xaml')">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\ResolvedDesignTimeHostReferences.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\ResolvedDesignTimeHostReferences.xaml')">
+      <Context>ProjectSubscriptionService;BrowseObject</Context>
+    </PropertyPageSchema>
+   <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\ResolvedDesignTimeHostReferences.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\ResolvedDesignTimeHostReferences.xaml')">
+      <Context>ProjectSubscriptionService;BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(LangName)\csharp.browseobject.xaml;" Condition="Exists('$(MSBuildThisFileDirectory)$(LangName)\csharp.browseobject.xaml')">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)en-us\csharp.browseobject.xaml;" Condition="!Exists('$(MSBuildThisFileDirectory)$(LangName)\csharp.browseobject.xaml')">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+  <PropertyGroup>
+    <DefaultContentType Condition="$(DefaultContentType) == ''">Default</DefaultContentType>
+  </PropertyGroup>
+
+  <!-- The local debugger command was set to an (empty) TargetPath before.  Now if this property is still empty,
+       set it again now that TargetPath is defined. -->
+  <PropertyGroup>
+    <!--<LocalDebuggerCommand Condition="'$(LocalDebuggerCommand)' == ''">$(TargetPath)</LocalDebuggerCommand>-->
+    <!-- We need to set this property otherwise it will try to copy our outputs, which we don't have-->
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+
+    <!-- Avoid picking up explicit references like system.core.dll. Setting the first property is not sufficient as the common targets
+         unconditionally adds the contents of AddtionalExplicitAssemblyReferences - so that property is cleared too -->
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+    <AdditionalExplicitAssemblyReferences></AdditionalExplicitAssemblyReferences>
+    <ProduceOutputsOnBuild Condition="'$(ProduceOutputsOnBuild)' == ''">False</ProduceOutputsOnBuild>
+  </PropertyGroup>
+
+  <Target Name="GetSDKToolingInfoTarget" >
+    <GetSDKToolingInfo ProjectFolder="$(MSBuildProjectDirectory)" DesiredSDKToolingDirectory ="$(SDKToolingDirectory)">
+      <!-- Path to the versioned runtime folder -->
+      <Output PropertyName="SDKToolingDirectory" TaskParameter="SDKToolingDirectory"></Output>
+
+      <!-- The full path to the sdk executable dotnet.exe -->
+      <Output PropertyName="SDKToolingExe" TaskParameter="SDKToolingExe"></Output>
+
+      <!-- The runtime package version string -->
+      <Output PropertyName="SDKToolingVersion" TaskParameter="SDKToolingVersion"></Output>
+
+      <!-- Type of SDK: DNX or DotNetCore -->
+      <Output PropertyName="SDKToolingIdentifier" TaskParameter="SDKToolingIdentifier"></Output>
+    </GetSDKToolingInfo>
+  </Target>
+
+  <Target
+    Name="BuiltProjectOutputGroup"
+    Returns="@(_BuiltProjectOutputGroupOutput)"
+    DependsOnTargets="$(BuiltProjectOutputGroupDependsOn)">
+
+    <GetBuiltProjectOutputGroup
+      ProjectDirectory="$(MSBuildProjectDirectory)"
+      ProjectName="$(MSBuildProjectName)"
+      ProjectConfiguration="$(Configuration)"
+      OutDirectory="$(OutDir)">
+
+      <Output ItemName="_BuiltProjectOutputGroupOutput" TaskParameter="BuiltOutputGroup"></Output>
+    </GetBuiltProjectOutputGroup>
+  </Target>
+
+  <!-- Without these targets, builds which include Microsoft.Common.Targets fail -->
+  <Target Name="CreateManifestResourceNames" />
+  <Target Name="ResolveAssemblyReferences" />
+
+  <Target
+    Name="CoreCompile"
+    DependsOnTargets="GetSDKToolingInfoTarget">
+
+  <PropertyGroup>
+    <OutDirNoSlash>$(OutDir.TrimEnd('\'))</OutDirNoSlash>
+    <_DesignTimeHostBuild Condition="'$(UseDesignTimeHostBuild)' == 'true' And '$(ProduceOutputsOnBuild)' != 'true'">true</_DesignTimeHostBuild>
+
+  </PropertyGroup>
+
+
+    <!-- Use either the external design time host process or run KLR to do the build and produce outputs. Note that it is
+         important that the working directory is set to the project folder. This ensures any relative paths are relative to the
+         project.
+    -->
+
+    <GetBuildOptions
+        Configuration="$(Configuration)"
+        ProjectDirectory ="$(MSBuildProjectDirectory)"
+        OutDirectory ="$(OutDirNoSlash)"
+        IntermediateDirectory ="$(IntermediateOutputPath)"
+        RuntimeToolingDirectory ="$(SDKToolingDirectory)"
+        RuntimeToolingVersion ="$(SDKToolingVersion)"
+        RuntimeIdentifier ="$(RuntimeIdentifier)"
+        Rebuild = "$(RebuildInvoked)"
+        Condition="'$(_DesignTimeHostBuild)' != 'true'"
+    >
+      <Output PropertyName="_BuildArguments" TaskParameter="BuildArguments"></Output>
+    </GetBuildOptions>
+
+    <Dnx
+      RuntimeExe="$(SDKToolingExe)"
+      Condition="'$(_DesignTimeHostBuild)' != 'true'"
+      ProjectFolder="$(MSBuildProjectDirectory)"
+      Arguments="$(_BuildArguments)"
+      />
+
+    <DesignTimeHostBuild
+      Condition="'$(_DesignTimeHostBuild)' == 'true'"
+      Port="$(DTHPort)"
+      HostID="$(DTHHostID)"
+      ContextID="$(DTHContextID)"
+      DTHProtocolVersion="$(DTHProtocolVersion)"
+      Rebuild ="$(RebuildInvoked)"
+    />
+  </Target>
+
+  <!-- This is used to set a property which indicates that the rebuild target was invoked -->
+  <PropertyGroup>
+    <BuildDependsOn>
+      _BeforeBuild;
+      $(BuildDependsOn);
+    </BuildDependsOn>
+
+    <RebuildDependsOn>
+      _BeforeRebuild;
+      $(RebuildDependsOn);
+    </RebuildDependsOn>
+  </PropertyGroup>
+
+  <Target
+      Name="_BeforeBuild"
+      Returns="$(TargetPath)"
+      DependsOnTargets="_GetDependencyFragmentFiles;_InjectDotNetProjectDependencies" />
+
+  <Target
+      Name="_BeforeRebuild"
+      Returns="$(TargetPath)"
+      DependsOnTargets="_BeforeBuild">
+
+      <PropertyGroup>
+        <RebuildInvoked>true</RebuildInvoked>
+      </PropertyGroup>
+  </Target>
+
+  <!--
+    This target discovers and injects all xproj dependenices of current project as ProjectRefernces.
+    It uses same discovery logic as runtime does usiing global.json and current project.json.
+  -->
+  <Target Name="_InjectDotNetProjectDependencies">
+    <GetDotNetProjectDependencies ProjectFile="$(MSBuildProjectFullPath)">
+       <!-- Collection of discovered dotnet project references -->
+      <Output ItemName="_DotNetProjectReference" TaskParameter="DotNetProjectReferences"></Output>
+    </GetDotNetProjectDependencies>
+
+    <!-- Now add all dotnet project references to existing project references collection -->
+    <ItemGroup>
+      <ProjectReference Include="@(_DotNetProjectReference)" />
+    </ItemGroup>
+  </Target>
+  
+  <!-- 
+    This target is called before build and calls a target _GenerateDependencyFragmentFile injected to 
+    all csproj project dependencies to produce a fragment lock file containing compile and runtime 
+    information about given csproj project reference.
+  -->
+  <Target Name="_GetDependencyFragmentFiles">
+    <!-- Modify ProjectReference collection to add transitive csproj dependencies from project.lock.json file. -->
+    <GetTransitiveNonDotNetProjectDependencies
+      ProjectFullPath="$(MSBuildProjectFullPath)"
+      DirectProjectReferences="@(ProjectReference)">
+
+      <Output ItemName="_AllNonDotNetProjectReferences" TaskParameter="AllNonDotNetProjectReferences"></Output>
+    </GetTransitiveNonDotNetProjectDependencies>
+      
+    <!-- Generate json strings list containing csproj projects information -->
+    <MSBuild
+      Projects="@(_AllNonDotNetProjectReferences)"
+      Targets="_GenerateDependencyFragmentJson">
+
+      <Output ItemName="_FragmentLockJsons" TaskParameter="TargetOutputs"></Output>
+    </MSBuild>
+
+    <!--
+      After we received json string for all non xproj projects, merge them and write to
+      project.fragment.lock.json
+    -->
+    <GenerateDependencyFragmentFile
+      ProjectFullPath="$(MSBuildProjectFullPath)"
+      FragmentLockJsons="@(_FragmentLockJsons)">
+
+      <Output ItemName="_DependencyFragmentLockFile" TaskParameter="DependencyFragmentLockFile"></Output>
+    </GenerateDependencyFragmentFile>
+  </Target>
+
+  <!-- Debugger support -->
+  <PropertyGroup>
+    <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
+  </PropertyGroup>
+
+  <!-- Publish support -->
+  <Import Project="$(MSBuildThisFileDirectory)\Microsoft.DotNet.Publishing.targets" Condition="Exists('$(MSBuildThisFileDirectory)\Microsoft.DotNet.Publishing.targets')" />
+
+  <!-- Dynamic items support. This file will never exist on disk -->
+  <Import Project="$(MSBuildProjectDirectory)\_internalAspNetSourceItems.Targets" Condition="'$(_InternalTargetsFileReady)' == 'true' and Exists('$(MSBuildProjectDirectory)\_internalAspNetSourceItems.Targets')"/>
+
+</Project>

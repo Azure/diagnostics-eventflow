@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+<Rule
+    Name="ResolvedDesignTimeHostReferences"
+    DisplayName="Dependency"
+    PageTemplate="generic"
+    Description="Dependency"
+    xmlns="http://schemas.microsoft.com/build/2009/properties">
+    <Rule.Categories>
+        <Category Name="General" DisplayName="General" Description="General" />
+    </Rule.Categories>
+    <Rule.DataSource>
+        <DataSource Persistence="ResolvedReference" ItemType="DesignTimeHostReference" />
+    </Rule.DataSource>
+
+    <StringProperty
+    Name="Name"
+    ReadOnly="true"
+    DisplayName="Name"
+    Category="General"
+    Description="Simple name of the dependency.">
+    </StringProperty>
+
+    <StringProperty
+    Name="Version"
+    ReadOnly="true"
+    DisplayName="Version"
+    Category="General"
+    Description="Version of the dependency.">
+    </StringProperty>
+
+    <StringProperty
+    Name="Type"
+    ReadOnly="true"
+    DisplayName="Type"
+    Category="General"
+    Description="Specifies whether the dependency is a nuget package or a project reference.">
+    </StringProperty>
+
+    <StringProperty
+    Name="Path"
+    ReadOnly="true"
+    DisplayName="Path"
+    Category="General"
+    Description="Full path of the dependency.">
+    </StringProperty>
+</Rule>

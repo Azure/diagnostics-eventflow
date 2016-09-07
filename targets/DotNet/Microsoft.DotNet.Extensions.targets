@@ -1,0 +1,34 @@
+<!--
+***********************************************************************************************
+Microsoft.DotNet.Extensions.targets
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="GenerateDependencyFragmentJson" AssemblyFile="$(MSBuildThisFileDirectory)Microsoft.DotNet.Tasks.dll"/>
+  
+  <!-- 
+    Called from Microsoft.DotNet.ImportAfter.targets which is injected to all csproj files
+    via msbuild extensibility. It gerenates a fragment lock file next to the given csproj 
+    file and returns it's path.
+  -->
+  <Target Name="_GenerateDependencyFragmentJson" Returns="@(_FragmentLockJson)">
+    <GenerateDependencyFragmentJson 
+      ProjectFullPath="$(MSBuildProjectFullPath)" 
+      OutputPath="$(OutputPath)" 
+      OutputType="$(OutputType)" 
+      AssemblyName="$(AssemblyName)" 
+      References ="@(Reference)"
+      CompileItems ="@(Compile)"
+      EmbeddedResourceItems ="@(EmbeddedResource)"
+      ContentItems ="@(Content)"
+      NoneItems ="@(None)"
+      UICulture="$(UICulture)"
+      TargetFrameworkVersion="$(TargetFrameworkVersion)">
+      
+      <!-- path to dependency fragment file for current csproj project -->
+      <Output ItemName="_FragmentLockJson" TaskParameter="FragmentLockJson"></Output>
+    </GenerateDependencyFragmentJson>
+  </Target>  
+</Project>

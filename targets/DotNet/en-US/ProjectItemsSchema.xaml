@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+<ProjectSchemaDefinitions
+    xmlns="http://schemas.microsoft.com/build/2009/properties">
+
+    <ContentType
+        Name="CSharpFile"
+        DisplayName="C# file"
+        ItemType="Compile">
+    </ContentType>
+    
+    <ContentType
+      Name="Default"
+      DisplayName="Default file type"
+      ItemType="Content" 
+    />
+
+    <ContentType
+      Name="TypeScriptCompile"
+      DisplayName="TypeScript file"
+      ItemType="TypeScriptCompile" 
+    />
+
+    <ContentType
+      Name="EmbeddedResource"
+      DisplayName="Embedded resource file"
+      ItemType="EmbeddedResource" 
+    /> 
+    <ItemType Name="Compile" DisplayName="C# compiler"/>
+    <ItemType Name="EmbeddedResource" DisplayName="Embedded Resource"/>
+    <ItemType Name="None" DisplayName="Does not participate in build"/>
+    <ItemType Name="Content" DisplayName="Content" />
+    <ItemType Name="TypeScriptCompile" DisplayName="TypeScript file" />
+
+    <FileExtension Name=".cs" ContentType="CSharpFile"/>
+    <FileExtension Name=".ts" ContentType="TypeScriptCompile" />
+    <FileExtension Name=".resx" ContentType="EmbeddedResource" />
+
+</ProjectSchemaDefinitions>
+
