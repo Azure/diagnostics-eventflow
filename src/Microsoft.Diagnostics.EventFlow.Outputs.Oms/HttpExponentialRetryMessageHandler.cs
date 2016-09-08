@@ -31,14 +31,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             while(true)
             {
-                var response = await base.SendAsync(request, cancellationToken);
+                var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 if (attempt == MaxRetries || (int) response.StatusCode < 500)
                 {
                     return response;
                 }
                 else
                 {
-                    await Task.Delay(AttemptDelays[attempt++]);
+                    await Task.Delay(AttemptDelays[attempt++]).ConfigureAwait(false);
                 }
             }            
         }

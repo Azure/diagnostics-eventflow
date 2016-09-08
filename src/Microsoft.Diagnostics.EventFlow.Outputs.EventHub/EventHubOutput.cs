@@ -88,13 +88,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.EventHub
                     hubClient = factory.CreateEventHubClient(this.connectionData.EventHubName);
                 }
 
-                await hubClient.SendBatchAsync(batch);
+                await hubClient.SendBatchAsync(batch).ConfigureAwait(false);
 
                 this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.healthReporter.ReportProblem($"{nameof(EventHubOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                string errorMessage = nameof(EventHubOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                this.healthReporter.ReportProblem(errorMessage);
             }
         }
 

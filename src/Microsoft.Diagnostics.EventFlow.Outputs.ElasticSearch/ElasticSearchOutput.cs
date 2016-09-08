@@ -45,7 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 string currentIndexName = this.GetIndexName(this.connectionData);
                 if (!string.Equals(currentIndexName, this.connectionData.LastIndexName, StringComparison.Ordinal))
                 {
-                    await this.EnsureIndexExists(currentIndexName, this.connectionData.Client);
+                    await this.EnsureIndexExists(currentIndexName, this.connectionData.Client).ConfigureAwait(false);
                     this.connectionData.LastIndexName = currentIndexName;
                 }
 
@@ -71,7 +71,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 // Note: the NEST client is documented to be thread-safe so it should be OK to just reuse the this.esClient instance
                 // between different SendEventsAsync callbacks.
                 // Reference: https://www.elastic.co/blog/nest-and-elasticsearch-net-1-3
-                IBulkResponse response = await this.connectionData.Client.BulkAsync(request);
+                IBulkResponse response = await this.connectionData.Client.BulkAsync(request).ConfigureAwait(false);
                 if (!response.IsValid)
                 {
                     this.ReportEsRequestError(response, "Bulk upload");
@@ -81,7 +81,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch (Exception e)
             {
-                this.healthReporter.ReportProblem($"{nameof(ElasticSearchOutput)}: diagnostics data upload has failed.{Environment.NewLine}{e.ToString()}");
+                string errorMessage = nameof(ElasticSearchOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                this.healthReporter.ReportProblem(errorMessage);
             }
         }
 
@@ -123,9 +124,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             return connectionData;
         }
 
-        private async Task EnsureIndexExists(string currentIndexName, ElasticClient esClient)
+        private async Task EnsureIndexExists(string indexName, ElasticClient esClient)
         {
-            IExistsResponse existsResult = await esClient.IndexExistsAsync(currentIndexName);
+            IExistsResponse existsResult = await esClient.IndexExistsAsync(indexName).ConfigureAwait(false);
             if (!existsResult.IsValid)
             {
                 this.ReportEsRequestError(existsResult, "Index exists check");
@@ -143,7 +144,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             indexSettings.Settings.NumberOfShards = 5;
             indexSettings.Settings.Add("refresh_interval", "15s");
 
-            ICreateIndexResponse createIndexResult = await esClient.CreateIndexAsync(currentIndexName, c => c.InitializeUsing(indexSettings));
+            ICreateIndexResponse createIndexResult = await esClient.CreateIndexAsync(indexName, c => c.InitializeUsing(indexSettings)).ConfigureAwait(false);
 
             if (!createIndexResult.IsValid)
             {

@@ -88,19 +88,20 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 request.Content = content;
 
                 // SendAsync is thread safe
-                HttpResponseMessage response = await this.connectionData.HttpClient.SendAsync(request, cancellationToken);
+                HttpResponseMessage response = await this.connectionData.HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
                     this.healthReporter.ReportHealthy();
                 }
                 else
                 {
-                    this.healthReporter.ReportProblem($"OMS REST API returned an error. Code: {response.StatusCode} Description: ${response.ReasonPhrase}");
+                    string errorMessage = nameof(OmsEventSender) + "OMS REST API returned an error. Code: " + response.StatusCode + " Description: " + response.ReasonPhrase;
+                    this.healthReporter.ReportProblem(errorMessage);
                 }
             }
             catch (Exception e)
             {
-                this.healthReporter.ReportProblem($"An error occurred while sending data to OMS: {e.ToString()}");
+                this.healthReporter.ReportProblem("An error occurred while sending data to OMS: " + e.ToString());
             }
         }
 

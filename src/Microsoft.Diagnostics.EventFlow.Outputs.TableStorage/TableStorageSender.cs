@@ -73,13 +73,14 @@ namespace Microsoft.Diagnostics.EventFlow
                 }
 
                 // CONSIDER exposing TableRequestOptions and OperationContext for the batch operation
-                await this.cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken);
+                await this.cloudTable.ExecuteBatchAsync(batchOperation, null, null, cancellationToken).ConfigureAwait(false);
 
                 this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {
-                this.healthReporter.ReportProblem($"{nameof(TableStorageSender)}: diagnostics data upload has failed{Environment.NewLine}{e.ToString()}");
+                string errorMessage = nameof(TableStorageSender) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                this.healthReporter.ReportProblem(errorMessage);
             }
         }
 
