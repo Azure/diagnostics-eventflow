@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Validation;
 
@@ -19,23 +18,15 @@ namespace Microsoft.Diagnostics.EventFlow
     {
         private Dictionary<string, object> payload;
 
-        private Dictionary<string, object> metadata;
+        private Dictionary<string, List<EventMetadata>> metadata;
 
         public DateTimeOffset Timestamp { get; set; }
 
         public string ProviderName { get; set; }
 
-        public int EventId { get; set; }
+        public LogLevel Level { get; set; }
 
-        public string Message { get; set; }
-
-        public string Level { get; set; }
-
-        public string Keywords { get; set; }
-
-        public string EventName { get; set; }
-
-        public string ActivityID { get; set; }
+        public long Keywords { get; set; }
 
         public IDictionary<string, object> Payload
         {
@@ -50,38 +41,26 @@ namespace Microsoft.Diagnostics.EventFlow
             }
         }
 
-        // Since in vast majority of cases only single piece of metadata of given kind will be carried by the EventData instance,
-        // we optimize for that case and avoid the cost of allocating a list of metadata if only one instance of a given 
-        // metadata kind is associated with this EventData.
-        //
-        // If only one instance of the metadata exists, it will be returned via singleMetadata parameter
-        // If multiple instances exist, it will be returned via multiMetatada parameter.
-        public bool TryGetMetadata(string metadataKind, out EventMetadata singleMetadata, out IEnumerable<EventMetadata> multiMetadata)
+        public bool TryGetMetadata(string metadataKind, out IReadOnlyCollection<EventMetadata> metadataOfKind)
         {
             Requires.NotNull(metadataKind, nameof(metadataKind));
-            multiMetadata = null;
-            singleMetadata = null;
+            metadataOfKind = null;
 
             if (this.metadata == null)
             {
                 return false;
             }
 
-            object metadata;
-            if (!this.metadata.TryGetValue(metadataKind, out metadata))
+            List<EventMetadata> existingMetadata;
+            if (!this.metadata.TryGetValue(metadataKind, out existingMetadata))
             {
                 return false;
             }
-
-            singleMetadata = metadata as EventMetadata;
-            if (singleMetadata != null)
+            else
             {
+                metadataOfKind = existingMetadata;
                 return true;
             }
-
-            multiMetadata = metadata as IEnumerable<EventMetadata>;
-            Debug.Assert(multiMetadata != null);
-            return true;
         }
 
         public void SetMetadata(EventMetadata newMetadata)
@@ -93,29 +72,17 @@ namespace Microsoft.Diagnostics.EventFlow
 
             if (this.metadata == null)
             {
-                this.metadata = new Dictionary<string, object>();
+                this.metadata = new Dictionary<string, List<EventMetadata>>();
             }
 
-            object existingEntry;
+            List<EventMetadata> existingEntry;
             if (!this.metadata.TryGetValue(metadataKind, out existingEntry))
             {
-                this.metadata[metadataKind] = newMetadata;
-                return;
+                existingEntry = new List<EventMetadata>(1);
+                this.metadata[metadataKind] = existingEntry;
             }
 
-            var metadataList = existingEntry as List<EventMetadata>;
-            if (metadataList != null)
-            {
-                metadataList.Add(newMetadata);
-            }
-            else
-            {
-                EventMetadata oldMetadata = existingEntry as EventMetadata;
-                Debug.Assert(oldMetadata != null);
-                metadataList = new List<EventMetadata>(2);
-                metadataList.Add(oldMetadata);
-                metadataList.Add(newMetadata);
-            }
+            existingEntry.Add(newMetadata);
         }
 
         /// <summary>
@@ -143,14 +110,6 @@ namespace Microsoft.Diagnostics.EventFlow
                 {
                     value = this.ProviderName;
                 }
-                else if (propertyName.Equals(nameof(EventId), StringComparison.OrdinalIgnoreCase))
-                {
-                    value = this.EventId;
-                }
-                else if (propertyName.Equals(nameof(Message), StringComparison.OrdinalIgnoreCase))
-                {
-                    value = this.Message;
-                }
                 else if (propertyName.Equals(nameof(Level), StringComparison.OrdinalIgnoreCase))
                 {
                     value = this.Level;
@@ -158,14 +117,6 @@ namespace Microsoft.Diagnostics.EventFlow
                 else if (propertyName.Equals(nameof(Keywords), StringComparison.OrdinalIgnoreCase))
                 {
                     value = this.Keywords;
-                }
-                else if (propertyName.Equals(nameof(EventName), StringComparison.OrdinalIgnoreCase))
-                {
-                    value = this.EventName;
-                }
-                else if (propertyName.Equals(nameof(ActivityID), StringComparison.OrdinalIgnoreCase))
-                {
-                    value = this.ActivityID;
                 }
                 else if (Payload.TryGetValue(propertyName, out value))
                 {
@@ -186,12 +137,8 @@ namespace Microsoft.Diagnostics.EventFlow
         public EventData DeepClone()
         {
             var other = new EventData();
-            other.ActivityID = this.ActivityID;
-            other.EventId = this.EventId;
-            other.EventName = this.EventName;
             other.Keywords = this.Keywords;
             other.Level = this.Level;
-            other.Message = this.Message;
             other.ProviderName = this.ProviderName;
             other.Timestamp = this.Timestamp;
             if (this.payload != null)
@@ -200,7 +147,7 @@ namespace Microsoft.Diagnostics.EventFlow
             }
             if (this.metadata != null)
             {
-                other.metadata = new Dictionary<string, object>(this.metadata);
+                other.metadata = new Dictionary<string, List<EventMetadata>>(this.metadata);
             }
             return other;
         }

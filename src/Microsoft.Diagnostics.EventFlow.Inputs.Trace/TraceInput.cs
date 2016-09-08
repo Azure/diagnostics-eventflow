@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -14,8 +15,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     public class TraceInput : TraceListener, IObservable<EventData>, IDisposable
     {
         public static readonly string TraceTag = nameof(TraceInput);
+        
         private SimpleSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
+
         public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Validation.Requires.NotNull(configuration, nameof(configuration));
@@ -39,7 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         #region Overrides for TraceListener
         public override void WriteLine(string message)
         {
-            SubmitEventData(message, null);
+            SubmitEventData(message, TraceEventType.Information);
         }
 
         public override void Fail(string message)
@@ -53,7 +56,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 message = message + Environment.NewLine + detailMessage;
             }
-            SubmitEventData(message, SourceLevels.Error.ToString());
+            SubmitEventData(message, TraceEventType.Error);
         }
 
         public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, object data)
@@ -67,7 +70,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 message = data.ToString();
             }
-            SubmitEventData(message, eventType.ToString(), id, source);
+            SubmitEventData(message, eventType, id, source);
         }
 
         public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, params object[] data)
@@ -91,7 +94,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     }
                 }
             }
-            SubmitEventData(stringBuilder.ToString(), eventType.ToString(), id, source);
+            SubmitEventData(stringBuilder.ToString(), eventType, id, source);
         }
 
         public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string message)
@@ -100,7 +103,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 return;
             }
-            SubmitEventData(message, eventType.ToString(), id, source);
+            SubmitEventData(message, eventType, id, source);
         }
 
         public override void TraceEvent(TraceEventCache eventCache, string source, TraceEventType eventType, int id, string format, params object[] args)
@@ -118,32 +121,29 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 message = format;
             }
-            SubmitEventData(message, eventType.ToString(), id, source);
+            SubmitEventData(message, eventType, id, source);
         }
 
 #if !NETSTANDARD1_6
         public override void TraceTransfer(TraceEventCache eventCache, string source, int id, string message, Guid relatedActivityId)
         {
-            SubmitEventData(message, TraceEventType.Transfer.ToString(), id, source, relatedActivityId.ToString());
+            SubmitEventData(message, TraceEventType.Transfer, id, source, relatedActivityId.ToString());
         }
 #endif
         #endregion
 
-        private void SubmitEventData(string message, string level, int? id = null, string source = null, string relatedActivityId = null)
+        private void SubmitEventData(string message, TraceEventType level, int? id = null, string source = null, string relatedActivityId = null)
         {
             try
             {
                 EventData eventEntry = new EventData();
-                eventEntry.Message = message;
-
-                if (!string.IsNullOrEmpty(level))
-                {
-                    eventEntry.Level = level;
-                }
+                var eventPayload = eventEntry.Payload;
+                eventPayload["Message"] = message;
+                eventEntry.Level = ToEventLevel(level);
 
                 if (id != null && id.HasValue)
                 {
-                    eventEntry.EventId = id.Value;
+                    eventPayload["EventId"] = id.Value;
                 }
 
                 if (!string.IsNullOrEmpty(source))
@@ -155,9 +155,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     eventEntry.ProviderName = TraceTag;
                 }
 
-                if (!string.IsNullOrWhiteSpace(relatedActivityId))
+                if (!string.IsNullOrEmpty(relatedActivityId))
                 {
-                    eventEntry.ActivityID = relatedActivityId;
+                    eventPayload["RelatedActivityID"] = relatedActivityId;
                 }
 
                 this.subject.OnNext(eventEntry);
@@ -182,6 +182,37 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public override void Write(string message)
         {
             WriteLine(message);
+        }
+
+        private LogLevel ToEventLevel(TraceEventType traceEventType)
+        {
+            if ((traceEventType & TraceEventType.Critical) != 0)
+            {
+                return LogLevel.Critical;
+            }
+
+            if ((traceEventType & TraceEventType.Error) != 0)
+            {
+                return LogLevel.Error;
+            }
+
+            if ((traceEventType & TraceEventType.Warning) != 0)
+            {
+                return LogLevel.Warning;
+            }
+
+            if ((traceEventType & TraceEventType.Information) != 0)
+            {
+                return LogLevel.Informational;
+            }
+
+            if ((traceEventType & TraceEventType.Verbose) != 0)
+            {
+                return LogLevel.Verbose;
+            }
+
+            Debug.Fail("We should be able to discern the event level");
+            return LogLevel.Informational;
         }
     }
 }

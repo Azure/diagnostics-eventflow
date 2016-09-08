@@ -16,17 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     internal static class EventDataExtensions
     {
         private static string HexadecimalNumberPrefix = "0x";
-        // Micro-optimization: Enum.ToString() uses type information and does a binary search for the value,
-        // which is kind of slow. We are going to to the conversion manually instead.
-        private static readonly string[] EventLevelNames = new string[]
-        {
-            "Always",
-            "Critical",
-            "Error",
-            "Warning",
-            "Informational",
-            "Verbose"
-        };
+        
 
         public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent)
         {
@@ -34,19 +24,21 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 ProviderName = eventSourceEvent.EventSource.Name,
                 Timestamp = DateTime.UtcNow,
-                EventId = eventSourceEvent.EventId,
-                Level = EventLevelNames[(int)eventSourceEvent.Level],
-                Keywords = HexadecimalNumberPrefix + ((ulong)eventSourceEvent.Keywords).ToString("X16", CultureInfo.InvariantCulture),
-                EventName = eventSourceEvent.EventName,
-                ActivityID = ActivityPathString(eventSourceEvent.ActivityId)
+                Level = (LogLevel) (int) eventSourceEvent.Level,
+                Keywords = (long) eventSourceEvent.Keywords                
             };
+
+            var eventPayload = eventData.Payload;
+            eventPayload["EventId"] = eventSourceEvent.EventId;
+            eventPayload["EventName"] = eventSourceEvent.EventName;
+            eventPayload["ActivityID"] = ActivityPathString(eventSourceEvent.ActivityId);
 
             try
             {
                 if (eventSourceEvent.Message != null)
                 {
                     // If the event has a badly formatted manifest, the FormattedMessage property getter might throw
-                    eventData.Message = string.Format(CultureInfo.InvariantCulture, eventSourceEvent.Message, eventSourceEvent.Payload.ToArray());
+                    eventData.Payload["Message"] = string.Format(CultureInfo.InvariantCulture, eventSourceEvent.Message, eventSourceEvent.Payload.ToArray());
                 }
             }
             catch

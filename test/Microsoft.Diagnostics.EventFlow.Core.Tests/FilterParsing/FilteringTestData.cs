@@ -16,9 +16,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
         {
             var eventData = new EventData();
 
-            // Standard properties
-            eventData.EventId = 1234;
-            eventData.Message = "Test event with many properties of different types";
+            eventData.Payload.Add("EventId", (int) 1234);
+            eventData.Payload.Add("Message", "Test event with many properties of different types");
             eventData.Timestamp = DateTimeOffset.Parse("2015-05-29T10:45:00.537Z");
 
             eventData.Payload.Add("StringProperty", "Ala ma kota");

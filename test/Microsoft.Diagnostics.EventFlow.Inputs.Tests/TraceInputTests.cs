@@ -98,7 +98,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             using (target.Subscribe(subject.Object))
             {
                 target.WriteLine("UnitTest info");
-                subject.Verify(s => s.OnNext(It.Is<EventData>(data => data.Message.Equals("UnitTest info"))), Times.Exactly(1));
+                subject.Verify(s => s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals("UnitTest info"))), Times.Exactly(1));
             }
         }
 
@@ -116,7 +116,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 string message = "Failure message";
                 target.Fail(message);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message) && data.Level.Equals("Error"))),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals(message) && data.Level == LogLevel.Error)),
                     Times.Exactly(1));
             }
         }
@@ -136,7 +136,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 string details = "Details";
                 target.Fail(message, details);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message + Environment.NewLine + details) && data.Level.Equals("Error"))),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals(message + Environment.NewLine + details) && data.Level == LogLevel.Error)),
                     Times.Exactly(1));
             }
         }
@@ -156,7 +156,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 int id = (new Random()).Next();
                 target.TraceData(null, null, TraceEventType.Warning, id, message);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message) && data.EventId == id)),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals(message) && data.Payload["EventId"].Equals(id))),
                     Times.Exactly(1));
             }
         }
@@ -177,7 +177,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 int id = (new Random()).Next();
                 target.TraceData(null, null, TraceEventType.Warning, id, message, message2);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Message.Equals($"{message}, {message2}") && data.EventId == id)),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals($"{message}, {message2}") && data.Payload["EventId"].Equals(id))),
                     Times.Exactly(1));
             }
         }
@@ -197,7 +197,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 int id = (new Random()).Next();
                 target.TraceEvent(null, null, TraceEventType.Warning, id, message);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Message.Equals(message) && data.EventId == id)),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals(message) && data.Payload["EventId"].Equals(id))),
                     Times.Exactly(1));
             }
         }
@@ -218,7 +218,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 int id = (new Random()).Next();
                 target.TraceEvent(null, null, TraceEventType.Warning, id, format, message);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Message.Equals($"{message}_{message}") && data.EventId == id)),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals($"{message}_{message}") && data.Payload["EventId"].Equals(id))),
                     Times.Exactly(1));
             }
         }
@@ -240,7 +240,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Guid relatedId = Guid.NewGuid();
                 target.TraceTransfer(null, null, id, message, relatedId);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.EventId == id && data.ActivityID.Equals(relatedId.ToString()))),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["EventId"].Equals(id) && data.Payload["ActivityID"].Equals(relatedId.ToString()))),
                     Times.Exactly(1));
             }
         }

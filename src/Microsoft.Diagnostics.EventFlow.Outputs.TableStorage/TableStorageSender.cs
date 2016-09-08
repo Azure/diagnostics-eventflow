@@ -127,11 +127,8 @@ namespace Microsoft.Diagnostics.EventFlow
 
             result.Properties.Add(nameof(eventData.Timestamp), new EntityProperty(eventData.Timestamp));
             result.Properties.Add(nameof(eventData.ProviderName), new EntityProperty(eventData.ProviderName));
-            result.Properties.Add(nameof(eventData.EventId), new EntityProperty(eventData.EventId));
-            result.Properties.Add(nameof(eventData.Message), new EntityProperty(eventData.Message));
-            result.Properties.Add(nameof(eventData.Level), new EntityProperty(eventData.Level));
+            result.Properties.Add(nameof(eventData.Level), new EntityProperty(eventData.Level.GetName()));
             result.Properties.Add(nameof(eventData.Keywords), new EntityProperty(eventData.Keywords));
-            result.Properties.Add(nameof(eventData.EventName), new EntityProperty(eventData.EventName));
 
             foreach (KeyValuePair<string, object> item in eventData.Payload)
             {

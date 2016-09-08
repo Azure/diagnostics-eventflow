@@ -26,7 +26,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
         public void SendMessage(string message)
         {
-            subject.OnNext(new EventData() { Message = message });
+            var e = new EventData();
+            e.Payload["Message"] = message;
+            subject.OnNext(e);
         }
 
         public IDisposable Subscribe(IObserver<EventData> observer)
