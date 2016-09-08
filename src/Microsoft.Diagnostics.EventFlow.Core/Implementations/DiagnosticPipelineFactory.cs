@@ -16,6 +16,14 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public class DiagnosticPipelineFactory
     {
+        private class ExtensionCategories
+        {
+            public static readonly string HealthReporter = "healthReporter";
+            public static readonly string InputFactory = "inputFactory";
+            public static readonly string OutputFactory = "outputFactory";
+            public static readonly string FilterFactory = "filterFactory";
+        }
+
         public static DiagnosticPipeline CreatePipeline(string jsonConfigFilePath)
         {
             IConfiguration config = new ConfigurationBuilder().AddJsonFile(jsonConfigFilePath).Build();
@@ -147,10 +155,12 @@ namespace Microsoft.Diagnostics.EventFlow
             IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
             foreach (var extension in extensionsConfiguration.GetChildren())
             {
-                if (string.Equals(extension["category"], "healthReporter", StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
+                var extConfig = new ExtensionsConfiguration();
+                extension.Bind(extConfig);
+                if (string.Equals(extConfig.Category, ExtensionCategories.HealthReporter, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(extConfig.Type, healthReporterType, StringComparison.OrdinalIgnoreCase))
                 {
-                    var type = Type.GetType(extension["qualifiedTypeName"], throwOnError: true);
+                    var type = Type.GetType(extConfig.QualifiedTypeName, throwOnError: true);
 
                     // Consider: Make IHealthReporter an abstract class, so the inherited classes are ensured to have a constructor with parameter IConfiguration
                     return Activator.CreateInstance(type, healthReporterConfiguration) as IHealthReporter;
@@ -293,11 +303,6 @@ namespace Microsoft.Diagnostics.EventFlow
             out IDictionary<string, string> outputFactories,
             out IDictionary<string, string> filterFactories)
         {
-            // TODO: finalize the set of "well-known" pipeline elements
-            // CONSIDER: make event the well-known pipeline elements overridable
-            // TODO: add proper PublicKeyToken to factory references when compiling relase bits
-
-
             Debug.Assert(configuration != null);
             Debug.Assert(healthReporter != null);
 
@@ -314,7 +319,45 @@ namespace Microsoft.Diagnostics.EventFlow
             filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
-            // TODO: implement 3rd party input/output/filter instantiation driven by the contents of "extensions" section
+            // read 3rd party plugins
+            IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
+            foreach (var extension in extensionsConfiguration.GetChildren())
+            {
+                var extConfig = new ExtensionsConfiguration();
+                extension.Bind(extConfig);
+
+                IDictionary<string, string> targetFactories = null;
+                if (string.Equals(extConfig.Category, ExtensionCategories.InputFactory, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetFactories = inputFactories;
+                }
+                else if (string.Equals(extConfig.Category, ExtensionCategories.OutputFactory, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetFactories = outputFactories;
+                }
+                else if (string.Equals(extConfig.Category, ExtensionCategories.FilterFactory, StringComparison.OrdinalIgnoreCase))
+                {
+                    targetFactories = filterFactories;
+                }
+                else if (string.Equals(extConfig.Category, ExtensionCategories.HealthReporter, StringComparison.OrdinalIgnoreCase))
+                {
+                    // health reporter should have been created
+                }
+                else
+                {
+                    healthReporter.ReportWarning($"Unrecognized extension category: {extConfig.Category}");
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(extConfig.Type) && !string.IsNullOrEmpty(extConfig.QualifiedTypeName))
+                {
+                    targetFactories[extConfig.Type] = extConfig.QualifiedTypeName;
+                }
+                else
+                {
+                    healthReporter.ReportWarning($"Invalid extension configuration is skipped. Category: {extConfig.Category}, Type: {extConfig.Type}, QualifiedTypeName: {extConfig.QualifiedTypeName}");
+                }
+            }
         }
 
         private static void DisposeOf(IEnumerable<object> items)
