@@ -240,7 +240,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Guid relatedId = Guid.NewGuid();
                 target.TraceTransfer(null, null, id, message, relatedId);
                 subject.Verify(s =>
-                    s.OnNext(It.Is<EventData>(data => data.Payload["EventId"].Equals(id) && data.Payload["ActivityID"].Equals(relatedId.ToString()))),
+                    s.OnNext(It.Is<EventData>(data => data.Payload["EventId"].Equals(id) && data.Payload["RelatedActivityID"].Equals(relatedId.ToString()))),
                     Times.Exactly(1));
             }
         }

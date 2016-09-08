@@ -211,7 +211,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return LogLevel.Verbose;
             }
 
-            Debug.Fail("We should be able to discern the event level");
+            // Assume informational if the trace event type has no explicit level set
             return LogLevel.Informational;
         }
     }

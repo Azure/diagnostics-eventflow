@@ -15,9 +15,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     internal static class EventDataExtensions
     {
-        private static string HexadecimalNumberPrefix = "0x";
-        
-
         public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent)
         {
             EventData eventData = new EventData

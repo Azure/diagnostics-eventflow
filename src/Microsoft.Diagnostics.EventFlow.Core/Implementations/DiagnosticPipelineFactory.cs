@@ -341,7 +341,8 @@ namespace Microsoft.Diagnostics.EventFlow
                 }
                 else if (string.Equals(extConfig.Category, ExtensionCategories.HealthReporter, StringComparison.OrdinalIgnoreCase))
                 {
-                    // health reporter should have been created
+                    // Health reporter should have been created earlier, so skip
+                    continue;
                 }
                 else
                 {
