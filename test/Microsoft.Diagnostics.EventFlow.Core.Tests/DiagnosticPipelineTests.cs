@@ -5,14 +5,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Inputs;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
-using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
@@ -29,7 +28,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     null,
                     new List<EventSink>());
             });
-
+            
             Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
         }
 
@@ -38,8 +37,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             // Setup
             var configurationSectionMock = new Mock<IConfigurationSection>();
-            configurationSectionMock.Setup(cs => cs["type"]).Returns("Trace");
-            configurationSectionMock.Setup(cs => cs["traceLevel"]).Returns("All");
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             Mock<IOutput> mockOutput = new Mock<IOutput>();
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
@@ -47,23 +44,26 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 MaxBatchDelayMsec = 10,
                 PipelineCompletionTimeoutMsec = 1000
             };
-            DiagnosticPipeline pipeline = new DiagnosticPipeline(
+
+            using (UnitTestInput unitTestInput = new UnitTestInput())
+            using (DiagnosticPipeline pipeline = new DiagnosticPipeline(
                 healthReporterMock.Object,
-                new IObservable<EventData>[] { new TraceInput(configurationSectionMock.Object, healthReporterMock.Object) },
+                new IObservable<EventData>[] { unitTestInput },
                 null,
                 new EventSink[] { new EventSink(mockOutput.Object, null) },
-                settings);
+                settings))
+            {
 
-            // Exercise
-            Trace.TraceInformation("Test information");
-            // Batch delay is set to 10 so waiting 50 ms should be plenty of time to get the data to its output
-            await Task.Delay(50);
+                // Execrise
+                unitTestInput.SendMessage("Test information");
 
-            pipeline.Dispose();            
+                // Give it a small delay to let the pipeline process through.
+                await Task.Delay(100);
 
-            // Verify
-            mockOutput.Verify(o => o.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
-                It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+                // Verify
+                mockOutput.Verify(o => o.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
+                    It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+            }
         }
     }
 }

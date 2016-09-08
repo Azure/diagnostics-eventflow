@@ -1,0 +1,9 @@
+﻿<Application x:Class="Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>

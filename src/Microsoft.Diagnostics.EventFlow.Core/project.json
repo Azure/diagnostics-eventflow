@@ -1,33 +1,30 @@
 {
   "version": "1.0.0-*",
-
-    "dependencies": {
-        "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
-        "Microsoft.Extensions.Configuration.Binder": "1.0.0",
-        "Microsoft.Extensions.Configuration.Json": "1.0.0",
-        "NETStandard.Library": "1.6.0",
-        "System.Collections.Immutable": "1.2.0",
-        "System.Threading.Tasks.Dataflow": "4.6.0",
-        "System.Threading.Tasks.Parallel": "4.0.0",
-        "Validation": "2.3.7"
-    },
-
+  "dependencies": {
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
+    "Microsoft.Extensions.Configuration.Binder": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "NETStandard.Library": "1.6.0",
+    "System.Collections.Immutable": "1.2.0",
+    "System.Threading.Tasks.Dataflow": "4.6.0",
+    "System.Threading.Tasks.Parallel": "4.0.0",
+    "Validation": "2.3.7"
+  },
   "frameworks": {
     "netstandard1.6": {
       "imports": "dnxcore50",
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.11"
+        "System.Dynamic.Runtime": "4.0.11",
+        "System.Threading.Thread": "4.0.0",
+        "System.Threading.Timer": "4.0.1"
       }
     },
-    "net451": {
-    }
+    "net451": {}
   },
-
   "buildOptions": {
     "keyFile": "../../PublicKey.snk",
     "delaySign": true
   },
-
   "packOptions": {
     "tags": [
       "Microsoft.Diagnostics.EventFlow"

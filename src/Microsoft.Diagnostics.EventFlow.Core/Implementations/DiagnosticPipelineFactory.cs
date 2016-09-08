@@ -29,6 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             IHealthReporter healthReporter = CreateHealthReporter(configuration);
             Requires.NotNull(healthReporter, nameof(healthReporter));
+            (healthReporter as IRequireActivation)?.Activate();
 
             IDictionary<string, string> inputFactories;
             IDictionary<string, string> outputFactories;
@@ -147,7 +148,7 @@ namespace Microsoft.Diagnostics.EventFlow
             foreach (var extension in extensionsConfiguration.GetChildren())
             {
                 if (string.Equals(extension["category"], "healthReporter", StringComparison.OrdinalIgnoreCase)
-                    &&  string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
+                    && string.Equals(extension["type"], healthReporterType, StringComparison.OrdinalIgnoreCase))
                 {
                     var type = Type.GetType(extension["qualifiedTypeName"], throwOnError: true);
 
@@ -286,7 +287,7 @@ namespace Microsoft.Diagnostics.EventFlow
         }
 
         private static void CreateItemFactories(
-            IConfiguration configuration, 
+            IConfiguration configuration,
             IHealthReporter healthReporter,
             out IDictionary<string, string> inputFactories,
             out IDictionary<string, string> outputFactories,
