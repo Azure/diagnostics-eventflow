@@ -5,6 +5,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Filters;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
@@ -58,9 +59,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
             finally
             {
-                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix);
+                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix, delayMilliseconds: 500);
             }
-
         }
 
         [Fact]
@@ -156,7 +156,17 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     ""settings"": {
                         ""maxConcurrency"": ""2"",
                         ""pipelineCompletionTimeoutMsec"": ""1000""
-                    }
+                    },
+                    ""healthReporter"": {
+                        ""type"": ""CustomHealthReporter"",
+                    },
+                    ""extensions"": [
+                         {
+                            ""category"": ""healthReporter"",
+                            ""type"": ""CustomHealthReporter"",
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                        }
+                    ]
                 }";
 
             try
@@ -192,7 +202,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         EventSink sink = pipeline.Sinks.First();
 
                         var stdSender = sink.Output as StdOutput;
-                        Assert.NotNull(stdSender);                       
+                        Assert.NotNull(stdSender);
 
                         metadata = new EventMetadata("metric");
                         metadata.Properties.Add("metricName", "StatefulRunAsyncFailure");
@@ -211,9 +221,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
-        private static void TryDeleteFile(string startWith, string extension = ".csv")
+        private static async void TryDeleteFile(string startWith, string extension = ".csv", int delayMilliseconds = 0)
         {
             // Clean up
+            await Task.Delay(delayMilliseconds);
             string[] targets = Directory.GetFiles(Directory.GetCurrentDirectory(), $"{startWith}*{extension}");
             foreach (string file in targets)
             {

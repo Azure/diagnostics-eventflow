@@ -99,17 +99,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Prepare the configuration, set default values, handle invalid values.
             this.Configuration = configuration;
 
-            if (configuration.ThrottlingPeriodMsec == null || !configuration.ThrottlingPeriodMsec.HasValue)
-            {
-                configuration.ThrottlingPeriodMsec = 0;
-                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(0));
-                // Force to report error until LogLevel is set by configuration.
-                ReportProblem($"{nameof(configuration.ThrottlingPeriodMsec)} is not specified in configuration file. Falling back to default value: {this.Configuration.ThrottlingPeriodMsec.Value}", TraceTag);
-            }
-            else
-            {
-                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(configuration.ThrottlingPeriodMsec.Value));
-            }
+            // Create a default throttle
+            configuration.ThrottlingPeriodMsec = 0;
+            this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(0));
 
             string logLevelString = this.Configuration?.MinReportLevel;
             HealthReportLevel logLevel;
@@ -119,8 +111,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             else
             {
+                this.Configuration.MinReportLevel = this.LogLevel.ToString();
                 // The severity has to be at least the same as the default level of error.
                 ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}. Falling back to default value: {this.Configuration.MinReportLevel}", TraceTag);
+            }
+
+            if (configuration.ThrottlingPeriodMsec == null || !configuration.ThrottlingPeriodMsec.HasValue || configuration.ThrottlingPeriodMsec.Value < 0)
+            {
+                ReportWarning($"{nameof(configuration.ThrottlingPeriodMsec)} is not specified or the value is invalid in configuration file. Falling back to default value: {this.Configuration.ThrottlingPeriodMsec.Value}", TraceTag);
+                // Keep using the default throttle.
+            }
+            else if (configuration.ThrottlingPeriodMsec.Value > 0)
+            {
+                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(configuration.ThrottlingPeriodMsec.Value));
             }
 
             // Set default value for HealthReport file prefix
@@ -152,20 +155,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public void Activate()
         {
             VerifyObjectIsNotDisposed();
-            StreamWriter = CreateStreamWriter();
+            SetNewStreamWriter();
             Assumes.NotNull(StreamWriter);
 
             // Start the consumer of the report items in the collection.
             this.writingTask = Task.Run(() =>
             {
-                // Create the stream writer
                 foreach (string text in this.reportCollection.GetConsumingEnumerable())
                 {
                     if (this.newStreamRequested)
                     {
                         try
                         {
-                            this.StreamWriter = CreateStreamWriter();
+                            SetNewStreamWriter();
                             Assumes.NotNull(StreamWriter);
                         }
                         finally
@@ -176,10 +178,21 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     this.StreamWriter.WriteLine(text);
                 }
 
-                if (this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted)
+                Debug.Assert(this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted);
+                this.reportCollection.Dispose();
+                this.reportCollection = null;
+
+                if (this.StreamWriter != null)
                 {
-                    this.reportCollection.Dispose();
-                    this.reportCollection = null;
+                    this.StreamWriter.Flush();
+                    this.StreamWriter.Dispose();
+                    this.StreamWriter = null;
+                }
+
+                if (this.fileStream != null)
+                {
+                    this.fileStream.Dispose();
+                    this.fileStream = null;
                 }
             });
         }
@@ -196,7 +209,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// Create the stream writer for the health reporter.
         /// </summary>
         /// <returns></returns>
-        internal virtual StreamWriter CreateStreamWriter()
+        internal virtual void SetNewStreamWriter()
         {
             string logFilePath = GetReportFileName();
             string logFileFolder = Configuration.LogFileFolder;
@@ -207,24 +220,24 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             logFilePath = Path.Combine(logFileFolder, logFilePath);
 
-            // Do not create new file stream when targeting the same path.
+            // Do not update file stream or stream writer when targeting the same path.
             if (this.fileStream != null &&
                 this.StreamWriter != null &&
                 Path.GetFullPath(this.fileStream.Name).Equals(logFilePath, StringComparison.OrdinalIgnoreCase))
             {
-                return this.StreamWriter;
+                return;
             }
 
             // Flush the current stream.
+            if (this.StreamWriter != null)
+            {
+                this.StreamWriter.Flush();
+                this.StreamWriter.Dispose();
+                this.StreamWriter = null;
+            }
+
             if (this.fileStream != null)
             {
-                this.fileStream.Flush();
-                if (this.StreamWriter != null)
-                {
-                    this.StreamWriter.Flush();
-                    this.StreamWriter.Dispose();
-                    this.StreamWriter = null;
-                }
                 this.fileStream.Dispose();
                 this.fileStream = null;
             }
@@ -237,11 +250,14 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             catch (IOException)
             {
                 // In case file is locked by other process, give it another shot.
+                string original = logFilePath;
                 logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
                 this.fileStream = new FileStream(logFilePath, FileMode.Append);
+
+                ReportWarning($"IOExcepion happened for the LogFilePath: {original}. Use new path: {logFilePath}", TraceTag);
             }
 
-            return new StreamWriter(this.fileStream, Encoding.UTF8);
+            this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
         }
 
 
@@ -316,7 +332,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(true);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -325,31 +340,20 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 return;
             }
+            disposed = true;
 
             if (disposing)
             {
-                if (this.StreamWriter != null)
-                {
-                    this.StreamWriter.Dispose();
-                    this.StreamWriter = null;
-                }
-
-                if (this.fileStream != null)
-                {
-                    this.fileStream.Dispose();
-                    this.fileStream = null;
-                }
-
                 if (this.newReportFileTrigger != null)
                 {
                     this.newReportFileTrigger.NewReportFileRequested -= OnNewReportFileRequested;
                     this.newReportFileTrigger = null;
                 }
 
+                // Mark report collection as complete adding. When the collection is empty, it will dispose the stream writers.
                 this.reportCollection.CompleteAdding();
             }
 
-            disposed = true;
         }
         #endregion
     }

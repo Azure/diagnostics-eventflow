@@ -33,17 +33,19 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             StreamWriterMock = new Mock<StreamWriter>(this.memoryStream);
         }
 
-        internal override StreamWriter CreateStreamWriter()
+        internal override void SetNewStreamWriter()
         {
-            return StreamWriterMock.Object;
+            this.StreamWriter = StreamWriterMock.Object;
         }
 
-
-        public new void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            this.StreamWriterMock = null;
-            this.memoryStream = null;
-            base.Dispose();
+            if (disposing)
+            {
+                this.StreamWriterMock = null;
+                this.memoryStream = null;
+            }
+            base.Dispose(disposing);
         }
     }
 }

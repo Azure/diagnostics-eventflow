@@ -13,7 +13,6 @@ using Xunit;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
-    [Collection("Core Unit Tests")]
     public class CsvHealthReporterTests
     {
         private const string HealthReporter = "HealthReport";
@@ -34,7 +33,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.Equal("Value cannot be null.\r\nParameter name: configurationFilePath", ex.Message);
         }
 
-        public void ConstructorShouldHandleWrongFilterLevel()
+        [Fact]
+        public async void ConstructorShouldHandleWrongFilterLevel()
         {
             // Setup
             var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
@@ -46,10 +46,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
+                target.Activate();
+                await Task.Delay(DefaultDelay);
                 // Verify
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
-                        It.Is<string>(msg => msg.EndsWith("Failed to parse log level. Please check the value of: WrongLevel."))),
+                        It.Is<string>(msg => msg.EndsWith("Failed to parse log level. Please check the value of: WrongLevel. Falling back to default value: Error"))),
                     Times.Exactly(1));
             }
         }
