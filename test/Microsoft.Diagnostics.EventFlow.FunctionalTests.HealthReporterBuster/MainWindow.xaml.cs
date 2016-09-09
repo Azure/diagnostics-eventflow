@@ -90,11 +90,19 @@ namespace Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster
             if (reporter != null)
             {
                 reporter.Dispose();
+                reporter = null;
             }
 
             btnStart.IsEnabled = true;
             btnStop.IsEnabled = false;
             btnSwitch.IsEnabled = false;
+        }
+
+        private void btnCrashMe_Clicked(object sender, RoutedEventArgs e)
+        {
+            btnCrashMe.IsEnabled = false;
+            reporter.ReportProblem("I crashed myself! Yeah~~");
+            throw new Exception("Crash me button is clicked!");
         }
     }
 }

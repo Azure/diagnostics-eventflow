@@ -30,6 +30,7 @@
             <RowDefinition Height="Auto" MinHeight="24"/>
             <RowDefinition Height="Auto" MinHeight="24"/>
             <RowDefinition Height="Auto" MinHeight="24"/>
+            <RowDefinition Height="Auto" MinHeight="24"/>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" MinHeight="24" />
         </Grid.RowDefinitions>
@@ -55,11 +56,12 @@
 
         <TextBlock Text="Message Count:" Grid.Row="4" />
         <TextBlock x:Name="tbHit" Grid.Row="4" Grid.Column="1" />
-
-        <StackPanel Grid.Row="6" Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Horizontal">
+        
+        <StackPanel Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Horizontal">
             <Button x:Name="btnStart" Content="Start" Click="btnStart_Clicked" />
             <Button x:Name="btnStop" Content="Stop" Click="btnStop_Clicked" IsEnabled="False" />
             <Button x:Name="btnSwitch" Content="Switch" Click="btnSwitch_Clicked" IsEnabled="False" />
+            <Button x:Name="btnCrashMe" Content="Crash me" Click="btnCrashMe_Clicked" IsEnabled="True" />
         </StackPanel>
     </Grid>
 </Window>

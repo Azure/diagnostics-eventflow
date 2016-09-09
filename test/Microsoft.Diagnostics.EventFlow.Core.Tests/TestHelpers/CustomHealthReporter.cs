@@ -21,8 +21,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Initialize();
         }
 
+        // This constructor is needed for instantiate from reflection.
         public CustomHealthReporter(IConfiguration configuration)
-            : base(configuration)
+            : this(configuration, 5000)
+        {
+        }
+
+        public CustomHealthReporter(IConfiguration configuration, int flushPeriodMsec)
+            : base(configuration.ToCsvHealthReporterConfiguration(), new Mock<INewReportFileTrigger>().Object, flushPeriodMsec)
         {
             Initialize();
         }

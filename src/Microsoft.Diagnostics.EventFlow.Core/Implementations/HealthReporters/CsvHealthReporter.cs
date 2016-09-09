@@ -39,6 +39,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private TimeSpanThrottle throttle;
         private Task writingTask;
         private bool disposed = false;
+        private DateTime flushTime;
+        private int flushPeriodMsec = 5000;
         #endregion
 
         #region Properties
@@ -81,9 +83,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         }
 
         // Constructor for testing purpose.
-        internal CsvHealthReporter(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger)
+        internal CsvHealthReporter(
+            CsvHealthReporterConfiguration configuration,
+            INewReportFileTrigger newReportTrigger = null,
+            int flushPeriodMsec = 5000)
         {
-            Requires.NotNull(newReportTrigger, nameof(newReportTrigger));
+            this.flushPeriodMsec = flushPeriodMsec;
             Initialize(configuration, newReportTrigger);
         }
         #endregion
@@ -159,6 +164,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             VerifyObjectIsNotDisposed();
             SetNewStreamWriter();
             Assumes.NotNull(StreamWriter);
+            this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
 
             // Start the consumer of the report items in the collection.
             this.writingTask = Task.Run(() =>
@@ -178,6 +184,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                         }
                     }
                     this.StreamWriter.WriteLine(text);
+                    if (DateTime.Now >= this.flushTime)
+                    {
+                        this.StreamWriter.Flush();
+                        this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
+                    }
                 }
 
                 Debug.Assert(this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted);

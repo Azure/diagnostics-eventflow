@@ -15,12 +15,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class CsvHealthReporterTests
     {
-        private const string HealthReporter = "HealthReport";
+        private const string DefaultReporterPrefix = "HealthReport";
+        private const string DefaultLogFolder = ".";
+        private const string DefaultMinReportLevel = "Message";
+        private const string DefaultThrottlingPeriodMsec = "0";
+
         private const string LogFileFolderKey = "LogFileFolder";
         private const string LogFilePrefixKey = "LogFilePrefix";
-        private const string LogLevelKey = "MinReportLevel";
-        private const string ThrottleTimeSpanKey = "ThrottlingPeriodMsec";
-        private const int DefaultDelay = 100;
+        private const string MinReportLevelKey = "MinReportLevel";
+        private const string ThrottlingPeriodMsecKey = "ThrottlingPeriodMsec";
+        private const int DefaultDelayMsec = 100;
 
         [Fact]
         public void ConstructorShouldRequireConfigFile()
@@ -37,17 +41,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public async void ConstructorShouldHandleWrongFilterLevel()
         {
             // Setup
-            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, "." },
-                { LogFilePrefixKey, HealthReporter},
-                { LogLevelKey, "WrongLevel"}
-            }).Build();
+            var configuration = BuildTestConfigration();
+            configuration[MinReportLevelKey] = "WrongLevel";
 
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
                 target.Activate();
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 // Verify
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
@@ -60,11 +61,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public async void ReportHealthyShouldWriteMessage()
         {
             // Setup
-            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, "." },
-                { LogFilePrefixKey, HealthReporter},
-                { LogLevelKey, "Message"}
-            }).Build();
+            var configuration = BuildTestConfigration();
 
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
@@ -72,7 +69,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportHealthy("Healthy message.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Message,Healthy message."))),
@@ -84,11 +81,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public async void ReportWarningShouldWriteWarning()
         {
             // Setup
-            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, "." },
-                { LogFilePrefixKey, HealthReporter},
-                { LogLevelKey, "Message"}
-            }).Build();
+            var configuration = BuildTestConfigration();
 
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
@@ -96,7 +89,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportWarning("Warning message.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Warning,Warning message."))),
@@ -107,18 +100,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         [Fact]
         public async void ReportProblemShouldWriteError()
         {
-            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, "." },
-                { LogFilePrefixKey, HealthReporter},
-                { LogLevelKey, "Message"}
-            }).Build();
+            var configuration = BuildTestConfigration();
 
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
                 target.Activate();
                 target.ReportProblem("Error message.", "UnitTest");
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 // Verify
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
@@ -131,12 +120,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public async void ReporterShouldFilterOutMessage()
         {
             // Setup
-            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, "." },
-                { LogFilePrefixKey, HealthReporter},
-                { LogLevelKey, "Warning"},
-                { ThrottleTimeSpanKey, "0"}
-            }).Build();
+            var configuration = BuildTestConfigration();
+            configuration[MinReportLevelKey] = "Warning";
 
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
@@ -144,7 +129,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportHealthy("Supposed to be filtered.", "UnitTest");
                 // Verify that message is filtered out.
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.IsAny<string>()),
@@ -152,7 +137,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                 // Verify that warning is not filtered out.
                 target.ReportWarning("Warning message", "UnitTests");
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.IsAny<string>()),
@@ -160,7 +145,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                 // Verify that error is not filtered out.
                 target.ReportWarning("Error message", "UnitTests");
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.IsAny<string>()),
@@ -207,11 +192,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public async void ShouldEscapeCommaInMessage()
         {
             // Setup
-            var configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
-                { LogFileFolderKey, "." },
-                { LogFilePrefixKey, HealthReporter},
-                { LogLevelKey, "Message"}
-            }).Build();
+            var configuration = BuildTestConfigration();
 
             // Exercise
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
@@ -219,13 +200,50 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportProblem("Error message, with comma.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelay);
+                await Task.Delay(DefaultDelayMsec);
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error message, with comma.\""))),
                     Times.Exactly(1));
             }
         }
+
+        [Fact]
+        public async void ShouldFlushOnceAWhile()
+        {
+            // Setup
+            var configuration = BuildTestConfigration();
+            int flushPeriodPlusMsec = 500;
+
+            // Exercise
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 200))
+            {
+                target.Activate();
+                target.ReportProblem("Error message, with comma.", "UnitTest");
+                // Verify
+                await Task.Delay(DefaultDelayMsec);
+                target.StreamWriterMock.Verify(
+                    s => s.Flush(),
+                    Times.Never());
+
+                await Task.Delay(flushPeriodPlusMsec);
+                target.ReportProblem("Error message, with comma.", "UnitTest");
+                await Task.Delay(DefaultDelayMsec);
+
+                target.StreamWriterMock.Verify(
+                    s => s.Flush(),
+                    Times.Exactly(1));
+            }
+        }
+
+        private IConfiguration BuildTestConfigration()
+        {
+            return (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+                { LogFileFolderKey, DefaultLogFolder },
+                { LogFilePrefixKey, DefaultReporterPrefix},
+                { MinReportLevelKey, DefaultMinReportLevel},
+                { ThrottlingPeriodMsecKey, DefaultThrottlingPeriodMsec}
+            }).Build();
+        }
     }
 }
-
