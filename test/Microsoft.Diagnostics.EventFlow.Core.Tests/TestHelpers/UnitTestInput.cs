@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
@@ -34,6 +35,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
             return this.subject.Subscribe(observer);
+        }
+    }
+
+    internal class UnitTestInputFactory : IPipelineItemFactory<UnitTestInput>
+    {
+        public UnitTestInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        {
+            return new UnitTestInput();
         }
     }
 }

@@ -139,33 +139,34 @@ namespace Microsoft.Diagnostics.EventFlow
             IConfiguration healthReporterConfiguration = configuration.GetSection(ExtensionCategories.HealthReporter);
             string healthReporterType = healthReporterConfiguration["type"];
 
-            if (UseWellKnownPipelineItems(configuration))
+            if (!string.IsNullOrEmpty(healthReporterType))
             {
-                if (string.IsNullOrEmpty(healthReporterType) || healthReporterType.Equals("CsvHealthReporter", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (healthReporterConfiguration.GetChildren().Count() == 0)
-                    {
-                        healthReporterConfiguration = new ConfigurationBuilder().AddInMemoryCollection().Build();
-                    }
+                // Look for 3rd party HealthReporter--look up the "extensions" section and create the instance dynamically
+                IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
 
-                    return new CsvHealthReporter(healthReporterConfiguration);
+                foreach (var extension in extensionsConfiguration.GetChildren())
+                {
+                    var extConfig = new ExtensionsConfiguration();
+                    extension.Bind(extConfig);
+                    if (string.Equals(extConfig.Category, ExtensionCategories.HealthReporter, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(extConfig.Type, healthReporterType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var type = Type.GetType(extConfig.QualifiedTypeName, throwOnError: true);
+
+                        // Consider: Make IHealthReporter an abstract class, so the inherited classes are ensured to have a constructor with parameter IConfiguration
+                        return Activator.CreateInstance(type, healthReporterConfiguration) as IHealthReporter;
+                    }
                 }
             }
 
-            // 3rd party HealthReporter, look up the "extensions" section and create the instance dynamically
-            IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
-            foreach (var extension in extensionsConfiguration.GetChildren())
+            if (string.IsNullOrEmpty(healthReporterType) || healthReporterType.Equals("CsvHealthReporter", StringComparison.OrdinalIgnoreCase))
             {
-                var extConfig = new ExtensionsConfiguration();
-                extension.Bind(extConfig);
-                if (string.Equals(extConfig.Category, ExtensionCategories.HealthReporter, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(extConfig.Type, healthReporterType, StringComparison.OrdinalIgnoreCase))
+                if (healthReporterConfiguration.GetChildren().Count() == 0)
                 {
-                    var type = Type.GetType(extConfig.QualifiedTypeName, throwOnError: true);
-
-                    // Consider: Make IHealthReporter an abstract class, so the inherited classes are ensured to have a constructor with parameter IConfiguration
-                    return Activator.CreateInstance(type, healthReporterConfiguration) as IHealthReporter;
+                    healthReporterConfiguration = new ConfigurationBuilder().AddInMemoryCollection().Build();
                 }
+
+                return new CsvHealthReporter(healthReporterConfiguration);
             }
 
             return null;
@@ -307,29 +308,18 @@ namespace Microsoft.Diagnostics.EventFlow
             Debug.Assert(configuration != null);
             Debug.Assert(healthReporter != null);
 
-            bool useWellKnownPipelineItems = UseWellKnownPipelineItems(configuration);
-
             inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);                        
-            if (useWellKnownPipelineItems)
-            {
-                inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-                inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-                inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            }
+            inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (useWellKnownPipelineItems)
-            {
-                outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-                outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            }
+            outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (useWellKnownPipelineItems)
-            {
-                filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-                filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            }
+            filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
             // read 3rd party plugins
             IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
@@ -379,13 +369,6 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 (item as IDisposable)?.Dispose();
             }
-        }
-
-        private static bool UseWellKnownPipelineItems(IConfiguration configuration)
-        {
-            Debug.Assert(configuration != null);
-            var retval = !string.Equals(configuration["noWellKnownPipelineItems"], "true", StringComparison.OrdinalIgnoreCase);
-            return retval;
         }
 
         private class ItemWithChildren<ItemType, ChildType>

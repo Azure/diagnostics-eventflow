@@ -223,65 +223,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public void ShouldThrowIfNoWellKnownItemsAndNoExtensions()
-        {
-            string pipelineConfiguration = @"
-                {
-                    ""inputs"": [
-                        {
-                            ""type"": ""EventSource"",
-                            ""sources"": [
-                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
-                            ]
-                        }
-                    ],
-                    ""outputs"": [
-                        {
-                            ""type"": ""StdOutput"",
-                        }
-                    ],
-                    ""schemaVersion"": ""2016-08-11""
-                ";
-
-            string pipelineConfigurationNoDefaults = pipelineConfiguration + @",
-                ""noWellKnownPipelineItems"": ""true""
-                }";
-            pipelineConfiguration += "}";
-            
-            // pipelineConfiguration and pipelineConfigurationNoDefaults differ only by noWellKnownPipelineItems flag
-
-            try
-            {
-                using (var configFile = new TemporaryFile())
-                {
-                    configFile.Write(pipelineConfigurationNoDefaults);
-                    ConfigurationBuilder builder = new ConfigurationBuilder();
-                    builder.AddJsonFile(configFile.FilePath);
-                    var configuration = builder.Build();
-
-                    Assert.ThrowsAny<Exception>(() => DiagnosticPipelineFactory.CreatePipeline(configuration));
-
-                    configFile.Clear();
-                    configFile.Write(pipelineConfiguration);
-                    builder = new ConfigurationBuilder();
-                    builder.AddJsonFile(configFile.FilePath);
-                    configuration = builder.Build();
-
-                    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
-                    {
-                        Assert.NotNull(pipeline);
-                        Assert.True(pipeline.HealthReporter is CsvHealthReporter);
-                    }
-                }
-            }
-            finally
-            {
-                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix, delayMilliseconds: 500);
-            }
-        }
-
-        [Fact]
-        public void WillCreatePipelineInNoWellKnownItemsMode()
+        public void CanOverrideDefaultPipelineItems()
         {
             string pipelineConfiguration = @"
                 {
@@ -306,12 +248,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                     ""outputs"": [
                         {
-                            ""type"": ""DummyOutput"",
+                            ""type"": ""StdOutput"",
                         }
                     ],
 
                     ""schemaVersion"": ""2016-08-11"",
-                    ""noWellKnownPipelineItems"": ""true"",
 
                     ""healthReporter"": {
                         ""type"": ""CustomHealthReporter"",
@@ -326,16 +267,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""category"": ""inputFactory"",
                             ""type"": ""EventSource"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture = neutral, PublicKeyToken = b03f5f7f11d50a3a""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.UnitTestInputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         },
                          {
                             ""category"": ""filterFactory"",
                             ""type"": ""metadata"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.DummyFilterFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         },
                          {
                             ""category"": ""outputFactory"",
-                            ""type"": ""DummyOutput"",
+                            ""type"": ""StdOutput"",
                             ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.DummyOutputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         }
                     ]
@@ -355,11 +296,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         Assert.NotNull(pipeline);
                         Assert.True(pipeline.HealthReporter is CustomHealthReporter);
                         Assert.Single(pipeline.Inputs);
-                        Assert.IsType(typeof(EventSourceInput), pipeline.Inputs.First());
+                        Assert.IsType(typeof(UnitTestInput), pipeline.Inputs.First());
                         Assert.Single(pipeline.Sinks);
                         Assert.IsType(typeof(DummyOutput), pipeline.Sinks.First().Output);
                         Assert.Single(pipeline.GlobalFilters);
-                        Assert.IsType(typeof(EventMetadataFilter), pipeline.GlobalFilters.First());
+                        Assert.IsType(typeof(DummyFilter), pipeline.GlobalFilters.First());
                     }
                 }
             }
