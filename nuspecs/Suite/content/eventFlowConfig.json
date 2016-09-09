@@ -1,0 +1,47 @@
+{
+  "inputs": [
+    // Enable Microsoft-Windows-ASPNET event source input
+    // {
+    //   "type": "EventSource",
+    //   "sources": [
+    //     { "providerName": "Microsoft-Windows-ASPNET" }
+    //   ]
+    // },
+    // Enable Trace input
+    {
+      "type": "Trace",
+      "traceLevel": "Warning"
+    }
+    // Add more inputs here.
+  ],
+  "filters": [
+    {
+      "type": "drop",
+      "include": "Level == Verbose"
+    }
+  ],
+  "outputs": [
+    // Enable ApplicationInsights output. Please update the instrumentationKey.
+    {
+      "type": "ApplicationInsights",
+      "instrumentationKey": "00000000-0000-0000-0000-000000000000"
+    }
+    // Adding more outputs here.
+  ],
+  "schemaVersion": "2016-08-11",
+  // Customize Health Reporter settings
+  // "healthReporter": {
+  //   "type": "CsvHealthReporter",
+  //   "logFileFolder": ".",
+  //   "logFilePrefix": "HealthReport",
+  //   "minReportLevel": "Warning",
+  //   "throttlingPeriodMsec": "1000"
+  // },
+  // Customize pipeline settings
+  // "pipelineSettings": {
+  //   "maxConcurrency": "8",
+  //   "noEventsDelayMsec": "1000",
+  //   "maxBatchSize": "100"
+  // },
+  "extensions": []
+}
