@@ -110,7 +110,6 @@ namespace Microsoft.Diagnostics.EventFlow
 
 
             // Step 4: assemble and return the pipeline
-
             IReadOnlyCollection<EventSink> sinks = outputCreationResult.Select(outputResult =>
                 new EventSink(outputResult.Item, outputResult.Children)
             ).ToList();
@@ -137,18 +136,20 @@ namespace Microsoft.Diagnostics.EventFlow
         private static IHealthReporter CreateHealthReporter(IConfiguration configuration)
         {
             // The GetSection() method never returns null. We will have to call the GetChildren() method to determine if the configuration is empty.
-            IConfiguration healthReporterConfiguration = configuration.GetSection("healthReporter");
+            IConfiguration healthReporterConfiguration = configuration.GetSection(ExtensionCategories.HealthReporter);
             string healthReporterType = healthReporterConfiguration["type"];
 
-            if (string.IsNullOrEmpty(healthReporterType)
-                || healthReporterType.Equals("CsvHealthReporter", StringComparison.OrdinalIgnoreCase))
+            if (UseWellKnownPipelineItems(configuration))
             {
-                if (healthReporterConfiguration.GetChildren().Count() == 0)
+                if (string.IsNullOrEmpty(healthReporterType) || healthReporterType.Equals("CsvHealthReporter", StringComparison.OrdinalIgnoreCase))
                 {
-                    healthReporterConfiguration = new ConfigurationBuilder().AddInMemoryCollection().Build();
-                }
+                    if (healthReporterConfiguration.GetChildren().Count() == 0)
+                    {
+                        healthReporterConfiguration = new ConfigurationBuilder().AddInMemoryCollection().Build();
+                    }
 
-                return new CsvHealthReporter(healthReporterConfiguration);
+                    return new CsvHealthReporter(healthReporterConfiguration);
+                }
             }
 
             // 3rd party HealthReporter, look up the "extensions" section and create the instance dynamically
@@ -306,18 +307,29 @@ namespace Microsoft.Diagnostics.EventFlow
             Debug.Assert(configuration != null);
             Debug.Assert(healthReporter != null);
 
-            inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            bool useWellKnownPipelineItems = UseWellKnownPipelineItems(configuration);
+
+            inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);                        
+            if (useWellKnownPipelineItems)
+            {
+                inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+                inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+                inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            }
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            if (useWellKnownPipelineItems)
+            {
+                outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+                outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            }
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            if (useWellKnownPipelineItems)
+            {
+                filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+                filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            }
 
             // read 3rd party plugins
             IConfiguration extensionsConfiguration = configuration.GetSection("extensions");
@@ -367,6 +379,13 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 (item as IDisposable)?.Dispose();
             }
+        }
+
+        private static bool UseWellKnownPipelineItems(IConfiguration configuration)
+        {
+            Debug.Assert(configuration != null);
+            var retval = !string.Equals(configuration["noWellKnownPipelineItems"], "true", StringComparison.OrdinalIgnoreCase);
+            return retval;
         }
 
         private class ItemWithChildren<ItemType, ChildType>

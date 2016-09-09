@@ -30,6 +30,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         #region Fields
         private static readonly string TraceTag = nameof(CsvHealthReporter);
+        private static readonly TimeSpan DisposalTimeout = TimeSpan.FromSeconds(10);
+
         private BlockingCollection<string> reportCollection;
         private FileStream fileStream;
         private bool newStreamRequested = false;
@@ -352,6 +354,16 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
                 // Mark report collection as complete adding. When the collection is empty, it will dispose the stream writers.
                 this.reportCollection.CompleteAdding();
+
+                try
+                {
+                    // Make sure that when Dispose() returns, the reporter is fully disposed (streams are closed etc.)
+                    this.writingTask?.Wait(DisposalTimeout);
+                }
+                catch
+                {
+                    // We are reporting writing task errors from ReportXxx() methods, to no need to pass the task exception up here.
+                }
             }
 
         }

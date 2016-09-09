@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""StdOutput"",
                         }
                     ],
-                    ""schema-version"": ""2016-08-11"",
+                    ""schemaVersion"": ""2016-08-11"",
                 }";
 
             try
@@ -81,7 +82,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""StdOutput"",
                         }
                     ],
-                    ""schema-version"": ""2016-08-11"",
+                    ""schemaVersion"": ""2016-08-11"",
 
                     ""extensions"": [
                         {
@@ -151,7 +152,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         }
                     ],
 
-                    ""schema-version"": ""2016-08-11"",
+                    ""schemaVersion"": ""2016-08-11"",
 
                     ""settings"": {
                         ""maxConcurrency"": ""2"",
@@ -218,6 +219,153 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             finally
             {
                 TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix);
+            }
+        }
+
+        [Fact]
+        public void ShouldThrowIfNoWellKnownItemsAndNoExtensions()
+        {
+            string pipelineConfiguration = @"
+                {
+                    ""inputs"": [
+                        {
+                            ""type"": ""EventSource"",
+                            ""sources"": [
+                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                            ]
+                        }
+                    ],
+                    ""outputs"": [
+                        {
+                            ""type"": ""StdOutput"",
+                        }
+                    ],
+                    ""schemaVersion"": ""2016-08-11""
+                ";
+
+            string pipelineConfigurationNoDefaults = pipelineConfiguration + @",
+                ""noWellKnownPipelineItems"": ""true""
+                }";
+            pipelineConfiguration += "}";
+            
+            // pipelineConfiguration and pipelineConfigurationNoDefaults differ only by noWellKnownPipelineItems flag
+
+            try
+            {
+                using (var configFile = new TemporaryFile())
+                {
+                    configFile.Write(pipelineConfigurationNoDefaults);
+                    ConfigurationBuilder builder = new ConfigurationBuilder();
+                    builder.AddJsonFile(configFile.FilePath);
+                    var configuration = builder.Build();
+
+                    Assert.ThrowsAny<Exception>(() => DiagnosticPipelineFactory.CreatePipeline(configuration));
+
+                    configFile.Clear();
+                    configFile.Write(pipelineConfiguration);
+                    builder = new ConfigurationBuilder();
+                    builder.AddJsonFile(configFile.FilePath);
+                    configuration = builder.Build();
+
+                    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
+                    {
+                        Assert.NotNull(pipeline);
+                        Assert.True(pipeline.HealthReporter is CsvHealthReporter);
+                    }
+                }
+            }
+            finally
+            {
+                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix, delayMilliseconds: 500);
+            }
+        }
+
+        [Fact]
+        public void WillCreatePipelineInNoWellKnownItemsMode()
+        {
+            string pipelineConfiguration = @"
+                {
+                    ""inputs"": [
+                        {
+                            ""type"": ""EventSource"",
+                            ""sources"": [
+                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                            ]
+                        }
+                    ],
+
+                    ""filters"": [
+                        {
+                            ""type"": ""metadata"",
+                            ""metadata"": ""metric"",
+                            ""include"": ""ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncInvocation"",
+                            ""metricName"": ""StatefulRunAsyncInvocation"",
+                            ""metricValue"": ""1.0""
+                        }
+                    ],
+
+                    ""outputs"": [
+                        {
+                            ""type"": ""DummyOutput"",
+                        }
+                    ],
+
+                    ""schemaVersion"": ""2016-08-11"",
+                    ""noWellKnownPipelineItems"": ""true"",
+
+                    ""healthReporter"": {
+                        ""type"": ""CustomHealthReporter"",
+                    },
+
+                    ""extensions"": [
+                         {
+                            ""category"": ""healthReporter"",
+                            ""type"": ""CustomHealthReporter"",
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                        },
+                        {
+                            ""category"": ""inputFactory"",
+                            ""type"": ""EventSource"",
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture = neutral, PublicKeyToken = b03f5f7f11d50a3a""
+                        },
+                         {
+                            ""category"": ""filterFactory"",
+                            ""type"": ""metadata"",
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a""
+                        },
+                         {
+                            ""category"": ""outputFactory"",
+                            ""type"": ""DummyOutput"",
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.DummyOutputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                        }
+                    ]
+                }";
+
+            try
+            {
+                using (var configFile = new TemporaryFile())
+                {
+                    configFile.Write(pipelineConfiguration);
+                    ConfigurationBuilder builder = new ConfigurationBuilder();
+                    builder.AddJsonFile(configFile.FilePath);
+                    var configuration = builder.Build();
+
+                    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
+                    {
+                        Assert.NotNull(pipeline);
+                        Assert.True(pipeline.HealthReporter is CustomHealthReporter);
+                        Assert.Single(pipeline.Inputs);
+                        Assert.IsType(typeof(EventSourceInput), pipeline.Inputs.First());
+                        Assert.Single(pipeline.Sinks);
+                        Assert.IsType(typeof(DummyOutput), pipeline.Sinks.First().Output);
+                        Assert.Single(pipeline.GlobalFilters);
+                        Assert.IsType(typeof(EventMetadataFilter), pipeline.GlobalFilters.First());
+                    }
+                }
+            }
+            finally
+            {
+                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix, delayMilliseconds: 500);
             }
         }
 

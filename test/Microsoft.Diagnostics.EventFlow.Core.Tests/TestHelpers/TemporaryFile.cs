@@ -38,6 +38,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             File.AppendAllText(FilePath, contents);
         }
 
+        public void Clear()
+        {
+            if (FilePath == null)
+            {
+                throw new ObjectDisposedException(nameof(TemporaryFile));
+            }
+
+            File.WriteAllText(FilePath, string.Empty);
+        }
+
         public string FilePath { get; private set; }
 
         private void Create(string path)
