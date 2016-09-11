@@ -13,6 +13,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
+#if NET451
+using System.Web;
+#endif
+#if NETSTANDARD1_6
+using System.Reflection;
+#endif
+
 namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 {
     public class CsvHealthReporter : IHealthReporter, IRequireActivation
@@ -145,8 +152,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 this.Configuration.LogFileFolder = ".";
                 ReportWarning($"{nameof(this.Configuration.LogFileFolder)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFileFolder}", TraceTag);
-
             }
+            ProcessLogFileFolder();
+
 
             this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
             this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
@@ -219,14 +227,40 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         }
 
         /// <summary>
+        /// For ASP.NET (non-core): Default path is 'App_Data'. The relative path would relative to 'App_Data'.
+        /// For other projects(including ASP.NET Core), relative path would relative to the assembly folder.
+        /// </summary>
+        private void ProcessLogFileFolder()
+        {
+            if (Path.IsPathRooted(this.Configuration.LogFileFolder))
+            {
+                return;
+            }
+
+            string basePath;
+#if NET451
+            if (HttpContext.Current != null && HttpContext.Current.Server != null)
+            {
+                basePath = HttpContext.Current.Server.MapPath("~/App_Data");
+            }
+            else
+            {
+                basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(this.GetType()).Location);
+            }
+#elif NETSTANDARD1_6
+            basePath = Path.GetDirectoryName(this.GetType().GetTypeInfo().Assembly.Location);
+#endif
+            this.Configuration.LogFileFolder = Path.Combine(basePath, this.Configuration.LogFileFolder);
+        }
+
+        /// <summary>
         /// Create the stream writer for the health reporter.
         /// </summary>
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
             string logFilePath = GetReportFileName();
-            string logFileFolder = Configuration.LogFileFolder;
-            logFileFolder = Path.GetFullPath(logFileFolder);
+            string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);

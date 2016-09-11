@@ -19,7 +19,11 @@
         "System.Threading.Timer": "4.0.1"
       }
     },
-    "net451": {}
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Web": "4.0.0.0"
+      }
+    }
   },
   "buildOptions": {
     "keyFile": "../../PublicKey.snk",

@@ -13,6 +13,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     internal class CustomHealthReporter : CsvHealthReporter, IHealthReporter, IDisposable
     {
+        internal CsvHealthReporterConfiguration ConfigurationWrapper
+        {
+            get
+            {
+                return this.Configuration;
+            }
+        }
+
         public Mock<StreamWriter> StreamWriterMock { get; private set; }
         private MemoryStream memoryStream;
         public CustomHealthReporter(string configurationFilePath)

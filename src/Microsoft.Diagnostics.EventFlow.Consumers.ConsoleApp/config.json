@@ -1,8 +1,10 @@
 ﻿{
   "healthReporter": {
-    "type":  "CsvHealthReporter",
-    "logFilePath": "HealthReport.csv",
-    "logLevel": "Message"
+    "type": "CsvHealthReporter",
+    "logFileFolder": ".",
+    "logFilePrefix": "HealthReport",
+    "minReportLevel": "Warning",
+    "throttlingPeriodMsec": "1000"
   },
   "inputs": [
     {

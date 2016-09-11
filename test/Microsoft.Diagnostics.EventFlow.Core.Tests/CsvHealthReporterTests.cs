@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Extensions.Configuration;
@@ -233,6 +234,19 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.StreamWriterMock.Verify(
                     s => s.Flush(),
                     Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void ShouldParseRelativePath()
+        {
+            // Setup
+            var configuration = BuildTestConfigration();
+
+            // Exercise
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.True(Path.IsPathRooted(target.ConfigurationWrapper.LogFileFolder));
             }
         }
 
