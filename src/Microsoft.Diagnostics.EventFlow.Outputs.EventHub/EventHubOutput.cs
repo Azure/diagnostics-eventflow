@@ -13,7 +13,7 @@ using Microsoft.ServiceBus.Messaging;
 using Validation;
 using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
 
-namespace Microsoft.Diagnostics.EventFlow.Outputs.EventHub
+namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
 
     public class EventHubOutput : OutputBase
