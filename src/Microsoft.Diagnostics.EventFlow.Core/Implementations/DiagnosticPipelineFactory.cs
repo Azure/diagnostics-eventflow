@@ -44,7 +44,6 @@ namespace Microsoft.Diagnostics.EventFlow
             IDictionary<string, string> filterFactories;
             CreateItemFactories(configuration, healthReporter, out inputFactories, out outputFactories, out filterFactories);
 
-
             // Step 1: instantiate inputs
             IConfigurationSection inputConfigurationSection = configuration.GetSection("inputs");
             if (inputConfigurationSection.GetChildren().Count() == 0)
@@ -53,13 +52,12 @@ namespace Microsoft.Diagnostics.EventFlow
             }
 
             List<ItemWithChildren<IObservable<EventData>, object>> inputCreationResult;
-            ProcessSection<IObservable<EventData>, object>(
+            inputCreationResult = ProcessSection<IObservable<EventData>, object>(
                 inputConfigurationSection,
                 healthReporter,
                 inputFactories,
                 childFactories: null,
-                childSectionName: null,
-                createdItems: out inputCreationResult);
+                childSectionName: null);
 
             List<IObservable<EventData>> inputs = inputCreationResult.Select(item => item.Item).ToList();
             if (inputs.Count == 0)
@@ -73,13 +71,12 @@ namespace Microsoft.Diagnostics.EventFlow
             List<ItemWithChildren<IFilter, object>> globalFilterCreationResult;
 
             // It completely fine to have a pipeline with no globals filters section, or an empty one
-            ProcessSection<IFilter, object>(
+            globalFilterCreationResult = ProcessSection<IFilter, object>(
                 globalFilterConfigurationSection,
                 healthReporter,
                 filterFactories,
                 childFactories: null,
-                childSectionName: null,
-                createdItems: out globalFilterCreationResult);
+                childSectionName: null);
             List<IFilter> globalFilters = globalFilterCreationResult.Select(item => item.Item).ToList();
 
 
@@ -93,13 +90,12 @@ namespace Microsoft.Diagnostics.EventFlow
             }
 
             List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
-            ProcessSection<IOutput, IFilter>(
+            outputCreationResult = ProcessSection<IOutput, IFilter>(
                 outputConfigurationSection,
                 healthReporter,
                 outputFactories,
                 filterFactories,
-                childSectionName: "filters",
-                createdItems: out outputCreationResult);
+                childSectionName: "filters");
 
             List<IOutput> outputs = outputCreationResult.Select(item => item.Item).ToList();
             if (outputs.Count == 0)
@@ -172,24 +168,23 @@ namespace Microsoft.Diagnostics.EventFlow
             return null;
         }
 
-        private static void ProcessSection<PipelineItemType, PipelineItemChildType>(
+        private static List<ItemWithChildren<PipelineItemType, PipelineItemChildType>> ProcessSection<PipelineItemType, PipelineItemChildType>(
             IConfigurationSection configurationSection,
             IHealthReporter healthReporter,
             IDictionary<string, string> itemFactories,
             IDictionary<string, string> childFactories,
-            string childSectionName,
-            out List<ItemWithChildren<PipelineItemType, PipelineItemChildType>> createdItems)
+            string childSectionName)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(configurationSection.Key));
             Debug.Assert(healthReporter != null);
             Debug.Assert(itemFactories != null);
             Debug.Assert((string.IsNullOrEmpty(childSectionName) && childFactories == null) || (!string.IsNullOrEmpty(childSectionName) && childFactories != null));
 
-            createdItems = new List<ItemWithChildren<PipelineItemType, PipelineItemChildType>>();
+            List<ItemWithChildren<PipelineItemType, PipelineItemChildType>> createdItems = new List<ItemWithChildren<PipelineItemType, PipelineItemChildType>>();
 
             if (configurationSection == null)
             {
-                return;
+                return createdItems;
             }
 
             List<IConfigurationSection> itemConfigurationFragments = configurationSection.GetChildren().ToList();
@@ -235,13 +230,12 @@ namespace Microsoft.Diagnostics.EventFlow
                 if (!string.IsNullOrEmpty(childSectionName))
                 {
                     IConfigurationSection childrenSection = itemFragment.GetSection(childSectionName);
-                    ProcessSection<PipelineItemChildType, object>(
+                    children = ProcessSection<PipelineItemChildType, object>(
                         childrenSection,
                         healthReporter,
                         childFactories,
                         childFactories: null,       // Only one level of nexting is supported
-                        childSectionName: null,
-                        createdItems: out children);
+                        childSectionName: null);
 
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, children.Select(c => c.Item).ToList()));
                 }
@@ -250,6 +244,8 @@ namespace Microsoft.Diagnostics.EventFlow
                     createdItems.Add(new ItemWithChildren<PipelineItemType, PipelineItemChildType>(item, null));
                 }
             }
+
+            return createdItems;
         }
 
         private static void ReportItemCreationFailedAndThrow(IHealthReporter healthReporter, string itemType, Exception e = null)
@@ -316,6 +312,8 @@ namespace Microsoft.Diagnostics.EventFlow
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            outputFactories["EventHub"] = "Microsoft.Diagnostics.EventFlow.Outputs.EventHubOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.EventHub, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            outputFactories["ElasticSearch"] = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearchOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";

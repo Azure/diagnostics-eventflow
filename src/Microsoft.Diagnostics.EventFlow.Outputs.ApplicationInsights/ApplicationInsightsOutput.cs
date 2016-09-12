@@ -19,7 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class ApplicationInsightsOutput : OutputBase
     {
-        private const string AppInsightsKeyName = "InstrumentationKey";
+        private const string AppInsightsKeyName = "instrumentationKey";
 
         private readonly TelemetryClient telemetryClient;
 
