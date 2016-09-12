@@ -66,7 +66,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                     if (!handled)
                     {
-                        TraceTelemetry t = new TraceTelemetry(e.Payload["Message"] as string ?? string.Empty);
+                        object message = null;
+                        e.Payload.TryGetValue("Message", out message);
+                        TraceTelemetry t = new TraceTelemetry(message as string ?? string.Empty);
                         AddProperties(t, e);
 
                         telemetryClient.TrackTrace(t);

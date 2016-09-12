@@ -32,33 +32,35 @@ namespace Microsoft.Diagnostics.EventFlow
                 return;
             }
 
-            object p = e.Payload[payloadName];
-            if (p != null)
+            object p;
+            if (!e.Payload.TryGetValue(payloadName, out p) || p == null)
             {
-                bool converted = false;
-                T value = default(T);
+                return;
+            }
 
+            bool converted = false;
+            T value = default(T);
+
+            try
+            {
+                value = (T)p;
+                converted = true;
+            }
+            catch { }
+
+            if (!converted)
+            {
                 try
                 {
-                    value = (T)p;
+                    value = (T)Convert.ChangeType(p, typeof(T));
                     converted = true;
                 }
                 catch { }
+            }
 
-                if (!converted)
-                {
-                    try
-                    {
-                        value = (T)Convert.ChangeType(p, typeof(T));
-                        converted = true;
-                    }
-                    catch { }
-                }
-
-                if (converted)
-                {
-                    handler(value);
-                }
+            if (converted)
+            {
+                handler(value);
             }
         }
     }
