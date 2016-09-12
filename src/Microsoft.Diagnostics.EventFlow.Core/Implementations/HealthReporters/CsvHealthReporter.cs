@@ -33,27 +33,30 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         #region Constants
         internal const string DefaultLogFilePrefix = "HealthReport";
+        private const int DefaultThrottlingPeriodMsec = 0;
         #endregion
 
         #region Fields
         private static readonly string TraceTag = nameof(CsvHealthReporter);
         private static readonly TimeSpan DisposalTimeout = TimeSpan.FromSeconds(10);
 
-        private BlockingCollection<string> reportCollection;
-        private FileStream fileStream;
+        private bool disposed = false;
+
         private bool newStreamRequested = false;
+        private BlockingCollection<string> reportCollection;
         private INewReportFileTrigger newReportFileTrigger = null;
         private TimeSpanThrottle throttle;
         private Task writingTask;
-        private bool disposed = false;
+        private HealthReportLevel minReportLevel;
+
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
+        private FileStream fileStream;
+        internal StreamWriter StreamWriter;
         #endregion
 
         #region Properties
         protected CsvHealthReporterConfiguration Configuration { get; private set; }
-        internal HealthReportLevel LogLevel { get; private set; } = HealthReportLevel.Error;
-        internal StreamWriter StreamWriter;
         #endregion
 
         #region Constructors
@@ -100,66 +103,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         }
         #endregion
 
-        #region Methods
-        public virtual string GetReportFileName()
-        {
-            return $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
-        }
-
-        private void Initialize(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger = null)
-        {
-            this.reportCollection = new BlockingCollection<string>();
-
-            // Prepare the configuration, set default values, handle invalid values.
-            this.Configuration = configuration;
-
-            // Create a default throttle
-            configuration.ThrottlingPeriodMsec = 0;
-            this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(0));
-
-            string logLevelString = this.Configuration?.MinReportLevel;
-            HealthReportLevel logLevel;
-            if (Enum.TryParse(logLevelString, out logLevel))
-            {
-                LogLevel = logLevel;
-            }
-            else
-            {
-                this.Configuration.MinReportLevel = this.LogLevel.ToString();
-                // The severity has to be at least the same as the default level of error.
-                ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}. Falling back to default value: {this.Configuration.MinReportLevel}", TraceTag);
-            }
-
-            if (configuration.ThrottlingPeriodMsec == null || !configuration.ThrottlingPeriodMsec.HasValue || configuration.ThrottlingPeriodMsec.Value < 0)
-            {
-                ReportWarning($"{nameof(configuration.ThrottlingPeriodMsec)} is not specified or the value is invalid in configuration file. Falling back to default value: {this.Configuration.ThrottlingPeriodMsec.Value}", TraceTag);
-                // Keep using the default throttle.
-            }
-            else if (configuration.ThrottlingPeriodMsec.Value > 0)
-            {
-                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(configuration.ThrottlingPeriodMsec.Value));
-            }
-
-            // Set default value for HealthReport file prefix
-            if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
-            {
-                this.Configuration.LogFilePrefix = DefaultLogFilePrefix;
-                ReportWarning($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
-            }
-
-            // Set default value for health reports
-            if (string.IsNullOrWhiteSpace(this.Configuration.LogFileFolder))
-            {
-                this.Configuration.LogFileFolder = ".";
-                ReportWarning($"{nameof(this.Configuration.LogFileFolder)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFileFolder}", TraceTag);
-            }
-            ProcessLogFileFolder();
-
-
-            this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
-            this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
-        }
-
+        #region Public Methods
         /// <summary>
         /// Starts to write the health reports.
         /// </summary>
@@ -218,41 +162,70 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             });
         }
 
-        private void VerifyObjectIsNotDisposed()
+        public virtual string GetReportFileName()
+        {
+            return $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+        }
+
+        public void ReportHealthy(string description = null, string context = null)
+        {
+            VerifyObjectIsNotDisposed();
+            ReportText(HealthReportLevel.Message, description, context);
+        }
+
+        public void ReportProblem(string description, string context = null)
+        {
+            VerifyObjectIsNotDisposed();
+            ReportText(HealthReportLevel.Error, description, context);
+        }
+
+        public void ReportWarning(string description, string context = null)
+        {
+            VerifyObjectIsNotDisposed();
+            ReportText(HealthReportLevel.Warning, description, context);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
+
+        #region Protected Methods
+        protected virtual void Dispose(bool disposing)
         {
             if (disposed)
             {
-                throw new ObjectDisposedException(TraceTag);
-            }
-        }
-
-        /// <summary>
-        /// For ASP.NET (non-core): Default path is 'App_Data'. The relative path would relative to 'App_Data'.
-        /// For other projects(including ASP.NET Core), relative path would relative to the assembly folder.
-        /// </summary>
-        private void ProcessLogFileFolder()
-        {
-            if (Path.IsPathRooted(this.Configuration.LogFileFolder))
-            {
                 return;
             }
+            disposed = true;
 
-            string basePath;
-#if NET451
-            if (HttpContext.Current != null && HttpContext.Current.Server != null)
+            if (disposing)
             {
-                basePath = HttpContext.Current.Server.MapPath("~/App_Data");
+                if (this.newReportFileTrigger != null)
+                {
+                    this.newReportFileTrigger.NewReportFileRequested -= OnNewReportFileRequested;
+                    this.newReportFileTrigger = null;
+                }
+
+                // Mark report collection as complete adding. When the collection is empty, it will dispose the stream writers.
+                this.reportCollection.CompleteAdding();
+
+                try
+                {
+                    // Make sure that when Dispose() returns, the reporter is fully disposed (streams are closed etc.)
+                    this.writingTask?.Wait(DisposalTimeout);
+                }
+                catch
+                {
+                    // We are reporting writing task errors from ReportXxx() methods, to no need to pass the task exception up here.
+                }
             }
-            else
-            {
-                basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(this.GetType()).Location);
-            }
-#elif NETSTANDARD1_6
-            basePath = Path.GetDirectoryName(this.GetType().GetTypeInfo().Assembly.Location);
-#endif
-            this.Configuration.LogFileFolder = Path.Combine(basePath, this.Configuration.LogFileFolder);
+
         }
+        #endregion
 
+        #region Private or internal methods
         /// <summary>
         /// Create the stream writer for the health reporter.
         /// </summary>
@@ -307,33 +280,117 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
         }
 
+        private void Initialize(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger = null)
+        {
+            Requires.NotNull(configuration, nameof(configuration));
+
+            this.reportCollection = new BlockingCollection<string>();
+
+            // Prepare the configuration, set default values, handle invalid values.
+            this.Configuration = configuration;
+
+            // Create a default throttle
+            this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(DefaultThrottlingPeriodMsec));
+
+            HealthReportLevel logLevel;
+            string logLevelString = this.Configuration.MinReportLevel;
+            if (string.IsNullOrWhiteSpace(logLevelString))
+            {
+                this.minReportLevel = HealthReportLevel.Error;
+            }
+            else if (Enum.TryParse(logLevelString, out logLevel))
+            {
+                this.minReportLevel = logLevel;
+            }
+            else
+            {
+                this.minReportLevel = HealthReportLevel.Error;
+                // The severity has to be at least the same as the default level of error.
+                ReportProblem($"Failed to parse log level. Please check the value of: {logLevelString}. Falling back to default value: {this.minReportLevel.ToString()}", TraceTag);
+            }
+            this.Configuration.MinReportLevel = this.minReportLevel.ToString();
+
+            if (this.Configuration.ThrottlingPeriodMsec == null || !this.Configuration.ThrottlingPeriodMsec.HasValue)
+            {
+                this.Configuration.ThrottlingPeriodMsec = DefaultThrottlingPeriodMsec;
+                ReportHealthy($"{nameof(this.Configuration.ThrottlingPeriodMsec)} is not specified. Falling back to default value: {this.Configuration.ThrottlingPeriodMsec}.", TraceTag);
+            }
+            else if (this.Configuration.ThrottlingPeriodMsec.Value == DefaultThrottlingPeriodMsec)
+            {
+                // Keep using the default throttle created before.
+            }
+            else if (this.Configuration.ThrottlingPeriodMsec.Value < 0)
+            {
+                ReportWarning($"{nameof(this.Configuration.ThrottlingPeriodMsec)}: {this.Configuration.ThrottlingPeriodMsec.Value} specified in the configuration file is invalid. Falling back to default value: {DefaultThrottlingPeriodMsec}", TraceTag);
+                this.Configuration.ThrottlingPeriodMsec = DefaultThrottlingPeriodMsec;
+            }
+            else if (this.Configuration.ThrottlingPeriodMsec.Value >= 0)
+            {
+                this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(this.Configuration.ThrottlingPeriodMsec.Value));
+            }
+
+            // Set default value for HealthReport file prefix
+            if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
+            {
+                this.Configuration.LogFilePrefix = DefaultLogFilePrefix;
+                ReportHealthy($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
+            }
+
+            // Set default value for health reports
+            if (string.IsNullOrWhiteSpace(this.Configuration.LogFileFolder))
+            {
+                this.Configuration.LogFileFolder = ".";
+                ReportHealthy($"{nameof(this.Configuration.LogFileFolder)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFileFolder}", TraceTag);
+            }
+            ProcessLogFileFolder();
+
+            this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
+            this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
+        }
+
+        private void VerifyObjectIsNotDisposed()
+        {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(TraceTag);
+            }
+        }
+
+        /// <summary>
+        /// For ASP.NET (non-core): Default path is 'App_Data'. The relative path would relative to 'App_Data'.
+        /// For other projects(including ASP.NET Core), relative path would relative to the assembly folder.
+        /// </summary>
+        private void ProcessLogFileFolder()
+        {
+            if (Path.IsPathRooted(this.Configuration.LogFileFolder))
+            {
+                return;
+            }
+
+            string basePath;
+#if NET451
+            if (HttpContext.Current != null && HttpContext.Current.Server != null)
+            {
+                basePath = HttpContext.Current.Server.MapPath("~/App_Data");
+            }
+            else
+            {
+                basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(this.GetType()).Location);
+            }
+#elif NETSTANDARD1_6
+            basePath = Path.GetDirectoryName(this.GetType().GetTypeInfo().Assembly.Location);
+#endif
+            this.Configuration.LogFileFolder = Path.Combine(basePath, this.Configuration.LogFileFolder);
+        }
 
         private void OnNewReportFileRequested(object sender, EventArgs e)
         {
             this.newStreamRequested = true;
         }
 
-        public void ReportHealthy(string description = null, string context = null)
-        {
-            VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Message, description, context);
-        }
-
-        public void ReportProblem(string description, string context = null)
-        {
-            VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Error, description, context);
-        }
-
-        public void ReportWarning(string description, string context = null)
-        {
-            VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Warning, description, context);
-        }
-
         private void ReportText(HealthReportLevel level, string text, string context = null)
         {
-            if (level < LogLevel)
+            if (level < this.minReportLevel)
             {
                 return;
             }
@@ -374,43 +431,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 return text;
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposed)
-            {
-                return;
-            }
-            disposed = true;
-
-            if (disposing)
-            {
-                if (this.newReportFileTrigger != null)
-                {
-                    this.newReportFileTrigger.NewReportFileRequested -= OnNewReportFileRequested;
-                    this.newReportFileTrigger = null;
-                }
-
-                // Mark report collection as complete adding. When the collection is empty, it will dispose the stream writers.
-                this.reportCollection.CompleteAdding();
-
-                try
-                {
-                    // Make sure that when Dispose() returns, the reporter is fully disposed (streams are closed etc.)
-                    this.writingTask?.Wait(DisposalTimeout);
-                }
-                catch
-                {
-                    // We are reporting writing task errors from ReportXxx() methods, to no need to pass the task exception up here.
-                }
-            }
-
         }
         #endregion
     }

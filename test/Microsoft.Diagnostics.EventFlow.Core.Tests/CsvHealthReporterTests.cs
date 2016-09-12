@@ -184,7 +184,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 configFile.Write(configJsonString);
                 using (CustomHealthReporter target = new CustomHealthReporter(configFile.FilePath))
                 {
-                    Assert.Equal(level, target.LogLevel.ToString());
+                    Assert.Equal(level, target.ConfigurationWrapper.MinReportLevel);
                 }
             }
         }
