@@ -232,13 +232,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            string logFilePath = GetReportFileName();
+            string logFileName = GetReportFileName();
             string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);
             }
-            logFilePath = Path.Combine(logFileFolder, logFilePath);
+            string logFilePath = Path.Combine(logFileFolder, logFileName);
 
             // Do not update file stream or stream writer when targeting the same path.
             if (this.fileStream != null &&
@@ -270,11 +270,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             catch (IOException)
             {
                 // In case file is locked by other process, give it another shot.
-                string original = logFilePath;
-                logFilePath = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
+                string originalFilePath = logFilePath;
+                logFileName = $"{Path.GetFileNameWithoutExtension(logFileName)}_{Path.GetRandomFileName()}{Path.GetExtension(logFileName)}";
+                logFilePath = Path.Combine(logFileFolder, logFileName);
                 this.fileStream = new FileStream(logFilePath, FileMode.Append);
 
-                ReportWarning($"IOExcepion happened for the LogFilePath: {original}. Use new path: {logFilePath}", TraceTag);
+                ReportWarning($"IOExcepion happened for the LogFilePath: {originalFilePath}. Use new path: {logFilePath}", TraceTag);
             }
 
             this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);

@@ -29,10 +29,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject = new SimpleSubject<EventData>();
 
             string traceLevelString = configuration["traceLevel"];
-            SourceLevels traceLevel = SourceLevels.Error;
+            SourceLevels traceLevel;
             if (!Enum.TryParse(traceLevelString, out traceLevel))
             {
                 healthReporter.ReportWarning($"Invalid trace level in configuration: {traceLevelString}. Fall back to default: {traceLevel}");
+                traceLevel = SourceLevels.Error;
             }
             Filter = new EventTypeFilter(traceLevel);
             Trace.Listeners.Add(this);
@@ -136,23 +137,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         {
             try
             {
-                EventData eventEntry = new EventData();
+                EventData eventEntry = new EventData()
+                {
+                    ProviderName = string.IsNullOrEmpty(source) ? TraceTag : source,
+                    Timestamp = DateTime.UtcNow,
+                    Level = ToEventLevel(level)
+                };
+
                 var eventPayload = eventEntry.Payload;
                 eventPayload["Message"] = message;
-                eventEntry.Level = ToEventLevel(level);
 
                 if (id != null && id.HasValue)
                 {
                     eventPayload["EventId"] = id.Value;
-                }
-
-                if (!string.IsNullOrEmpty(source))
-                {
-                    eventEntry.ProviderName = source;
-                }
-                else
-                {
-                    eventEntry.ProviderName = TraceTag;
                 }
 
                 if (!string.IsNullOrEmpty(relatedActivityId))
