@@ -426,6 +426,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns></returns>
         private string EscapeComma(string text)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text;
+            }
+
             if (text.Contains(","))
             {
                 return "\"" + text.Replace("\"", "\"\"") + "\"";
