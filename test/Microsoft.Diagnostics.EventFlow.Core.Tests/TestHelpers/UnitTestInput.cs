@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests
@@ -29,6 +30,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         {
             var e = new EventData();
             e.Payload["Message"] = message;
+            subject.OnNext(e);
+        }
+
+        public void SendData(IEnumerable<KeyValuePair<string, object>> data)
+        {
+            var e = new EventData();
+            foreach (var kvPair in data)
+            {
+                e.Payload.Add(kvPair.Key, kvPair.Value);
+            }
             subject.OnNext(e);
         }
 

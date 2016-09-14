@@ -272,12 +272,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                          {
                             ""category"": ""filterFactory"",
                             ""type"": ""metadata"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.DummyFilterFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.UnitTestFilterFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         },
                          {
                             ""category"": ""outputFactory"",
                             ""type"": ""StdOutput"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.DummyOutputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.UnitTestOutputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
                         }
                     ]
                 }";
@@ -298,9 +298,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         Assert.Single(pipeline.Inputs);
                         Assert.IsType(typeof(UnitTestInput), pipeline.Inputs.First());
                         Assert.Single(pipeline.Sinks);
-                        Assert.IsType(typeof(DummyOutput), pipeline.Sinks.First().Output);
+                        Assert.IsType(typeof(UnitTestOutput), pipeline.Sinks.First().Output);
                         Assert.Single(pipeline.GlobalFilters);
-                        Assert.IsType(typeof(DummyFilter), pipeline.GlobalFilters.First());
+                        Assert.IsType(typeof(UnitTestFilter), pipeline.GlobalFilters.First());
                     }
                 }
             }

@@ -304,7 +304,7 @@ namespace Microsoft.Diagnostics.EventFlow
             Debug.Assert(configuration != null);
             Debug.Assert(healthReporter != null);
 
-            inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);                        
+            inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
@@ -363,6 +363,11 @@ namespace Microsoft.Diagnostics.EventFlow
 
         private static void DisposeOf(IEnumerable<object> items)
         {
+            if (items == null)
+            {
+                return;
+            }
+
             foreach (var item in items)
             {
                 (item as IDisposable)?.Dispose();

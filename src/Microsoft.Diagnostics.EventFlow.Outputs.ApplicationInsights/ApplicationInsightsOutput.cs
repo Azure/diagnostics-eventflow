@@ -20,6 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
     public class ApplicationInsightsOutput : OutputBase
     {
         private const string AppInsightsKeyName = "instrumentationKey";
+        private static readonly Task CompletedTask = Task.FromResult<object>(null);
 
         private readonly TelemetryClient telemetryClient;
 
@@ -43,13 +44,18 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             if (this.telemetryClient == null || events == null || events.Count == 0)
             {
-                return Task.FromResult<object>(null);
+                return CompletedTask;
             }
 
             try
             {
                 foreach (var e in events)
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return CompletedTask;
+                    }
+
                     IReadOnlyCollection<EventMetadata> metadata;
                     bool handled = false;
 
@@ -84,7 +90,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 this.healthReporter.ReportProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
             }
 
-            return Task.FromResult<object>(null);
+            return CompletedTask;
         }
 
         private void TrackMetric(EventData e, IReadOnlyCollection<EventMetadata> metadata)
