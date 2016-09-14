@@ -190,26 +190,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ShouldEscapeCommaInMessage()
-        {
-            // Setup
-            var configuration = BuildTestConfigration();
-
-            // Exercise
-            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
-            {
-                target.Activate();
-                target.ReportProblem("Error message, with comma.", "UnitTest");
-                // Verify
-                await Task.Delay(DefaultDelayMsec);
-                target.StreamWriterMock.Verify(
-                    s => s.WriteLine(
-                        It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error message, with comma.\""))),
-                    Times.Exactly(1));
-            }
-        }
-
-        [Fact]
         public async void ShouldFlushOnceAWhile()
         {
             // Setup
@@ -261,6 +241,59 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
                 Assert.Equal(expected, target.ConfigurationWrapper.LogFileFolder);
+            }
+        }
+
+        [Fact]
+        public async void ShouldEscapeCommaInMessage()
+        {
+            // Setup
+            var configuration = BuildTestConfigration();
+
+            // Exercise
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                target.Activate();
+                target.ReportProblem("Error message, with comma.", "UnitTest");
+                // Verify
+                await Task.Delay(DefaultDelayMsec);
+                target.StreamWriterMock.Verify(
+                    s => s.WriteLine(
+                        It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error message, with comma.\""))),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void EscapeCommaShouldHandleNullOrEmptyString()
+        {
+            using (CustomHealthReporter target = new CustomHealthReporter(BuildTestConfigration()))
+            {
+                string actual = target.EscapeComma(null);
+                Assert.Null(actual);
+
+                actual = target.EscapeComma(string.Empty);
+                Assert.Equal(string.Empty, actual);
+            }
+        }
+
+        [Fact]
+        public async void ShouldEscapeQuotesWhenThereIsCommaInMessage()
+        {
+            // Setup
+            var configuration = BuildTestConfigration();
+
+            // Exercise
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                target.Activate();
+                target.ReportProblem("Error \"message\", with comma and quotes.", "UnitTest");
+                // Verify
+                await Task.Delay(DefaultDelayMsec);
+                target.StreamWriterMock.Verify(
+                    s => s.WriteLine(
+                        It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error \"\"message\"\", with comma and quotes.\""))),
+                    Times.Exactly(1));
             }
         }
 

@@ -424,7 +424,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        private string EscapeComma(string text)
+        internal string EscapeComma(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
