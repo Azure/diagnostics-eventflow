@@ -5,8 +5,7 @@
     "Microsoft.Extensions.Configuration.Binder": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "NETStandard.Library": "1.6.0",
-    "System.Collections.Immutable": "1.2.0",
-    "System.Threading.Tasks.Dataflow": "4.6.0",
+    "System.Threading.Tasks.Dataflow": "4.5.25",
     "System.Threading.Tasks.Parallel": "4.0.0",
     "Validation": "2.3.7"
   },
@@ -16,12 +15,16 @@
       "dependencies": {
         "System.Dynamic.Runtime": "4.0.11",
         "System.Threading.Thread": "4.0.0",
-        "System.Threading.Timer": "4.0.1"
+        "System.Threading.Timer": "4.0.1",
+        "System.Collections.Immutable": "1.1.37"
       }
     },
     "net451": {
       "frameworkAssemblies": {
         "System.Web": "4.0.0.0"
+      },
+      "dependencies": {
+        "System.Collections.Immutable": "1.1.36"
       }
     }
   },

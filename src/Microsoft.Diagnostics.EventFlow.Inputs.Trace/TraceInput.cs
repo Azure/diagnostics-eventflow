@@ -41,6 +41,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         }
 
         #region Overrides for TraceListener
+        public override void Write(string message)
+        {
+            WriteLine(message);
+        }
+
         public override void WriteLine(string message)
         {
             SubmitEventData(message, TraceEventType.Information);
@@ -133,6 +138,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 #endif
         #endregion
 
+        public IDisposable Subscribe(IObserver<EventData> observer)
+        {
+            return this.subject.Subscribe(observer);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            this.subject.Dispose();
+        }
+
         private void SubmitEventData(string message, TraceEventType level, int? id = null, string source = null, string relatedActivityId = null)
         {
             try
@@ -163,22 +179,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 this.healthReporter?.ReportProblem($"Failed to write message. Error: {ex.ToString()}", TraceTag);
             }
-        }
-
-        public IDisposable Subscribe(IObserver<EventData> observer)
-        {
-            return this.subject.Subscribe(observer);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            this.subject.Dispose();
-        }
-
-        public override void Write(string message)
-        {
-            WriteLine(message);
         }
 
         private LogLevel ToEventLevel(TraceEventType traceEventType)
