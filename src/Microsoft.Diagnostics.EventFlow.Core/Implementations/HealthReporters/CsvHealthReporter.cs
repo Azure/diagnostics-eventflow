@@ -330,14 +330,14 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(this.Configuration.ThrottlingPeriodMsec.Value));
             }
 
-            // Set default value for HealthReport file prefix
+            // Set default value for health report file prefix
             if (string.IsNullOrWhiteSpace(this.Configuration.LogFilePrefix))
             {
                 this.Configuration.LogFilePrefix = DefaultLogFilePrefix;
                 ReportHealthy($"{nameof(this.Configuration.LogFilePrefix)} is not specified in configuration file. Falling back to default value: {this.Configuration.LogFilePrefix}", TraceTag);
             }
 
-            // Set default value for health reports
+            // Set target folder for health report files.
             if (string.IsNullOrWhiteSpace(this.Configuration.LogFileFolder))
             {
                 this.Configuration.LogFileFolder = ".";
@@ -363,6 +363,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// </summary>
         private void ProcessLogFileFolder()
         {
+            this.Configuration.LogFileFolder = Environment.ExpandEnvironmentVariables(this.Configuration.LogFileFolder);
+
             if (Path.IsPathRooted(this.Configuration.LogFileFolder))
             {
                 return;

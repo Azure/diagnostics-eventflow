@@ -250,6 +250,20 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
+        [Fact]
+        public void ShouldExpandEnvironmentVariablesForLogFolder()
+        {
+            var configuration = BuildTestConfigration();
+            Environment.SetEnvironmentVariable("WarsawUnitTestPath", @"x:\temp");
+            configuration[LogFileFolderKey] = @"%WarsawUnitTestPath%\logs";
+            string expected = Environment.ExpandEnvironmentVariables(@"%WarsawUnitTestPath%\logs");
+
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.Equal(expected, target.ConfigurationWrapper.LogFileFolder);
+            }
+        }
+
         private IConfiguration BuildTestConfigration()
         {
             return (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {

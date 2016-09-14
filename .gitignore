@@ -196,3 +196,5 @@ project.lock.json
 /src/Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore/HealthReport.csv
 /src/Microsoft.Diagnostics.EventFlow.FilterParserGenerator/FilterParser.peg.cs
 /nugets/
+
+.vscode
