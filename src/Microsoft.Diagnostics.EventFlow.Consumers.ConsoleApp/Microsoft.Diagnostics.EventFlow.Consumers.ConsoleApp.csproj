@@ -53,6 +53,9 @@
     <Reference Include="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</Name>
     </Reference>
+    <Reference Include="..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll">
+      <Name>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</Name>
+    </Reference>
     <!--~-->
     <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Extensions.Configuration.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>

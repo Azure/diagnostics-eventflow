@@ -134,6 +134,49 @@ namespace Microsoft.Diagnostics.EventFlow
             return true;
         }
 
+        public delegate void ProcessPayload<T>(T value);
+
+        public bool GetValueFromPayload<T>(string payloadName, ProcessPayload<T> handler)
+        {
+            if (string.IsNullOrEmpty(payloadName))
+            {
+                return false;
+            }
+
+            object p;
+            if (!Payload.TryGetValue(payloadName, out p) || p == null)
+            {
+                return false;
+            }
+
+            bool converted = false;
+            T value = default(T);
+
+            try
+            {
+                value = (T)p;
+                converted = true;
+            }
+            catch { }
+
+            if (!converted)
+            {
+                try
+                {
+                    value = (T)Convert.ChangeType(p, typeof(T));
+                    converted = true;
+                }
+                catch { }
+            }
+
+            if (converted)
+            {
+                handler(value);
+            }
+
+            return converted;
+        }
+
         public EventData DeepClone()
         {
             var other = new EventData();

@@ -65,68 +65,74 @@ namespace Microsoft.Diagnostics.EventFlow
                 ReportNoItemsCreatedAndThrow(healthReporter, inputConfigurationSection);
             }
 
-
-            // Step 2: instantiate global filters (if any)
-            IConfigurationSection globalFilterConfigurationSection = configuration.GetSection("filters");
-            List<ItemWithChildren<IFilter, object>> globalFilterCreationResult;
-
-            // It completely fine to have a pipeline with no globals filters section, or an empty one
-            globalFilterCreationResult = ProcessSection<IFilter, object>(
-                globalFilterConfigurationSection,
-                healthReporter,
-                filterFactories,
-                childFactories: null,
-                childSectionName: null);
-            List<IFilter> globalFilters = globalFilterCreationResult.Select(item => item.Item).ToList();
-
-
-            // Step 3: instantiate outputs
-            IConfigurationSection outputConfigurationSection = configuration.GetSection("outputs");
-            if (outputConfigurationSection.GetChildren().Count() == 0)
-            {
-                DisposeOf(inputs);
-
-                ReportSectionEmptyAndThrow(healthReporter, outputConfigurationSection);
-            }
-
-            List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
-            outputCreationResult = ProcessSection<IOutput, IFilter>(
-                outputConfigurationSection,
-                healthReporter,
-                outputFactories,
-                filterFactories,
-                childSectionName: "filters");
-
-            List<IOutput> outputs = outputCreationResult.Select(item => item.Item).ToList();
-            if (outputs.Count == 0)
-            {
-                DisposeOf(inputs);
-                ReportNoItemsCreatedAndThrow(healthReporter, outputConfigurationSection);
-            }
-
-
-            // Step 4: assemble and return the pipeline
-            IReadOnlyCollection<EventSink> sinks = outputCreationResult.Select(outputResult =>
-                new EventSink(outputResult.Item, outputResult.Children)
-            ).ToList();
-
-
-            var pipelineSettings = new DiagnosticPipelineConfiguration();
-            IConfigurationSection settingsConfigurationSection = configuration.GetSection("settings");
             try
             {
-                if (settingsConfigurationSection.GetChildren().Count() != 0)
-                {
-                    settingsConfigurationSection.Bind(pipelineSettings);
-                }
-            }
-            catch
-            {
-                ReportInvalidPipelineConfiguration(healthReporter);
-            }
+                // Step 2: instantiate global filters (if any)
+                IConfigurationSection globalFilterConfigurationSection = configuration.GetSection("filters");
+                List<ItemWithChildren<IFilter, object>> globalFilterCreationResult;
 
-            DiagnosticPipeline pipeline = new DiagnosticPipeline(healthReporter, inputs, globalFilters, sinks, pipelineSettings, disposeDependencies: true);
-            return pipeline;
+                // It completely fine to have a pipeline with no globals filters section, or an empty one
+                globalFilterCreationResult = ProcessSection<IFilter, object>(
+                    globalFilterConfigurationSection,
+                    healthReporter,
+                    filterFactories,
+                    childFactories: null,
+                    childSectionName: null);
+                List<IFilter> globalFilters = globalFilterCreationResult.Select(item => item.Item).ToList();
+
+
+                // Step 3: instantiate outputs
+                IConfigurationSection outputConfigurationSection = configuration.GetSection("outputs");
+                if (outputConfigurationSection.GetChildren().Count() == 0)
+                {
+                    ReportSectionEmptyAndThrow(healthReporter, outputConfigurationSection);
+                }
+
+                List<ItemWithChildren<IOutput, IFilter>> outputCreationResult;
+                outputCreationResult = ProcessSection<IOutput, IFilter>(
+                    outputConfigurationSection,
+                    healthReporter,
+                    outputFactories,
+                    filterFactories,
+                    childSectionName: "filters");
+
+                List<IOutput> outputs = outputCreationResult.Select(item => item.Item).ToList();
+                if (outputs.Count == 0)
+                {
+                    ReportNoItemsCreatedAndThrow(healthReporter, outputConfigurationSection);
+                }
+
+                // Step 4: assemble and return the pipeline
+                IReadOnlyCollection<EventSink> sinks = outputCreationResult.Select(outputResult =>
+                    new EventSink(outputResult.Item, outputResult.Children)
+                ).ToList();
+
+
+                var pipelineSettings = new DiagnosticPipelineConfiguration();
+                IConfigurationSection settingsConfigurationSection = configuration.GetSection("settings");
+                try
+                {
+                    if (settingsConfigurationSection.GetChildren().Count() != 0)
+                    {
+                        settingsConfigurationSection.Bind(pipelineSettings);
+                    }
+                }
+                catch
+                {
+                    ReportInvalidPipelineConfiguration(healthReporter);
+                }
+
+                DiagnosticPipeline pipeline = new DiagnosticPipeline(healthReporter, inputs, globalFilters, sinks, pipelineSettings, disposeDependencies: true);
+
+                // Now the pipeline has assumed ownership of the inputs, setting inputs variable back to null so we won't
+                // incorrectly dispose it in the finally block
+                inputs = null;
+                return pipeline;
+            }
+            finally
+            {
+                DisposeOf(inputs);
+            }
         }
 
         private static IHealthReporter CreateHealthReporter(IConfiguration configuration)

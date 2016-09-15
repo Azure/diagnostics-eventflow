@@ -103,20 +103,33 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 mt.Name = metricMetadata["metricName"];
 
                 double value = 0.0;
+                bool valueIsValid = false;
                 string metricValueProperty = metricMetadata["metricValueProperty"];
                 if (string.IsNullOrEmpty(metricValueProperty))
                 {
-                    double.TryParse(metricMetadata["metricValue"], out value);
+                    valueIsValid = double.TryParse(metricMetadata["metricValue"], out value);
                 }
                 else
                 {
-                    this.GetValueFromPayload<double>(e, metricValueProperty, (v) => value = v);
+                    valueIsValid = e.GetValueFromPayload<double>(metricValueProperty, (v) => value = v);
                 }
-                mt.Value = value;
 
-                AddProperties(mt, e);
-
-                telemetryClient.TrackMetric(mt);
+                if (string.IsNullOrEmpty(mt.Name))
+                {
+                    // We should not send the metric in this case
+                    healthReporter.ReportProblem($"ApplicationInsightsSender encounters a metrics without a name or an invalid value");
+                }
+                else if (!valueIsValid)
+                {
+                    // We should not send the metric in this case
+                    healthReporter.ReportProblem($"ApplicationInsightsSender encounters an invalid value, it cannot convert '" + metricMetadata["metricValue"] + "' into a number");
+                }
+                else
+                {
+                    mt.Value = value;
+                    AddProperties(mt, e);
+                    telemetryClient.TrackMetric(mt);
+                }
             }
         }
 
@@ -134,11 +147,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 string requestNameProperty = requestMetadata["requestNameProperty"];
                 Debug.Assert(!string.IsNullOrWhiteSpace(requestNameProperty));
-                this.GetValueFromPayload<string>(e, requestNameProperty, (v) => requestName = v);
+                e.GetValueFromPayload<string>(requestNameProperty, (v) => requestName = v);
 
-                this.GetValueFromPayload<bool>(e, requestMetadata["isSuccessProperty"], (v) => success = v);
+                e.GetValueFromPayload<bool>(requestMetadata["isSuccessProperty"], (v) => success = v);
 
-                this.GetValueFromPayload<double>(e, requestMetadata["durationProperty"], (v) => duration = v);
+                e.GetValueFromPayload<double>(requestMetadata["durationProperty"], (v) => duration = v);
 
                 TimeSpan durationSpan = TimeSpan.FromMilliseconds(duration);
                 DateTimeOffset startTime = e.Timestamp.Subtract(durationSpan); // TODO: add an option to extract request start time from event data

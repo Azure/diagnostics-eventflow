@@ -51,6 +51,15 @@
     {
       "type": "StdOutput"
     }
+    //{
+    //  "type": "ApplicationInsights",
+    //  "instrumentationKey": "00000000-0000-0000-0000-000000000000"
+    //},
+    //{
+    //  "type": "EventHub",
+    //  "eventHubName": "eventhub name",
+    //  "serviceBusConnectionString": "<service bus connection string>"
+    //}
   ],
 
   "schema-version": "2016-08-11"

@@ -25,17 +25,17 @@ namespace Microsoft.Diagnostics.EventFlow
 
         public abstract Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
 
-        protected void GetValueFromPayload<T>(EventData e, string payloadName, ProcessPayload<T> handler)
+        protected bool GetValueFromPayload<T>(EventData e, string payloadName, ProcessPayload<T> handler)
         {
             if (string.IsNullOrEmpty(payloadName))
             {
-                return;
+                return false;
             }
 
             object p;
             if (!e.Payload.TryGetValue(payloadName, out p) || p == null)
             {
-                return;
+                return false;
             }
 
             bool converted = false;
@@ -62,6 +62,8 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 handler(value);
             }
+
+            return converted;
         }
     }
 }
