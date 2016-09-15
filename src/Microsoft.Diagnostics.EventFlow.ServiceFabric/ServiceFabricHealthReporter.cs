@@ -16,17 +16,14 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
         private string serviceManifestName;
         private string nodeName;
         private string entityIdentifier;
-        private HealthState problemHealthState;
 
-        public ServiceFabricHealthReporter(string entityIdentifier, HealthState problemHealthState = HealthState.Warning)
+        public ServiceFabricHealthReporter(string entityIdentifier)
         {
             if (string.IsNullOrWhiteSpace(entityIdentifier))
             {
                 throw new ArgumentException("entityIdentifier cannot be null or empty", "entityIdentifier");
             }
             this.entityIdentifier = entityIdentifier;
-
-            this.problemHealthState = problemHealthState;
 
             this.fabricClient = new FabricClient(
                 new FabricClientSettings()

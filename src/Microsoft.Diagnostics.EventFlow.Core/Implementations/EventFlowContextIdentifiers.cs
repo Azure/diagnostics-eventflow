@@ -10,5 +10,6 @@ namespace Microsoft.Diagnostics.EventFlow
         public static readonly string Throttling = "Microsoft.Diagnostics.EventFlow.Throttling";
         public static readonly string Filtering = "Microsoft.Diagnostics.EventFlow.Filtering";
         public static readonly string Output = "Microsoft.Diagnostics.EventFlow.Output";
+        public static readonly string Configuration = "Microsoft.Diagnostics.EventFlow.Configuration";
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -120,7 +121,20 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             connectionData.Client = client;
             connectionData.LastIndexName = null;
             string indexNamePrefix = configuration["indexNamePrefix"];
-            connectionData.IndexNamePrefix = string.IsNullOrWhiteSpace(indexNamePrefix) ? string.Empty : indexNamePrefix + Dash;
+            if (string.IsNullOrWhiteSpace(indexNamePrefix))
+            {
+                connectionData.IndexNamePrefix = string.Empty;
+            }
+            else
+            {
+                string lowerCaseIndexNamePrefix = indexNamePrefix.ToLowerInvariant();
+                if (lowerCaseIndexNamePrefix != indexNamePrefix)
+                {
+                    healthReporter.ReportWarning($"The chosen index name prefix '{indexNamePrefix}' contains uppercase characters, which is not allowed by Elasticsearch",
+                        EventFlowContextIdentifiers.Configuration);
+                }
+                connectionData.IndexNamePrefix = lowerCaseIndexNamePrefix + Dash;
+            }
             return connectionData;
         }
 
@@ -148,13 +162,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if (!createIndexResult.IsValid)
             {
-                if (createIndexResult.ServerError != null &&
-                    createIndexResult.ServerError.Error != null &&
-                    string.Equals(createIndexResult.ServerError.Error.Type, "IndexAlreadyExistsException", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    // This is fine, someone just beat us to create a new index.
-                    return;
+                    if (createIndexResult.ServerError?.Error?.Type != null &&
+                    Regex.IsMatch(createIndexResult.ServerError.Error.Type, "index.*already.*exists.*exception", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(500)))
+                    {
+                        // This is fine, someone just beat us to create a new index.
+                        return;
+                    }
                 }
+                catch (RegexMatchTimeoutException) { }
 
                 this.ReportEsRequestError(createIndexResult, "Create index");
             }
