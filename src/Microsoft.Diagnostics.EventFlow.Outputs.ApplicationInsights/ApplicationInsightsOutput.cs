@@ -117,12 +117,19 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 if (string.IsNullOrEmpty(mt.Name))
                 {
                     // We should not send the metric in this case
-                    healthReporter.ReportProblem($"ApplicationInsightsSender encounters a metrics without a name or an invalid value");
+                    healthReporter.ReportWarning($"ApplicationInsightsSender encounters a metrics without a name or an invalid value");
                 }
                 else if (!valueIsValid)
                 {
                     // We should not send the metric in this case
-                    healthReporter.ReportProblem($"ApplicationInsightsSender encounters an invalid value, it cannot convert '" + metricMetadata["metricValue"] + "' into a number");
+                    if (string.IsNullOrEmpty(metricValueProperty))
+                    {
+                        healthReporter.ReportWarning($"ApplicationInsightsSender encounters an invalid value, it cannot convert '" + metricMetadata["metricValue"] + "' into a number");
+                    }
+                    else
+                    {
+                        healthReporter.ReportWarning($"ApplicationInsightsSender encounters an invalid value, it cannot convert property '" + metricMetadata["metricValue"] + "' into a number");
+                    }
                 }
                 else
                 {
