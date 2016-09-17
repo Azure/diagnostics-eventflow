@@ -4,40 +4,55 @@
 // ------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class TraceInput : TraceListener, IObservable<EventData>, IDisposable
     {
         public static readonly string TraceTag = nameof(TraceInput);
-        
+
         private SimpleSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
 
         public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Validation.Requires.NotNull(configuration, nameof(configuration));
-            Validation.Assumes.True("Trace".Equals(configuration["type"], StringComparison.OrdinalIgnoreCase), "Invalid trace configuration");
             Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
-            this.subject = new SimpleSubject<EventData>();
 
-            string traceLevelString = configuration["traceLevel"];
-            SourceLevels traceLevel;
-            if (!Enum.TryParse(traceLevelString, out traceLevel))
+            TraceInputConfiguration traceInputConfiguration = new TraceInputConfiguration();
+            bool configurationIsValid = true;
+            try
             {
-                healthReporter.ReportWarning($"Invalid trace level in configuration: {traceLevelString}. Fall back to default: {traceLevel}");
-                traceLevel = SourceLevels.Error;
+                configuration.Bind(traceInputConfiguration);
             }
-            Filter = new EventTypeFilter(traceLevel);
-            Trace.Listeners.Add(this);
-            this.healthReporter.ReportHealthy($"{nameof(TraceInput)} initialized.", TraceTag);
+            catch
+            {
+                configurationIsValid = false;
+            }
+            if (!configurationIsValid || !string.Equals(traceInputConfiguration.Type, "trace", StringComparison.OrdinalIgnoreCase))
+            {
+                healthReporter.ReportWarning($"Invalid {nameof(TraceInput)} configuration encountered: '{configuration.ToString()}'. Error will be used as trace level",
+                    EventFlowContextIdentifiers.Configuration);
+            }
+
+            Initialize(traceInputConfiguration);
+        }
+
+        public TraceInput(TraceInputConfiguration traceInputConfiguration, IHealthReporter healthReporter)
+        {
+            Validation.Requires.NotNull(traceInputConfiguration, nameof(traceInputConfiguration));
+            Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            this.healthReporter = healthReporter;
+
+            Initialize(traceInputConfiguration);
         }
 
         #region Overrides for TraceListener
@@ -147,6 +162,18 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         {
             base.Dispose(disposing);
             this.subject.Dispose();
+        }
+
+        private void Initialize(TraceInputConfiguration traceInputConfiguration)
+        {
+            Debug.Assert(traceInputConfiguration != null);
+            Debug.Assert(this.healthReporter != null);
+
+            this.subject = new SimpleSubject<EventData>();
+
+            Filter = new EventTypeFilter(traceInputConfiguration.TraceLevel);
+            Trace.Listeners.Add(this);
+            this.healthReporter.ReportHealthy($"{nameof(TraceInput)} initialized.", TraceTag);
         }
 
         private void SubmitEventData(string message, TraceEventType level, int? id = null, string source = null, string relatedActivityId = null)

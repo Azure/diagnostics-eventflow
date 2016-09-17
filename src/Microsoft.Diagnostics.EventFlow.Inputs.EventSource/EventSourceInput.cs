@@ -38,7 +38,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
             catch
             {
-                healthReporter.ReportProblem($"{nameof(EventSourceInput)}: configuration is invalid");
+                healthReporter.ReportProblem($"{nameof(EventSourceInput)}: configuration is invalid", EventFlowContextIdentifiers.Configuration);
                 return;
             }
 

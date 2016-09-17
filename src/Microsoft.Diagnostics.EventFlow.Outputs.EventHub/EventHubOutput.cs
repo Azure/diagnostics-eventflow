@@ -5,8 +5,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
@@ -26,37 +28,27 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            this.connectionData = CreateConnectionData(configuration, healthReporter);
+            var eventHubOutputConfiguration = new EventHubOutputConfiguration();
+            try
+            {
+                configuration.Bind(eventHubOutputConfiguration);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"Invalid {nameof(EventHubOutput)} configuration encountered: '{configuration.ToString()}'",
+                    EventFlowContextIdentifiers.Configuration);
+                throw;
+            }
+
+            Initialize(eventHubOutputConfiguration);
         }
 
-        private EventHubConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
+        public EventHubOutput(EventHubOutputConfiguration eventHubOutputConfiguration, IHealthReporter healthReporter): base(healthReporter)
         {
-            string serviceBusConnectionString = configuration["serviceBusConnectionString"];
-            if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
-            {
-                healthReporter.ReportProblem($"{nameof(EventHubOutput)}: configuraiton parameter 'serviceBusConnectionString' must be set to a valid Service Bus connection string");
-                return null;
-            }
+            Requires.NotNull(eventHubOutputConfiguration, nameof(eventHubOutputConfiguration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            string eventHubName = configuration["eventHubName"];
-            if (string.IsNullOrWhiteSpace(eventHubName))
-            {
-                healthReporter.ReportProblem($"{nameof(EventHubOutput)}: configuration parameter 'eventHubName' must not be empty");
-                return null;
-            }
-
-            var connectionData = new EventHubConnectionData();
-            connectionData.EventHubName = eventHubName;
-
-            ServiceBusConnectionStringBuilder connStringBuilder = new ServiceBusConnectionStringBuilder(serviceBusConnectionString);
-            connStringBuilder.TransportType = TransportType.Amqp;
-            connectionData.MessagingFactories = new MessagingFactory[ConcurrentConnections];
-            for (uint i = 0; i < ConcurrentConnections; i++)
-            {
-                connectionData.MessagingFactories[i] = MessagingFactory.CreateFromConnectionString(connStringBuilder.ToString());
-            }
-
-            return connectionData;
+            Initialize(eventHubOutputConfiguration);
         }
 
         public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
@@ -81,7 +73,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     return;
                 }
 
-                MessagingFactory factory = this.connectionData.MessagingFactories[transmissionSequenceNumber%ConcurrentConnections];
+                MessagingFactory factory = this.connectionData.MessagingFactories[transmissionSequenceNumber % ConcurrentConnections];
                 EventHubClient hubClient;
                 lock (factory)
                 {
@@ -96,6 +88,38 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 string errorMessage = nameof(EventHubOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
                 this.healthReporter.ReportProblem(errorMessage);
+            }
+        }
+
+        private void Initialize(EventHubOutputConfiguration configuration)
+        {
+            Debug.Assert(configuration != null);
+            Debug.Assert(this.healthReporter != null);
+
+            string errorMessage;
+            if (string.IsNullOrWhiteSpace(configuration.ConnectionString))
+            {
+                errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must be set to a valid Service Bus connection string";
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+
+            if (string.IsNullOrWhiteSpace(configuration.EventHubName))
+            {
+                errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must not be empty";
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+
+            this.connectionData = new EventHubConnectionData();
+            this.connectionData.EventHubName = configuration.EventHubName;
+
+            ServiceBusConnectionStringBuilder connStringBuilder = new ServiceBusConnectionStringBuilder(configuration.ConnectionString);
+            connStringBuilder.TransportType = TransportType.Amqp;
+            this.connectionData.MessagingFactories = new MessagingFactory[ConcurrentConnections];
+            for (uint i = 0; i < ConcurrentConnections; i++)
+            {
+                this.connectionData.MessagingFactories[i] = MessagingFactory.CreateFromConnectionString(connStringBuilder.ToString());
             }
         }
 

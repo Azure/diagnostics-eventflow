@@ -58,7 +58,7 @@
     //{
     //  "type": "EventHub",
     //  "eventHubName": "eventhub name",
-    //  "serviceBusConnectionString": "<service bus connection string>"
+    //  "connectionString": "<service bus connection string>"
     //}
   ],
 

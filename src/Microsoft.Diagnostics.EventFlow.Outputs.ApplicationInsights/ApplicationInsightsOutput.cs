@@ -11,33 +11,45 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Extensions.Configuration;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class ApplicationInsightsOutput : OutputBase
     {
-        private const string AppInsightsKeyName = "instrumentationKey";
         private static readonly Task CompletedTask = Task.FromResult<object>(null);
 
-        private readonly TelemetryClient telemetryClient;
+        private TelemetryClient telemetryClient;
 
         public ApplicationInsightsOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            string telemetryKey = configuration[AppInsightsKeyName];
-            if (string.IsNullOrWhiteSpace(telemetryKey))
+            var aiOutputConfiguration = new ApplicationInsightsOutputConfiguration();
+            try
             {
-                healthReporter.ReportProblem($"ApplicationInsightsSender is missing required configuration ('{AppInsightsKeyName}' value is not set)");
-                return;
+                configuration.Bind(aiOutputConfiguration);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"Invalid {nameof(ApplicationInsightsOutput)} configuration encountered: '{configuration.ToString()}'",
+                    EventFlowContextIdentifiers.Configuration);
+                throw;
             }
 
-            this.telemetryClient = new TelemetryClient();
-            this.telemetryClient.InstrumentationKey = telemetryKey;
+            Initialize(aiOutputConfiguration);            
+        }
+
+        public ApplicationInsightsOutput(ApplicationInsightsOutputConfiguration applicationInsightsOutputConfiguration, IHealthReporter healthReporter): base(healthReporter)
+        {
+            Requires.NotNull(applicationInsightsOutputConfiguration, nameof(applicationInsightsOutputConfiguration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            Initialize(applicationInsightsOutputConfiguration);
         }
 
         public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
@@ -91,6 +103,22 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
 
             return CompletedTask;
+        }
+
+        private void Initialize(ApplicationInsightsOutputConfiguration aiOutputConfiguration)
+        {
+            Debug.Assert(aiOutputConfiguration != null);
+            Debug.Assert(this.healthReporter != null);
+
+            if (string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
+            {
+                string errorMessage = $"{nameof(ApplicationInsightsOutput)}: Application Insights instrumentation key is is not set)";
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+
+            this.telemetryClient = new TelemetryClient();
+            this.telemetryClient.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
         }
 
         private void TrackMetric(EventData e, IReadOnlyCollection<EventMetadata> metadata)

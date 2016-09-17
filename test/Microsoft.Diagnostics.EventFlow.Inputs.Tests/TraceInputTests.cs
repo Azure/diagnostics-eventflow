@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -16,7 +18,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             Exception ex = Assert.Throws<ArgumentNullException>(() =>
             {
-                using (TraceInput target = new TraceInput(null, healthReporterMock.Object)) { }
+                using (TraceInput target = new TraceInput((TraceInputConfiguration) null, healthReporterMock.Object)) { }
+            });
+            Assert.Equal("Value cannot be null.\r\nParameter name: traceInputConfiguration", ex.Message);
+
+            ex = Assert.Throws<ArgumentNullException>(() =>
+            {
+                using (TraceInput target = new TraceInput((IConfiguration) null, healthReporterMock.Object)) { }
             });
             Assert.Equal("Value cannot be null.\r\nParameter name: configuration", ex.Message);
         }
@@ -36,33 +44,38 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void ConstructorShouldCheckConfigurationSectionType()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+                ["type"] = "Trace"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             TraceInput target = null;
-            using (target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (target = new TraceInput(configuration, healthReporterMock.Object))
             {
                 Assert.NotNull(target);
             }
 
-            configurationMock.Setup(section => section["type"]).Returns("NonTrace");
-
-            Exception ex = Assert.ThrowsAny<Exception>(() =>
+            configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
             {
-                using (target = new TraceInput(configurationMock.Object, healthReporterMock.Object)) { }
-            });
-            Assert.Equal("Invalid trace configuration", ex.Message);
+                ["type"] = "NonTrace"
+            }).Build();
+
+            using (target = new TraceInput(configuration, healthReporterMock.Object))
+            {
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Configuration)), Times.Exactly(1));
+            }
         }
 
         [Fact]
         public void TraceShouldSubmitTheData()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 Trace.TraceInformation("Message for unit test");
@@ -73,12 +86,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceShouldNotSubmitFilteredData()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("Off");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "Off"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subjectMock = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subjectMock.Object))
             {
                 Trace.TraceInformation("Message for unit test");
@@ -89,12 +104,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideWriteLine()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 target.WriteLine("UnitTest info");
@@ -105,12 +122,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideFail()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = "Failure message";
@@ -124,12 +143,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideFailWithDetails()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = "Failure message";
@@ -144,12 +165,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideTraceSingleData()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = "Message";
@@ -164,12 +187,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideTraceMultipleData()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = "Message";
@@ -185,12 +210,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideTraceSingleEvent()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = GetRandomString();
@@ -205,12 +232,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideTraceEventWithFormat()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = GetRandomString();
@@ -227,12 +256,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void TraceInputShouldOverrideTraceTransfer()
         {
-            var configurationMock = new Mock<IConfiguration>();
-            configurationMock.Setup(section => section["type"]).Returns("Trace");
-            configurationMock.Setup(section => section["traceLevel"]).Returns("All");
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
-            using (TraceInput target = new TraceInput(configurationMock.Object, healthReporterMock.Object))
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
             using (target.Subscribe(subject.Object))
             {
                 string message = GetRandomString();

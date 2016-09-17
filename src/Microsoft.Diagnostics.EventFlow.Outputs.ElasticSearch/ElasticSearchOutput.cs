@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
 using Nest;
 using Validation;
@@ -20,9 +21,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private const string Dot = ".";
         private const string Dash = "-";
 
-        // TODO: make it a (configuration) property of the listener
-        private const string EventDocumentTypeName = "event";
-
         private ElasticSearchConnectionData connectionData;
         // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing        
 
@@ -31,8 +29,29 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            this.connectionData = CreateConnectionData(configuration, healthReporter);
-        }        
+            var esOutputConfiguration = new ElasticSearchOutputConfiguration();
+            try
+            {
+                configuration.Bind(esOutputConfiguration);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"Invalid {nameof(ElasticSearchOutput)} configuration encountered: '{configuration.ToString()}'",
+                    EventFlowContextIdentifiers.Configuration);
+                throw;
+            }
+
+            Initialize(esOutputConfiguration);
+        }
+
+        public ElasticSearchOutput(ElasticSearchOutputConfiguration elasticSearchOutputConfiguration, IHealthReporter healthReporter): base(healthReporter)
+        {
+            Requires.NotNull(elasticSearchOutputConfiguration, nameof(elasticSearchOutputConfiguration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            // Clone the configuration instance since we are going to hold onto it (via this.connectionData)
+            Initialize(elasticSearchOutputConfiguration.DeepClone());
+        }
 
         public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
@@ -54,11 +73,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 request.Refresh = true;
 
                 List<IBulkOperation> operations = new List<IBulkOperation>();
+                string documentTypeName = this.connectionData.Configuration.EventDocumentTypeName;
                 foreach (EventData eventData in events)
                 {
                     BulkCreateOperation<EventData> operation = new BulkCreateOperation<EventData>(eventData);
                     operation.Index = currentIndexName;
-                    operation.Type = EventDocumentTypeName;
+                    operation.Type = documentTypeName;
                     operations.Add(operation);
                 }
 
@@ -87,55 +107,67 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
         }
 
-        private ElasticClient CreateElasticClient(IConfiguration configuration, IHealthReporter healthReporter)
+        private void Initialize(ElasticSearchOutputConfiguration esOutputConfiguration)
         {
-            string esServiceUriString = configuration["serviceUri"];
+            Debug.Assert(esOutputConfiguration != null);
+            Debug.Assert(this.healthReporter != null);
+
+            this.connectionData = new ElasticSearchConnectionData();
+            this.connectionData.Configuration = esOutputConfiguration;
+
             Uri esServiceUri;
-            bool serviceUriIsValid = Uri.TryCreate(esServiceUriString, UriKind.Absolute, out esServiceUri);
+            string errorMessage;
+
+            bool serviceUriIsValid = Uri.TryCreate(esOutputConfiguration.ServiceUri, UriKind.Absolute, out esServiceUri);
             if (!serviceUriIsValid)
             {
-                healthReporter.ReportProblem($"{nameof(ElasticSearchOutput)}:  configuration is missing required 'serviceUri' parameter");
-                return null;
+                errorMessage = $"{nameof(ElasticSearchOutput)}:  required 'serviceUri' configuration parameter is invalid";
+                this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
             }
 
-            string userName = configuration["userName"];
-            string password = configuration["password"];
-            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
+            string userName = esOutputConfiguration.BasicAuthenticationUserName;
+            string password = esOutputConfiguration.BasicAuthenticationUserPassword;
+            bool credentialsIncomplete = string.IsNullOrWhiteSpace(userName) ^ string.IsNullOrWhiteSpace(password);
+            if (credentialsIncomplete)
             {
-                healthReporter.ReportProblem($"{nameof(ElasticSearchOutput)}:  configuration is missing Elastic Search credentials");
-                return null;
+                errorMessage = $"{nameof(ElasticSearchOutput)}: for basic authentication to work both user name and password must be specified";
+                healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
+                userName = password = null;
             }
 
-            ConnectionSettings config = new ConnectionSettings(esServiceUri).BasicAuthentication(userName, password);
-            return new ElasticClient(config);
-        }
-
-        private ElasticSearchConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
-        {
-            var connectionData = new ElasticSearchConnectionData();
-            var client = this.CreateElasticClient(configuration, healthReporter);
-            if (client == null)
-            {
-                return null;
+            ConnectionSettings connectionSettings = new ConnectionSettings(esServiceUri);
+            if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
+            { 
+                connectionSettings = connectionSettings.BasicAuthentication(userName, password);
             }
-            connectionData.Client = client;
-            connectionData.LastIndexName = null;
-            string indexNamePrefix = configuration["indexNamePrefix"];
-            if (string.IsNullOrWhiteSpace(indexNamePrefix))
+
+            this.connectionData.Client = new ElasticClient(connectionSettings);
+            this.connectionData.LastIndexName = null;
+
+            if (string.IsNullOrWhiteSpace(esOutputConfiguration.IndexNamePrefix))
             {
-                connectionData.IndexNamePrefix = string.Empty;
+                esOutputConfiguration.IndexNamePrefix = string.Empty;
             }
             else
             {
-                string lowerCaseIndexNamePrefix = indexNamePrefix.ToLowerInvariant();
-                if (lowerCaseIndexNamePrefix != indexNamePrefix)
+                string lowerCaseIndexNamePrefix = esOutputConfiguration.IndexNamePrefix.ToLowerInvariant();
+                if (lowerCaseIndexNamePrefix != esOutputConfiguration.IndexNamePrefix)
                 {
-                    healthReporter.ReportWarning($"The chosen index name prefix '{indexNamePrefix}' contains uppercase characters, which is not allowed by Elasticsearch",
-                        EventFlowContextIdentifiers.Configuration);
+                    healthReporter.ReportWarning($"{nameof(ElasticSearchOutput)}: The chosen index name prefix '{esOutputConfiguration.IndexNamePrefix}' "
+                                                + "contains uppercase characters, which are not allowed by Elasticsearch. The prefix will be converted to lowercase.",
+                                                EventFlowContextIdentifiers.Configuration);
                 }
-                connectionData.IndexNamePrefix = lowerCaseIndexNamePrefix + Dash;
+                esOutputConfiguration.IndexNamePrefix = lowerCaseIndexNamePrefix + Dash;
             }
-            return connectionData;
+
+            if (string.IsNullOrWhiteSpace(esOutputConfiguration.EventDocumentTypeName))
+            {
+                string warning = $"{nameof(ElasticSearchOutput)}: '{nameof(ElasticSearchOutputConfiguration.EventDocumentTypeName)}' configuration parameter "
+                                + "should not be empty";
+                healthReporter.ReportWarning(warning, EventFlowContextIdentifiers.Configuration);
+                esOutputConfiguration.EventDocumentTypeName = ElasticSearchOutputConfiguration.DefaultEventDocumentTypeName;
+            }
         }
 
         private async Task EnsureIndexExists(string indexName, ElasticClient esClient)
@@ -180,7 +212,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private string GetIndexName(ElasticSearchConnectionData connectionData)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
-            string retval = connectionData.IndexNamePrefix + now.Year.ToString() + Dot + now.Month.ToString() + Dot + now.Day.ToString();
+            string retval = connectionData.Configuration.IndexNamePrefix + now.Year.ToString() + Dot + now.Month.ToString() + Dot + now.Day.ToString();
             return retval;
         }
 
@@ -213,7 +245,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             public ElasticClient Client { get; set; }
 
-            public string IndexNamePrefix { get; set; }
+            public ElasticSearchOutputConfiguration Configuration { get; set; }
 
             public string LastIndexName { get; set; }
         }

@@ -3,12 +3,17 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
-    internal class EventSourceInputConfiguration: ItemConfiguration
+    public class TraceInputConfiguration: ItemConfiguration
     {
-        public List<EventSourceConfiguration> Sources { get; set; }
+        public SourceLevels TraceLevel { get; set; }
+
+        public TraceInputConfiguration()
+        {
+            TraceLevel = SourceLevels.Error;
+        }
     }
 }
