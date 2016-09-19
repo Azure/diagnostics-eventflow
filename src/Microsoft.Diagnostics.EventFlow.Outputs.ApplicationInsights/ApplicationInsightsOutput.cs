@@ -156,7 +156,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     }
                     else
                     {
-                        healthReporter.ReportWarning($"ApplicationInsightsSender encounters an invalid value, it cannot convert property '" + metricMetadata["metricValue"] + "' into a number");
+                        healthReporter.ReportWarning($"ApplicationInsightsSender encounters an invalid value, it cannot convert property '" + metricValueProperty + "' into a number");
                     }
                 }
                 else

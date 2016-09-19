@@ -96,27 +96,33 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Debug.Assert(configuration != null);
             Debug.Assert(this.healthReporter != null);
 
-            string errorMessage;
             if (string.IsNullOrWhiteSpace(configuration.ConnectionString))
             {
-                errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must be set to a valid Service Bus connection string";
+                var errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must be set to a valid connection string";
                 healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
-
-            if (string.IsNullOrWhiteSpace(configuration.EventHubName))
-            {
-                errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must not be empty";
-                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
-
-            this.connectionData = new EventHubConnectionData();
-            this.connectionData.EventHubName = configuration.EventHubName;
 
             ServiceBusConnectionStringBuilder connStringBuilder = new ServiceBusConnectionStringBuilder(configuration.ConnectionString);
             connStringBuilder.TransportType = TransportType.Amqp;
-            this.connectionData.MessagingFactories = new MessagingFactory[ConcurrentConnections];
+
+            var eventHubName = connStringBuilder.EntityPath ?? configuration.EventHubName;
+            if (string.IsNullOrWhiteSpace(eventHubName))
+            {
+                var errorMessage = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
+
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+
+            this.connectionData = new EventHubConnectionData()
+            {
+                EventHubName = eventHubName,
+                MessagingFactories = new MessagingFactory[ConcurrentConnections]
+            };
+
+            // To create a MessageFactory, the connection string can't contain the EntityPath. So we set it to null here.
+            connStringBuilder.EntityPath = null;
             for (uint i = 0; i < ConcurrentConnections; i++)
             {
                 this.connectionData.MessagingFactories[i] = MessagingFactory.CreateFromConnectionString(connStringBuilder.ToString());
