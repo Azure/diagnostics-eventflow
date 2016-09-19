@@ -22,7 +22,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 ProviderName = eventSourceEvent.EventSource.Name,
                 Timestamp = DateTime.UtcNow,
                 Level = (LogLevel) (int) eventSourceEvent.Level,
-                Keywords = (long) eventSourceEvent.Keywords                
+                Keywords = (long) eventSourceEvent.Keywords
             };
 
             var eventPayload = eventData.Payload;
