@@ -7,6 +7,8 @@ using System.Collections.Generic;
 
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
+    // !!ACTION!!
+    // If you make any changes here, please update the README.md file to reflect the new configuration
     public class PerformanceCounterInputConfiguration: ItemConfiguration
     {
         public List<PerformanceCounterConfiguration> Counters { get; set; }

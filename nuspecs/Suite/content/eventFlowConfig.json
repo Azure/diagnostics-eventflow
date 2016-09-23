@@ -32,10 +32,12 @@
   //   "minReportLevel": "Warning",
   //   "throttlingPeriodMsec": "1000"
   // },
-  // "pipelineSettings": {
-  //   "maxConcurrency": "8",
-  //   "noEventsDelayMsec": "1000",
-  //   "maxBatchSize": "100"
+  // "settings": {
+  //    "pipelineBufferSize": "1000",
+  //    "maxEventBatchSize": "100",
+  //    "maxBatchDelayMsec": "500",
+  //    "maxConcurrency": "8",
+  //    "pipelineCompletionTimeoutMsec": "30000"
   // },
   "extensions": []
 }

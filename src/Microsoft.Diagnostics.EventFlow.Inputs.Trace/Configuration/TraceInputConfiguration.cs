@@ -7,6 +7,8 @@ using System.Diagnostics;
 
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
+    // !!ACTION!!
+    // If you make any changes here, please update the README.md file to reflect the new configuration
     public class TraceInputConfiguration: ItemConfiguration
     {
         public SourceLevels TraceLevel { get; set; }

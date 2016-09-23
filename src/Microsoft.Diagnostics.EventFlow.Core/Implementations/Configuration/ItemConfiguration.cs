@@ -5,6 +5,8 @@
 
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
+    // !!ACTION!!
+    // If you make any changes here, please update the README.md file to reflect the new configuration
     public class ItemConfiguration
     {
         public string Type { get; set; }

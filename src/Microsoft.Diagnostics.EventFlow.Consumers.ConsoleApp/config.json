@@ -12,6 +12,11 @@
       "sources": [
         { "providerName": "MyEventSource" },
         { "providerName": "System.Diagnostics.Eventing.FrameworkEventSource" }
+        //{
+        //    "providerName": "MyEventSource",
+        //    "level": "Informational",
+        //    "keywords": "0x7F"
+        //}
       ]
     },
     {
@@ -36,7 +41,8 @@
       ]
     },
     {
-      "type": "Trace"
+      "type": "Trace",
+      "traceLevel":  "Verbose"
     }
   ],
 
@@ -50,7 +56,15 @@
   "outputs": [
     {
       "type": "StdOutput"
-    }
+    },
+    //{
+    //  "type": "ElasticSearch",
+    //  "indexNamePrefix": "app1-",
+    //  "serviceUri": "https://myElasticSearchCluster:9200",
+    //  "basicAuthenticationUserName": "esUser1",
+    //  "basicAuthenticationPassword": "<MyPassword>",
+    //  "eventDocumentTypeName": ""
+    //}
     //{
     //  "type": "ApplicationInsights",
     //  "instrumentationKey": "00000000-0000-0000-0000-000000000000"
