@@ -15,7 +15,8 @@
   "buildOptions": {
     "platform": "x64",
     "keyFile": "../../PublicKey.snk",
-    "delaySign": true
+    "delaySign": true,
+    "highentropyva": true
   },
 
   "packOptions": { "tags": [ "Microsoft.Diagnostics.EventFlow" ] }

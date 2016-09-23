@@ -104,26 +104,26 @@
       <StrongName>StrongName</StrongName>
     </FilesToSign>
   </ItemGroup>
-  <Target Name="MoveSignedAssembliesBack" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
+  <Target Name="CopySignedAssembliesBack" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
     <!--Full framework assemblies-->
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451"/>
-    <Move SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net46"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net46"/>
     <!--.Net core assemblies-->
-    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
-    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6"/>
-    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6"/>
-    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6"/>
-    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
-    <Move SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
