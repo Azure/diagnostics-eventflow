@@ -80,21 +80,21 @@ The libraries are distributed as nuget packages. To quickly get started, the lib
 }
 ```
 3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the output block for Application Insights
-4. To add a StdOutput output, install the Microsoft.Diagnostic.EventFlow.Outputs.StdOutput nuget. Then add the outputs array in eventFlowConfig.json:
+4. To add a StdOutput output, install the Microsoft.Diagnostic.EventFlow.Outputs.StdOutput nuget. Then add the following in the outputs array in eventFlowConfig.json:
 ```json
     {
         "type": "StdOutput"
     }
 ```
-5. Run your application and see your traces in console output, or Application Insights.
+5. Make sure there is at least one output defined. Run your application and see your traces in console output, or Application Insights.
 
 ## Configuration Details
 The EventFlow pipeline is built around three core concepts: Inputs, outputs, and filters. The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
-also has a healthReporter and pipelineSettings section for configuring settings fundamental to the pipeline operation. At last, the extensions section allows declaration of custom developed
-plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search in the extensions if it encounters an input, output, or filter that it doesn't recognize.
+also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. At last, the extensions section allows declaration of custom developed
+plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search in the extensions first for input, output, or filter implementations.
 
 ### Inputs
-These define what data will flow into the engine. If there are no inputs, nothing flows through the engine. Each input type has its own set of parameters.
+These define what data will flow into the engine. At least one input is required. Each input type has its own set of parameters.
 
 #### Trace
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.Trace**
@@ -173,7 +173,7 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | type | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
-| eventHubName | event name | Yes | Specifies the name of the event hub. |
+| eventHubName | event name | No | Specifies the name of the event hub. |
 | connectionString | connection string | Yes | Specifies the connection string for the service bus namespace that contains the event hub. The key needs to be the root managed shared access key. |
 
 #### Application Insights
@@ -231,7 +231,7 @@ This filter discards all data that satisfies the include expression. Here is an 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | type | "drop" | Yes | Specifies the filter type. For this filter, it must be "drop". |
-| include | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#Logical-Expressions). |
+| include | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 
 #### metadata
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Core**
@@ -250,12 +250,12 @@ This filter adds additional metadata to all data that satisfies the include expr
 | :---- | :-------------- | :------: | :---------- |
 | type | "metadata" | Yes | Specifies the filter type. For this filter, it must be "metadata". |
 | metadata | string | Yes | Specifies the metadata type. This field is used only if type is "metadata", so it shouldn't appear in other filter types. The metadata type is user-defined and is persisted along with metadata tag added to the event data. |
-| include | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#Logical-Expressions). |
+| include | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 | *[others]* | string | No | Specifies custom properties that should be added along with this metadata object. When the event data is processed by other filters or outputs, these properties can be accessed. The names of these properties are custom-defined and the possible set is open-ended. For a particular filter, zero or more custom properties can be defined. In the example above, customTag1 and customTag2 are such properties. |
 
 ### Health Reporter
 Every software component can generate errors or warnings the developer should be aware of. The EventFlow library is no exception. An EventFlow health reporter reports errors and warnings generated by any components in the EventFlow pipeline.
-In what format the report is presented depends on the implementation of the health reporter. The EventFlow library suite includes two health reporters: CsvHealthReporter and ServiceFabricHealthReporter. The health reporter can configured in the same configuration file.
+In what format the report is presented depends on the implementation of the health reporter. The EventFlow library suite includes two health reporters: CsvHealthReporter and ServiceFabricHealthReporter. The health reporter can be configured in the same configuration file.
 If the health reporter section is omitted, the pipeline will default to the CsvHealthReporter and writes to a file in a default location. Each health reporter has its own set of parameters.
 
 #### CsvHealthReporter
@@ -277,7 +277,7 @@ This health reporter writes all errors, warnings, and informational traces gener
 | logFileFolder | file path | No | Specifies a path for the CSV log file to be written. It can be an absolute path, or a relative path. If it's a relative path, then it's computed relative to the directory where the EventFlow core library is in. However, if it's an ASP.NET application, it's relative to the app_data folder. |
 | logFilePrefix | file path | No | Specifies a prefix used for the CSV log file. CsvHealthReporter creates the log file name by combining this prefix with the date of when the file is generated. If the prefix is omitted, then a default prefix of "HealthReport" is used. |
 | minReportLevel | Error, Warning, Message | No | Specifies the collection report level. Report traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Error, and Warning traces are collected. Default is Error. |
-| throttlingPeriodMsec | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. |
+| throttlingPeriodMsec | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
 
 #### ServiceFabricHealthReporter
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.ServiceFabric**
