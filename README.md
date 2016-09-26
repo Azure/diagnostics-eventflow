@@ -89,7 +89,7 @@ The libraries are distributed as nuget packages. To quickly get started, the lib
 5. Make sure there is at least one output defined. Run your application and see your traces in console output, or Application Insights.
 
 ## Configuration Details
-The EventFlow pipeline is built around three core concepts: Inputs, outputs, and filters. The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
+The EventFlow pipeline is built around three core concepts: inputs, outputs, and filters. The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
 also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. At last, the extensions section allows declaration of custom developed
 plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search in the extensions first for input, output, or filter implementations.
 
@@ -173,8 +173,8 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | type | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
-| eventHubName | event name | No | Specifies the name of the event hub. |
-| connectionString | connection string | Yes | Specifies the connection string for the service bus namespace that contains the event hub. The key needs to be the root managed shared access key. |
+| eventHubName | event hub name | No | Specifies the name of the event hub. |
+| connectionString | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
 
 #### Application Insights
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**
