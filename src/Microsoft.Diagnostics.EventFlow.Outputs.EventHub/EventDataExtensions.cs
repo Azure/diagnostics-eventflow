@@ -63,7 +63,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             var traceRecord = new ShoeBoxTraceRecord()
             {
                 time = eventData.Timestamp,
-                level = eventData.Level.GetName()
+                level = eventData.Level.GetName(),
+                category = null
             };
 
             traceRecord.properties.Add(nameof(eventData.Keywords), eventData.Keywords);
@@ -101,6 +102,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     last = metricValue,
                     metricName = metadata["metricName"],
                     time = eventData.Timestamp,
+                    timeGrain = null,
+                    dimensions = null,
                 };
 
                 sbEventData.records.Add(metricRecord);
