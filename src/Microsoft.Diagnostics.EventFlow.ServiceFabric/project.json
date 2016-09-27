@@ -19,5 +19,10 @@
     "delaySign": true
   },
 
-  "packOptions": { "tags": [ "Microsoft.Diagnostics.EventFlow" ] }
+  "packOptions": {
+    "tags": [
+      "Microsoft.Diagnostics.EventFlow"
+    ],
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+  }
 }

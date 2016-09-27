@@ -8,6 +8,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Microsoft.Diagnostics.EventFlow</description>
         <tags>Microsoft.Diagnostics.EventFlow</tags>
+        <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
         <dependencies>
             <group targetFramework=".NETFramework4.5.1">
                 <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="1.0.0" />
