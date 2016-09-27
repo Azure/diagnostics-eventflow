@@ -20,6 +20,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
     public class EventHubOutput : OutputBase
     {
+        // EventHub has a limit of 262144 bytes per message. We are only allowing ourselves of that minus 16k, in case they have extra stuff
+        // that tag onto the message. If it exceeds that, we need to break it up into multiple batches.
+        private const int EventHubMessageSizeLimit = 262144 - 16384;
+
         private const int ConcurrentConnections = 4;
         private EventHubConnectionData connectionData;
 
@@ -60,12 +64,30 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             try
             {
-                List<MessagingEventData> batch = new List<MessagingEventData>();
+                // Since event hub limits each message/batch to be a certain size, we need to
+                // keep checking the size for exceeds and split into a new batch as needed
+
+                List<List<MessagingEventData>> batches = new List<List<MessagingEventData>>();
+                int batchByteSize = 0;
 
                 foreach (EventData eventData in events)
                 {
-                    MessagingEventData messagingEventData = eventData.ToMessagingEventData();
-                    batch.Add(messagingEventData);
+                    int messageSize;
+                    MessagingEventData messagingEventData = eventData.ToMessagingEventData(out messageSize);
+
+                    // If we don't have a batch yet, or the addition of this message will exceed the limit for this batch, then
+                    // start a new batch.
+                    if (batches.Count == 0 ||
+                        batchByteSize + messageSize > EventHubMessageSizeLimit)
+                    {
+                        batches.Add(new List<MessagingEventData>());
+                        batchByteSize = 0;
+                    }
+
+                    batchByteSize += messageSize;
+
+                    List<MessagingEventData> currentBatch = batches[batches.Count - 1];
+                    currentBatch.Add(messagingEventData);
                 }
 
                 if (cancellationToken.IsCancellationRequested)
@@ -80,7 +102,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     hubClient = factory.CreateEventHubClient(this.connectionData.EventHubName);
                 }
 
-                await hubClient.SendBatchAsync(batch).ConfigureAwait(false);
+                List<Task> tasks = new List<Task>();
+                foreach (List<MessagingEventData> batch in batches)
+                {
+                    tasks.Add(hubClient.SendBatchAsync(batch));
+                }
+
+                await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 this.healthReporter.ReportHealthy();
             }

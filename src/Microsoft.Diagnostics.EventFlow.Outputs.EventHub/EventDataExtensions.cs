@@ -41,7 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private static readonly JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore };
 
-        public static MessagingEventData ToMessagingEventData(this EventData eventData)
+        public static MessagingEventData ToMessagingEventData(this EventData eventData, out int messageSize)
         {
             IReadOnlyCollection<EventMetadata> metadataCollection;
             var sbEventData = eventData.TryGetMetadata("metric", out metadataCollection)
@@ -53,7 +53,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             // This avoids the reflection cost that is associate with single-call SerializeObject approach
             string eventDataSerialized = JsonConvert.SerializeObject(sbEventData, serializerSetting);
 
-            return new MessagingEventData(Encoding.UTF8.GetBytes(eventDataSerialized));
+            byte[] messageBytes = Encoding.UTF8.GetBytes(eventDataSerialized);
+            messageSize = messageBytes.Length;
+            return new MessagingEventData(messageBytes);
         }
 
         private static ShoeBoxEventData ConvertToShoeboxTrace(EventData eventData)
