@@ -313,6 +313,25 @@ Here is an example of all the possible settings:
 ## Logical Expressions
 TODO
 
+## Store Secret Securely
+If you don't want to put sensitive information in the EventFlow configuration file, you can store the information at a secured place and pass it to the configuration at run time. Here is the sample code:
+```csharp
+string configFilePath = @".\eventFlowConfig.json";
+IConfiguration config = new ConfigurationBuilder().AddJsonFile(configFilePath).Build();
+IConfiguration eventHubOutput = config.GetSection("outputs").GetChildren().FirstOrDefault(c => c["type"] == "EventHub");
+
+if (eventHubOutput != null)
+{
+    string eventHubConnectionString = GetEventHubConnectionStringFromSecuredPlace();
+    eventHubOutput["connectionString"] = eventHubConnectionString;
+}
+
+using (DiagnosticPipeline pipeline = DiagnosticPipelineFactory.CreatePipeline(config))
+{
+    // ...
+}
+```
+
 ## Contribution
 * Prereq
     * Visual Studio 2015 Update 3 or above
