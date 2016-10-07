@@ -11,10 +11,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     internal class UnitTestInput : IObservable<EventData>, IDisposable
     {
-        private SimpleSubject<EventData> subject;
+        private EventFlowSubject<EventData> subject;
         public UnitTestInput()
         {
-            subject = new SimpleSubject<EventData>();
+            subject = new EventFlowSubject<EventData>();
         }
 
         public void Dispose()

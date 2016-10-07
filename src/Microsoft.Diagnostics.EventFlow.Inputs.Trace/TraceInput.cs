@@ -16,7 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     {
         public static readonly string TraceTag = nameof(TraceInput);
 
-        private SimpleSubject<EventData> subject;
+        private EventFlowSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
 
         public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -169,7 +169,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Debug.Assert(traceInputConfiguration != null);
             Debug.Assert(this.healthReporter != null);
 
-            this.subject = new SimpleSubject<EventData>();
+            this.subject = new EventFlowSubject<EventData>();
 
             Filter = new EventTypeFilter(traceInputConfiguration.TraceLevel);
             Trace.Listeners.Add(this);

@@ -17,21 +17,23 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
-    public class OmsEventSender : OutputBase
+    public class OmsEventSender : IOutput
     {
         const string OmsDataUploadResource = "/api/logs";
         const string OmsDataUploadUrl = OmsDataUploadResource + "?api-version=2016-04-01";
         const string MsDateHeaderName = "x-ms-date";
         const string JsonContentId = "application/json";
+        private readonly IHealthReporter healthReporter;
 
         private OmsConnectionData connectionData;
 
-        public OmsEventSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public OmsEventSender(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.connectionData = CreateConnectionData(configuration, healthReporter);
+            this.healthReporter = healthReporter;
         }
 
         private OmsConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
@@ -65,7 +67,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             return new OmsConnectionData { HttpClient = httpClient, Hasher = hasher, WorkspaceId = workspaceId };
         }
 
-        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             if (this.connectionData == null || events == null || events.Count == 0)
             {

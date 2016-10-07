@@ -8,18 +8,23 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
-    public class StdOutput : OutputBase
+    public class StdOutput : IOutput
     {
         public static readonly string TraceTag = nameof(StdOutput);
 
-        public StdOutput(IHealthReporter healthReporter) : base(healthReporter)
+        private readonly IHealthReporter healthReporter;
+
+        public StdOutput(IHealthReporter healthReporter)
         {
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+            this.healthReporter = healthReporter;
         }
 
-        public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             try
             {

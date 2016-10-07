@@ -7,7 +7,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
     // !!ACTION!!
     // If you make any changes here, please update the README.md file to reflect the new configuration
-    public class ElasticSearchOutputConfiguration: ItemConfiguration, IDeepCloneable<ElasticSearchOutputConfiguration>
+    public class ElasticSearchOutputConfiguration: ItemConfiguration
     {
         public static readonly string DefaultEventDocumentTypeName = "event";
 

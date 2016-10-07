@@ -18,7 +18,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
         private List<EventSource> eventSourcesPresentAtConstruction;        
-        private SimpleSubject<EventData> subject;
+        private EventFlowSubject<EventData> subject;
 
         public EventSourceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -138,7 +138,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private void Initialize(IReadOnlyCollection<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
         {
             this.healthReporter = healthReporter;
-            this.subject = new SimpleSubject<EventData>();
+            this.subject = new EventFlowSubject<EventData>();
 
             this.EventSources = eventSources;
             if (this.EventSources.Count() == 0)

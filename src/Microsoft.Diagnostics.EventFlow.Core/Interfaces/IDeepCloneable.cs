@@ -5,7 +5,7 @@
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public interface IDeepCloneable<T>
+    internal interface IDeepCloneable<T>
     {
         T DeepClone();
     }

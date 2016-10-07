@@ -20,7 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private const int SampleIntervalSeconds = 10;
         internal static readonly string MetricValueProperty = "Value";
 
-        private SimpleSubject<EventData> subject;
+        private EventFlowSubject<EventData> subject;
         private object syncObject;
         private Timer collectionTimer;
         private List<TrackedPerformanceCounter> trackedPerformanceCounters;
@@ -32,7 +32,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.syncObject = new object();
-            this.subject = new SimpleSubject<EventData>();
+            this.subject = new EventFlowSubject<EventData>();
             this.healthReporter = healthReporter;
 
             // The CLR Process ID counter used for process ID to counter instance name mapping for CLR counters will not read correctly

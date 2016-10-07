@@ -18,17 +18,19 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
-    public class ApplicationInsightsOutput : OutputBase
+    public class ApplicationInsightsOutput : IOutput
     {
         private static readonly Task CompletedTask = Task.FromResult<object>(null);
 
         private TelemetryClient telemetryClient;
+        private readonly IHealthReporter healthReporter;
 
-        public ApplicationInsightsOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public ApplicationInsightsOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            this.healthReporter = healthReporter;
             var aiOutputConfiguration = new ApplicationInsightsOutputConfiguration();
             try
             {
@@ -44,15 +46,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Initialize(aiOutputConfiguration);            
         }
 
-        public ApplicationInsightsOutput(ApplicationInsightsOutputConfiguration applicationInsightsOutputConfiguration, IHealthReporter healthReporter): base(healthReporter)
+        public ApplicationInsightsOutput(ApplicationInsightsOutputConfiguration applicationInsightsOutputConfiguration, IHealthReporter healthReporter)
         {
             Requires.NotNull(applicationInsightsOutputConfiguration, nameof(applicationInsightsOutputConfiguration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            this.healthReporter = healthReporter;
             Initialize(applicationInsightsOutputConfiguration);
         }
 
-        public override Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             if (this.telemetryClient == null || events == null || events.Count == 0)
             {

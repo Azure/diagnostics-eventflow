@@ -29,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore
                 inputs.Add((new TraceInputFactory()).CreateItem(configuration, reporter));
 
                 // Senders
-                List<OutputBase> outputs = new List<OutputBase>();
+                var outputs = new List<IOutput>();
                 outputs.Add(new StdOutput(reporter));
 
                 DiagnosticPipeline pipeline = new DiagnosticPipeline(

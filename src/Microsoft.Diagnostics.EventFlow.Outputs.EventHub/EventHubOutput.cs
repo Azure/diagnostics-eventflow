@@ -18,7 +18,7 @@ using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
 
-    public class EventHubOutput : OutputBase, IDisposable
+    public class EventHubOutput : IOutput, IDisposable
     {
         // EventHub has a limit of 262144 bytes per message. We are only allowing ourselves of that minus 16k, in case they have extra stuff
         // that tag onto the message. If it exceeds that, we need to break it up into multiple batches.
@@ -30,12 +30,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         // This connections field will be used by multi-threads. Throughout this class, try to use Interlocked methods to load the field first,
         // before accessing to guarantee your function won't be affected by another thread.
         private EventHubConnection[] connections;
+        private readonly IHealthReporter healthReporter;
 
-        public EventHubOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public EventHubOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            this.healthReporter = healthReporter;
             var eventHubOutputConfiguration = new EventHubOutputConfiguration();
             try
             {
@@ -51,15 +53,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Initialize(eventHubOutputConfiguration);
         }
 
-        public EventHubOutput(EventHubOutputConfiguration eventHubOutputConfiguration, IHealthReporter healthReporter): base(healthReporter)
+        public EventHubOutput(EventHubOutputConfiguration eventHubOutputConfiguration, IHealthReporter healthReporter)
         {
             Requires.NotNull(eventHubOutputConfiguration, nameof(eventHubOutputConfiguration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            this.healthReporter = healthReporter;
             Initialize(eventHubOutputConfiguration);
         }
 
-        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             // Get a reference to the current connections array first, just in case there is another thread wanting to clean
             // up the connections with CleanUpAsync(), we won't get a null reference exception here.

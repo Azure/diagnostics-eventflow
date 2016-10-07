@@ -16,7 +16,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
-    public class ElasticSearchOutput : OutputBase
+    public class ElasticSearchOutput : IOutput
     {
         private const string Dot = ".";
         private const string Dash = "-";
@@ -24,11 +24,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private ElasticSearchConnectionData connectionData;
         // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing        
 
-        public ElasticSearchOutput(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        private readonly IHealthReporter healthReporter;
+
+        public ElasticSearchOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            this.healthReporter = healthReporter;
             var esOutputConfiguration = new ElasticSearchOutputConfiguration();
             try
             {
@@ -44,16 +47,18 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Initialize(esOutputConfiguration);
         }
 
-        public ElasticSearchOutput(ElasticSearchOutputConfiguration elasticSearchOutputConfiguration, IHealthReporter healthReporter): base(healthReporter)
+        public ElasticSearchOutput(ElasticSearchOutputConfiguration elasticSearchOutputConfiguration, IHealthReporter healthReporter)
         {
             Requires.NotNull(elasticSearchOutputConfiguration, nameof(elasticSearchOutputConfiguration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            this.healthReporter = healthReporter;
 
             // Clone the configuration instance since we are going to hold onto it (via this.connectionData)
             Initialize(elasticSearchOutputConfiguration.DeepClone());
         }
 
-        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             if (this.connectionData == null || events == null || events.Count == 0)
             {

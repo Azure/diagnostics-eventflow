@@ -13,7 +13,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public class SimpleSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable
+    public class EventFlowSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable
     {
         private readonly object lockObject = new object();
         private volatile ImmutableList<IObserver<SubjectType>> observers = ImmutableList<IObserver<SubjectType>>.Empty;
@@ -116,9 +116,9 @@ namespace Microsoft.Diagnostics.EventFlow
         private class Subscription<SubscriptionType> : IDisposable
         {
             private IObserver<SubscriptionType> observer;
-            private SimpleSubject<SubscriptionType> parentSubject;
+            private EventFlowSubject<SubscriptionType> parentSubject;
 
-            public Subscription(IObserver<SubscriptionType> observer, SimpleSubject<SubscriptionType> parentSubject)
+            public Subscription(IObserver<SubscriptionType> observer, EventFlowSubject<SubscriptionType> parentSubject)
             {
                 Debug.Assert(observer != null);
                 Debug.Assert(parentSubject != null);

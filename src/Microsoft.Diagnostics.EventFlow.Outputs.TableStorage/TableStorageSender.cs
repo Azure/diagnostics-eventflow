@@ -16,7 +16,7 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public class TableStorageSender : OutputBase
+    public class TableStorageSender : IOutput
     {
         private const int MaxConcurrentPartitions = 4;
         private const string KeySegmentSeparator = "_";
@@ -25,13 +25,14 @@ namespace Microsoft.Diagnostics.EventFlow
         private CloudTable cloudTable;
         private volatile int nextEntityId;
         private object identityIdResetLock;
+        private readonly IHealthReporter healthReporter;
 
-        public TableStorageSender(IConfiguration configuration, IHealthReporter healthReporter) : base(healthReporter)
+        public TableStorageSender(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            Debug.Assert(configuration != null);
+            this.healthReporter = healthReporter;
             this.cloudTable = this.CreateTableClient(configuration, healthReporter);
             if (this.cloudTable == null)
             {
@@ -45,7 +46,7 @@ namespace Microsoft.Diagnostics.EventFlow
             this.identityIdResetLock = new object();
         }
 
-        public override async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             if (this.cloudTable == null || events == null || events.Count == 0)
             {
