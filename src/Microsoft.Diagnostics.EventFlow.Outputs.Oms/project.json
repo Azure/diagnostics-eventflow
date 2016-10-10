@@ -20,6 +20,5 @@
   },
 
   "authors": [ "Microsoft" ],
-  "summary": "Operations Management Suite output for Microsoft EventFlow",
   "description": "Provides an output implementation that sends diagnostics data to Microsoft Operations Management Suite."
 }

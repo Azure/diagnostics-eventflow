@@ -17,9 +17,9 @@
   },
 
   "authors": [ "Microsoft" ],
-  "summary": "Application Insights output for Microsoft Diagnostics EventFlow",
   "description": "Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.",
   "packOptions": {
+    "summary": "Application Insights output for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",
       "Diagnostics",
