@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
+    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "Newtonsoft.Json": "9.0.1"
   },
 
@@ -21,10 +21,17 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "Standard output for Microsoft Diagnostics EventFlow",
+  "description": "Provides an output implementation that sends diagnostics data to standard output stream (useful for debugging purposes).",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Outputs"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

@@ -4,7 +4,7 @@
   "dependencies": {
     "NETStandard.Library": "1.6.0",
     "Microsoft.ServiceFabric": "5.1.163",
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*"
+    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" }
   },
 
   "frameworks": {
@@ -19,10 +19,17 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "Support components for Service Fabic to use Microsoft Diagnostics EventFlow",
+  "description": "Provides types that simplify the use of EventFlow library by Microsoft Service Fabric services.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Service Fabric"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

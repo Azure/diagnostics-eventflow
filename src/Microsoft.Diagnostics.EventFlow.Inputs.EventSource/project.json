@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
+    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "NETStandard.Library": "1.6.0"
   },
 
@@ -19,10 +19,18 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "EventSource input for Microsoft Diagnostics EventFlow",
+  "description": "Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Tracing.EventSource infrastructure.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Inputs",
+      "EventSource"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

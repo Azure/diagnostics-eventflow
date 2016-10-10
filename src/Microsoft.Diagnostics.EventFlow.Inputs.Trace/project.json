@@ -23,10 +23,18 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "Trace input for for Microsoft Diagnostics EventFlow",
+  "description": "Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Trace infrastructure.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Inputs",
+      "Trace"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-    <metadata>
-        <id>Microsoft.Diagnostics.EventFlow</id>
-        <version>1.0.0</version>
-        <authors>Microsoft.Diagnostics.EventFlow</authors>
-        <owners>Microsoft.Diagnostics.EventFlow</owners>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Microsoft.Diagnostics.EventFlow</description>
-        <tags>Microsoft.Diagnostics.EventFlow</tags>
-        <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
-        <dependencies>
-            <group targetFramework=".NETFramework4.5.1">
-                <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="1.0.0" />
-            </group>
-            <group targetFramework=".NETFramework4.6">
-                <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.EventSource" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="1.0.0" />
-                <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="1.0.0" />
-            </group>
-        </dependencies>
-    </metadata>
+  <metadata>
+    <id>Microsoft.Diagnostics.EventFlow</id>
+    <version>1.0.0</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <summary>Microsoft Diagnostic EventFlow</summary>
+    <description>The EventFlow library allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces. It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework.</description>
+    <tags>Microsoft, Diagnostics, EventFlow</tags>
+    <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="1.0.0-preview" />
+      </group>
+      <group targetFramework=".NETFramework4.6">
+        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.EventSource" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="1.0.0-preview" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="1.0.0-preview" />
+      </group>
+    </dependencies>
+  </metadata>
 </package>

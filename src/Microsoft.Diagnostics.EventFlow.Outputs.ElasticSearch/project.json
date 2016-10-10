@@ -3,7 +3,7 @@
 
   "dependencies": {
     "Elasticsearch.Net": "2.4.3",
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
+    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "NEST": "2.4.3",
     "NETStandard.Library": "1.6.0"
   },
@@ -20,10 +20,18 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "Elasticsearch output for Microsoft Diagnostics EventFlow",
+  "description": "Provides an output implementation that sends diagnostics data to Elasticsearch.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Outputs",
+      "Elasticsearch"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

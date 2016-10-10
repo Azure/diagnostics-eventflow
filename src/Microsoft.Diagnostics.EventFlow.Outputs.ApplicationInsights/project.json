@@ -3,7 +3,7 @@
 
   "dependencies": {
     "Microsoft.ApplicationInsights": "2.1.0",
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
+    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "NETStandard.Library": "1.6.0"
   },
 
@@ -16,10 +16,18 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "Application Insights output for Microsoft Diagnostics EventFlow",
+  "description": "Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Outputs",
+      "Application Insights"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

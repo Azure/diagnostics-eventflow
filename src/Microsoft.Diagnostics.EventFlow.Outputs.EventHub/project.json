@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.0-*",
+    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "NETStandard.Library": "1.6.0",
     "Newtonsoft.Json": "9.0.1",
     "Validation": "2.3.7",
@@ -18,10 +18,19 @@
     "delaySign": true
   },
 
+  "authors": [ "Microsoft" ],
+  "summary": "Azure Event Hubs output for Microsoft Diagnostics EventFlow",
+  "description": "Provides an output implementation that sends diagnostics data to Azure Event Hubs.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Outputs",
+      "Event Hub",
+      "Event Hubs"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }

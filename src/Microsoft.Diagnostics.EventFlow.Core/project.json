@@ -32,10 +32,17 @@
     "keyFile": "../../PublicKey.snk",
     "delaySign": true
   },
+  "authors": [ "Microsoft" ],
+  "summary": "Microsoft Diagnostics EventFlow Core",
+  "description": "Defines core interfaces and types that comprise Microsoft.Diagnostics.EventFlow library.",
   "packOptions": {
     "tags": [
-      "Microsoft.Diagnostics.EventFlow"
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Core"
     ],
-    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm"
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
   }
 }
