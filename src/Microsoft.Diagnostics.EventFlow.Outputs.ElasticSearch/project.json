@@ -21,9 +21,9 @@
   },
 
   "authors": [ "Microsoft" ],
-  "summary": "Elasticsearch output for Microsoft Diagnostics EventFlow",
   "description": "Provides an output implementation that sends diagnostics data to Elasticsearch.",
   "packOptions": {
+    "summary": "Elasticsearch output for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",
       "Diagnostics",
