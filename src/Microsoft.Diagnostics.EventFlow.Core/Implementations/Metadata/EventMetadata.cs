@@ -37,7 +37,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
         public override bool Equals(object obj)
         {
             var other = obj as EventMetadata;
-            if (obj == null)
+            if (other == null)
             {
                 return false;
             }
