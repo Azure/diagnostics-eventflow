@@ -22,6 +22,7 @@
   },
 
   "authors": [ "Microsoft" ],
+  "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to standard output stream (useful for debugging purposes).",
   "packOptions": {
     "summary": "Standard output for Microsoft Diagnostics EventFlow",

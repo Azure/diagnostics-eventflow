@@ -5,6 +5,7 @@
     <version>1.0.0</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <summary>Microsoft Diagnostic EventFlow</summary>
     <description>The EventFlow library allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces. It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework.</description>

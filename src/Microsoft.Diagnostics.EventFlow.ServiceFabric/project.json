@@ -20,6 +20,7 @@
   },
 
   "authors": [ "Microsoft" ],
+  "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides types that simplify the use of EventFlow library by Microsoft Service Fabric services.",
   "packOptions": {
     "summary": "Support components for Service Fabic to use Microsoft Diagnostics EventFlow",

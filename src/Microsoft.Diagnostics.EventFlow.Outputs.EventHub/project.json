@@ -19,6 +19,7 @@
   },
 
   "authors": [ "Microsoft" ],
+  "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to Azure Event Hubs.",
   "packOptions": {
     "summary": "Azure Event Hubs output for Microsoft Diagnostics EventFlow",

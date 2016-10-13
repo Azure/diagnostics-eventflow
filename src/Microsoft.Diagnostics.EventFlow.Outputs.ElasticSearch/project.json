@@ -21,6 +21,7 @@
   },
 
   "authors": [ "Microsoft" ],
+  "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to Elasticsearch.",
   "packOptions": {
     "summary": "Elasticsearch output for Microsoft Diagnostics EventFlow",

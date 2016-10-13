@@ -101,6 +101,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalTests", "FunctionalTests", "{05441E68-B217-475A-8E81-DB36614D1823}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuspecs", "Nuspecs", "{3B5ED5A8-29C6-4DF3-B8E8-C422453415C5}"
+	ProjectSection(SolutionItems) = preProject
+		nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec = nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

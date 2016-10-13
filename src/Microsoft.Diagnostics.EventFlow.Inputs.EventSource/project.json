@@ -20,6 +20,7 @@
   },
 
   "authors": [ "Microsoft" ],
+  "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Tracing.EventSource infrastructure.",
   "packOptions": {
     "summary": "EventSource input for Microsoft Diagnostics EventFlow",
