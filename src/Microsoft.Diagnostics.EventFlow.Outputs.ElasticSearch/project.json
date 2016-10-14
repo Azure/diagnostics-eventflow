@@ -21,6 +21,7 @@
   },
 
   "authors": [ "Microsoft" ],
+  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to Elasticsearch.",
   "packOptions": {

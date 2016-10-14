@@ -5,6 +5,7 @@
     <version>1.0.0</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
+    <projectUrl>https://github.com/Azure/diagnostics-eventflow</projectUrl>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <summary>Microsoft Diagnostic EventFlow</summary>
