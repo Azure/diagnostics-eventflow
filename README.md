@@ -23,17 +23,8 @@ The EventFlow suite supports .NET applications and .NET Core applications. It al
 
 
 ## Getting Started
-The libraries are distributed as nuget packages. To quickly get started, the libraries need to be added to the project and configured
-
-**Nuget installation**
-1. In Visual Studio, open the project which the libraries are to be used
-2. Go to Tools->Options, find the Nuget Package Manager->Package Sources
-3. Add a new nuget source with this location: **\\\\ddfiles\Team\Public\AT-Warsaw\Nuget\LKG**
-4. Open nuget package manager, choose the package source you just added, install the Microsoft.Diagnostic.EventFlow nuget package. This nuget will bring down several other EventFlow nugets as well.
-
-**Configuration**
-1. After the nuget packages are install, there should be a eventFlowConfig.json file added to the project. Open this file in Visual Studio.
-2. The installation generates a default configuration. A few sections are commented, which some of the optional configuration elements that can be added. It has an input type of "Trace", which assumes the application uses System.Diagnostics.Trace. Here is what it looks like
+1. To quickly get started, you can create a simple console application in VisualStudio and install the nuget package Microsoft.Diagnostics.EventFlow. The package is still in preview, if you're installing the package from Manage NuGet Packages window, please check **"Include prerelease"**.
+2. After the nuget package is installed, there should be a eventFlowConfig.json file added to the project. This file contains default configuration for the EventFlow pipeline. A few sections with optional configuration elements are commented outs. These sections can be enabled as desired. Here is what the file looks like
 ```json
 {
     "inputs": [
@@ -79,14 +70,21 @@ The libraries are distributed as nuget packages. To quickly get started, the lib
     "extensions": []
 }
 ```
-3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the output block for Application Insights
-4. To add a StdOutput output, install the Microsoft.Diagnostic.EventFlow.Outputs.StdOutput nuget. Then add the following in the outputs array in eventFlowConfig.json:
+3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the Application Insights section.
+4. To add a StdOutput output, install the Microsoft.Diagnostic.EventFlow.Outputs.StdOutput nuget package. Then add the following in the outputs array in eventFlowConfig.json:
 ```json
     {
         "type": "StdOutput"
     }
 ```
-5. Make sure there is at least one output defined. Run your application and see your traces in console output, or Application Insights.
+5. Create an EventFlow pipeline in your application code using the code below. Make sure there is at least one output defined in the configuration file. Run your application and see your traces in console output or Application Insights.
+```csharp
+    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline("eventFlowConfig.json"))
+    {
+        System.Diagnostics.Trace.TraceWarning("EventFlow is working!");
+        Console.ReadLine();
+    }
+```
 
 ## Configuration Details
 The EventFlow pipeline is built around three core concepts: inputs, outputs, and filters. The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
@@ -309,9 +307,18 @@ Here is an example of all the possible settings:
 | maxConcurrency | number | No | Specifies the maximum number of threads that events can be processed. Each event will be processed by a single thread, by multiple threads can process different events simultaneously. |
 | pipelineCompletionTimeoutMsec | number of milliseconds | No | Specifies the timeout to wait for the pipeline to shutdown and clean up. The shutdown process starts when the DiagnosePipeline object is disposed, which usually happens on application exit. |
 
-
 ## Logical Expressions
-TODO
+The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && Id == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
+
+Here are the supported operators:
+
+Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
+
+Regular Expression: `~=` (provide a regular expression pattern on the right)
+
+Logical: `&&`, `||`, `!` (the precedence is `!` > `&&` > `||`)
+
+Grouping: `(Expression)` (grouping can be used to change the evaluation order of expressions with logical operators)
 
 ## Store Secret Securely
 If you don't want to put sensitive information in the EventFlow configuration file, you can store the information at a secured place and pass it to the configuration at run time. Here is the sample code:
