@@ -22,10 +22,10 @@
   },
 
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to standard output stream (useful for debugging purposes).",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "Standard output for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",

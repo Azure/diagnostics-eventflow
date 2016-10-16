@@ -17,10 +17,10 @@
   },
 
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "Application Insights output for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",

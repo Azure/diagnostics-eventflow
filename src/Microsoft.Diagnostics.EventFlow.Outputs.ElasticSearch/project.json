@@ -21,10 +21,10 @@
   },
 
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to Elasticsearch.",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "Elasticsearch output for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",

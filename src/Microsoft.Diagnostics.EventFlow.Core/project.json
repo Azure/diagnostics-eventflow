@@ -33,10 +33,10 @@
     "delaySign": true
   },
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Defines core interfaces and types that comprise Microsoft.Diagnostics.EventFlow library.",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "Microsoft Diagnostics EventFlow Core",
     "tags": [
       "Microsoft",
