@@ -20,10 +20,10 @@
   },
 
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Tracing.EventSource infrastructure.",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "EventSource input for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",

@@ -16,10 +16,10 @@
   },
 
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides an input implementation for capturing data from Windows performance counters.",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "Performance Counter input for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",

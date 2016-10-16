@@ -20,10 +20,10 @@
   },
 
   "authors": [ "Microsoft" ],
-  "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
   "copyright": "© Microsoft Corporation. All rights reserved.",
   "description": "Provides types that simplify the use of EventFlow library by Microsoft Service Fabric services.",
   "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
     "summary": "Support components for Service Fabic to use Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",
