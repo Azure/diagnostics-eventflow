@@ -25,7 +25,7 @@ The EventFlow suite supports .NET applications and .NET Core applications. It al
 ## Getting Started
 1. To quickly get started, you can create a simple console application in VisualStudio and install the nuget package Microsoft.Diagnostics.EventFlow. The package is still in preview, if you're installing the package from Manage NuGet Packages window, please check **"Include prerelease"**.
 2. After the nuget package is installed, there should be a eventFlowConfig.json file added to the project. This file contains default configuration for the EventFlow pipeline. A few sections with optional configuration elements are commented outs. These sections can be enabled as desired. Here is what the file looks like
-```json
+```js
 {
     "inputs": [
         // {
