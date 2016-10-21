@@ -24,7 +24,7 @@
   },
 
   "authors": [ "Microsoft" ],
-  "copyright": "© Microsoft Corporation. All rights reserved.",
+  "copyright": "Â© Microsoft Corporation. All rights reserved.",
   "description": "Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Trace infrastructure.",
   "packOptions": {
     "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
