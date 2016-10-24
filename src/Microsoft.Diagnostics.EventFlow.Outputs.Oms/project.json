@@ -20,6 +20,6 @@
   },
 
   "authors": [ "Microsoft" ],
-  "copyright": "© Microsoft Corporation. All rights reserved.",
+  "copyright": "Â© Microsoft Corporation. All rights reserved.",
   "description": "Provides an output implementation that sends diagnostics data to Microsoft Operations Management Suite."
 }
