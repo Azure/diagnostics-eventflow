@@ -12,5 +12,11 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     public class PerformanceCounterInputConfiguration: ItemConfiguration
     {
         public List<PerformanceCounterConfiguration> Counters { get; set; }
+        public int SampleIntervalMsec { get; set; }
+
+        public PerformanceCounterInputConfiguration()
+        {
+            this.SampleIntervalMsec = 10000;  // Default sample interval 10 seconds
+        }
     }
 }

@@ -5,84 +5,120 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Validation;
+using System.Diagnostics;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class PerformanceCounterInput: IObservable<EventData>, IDisposable
+    public class PerformanceCounterInput : IObservable<EventData>, IDisposable
     {
-        private const int SampleIntervalSeconds = 10;
-        internal static readonly string MetricValueProperty = "Value";
+        private static readonly string MetricValueProperty = "Value";
+        private static readonly string CounterNameProperty = "CounterName";
+        private static readonly string CounterCategoryProperty = "CounterCategory";
+        private static readonly string ProcessNameProperty = "ProcessName";
+        private static readonly string ProcessIdProperty = "ProcessId";
+
+        private static TimeSpan MinimumCollectionInterval = TimeSpan.FromMilliseconds(100);
+        private static readonly string PerformanceCounterInputTypeName = typeof(PerformanceCounterInput).FullName;
 
         private EventFlowSubject<EventData> subject;
         private object syncObject;
         private Timer collectionTimer;
+        private TimeSpan sampleInterval;
         private List<TrackedPerformanceCounter> trackedPerformanceCounters;
         private IHealthReporter healthReporter;
+        private ProcessInstanceNameCache processInstanceNameCache;
+        private string currentProcessName;
+        private int currentProcessId;        
 
         public PerformanceCounterInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            var inputConfiguration = new PerformanceCounterInputConfiguration();
+            try
+            {
+                configuration.Bind(inputConfiguration);
+            }
+            catch (Exception e)
+            {
+                healthReporter.ReportProblem($"{nameof(PerformanceCounterInput)}: an error occurred when reading configuration{Environment.NewLine}{e.ToString()}");
+                return;
+            }
+
+            Initialize(inputConfiguration, healthReporter);
+        }
+
+        public PerformanceCounterInput(PerformanceCounterInputConfiguration configuration, IHealthReporter healthReporter)
+        {
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            Initialize(configuration, healthReporter);
+        }
+
+        private void Initialize(PerformanceCounterInputConfiguration configuration, IHealthReporter healthReporter)
+        {
             this.syncObject = new object();
             this.subject = new EventFlowSubject<EventData>();
             this.healthReporter = healthReporter;
+            this.processInstanceNameCache = new ProcessInstanceNameCache();
+            this.sampleInterval = TimeSpan.FromMilliseconds(configuration.SampleIntervalMsec);
+            var currentProcess = Process.GetCurrentProcess();
+            this.currentProcessName = currentProcess.ProcessName;
+            this.currentProcessId = currentProcess.Id;
 
             // The CLR Process ID counter used for process ID to counter instance name mapping for CLR counters will not read correctly
             // until at least one garbage collection is performed, so we will force one now. 
             // The listener is usually created during service startup so the GC should not take very long.
             GC.Collect();
 
-            try
-            {
-                var counterConfigurations = new List<PerformanceCounterConfiguration>();
-                configuration.Bind(counterConfigurations);
+            this.trackedPerformanceCounters = new List<TrackedPerformanceCounter>();
 
-                this.trackedPerformanceCounters = new List<TrackedPerformanceCounter>();
-                                
-                foreach(var counterConfiguration in counterConfigurations)
+            foreach (var counterConfiguration in configuration.Counters)
+            {
+                if (!counterConfiguration.Validate())
                 {
-                    if (!counterConfiguration.Validate())
-                    {
-                        healthReporter.ReportProblem($"{nameof(PerformanceCounterInput)}: configuration for counter {counterConfiguration.CounterName} is invalid");
-                    }
-                    else
-                    {
-                        this.trackedPerformanceCounters.Add(new TrackedPerformanceCounter(counterConfiguration));
-                    }
+                    healthReporter.ReportProblem($"{nameof(PerformanceCounterInput)}: configuration for counter {counterConfiguration.CounterName} is invalid");
+                }
+                else
+                {
+                    this.trackedPerformanceCounters.Add(new TrackedPerformanceCounter(counterConfiguration));
                 }
             }
-            catch(Exception e)
-            {
-                healthReporter.ReportProblem($"{nameof(PerformanceCounterInput)}: an error occurred when reading configuration{Environment.NewLine}{e.ToString()}");
-                return;
-            }
 
-            this.collectionTimer = new Timer(this.DoCollection, null, TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));            
+            this.collectionTimer = new Timer(this.DoCollection, null, this.sampleInterval, TimeSpan.FromDays(1));
         }
 
         private void DoCollection(object state)
         {
             float counterValue;
 
-            lock(this.syncObject)
+            lock (this.syncObject)
             {
+                var collectionStartTime = DateTime.Now;
+
+                this.processInstanceNameCache.Clear();
+
                 foreach (TrackedPerformanceCounter counter in this.trackedPerformanceCounters)
                 {
                     try
                     {
-                        if (counter.SampleNextValue(out counterValue))
+                        if (counter.SampleNextValue(this.processInstanceNameCache, out counterValue))
                         {
                             EventData d = new EventData();
+                            d.Payload[CounterNameProperty] = counter.Configuration.CounterName;
+                            d.Payload[CounterCategoryProperty] = counter.Configuration.CounterCategory;
                             d.Payload[MetricValueProperty] = counterValue;
+                            d.Payload[ProcessIdProperty] = this.currentProcessId;
+                            d.Payload[ProcessNameProperty] = this.currentProcessName;
                             d.Timestamp = DateTimeOffset.UtcNow;
+                            d.Level = LogLevel.Informational;
+                            d.ProviderName = PerformanceCounterInputTypeName;                            
                             this.subject.OnNext(d);
                         }
                     }
@@ -92,9 +128,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                             $"{nameof(PerformanceCounterInput)}: an error occurred when sampling performance counter {counter.Configuration.CounterName} "
                             + $"in category {counter.Configuration.CounterCategory}{Environment.NewLine}{e.ToString()}");
                     }
-                }                
+                }
 
-                this.collectionTimer.Change(TimeSpan.FromSeconds(SampleIntervalSeconds), TimeSpan.FromDays(1));
+                TimeSpan dueTime = this.sampleInterval - (DateTime.Now - collectionStartTime);
+                if (dueTime < MinimumCollectionInterval)
+                {
+                    dueTime = MinimumCollectionInterval;
+                }
+                this.collectionTimer.Change(dueTime, TimeSpan.FromDays(1));
             }
         }
 
@@ -115,120 +156,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
             return this.subject.Subscribe(observer);
-        }
-
-        private class TrackedPerformanceCounter: IDisposable
-        {
-            private PerformanceCounter counter;
-            private bool disposed;
-            private DateTimeOffset lastAccessedOn;
-            private string lastInstanceName;
-
-            public PerformanceCounterConfiguration Configuration { get; private set; }
-
-            public TrackedPerformanceCounter(PerformanceCounterConfiguration configuration)
-            {
-                Requires.NotNull(configuration, nameof(configuration));
-
-                this.Configuration = configuration;
-                this.lastAccessedOn = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
-                this.disposed = false;
-            }
-
-            public bool SampleNextValue(out float newValue)
-            {
-                newValue = 0;
-                if (disposed)
-                {
-                    return false;
-                }
-
-                var now = DateTimeOffset.UtcNow;
-                if (now - this.lastAccessedOn < TimeSpan.FromSeconds(this.Configuration.CollectionIntervalInSeconds))
-                {
-                    return false;                    
-                }
-
-                // TODO: for counters that share process ID counter name and category we should be able to cache the instance name 
-                // for a single counter collection cycle. In other words, we should be able call GetInstanceNameForCurrentProcess() 
-                // only once per cycle for given process ID counter name and category.
-
-                string instanceName = GetInstanceNameForCurrentProcess();
-                this.lastAccessedOn = now;
-                if (this.counter == null || (!string.IsNullOrEmpty(instanceName) && instanceName != this.lastInstanceName))
-                {
-                    if (this.counter != null)
-                    {
-                        this.counter.Dispose();
-                    }
-                    this.counter = new PerformanceCounter(
-                        this.Configuration.CounterCategory,
-                        this.Configuration.CounterName,
-                        instanceName,
-                        readOnly: true);
-                }
-                this.lastInstanceName = instanceName;
-
-                newValue = this.counter.NextValue();
-                return true;
-            }
-
-            public void Dispose()
-            {
-                if (this.counter != null)
-                {
-                    this.counter.Dispose();
-                    this.counter = null;
-                }
-            }
-
-            private string GetInstanceNameForCurrentProcess()
-            {
-                Process currentProcess = Process.GetCurrentProcess();
-
-                if (this.Configuration.UseDotNetInstanceNameConvention)
-                {
-                    string instanceName = VersioningHelper.MakeVersionSafeName(currentProcess.ProcessName, ResourceScope.Machine, ResourceScope.AppDomain);
-                    // We actually don't need the AppDomain portion, but there is no way to get the runtime ID without AppDomain id attached.
-                    // So we just filter it out 
-                    int adIdIndex = instanceName.LastIndexOf("_ad");
-                    if (adIdIndex > 0)
-                    {
-                        instanceName = instanceName.Substring(0, adIdIndex);
-                    }
-                    return instanceName;
-                }
-                else
-                {
-                    string processIdCounterName = this.Configuration.ProcessIdCounterName;
-                    Debug.Assert(!string.IsNullOrWhiteSpace(processIdCounterName));
-                    string processIdCounterCategory = this.Configuration.ProcessIdCounterCategory;
-                    if (string.IsNullOrWhiteSpace(processIdCounterCategory))
-                    {
-                        processIdCounterCategory = this.Configuration.CounterCategory;
-                    }
-
-                    PerformanceCounterCategory cat = new PerformanceCounterCategory(processIdCounterCategory);
-
-                    string[] instanceNames = cat.GetInstanceNames()
-                        .Where(inst => inst.StartsWith(currentProcess.ProcessName))
-                        .ToArray();
-
-                    foreach (string instanceName in instanceNames)
-                    {
-                        using (PerformanceCounter cnt = new PerformanceCounter(processIdCounterCategory, processIdCounterName, instanceName, readOnly: true))
-                        {
-                            int val = (int)cnt.RawValue;
-                            if (val == currentProcess.Id)
-                            {
-                                return instanceName;
-                            }
-                        }
-                    }
-                }
-
-                return null;
-            }
         }
     }
 }
