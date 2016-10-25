@@ -141,6 +141,59 @@ This input listens to EventSource traces. EventSource classes can be created in 
 | level | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
 | keywords | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
 
+#### PerformanceCounter
+*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**
+
+This input enables gathering data from Windows performance counters. Only *process-specific* counters are supported, that is, the counter must have an instance that is associated with the current process. For machine-wide counters use an external agent such as [Azure Diagnostics Agent](https://azure.microsoft.com/en-us/documentation/articles/azure-diagnostics/) or create a custom input.
+
+*Finding the counter instance that corresponds to the current process*
+
+In general there is no canonical way to find a performance counter instance that corresponds to current process. Two methods are commonly used in practice:
+
+- A special performance counter that provides instance name to process ID mapping.
+    This solution involves a set of counters that use the same instance name for a given process. Among them there is a special counter with a value that is the process ID of the corresponding process. Searching for the instance of the special counter with a value equal to the current process ID allows to discover what the instance name is used for the current process. Examples of this approach include the Windows Process category (special counter "ID Process") and all .NET counters (special counter "Process ID" in the ".NET CLR Memory" category).
+    
+- Process ID can be encoded directly into the instance name.
+    .NET performance counters can use this approach when [ProcessNameFormat flag](https://msdn.microsoft.com/en-us/library/dd537616.aspx) is set in the in the registry. 
+
+EventFlow PerformanceCounter input supports the first method of deterimining counter instance name for current process via configuration settings. It also supports the second method, but only for .NET performance counters.
+
+*Configuration example*
+```json
+{
+    "type": "PerformanceCounter",
+    "sampleIntervalMsec": "5000",
+    "counters": [
+        {
+            "counterCategory": "Process",
+            "counterName": "Private Bytes"
+        }, 
+        {
+            "counterCategory": ".NET CLR Exceptions",
+            "counterName": "# of Exceps Thrown / sec"
+        }
+    ]
+}
+```
+
+*Top-level configuration settings*
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| type | "PerformanceCounter" | Yes | Specifies the input type. For this input, it must be "PerformanceCounter". |
+| sampleIntervalMsec | integer | No | Specifies the sampling rate for the whole input (in milliseconds).   This is the rate at which the collection loop for the whole input executes. Default is 10 seconds. |
+| counters | JSON array of Counter objects | Yes | Specifies performance counters to collect data from. |
+
+*Counter class*
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| counterCategory | string | Yes | Category of the performance counter to monitor |
+| counterName | string | Yes | Name of the counter to monitor. |
+| collectionIntervalMsec | integer | No | Sampling interval for the counter. Values for the counter are read not more often than at this rate. Default is 30 seconds. |
+| processIdCounterCategory and processIdCounterName | string | No | The category and name of the performance counter that provides process ID to counter instance name mapping. It is not necessary to specify these "Process" counter category and for .NET performance counters. |
+| useDotNetInstanceNameConvention | boolean | No | Indicates that the counter instance names include process ID as described in [ProcessNameFormat documentation](https://msdn.microsoft.com/en-us/library/dd537616.aspx). |
+
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
 
