@@ -31,12 +31,15 @@ namespace Microsoft.Diagnostics.EventFlow
             return CreatePipeline(config);
         }
 
-        public static DiagnosticPipeline CreatePipeline(IConfiguration configuration)
+        public static DiagnosticPipeline CreatePipeline(IConfiguration configuration, IHealthReporter healthReporter = null)
         {
             Requires.NotNull(configuration, nameof(configuration));
 
-            IHealthReporter healthReporter = CreateHealthReporter(configuration);
-            Requires.NotNull(healthReporter, nameof(healthReporter));
+            if (healthReporter == null)
+            {
+                healthReporter = CreateHealthReporter(configuration);
+            }
+            Verify.Operation(healthReporter != null, $"An instance of a health reporter could not be created and none was provider as a parameter to {nameof(CreatePipeline)} method");
             (healthReporter as IRequireActivation)?.Activate();
 
             IDictionary<string, string> inputFactories;

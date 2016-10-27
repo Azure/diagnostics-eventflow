@@ -35,7 +35,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
             ConfigurationBuilder configBuilder = new ConfigurationBuilder();
             configBuilder.AddJsonFile(configFilePath);
             IConfigurationRoot configurationRoot = configBuilder.Build();
-            return DiagnosticPipelineFactory.CreatePipeline(configurationRoot);
+            return DiagnosticPipelineFactory.CreatePipeline(configurationRoot, new ServiceFabricHealthReporter(healthEntityName));
         }
     }
 }
