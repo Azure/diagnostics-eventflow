@@ -102,8 +102,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 {
                     this.ReportEsRequestError(response, "Bulk upload");
                 }
-
-                this.healthReporter.ReportHealthy();
+                else
+                {
+                    this.healthReporter.ReportHealthy();
+                }
             }
             catch (Exception e)
             {
