@@ -194,6 +194,13 @@ EventFlow PerformanceCounter input supports the first method of deterimining cou
 | processIdCounterCategory and processIdCounterName | string | No | The category and name of the performance counter that provides process ID to counter instance name mapping. It is not necessary to specify these "Process" counter category and for .NET performance counters. |
 | useDotNetInstanceNameConvention | boolean | No | Indicates that the counter instance names include process ID as described in [ProcessNameFormat documentation](https://msdn.microsoft.com/en-us/library/dd537616.aspx). |
 
+*Important usage note*
+
+Some performance counters require administrative privileges to be read. This can manifest itself by health reporter reporting 
+"category does not exist" errors from PerformanceCounter output, despite the fact that the category and counter are properly configured
+and clearly visible in Windows Performance Monitor. If you need to consume such counters, make sure your process runs under an account
+that is part of the local Administrators group.  
+
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
 
