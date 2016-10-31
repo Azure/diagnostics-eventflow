@@ -15,39 +15,66 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Validation;
 
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using System.Diagnostics;
+
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
-    public class OmsEventSender : IOutput
+    public class OmsOutput : IOutput
     {
         const string OmsDataUploadResource = "/api/logs";
         const string OmsDataUploadUrl = OmsDataUploadResource + "?api-version=2016-04-01";
         const string MsDateHeaderName = "x-ms-date";
         const string JsonContentId = "application/json";
-        private readonly IHealthReporter healthReporter;
 
+        private readonly IHealthReporter healthReporter;
         private OmsConnectionData connectionData;
 
-        public OmsEventSender(IConfiguration configuration, IHealthReporter healthReporter)
+        public OmsOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            this.connectionData = CreateConnectionData(configuration, healthReporter);
             this.healthReporter = healthReporter;
+            var omsOutputConfiguration = new OmsOutputConfiguration();
+            try
+            {
+                configuration.Bind(omsOutputConfiguration);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"Invalid {nameof(OmsOutput)} configuration encountered: '{configuration.ToString()}'",
+                   EventFlowContextIdentifiers.Configuration);
+                throw;
+            }
+
+            this.connectionData = CreateConnectionData(omsOutputConfiguration);
         }
 
-        private OmsConnectionData CreateConnectionData(IConfiguration configuration, IHealthReporter healthReporter)
+        public OmsOutput(OmsOutputConfiguration configuration, IHealthReporter healthReporter)
         {
-            string workspaceId = configuration["workspaceId"];
+            Requires.NotNull(configuration, nameof(configuration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            this.healthReporter = healthReporter;
+            this.connectionData = CreateConnectionData(configuration);
+        }
+
+        private OmsConnectionData CreateConnectionData(OmsOutputConfiguration configuration)
+        {
+            Debug.Assert(this.healthReporter != null);
+            Debug.Assert(configuration != null);
+
+            string workspaceId = configuration.WorkspaceId;
             if (string.IsNullOrWhiteSpace(workspaceId))
             {
-                healthReporter.ReportProblem($"{nameof(OmsEventSender)}: 'workspaceId' configuration parameter is not set");
+                this.healthReporter.ReportProblem($"{nameof(OmsOutput)}: 'workspaceId' configuration parameter is not set");
                 return null;
             }
-            string omsWorkspaceKeyBase64 = configuration["workspaceKey"];
+            string omsWorkspaceKeyBase64 = configuration.WorkspaceKey;
             if (string.IsNullOrWhiteSpace(omsWorkspaceKeyBase64))
             {
-                healthReporter.ReportProblem($"{nameof(OmsEventSender)}: 'workspaceKey' configuration parameter is not set");
+                this.healthReporter.ReportProblem($"{nameof(OmsOutput)}: 'workspaceKey' configuration parameter is not set");
                 return null;
             }
 
@@ -57,10 +84,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             var httpClient = new HttpClient(retryHandler);
             httpClient.BaseAddress = new Uri($"https://{workspaceId}.ods.opinsights.azure.com", UriKind.Absolute);
 
-            string logTypeName = configuration["logTypeName"];
+            string logTypeName = configuration.LogTypeName;
             if (string.IsNullOrWhiteSpace(logTypeName))
             {
-                logTypeName = "ETWEvent";
+                logTypeName = "Event";
             }
             httpClient.DefaultRequestHeaders.Add("Log-Type", logTypeName);
 
@@ -97,7 +124,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
                 else
                 {
-                    string errorMessage = nameof(OmsEventSender) + "OMS REST API returned an error. Code: " + response.StatusCode + " Description: " + response.ReasonPhrase;
+                    string errorMessage = nameof(OmsOutput) + "OMS REST API returned an error. Code: " + response.StatusCode + " Description: " + response.ReasonPhrase;
                     this.healthReporter.ReportProblem(errorMessage);
                 }
             }
