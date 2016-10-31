@@ -25,6 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Requires.NotNull(configuration, nameof(configuration));
 
             this.Configuration = configuration;
+            // Set the lastAccessedOn time way in the past so that the data is sampled at startup
             this.lastAccessedOn = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1));
             this.disposed = false;
         }
