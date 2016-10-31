@@ -191,7 +191,7 @@ EventFlow PerformanceCounter input supports the first method of deterimining cou
 | counterCategory | string | Yes | Category of the performance counter to monitor |
 | counterName | string | Yes | Name of the counter to monitor. |
 | collectionIntervalMsec | integer | No | Sampling interval for the counter. Values for the counter are read not more often than at this rate. Default is 30 seconds. |
-| processIdCounterCategory and processIdCounterName | string | No | The category and name of the performance counter that provides process ID to counter instance name mapping. It is not necessary to specify these "Process" counter category and for .NET performance counters. |
+| processIdCounterCategory and processIdCounterName | string | No | The category and name of the performance counter that provides process ID to counter instance name mapping. It is not necessary to specify these for the "Process" counter category and for .NET performance counters. |
 | useDotNetInstanceNameConvention | boolean | No | Indicates that the counter instance names include process ID as described in [ProcessNameFormat documentation](https://msdn.microsoft.com/en-us/library/dd537616.aspx). |
 
 *Important usage note*
