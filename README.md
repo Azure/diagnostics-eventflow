@@ -196,10 +196,10 @@ EventFlow PerformanceCounter input supports the first method of deterimining cou
 
 *Important usage note*
 
-Some performance counters require administrative privileges to be read. This can manifest itself by health reporter reporting 
-"category does not exist" errors from PerformanceCounter output, despite the fact that the category and counter are properly configured
-and clearly visible in Windows Performance Monitor. If you need to consume such counters, make sure your process runs under an account
-that is part of the local Administrators group.  
+Some performance counters require the user to be a member of the Performance Monitor Users system group. 
+This can manifest itself by health reporter reporting "category does not exist" errors from PerformanceCounter output, 
+despite the fact that the category and counter are properly configured and clearly visible in Windows Performance Monitor. 
+If you need to consume such counters, make sure the account your process runs under belogs to Performance Monitor Users group.  
 
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
