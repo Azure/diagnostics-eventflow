@@ -3,13 +3,15 @@
 
   "dependencies": {
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
-    "NETStandard.Library": "1.6.0",
     "Newtonsoft.Json": "9.0.1"
   },
 
   "frameworks": {
     "netstandard1.6": {
-      "imports": "dnxcore50"
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0"
+      }
     },
     "net451": {}
   },
@@ -21,5 +23,18 @@
 
   "authors": [ "Microsoft" ],
   "copyright": "© Microsoft Corporation. All rights reserved.",
-  "description": "Provides an output implementation that sends diagnostics data to Microsoft Operations Management Suite."
+  "description": "Provides an output implementation that sends diagnostics data to Microsoft Operations Management Suite.",
+  "packOptions": {
+    "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
+    "summary": "OMS (Operations Management Suite) output for for Microsoft Diagnostics EventFlow",
+    "tags": [
+      "Microsoft",
+      "Diagnostics",
+      "EventFlow",
+      "Outputs",
+      "Microsoft Operations Management"
+    ],
+    "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+    "requireLicenseAcceptance": true
+  }
 }
