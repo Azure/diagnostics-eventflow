@@ -54,7 +54,7 @@ namespace Microsoft.Diagnostics.EventFlow
             var inputBuffer = new BufferBlock<EventData>(
                 new DataflowBlockOptions()
                 {
-                    BoundedCapacity = pipelineConfiguration.PipelineBufferSize,
+                    BoundedCapacity = this.pipelineConfiguration.PipelineBufferSize,
                     CancellationToken = this.cancellationTokenSource.Token
                 });
             this.pipelineHead = inputBuffer;
