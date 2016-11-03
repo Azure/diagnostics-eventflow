@@ -22,7 +22,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private static readonly string ProcessIdProperty = "ProcessId";
 
         private static TimeSpan MinimumCollectionInterval = TimeSpan.FromMilliseconds(100);
-        private static readonly string PerformanceCounterInputProviderName = $"EventFlow.{nameof(PerformanceCounterInput)}";
+        private static readonly string PerformanceCounterInputProviderName = $"EventFlow-{nameof(PerformanceCounterInput)}";
 
         private EventFlowSubject<EventData> subject;
         private object syncObject;
