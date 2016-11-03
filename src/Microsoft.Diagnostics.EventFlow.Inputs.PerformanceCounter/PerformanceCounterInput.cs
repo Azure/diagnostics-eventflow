@@ -22,7 +22,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private static readonly string ProcessIdProperty = "ProcessId";
 
         private static TimeSpan MinimumCollectionInterval = TimeSpan.FromMilliseconds(100);
-        private static readonly string PerformanceCounterInputTypeName = typeof(PerformanceCounterInput).FullName;
+        private static readonly string PerformanceCounterInputProviderName = $"EventFlow.{nameof(PerformanceCounterInput)}";
 
         private EventFlowSubject<EventData> subject;
         private object syncObject;
@@ -118,7 +118,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                             d.Payload[ProcessNameProperty] = this.currentProcessName;
                             d.Timestamp = DateTimeOffset.UtcNow;
                             d.Level = LogLevel.Informational;
-                            d.ProviderName = PerformanceCounterInputTypeName;                            
+                            d.ProviderName = PerformanceCounterInputProviderName;                            
                             this.subject.OnNext(d);
                         }
                     }
