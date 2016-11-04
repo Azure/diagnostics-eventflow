@@ -43,7 +43,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 throw;
             }
 
-            Initialize(aiOutputConfiguration);            
+            Initialize(aiOutputConfiguration);
         }
 
         public ApplicationInsightsOutput(ApplicationInsightsOutputConfiguration applicationInsightsOutputConfiguration, IHealthReporter healthReporter)
@@ -74,15 +74,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     IReadOnlyCollection<EventMetadata> metadata;
                     bool handled = false;
 
-                    if (e.TryGetMetadata(ApplicationInsightsMetadataTypes.Metric, out metadata))
+                    if (e.TryGetMetadata(MetricData.MetricMetadataKind, out metadata))
                     {
                         TrackMetric(e, metadata);
                         handled = true;
                     }
 
-                    if (e.TryGetMetadata(ApplicationInsightsMetadataTypes.Request, out metadata))
+                    if (e.TryGetMetadata(RequestData.RequestMetadataKind, out metadata))
                     {
                         TrackRequest(e, metadata);
+                        handled = true;
                     }
 
                     if (!handled)
@@ -116,7 +117,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             if (string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
             {
                 string errorMessage = $"{nameof(ApplicationInsightsOutput)}: Application Insights instrumentation key is is not set)";
-                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
 
@@ -130,44 +131,19 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (EventMetadata metricMetadata in metadata)
             {
+                MetricData metricData;
+                var result = MetricData.TryGetData(e, metricMetadata, out metricData);
+                if (result.Status != DataRetrievalStatus.Success)
+                {
+                    this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                    continue;
+                }
+
                 MetricTelemetry mt = new MetricTelemetry();
-                mt.Name = metricMetadata["metricName"];
-
-                double value = 0.0;
-                bool valueIsValid = false;
-                string metricValueProperty = metricMetadata["metricValueProperty"];
-                if (string.IsNullOrEmpty(metricValueProperty))
-                {
-                    valueIsValid = double.TryParse(metricMetadata["metricValue"], out value);
-                }
-                else
-                {
-                    valueIsValid = e.GetValueFromPayload<double>(metricValueProperty, (v) => value = v);
-                }
-
-                if (string.IsNullOrEmpty(mt.Name))
-                {
-                    // We should not send the metric in this case
-                    healthReporter.ReportWarning($"ApplicationInsightsSender encounters a metrics without a name or an invalid value");
-                }
-                else if (!valueIsValid)
-                {
-                    // We should not send the metric in this case
-                    if (string.IsNullOrEmpty(metricValueProperty))
-                    {
-                        healthReporter.ReportWarning($"ApplicationInsightsSender encounters an invalid value, it cannot convert '" + metricMetadata["metricValue"] + "' into a number");
-                    }
-                    else
-                    {
-                        healthReporter.ReportWarning($"ApplicationInsightsSender encounters an invalid value, it cannot convert property '" + metricValueProperty + "' into a number");
-                    }
-                }
-                else
-                {
-                    mt.Value = value;
-                    AddProperties(mt, e);
-                    telemetryClient.TrackMetric(mt);
-                }
+                mt.Name = metricData.MetricName;
+                mt.Value = metricData.Value;
+                AddProperties(mt, e);
+                telemetryClient.TrackMetric(mt);
             }
         }
 
@@ -177,27 +153,22 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (EventMetadata requestMetadata in metadata)
             {
+                RequestData requestData;
+                var result = RequestData.TryGetData(e, requestMetadata, out requestData);
+                if (result.Status != DataRetrievalStatus.Success)
+                {
+                    this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                    continue;
+                }
+
                 RequestTelemetry rt = new RequestTelemetry();
-                string requestName = null;
-                bool? success = null;
-                double duration = 0;
-                // CONSIDER: add ability to send response code
+                // TODO: add an option to extract request start time from event data
+                DateTimeOffset startTime = e.Timestamp.Subtract(requestData.Duration);
 
-                string requestNameProperty = requestMetadata["requestNameProperty"];
-                Debug.Assert(!string.IsNullOrWhiteSpace(requestNameProperty));
-                e.GetValueFromPayload<string>(requestNameProperty, (v) => requestName = v);
-
-                e.GetValueFromPayload<bool>(requestMetadata["isSuccessProperty"], (v) => success = v);
-
-                e.GetValueFromPayload<double>(requestMetadata["durationProperty"], (v) => duration = v);
-
-                TimeSpan durationSpan = TimeSpan.FromMilliseconds(duration);
-                DateTimeOffset startTime = e.Timestamp.Subtract(durationSpan); // TODO: add an option to extract request start time from event data
-
-                rt.Name = requestName;
+                rt.Name = requestData.RequestName;
                 rt.StartTime = startTime.ToUniversalTime();
-                rt.Duration = durationSpan;
-                rt.Success = success;
+                rt.Duration = requestData.Duration;
+                rt.Success = requestData.IsSuccess;
 
                 AddProperties(rt, e);
 

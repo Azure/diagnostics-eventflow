@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 using Microsoft.Extensions.Configuration;
 using Nest;
 using Validation;
@@ -79,12 +80,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 List<IBulkOperation> operations = new List<IBulkOperation>();
                 string documentTypeName = this.connectionData.Configuration.EventDocumentTypeName;
+
                 foreach (EventData eventData in events)
                 {
-                    BulkCreateOperation<EventData> operation = new BulkCreateOperation<EventData>(eventData);
-                    operation.Index = currentIndexName;
-                    operation.Type = documentTypeName;
-                    operations.Add(operation);
+                    operations.AddRange(GetCreateOperationsForEvent(eventData, currentIndexName, documentTypeName));
                 }
 
                 request.Operations = operations;
@@ -111,6 +110,69 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 string errorMessage = nameof(ElasticSearchOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
                 this.healthReporter.ReportProblem(errorMessage);
+            }
+        }
+
+        private IEnumerable<IBulkOperation> GetCreateOperationsForEvent(EventData eventData, string currentIndexName, string documentTypeName)
+        {
+            bool reportedAsMetricOrRequest = false;
+            BulkCreateOperation<EventData> operation;
+
+            // Synthesize a separate record for each metric and request metadata associated with the event
+            IReadOnlyCollection<EventMetadata> metadataSet;
+            if (eventData.TryGetMetadata(MetricData.MetricMetadataKind, out metadataSet))
+            {
+                foreach (var metricMetadata in metadataSet)
+                {
+                    MetricData metricData;
+                    var result = MetricData.TryGetData(eventData, metricMetadata, out metricData);
+                    if (result.Status != DataRetrievalStatus.Success)
+                    {
+                        this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                        continue;
+                    }
+
+                    var metricEventData = eventData.DeepClone();
+                    metricEventData.Payload[nameof(MetricData.MetricName)] = metricData.MetricName;
+                    metricEventData.Payload[nameof(MetricData.Value)] = metricData.Value;
+                    operation = new BulkCreateOperation<EventData>(metricEventData);
+                    operation.Index = currentIndexName;
+                    operation.Type = documentTypeName;
+                    reportedAsMetricOrRequest = true;
+                    yield return operation;
+                }
+            }
+
+            if (eventData.TryGetMetadata(RequestData.RequestMetadataKind, out metadataSet))
+            {
+                foreach (var requestMetadata in metadataSet)
+                {
+                    RequestData requestData;
+                    var result = RequestData.TryGetData(eventData, requestMetadata, out requestData);
+                    if (result.Status != DataRetrievalStatus.Success)
+                    {
+                        this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                        continue;
+                    }
+
+                    var requestEventData = eventData.DeepClone();
+                    requestEventData.Payload[nameof(RequestData.RequestName)] = requestData.RequestName;
+                    requestEventData.Payload[nameof(RequestData.Duration)] = requestData.Duration;
+                    requestEventData.Payload[nameof(RequestData.IsSuccess)] = requestData.IsSuccess;
+                    operation = new BulkCreateOperation<EventData>(requestEventData);
+                    operation.Index = currentIndexName;
+                    operation.Type = documentTypeName;
+                    reportedAsMetricOrRequest = true;
+                    yield return operation;
+                }
+            }
+
+            if (!reportedAsMetricOrRequest)
+            {
+                operation = new BulkCreateOperation<EventData>(eventData);
+                operation.Index = currentIndexName;
+                operation.Type = documentTypeName;
+                yield return operation;
             }
         }
 
@@ -145,7 +207,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             ConnectionSettings connectionSettings = new ConnectionSettings(esServiceUri);
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
-            { 
+            {
                 connectionSettings = connectionSettings.BasicAuthentication(userName, password);
             }
 
