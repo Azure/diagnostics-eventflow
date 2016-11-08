@@ -157,8 +157,18 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                     var requestEventData = eventData.DeepClone();
                     requestEventData.Payload[nameof(RequestData.RequestName)] = requestData.RequestName;
-                    requestEventData.Payload[nameof(RequestData.Duration)] = requestData.Duration;
-                    requestEventData.Payload[nameof(RequestData.IsSuccess)] = requestData.IsSuccess;
+                    if (requestData.Duration != null)
+                    {
+                        requestEventData.Payload[nameof(RequestData.Duration)] = requestData.Duration;
+                    }
+                    if (requestData.IsSuccess != null)
+                    {
+                        requestEventData.Payload[nameof(RequestData.IsSuccess)] = requestData.IsSuccess;
+                    }
+                    if (requestData.ResponseCode != null)
+                    {
+                        requestEventData.Payload[nameof(RequestData.ResponseCode)] = requestData.ResponseCode;
+                    }
                     operation = new BulkCreateOperation<EventData>(requestEventData);
                     operation.Index = currentIndexName;
                     operation.Type = documentTypeName;

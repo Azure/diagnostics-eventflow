@@ -25,10 +25,12 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
         public static readonly string IsSuccessPropertyMoniker = "isSuccessProperty";
         public static readonly string DurationPropertyMoniker = "durationProperty";
         public static readonly string DurationUnitMoniker = "durationUnit";
+        public static readonly string ResponseCodePropertyMoniker = "responseCodeProperty";
 
         public string RequestName { get; private set; }
-        public TimeSpan Duration { get; private set; }
-        public bool IsSuccess { get; private set; }
+        public TimeSpan? Duration { get; private set; }
+        public bool? IsSuccess { get; private set; }
+        public string ResponseCode { get; private set; }
 
         // Ensure that RequestData can only be created using TryGetRequestData() method
         private RequestData() { }
@@ -54,54 +56,61 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
                 return DataRetrievalResult.DataMissingOrInvalid(requestNameProperty);
             }
 
+            bool? success = null;
             string isSuccessProperty = requestMetadata[IsSuccessPropertyMoniker];
-            if (string.IsNullOrWhiteSpace(isSuccessProperty))
+            if (!string.IsNullOrWhiteSpace(isSuccessProperty))
             {
-                return DataRetrievalResult.MissingMetadataProperty(IsSuccessPropertyMoniker);
-            }
-
-            bool? success = false;
-            if (!eventData.GetValueFromPayload<bool>(isSuccessProperty, (v) => success = v))
-            {
-                return DataRetrievalResult.DataMissingOrInvalid(isSuccessProperty);
-            }
-
-            string durationProperty = requestMetadata[DurationPropertyMoniker];
-            if (string.IsNullOrWhiteSpace(durationProperty))
-            {
-                return DataRetrievalResult.MissingMetadataProperty(DurationPropertyMoniker);
-            }
-
-            DurationUnit durationUnit;
-            string durationUnitOverride = requestMetadata[DurationUnitMoniker];
-            if (string.IsNullOrEmpty(durationUnitOverride) || !Enum.TryParse<DurationUnit>(durationUnitOverride, ignoreCase: true, result: out durationUnit))
-            {
-                // By default we assume duration is stored as a double value representing milliseconds
-                durationUnit = DurationUnit.Milliseconds;
-            }
-
-            TimeSpan duration = default(TimeSpan);
-            if (durationUnit != DurationUnit.TimeSpan)
-            {
-                double tempDuration = 0.0;
-                if (!eventData.GetValueFromPayload<double>(durationProperty, (v) => tempDuration = v))
+                if (!eventData.GetValueFromPayload<bool>(isSuccessProperty, (v) => success = v))
                 {
-                    return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
+                    return DataRetrievalResult.DataMissingOrInvalid(isSuccessProperty);
                 }
-                duration = ToTimeSpan(tempDuration, durationUnit);
             }
-            else
+
+            TimeSpan? duration = null;
+            string durationProperty = requestMetadata[DurationPropertyMoniker];
+            if (!string.IsNullOrWhiteSpace(durationProperty))
             {
-                if (!eventData.GetValueFromPayload<TimeSpan>(durationProperty, (v) => duration = v))
+                DurationUnit durationUnit;
+                string durationUnitOverride = requestMetadata[DurationUnitMoniker];
+                if (string.IsNullOrEmpty(durationUnitOverride) || !Enum.TryParse<DurationUnit>(durationUnitOverride, ignoreCase: true, result: out durationUnit))
                 {
-                    return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
+                    // By default we assume duration is stored as a double value representing milliseconds
+                    durationUnit = DurationUnit.Milliseconds;
+                }
+
+                if (durationUnit != DurationUnit.TimeSpan)
+                {
+                    double tempDuration = 0.0;
+                    if (!eventData.GetValueFromPayload<double>(durationProperty, (v) => tempDuration = v))
+                    {
+                        return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
+                    }
+                    duration = ToTimeSpan(tempDuration, durationUnit);
+                }
+                else
+                {
+                    if (!eventData.GetValueFromPayload<TimeSpan>(durationProperty, (v) => duration = v))
+                    {
+                        return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
+                    }
+                }
+            }
+
+            string responseCode = null;
+            string responseCodeProperty = requestMetadata[ResponseCodePropertyMoniker];
+            if (!string.IsNullOrWhiteSpace(responseCodeProperty))
+            {
+                if (!eventData.GetValueFromPayload<string>(responseCodeProperty, (v) => responseCode = v))
+                {
+                    return DataRetrievalResult.DataMissingOrInvalid(responseCodeProperty);
                 }
             }
 
             request = new RequestData();
             request.RequestName = requestName;
-            request.IsSuccess = success.Value;
+            request.IsSuccess = success;
             request.Duration = duration;
+            request.ResponseCode = responseCode;
             return DataRetrievalResult.Success();
         }
 

@@ -57,7 +57,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             }
 
             metric = new MetricData();
-            metric.MetricName = MetricNameMoniker;
+            metric.MetricName = metricName;
             metric.Value = value;
             return DataRetrievalResult.Success();
         }

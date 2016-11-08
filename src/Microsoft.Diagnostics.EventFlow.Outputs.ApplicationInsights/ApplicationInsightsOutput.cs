@@ -162,13 +162,18 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
 
                 RequestTelemetry rt = new RequestTelemetry();
-                // TODO: add an option to extract request start time from event data
-                DateTimeOffset startTime = e.Timestamp.Subtract(requestData.Duration);
+
+                if (requestData.Duration != null)
+                {
+                    rt.Duration = requestData.Duration.Value;
+                    // TODO: add an option to extract request start time from event data
+                    DateTimeOffset startTime = e.Timestamp.Subtract(requestData.Duration.Value);
+                    rt.StartTime = startTime.ToUniversalTime();
+                }
 
                 rt.Name = requestData.RequestName;
-                rt.StartTime = startTime.ToUniversalTime();
-                rt.Duration = requestData.Duration;
                 rt.Success = requestData.IsSuccess;
+                rt.ResponseCode = requestData.ResponseCode;
 
                 AddProperties(rt, e);
 
