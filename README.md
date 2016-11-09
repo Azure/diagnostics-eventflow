@@ -199,7 +199,70 @@ EventFlow PerformanceCounter input supports the first method of deterimining cou
 Some performance counters require the user to be a member of the Performance Monitor Users system group. 
 This can manifest itself by health reporter reporting "category does not exist" errors from PerformanceCounter output, 
 despite the fact that the category and counter are properly configured and clearly visible in Windows Performance Monitor. 
-If you need to consume such counters, make sure the account your process runs under belogs to Performance Monitor Users group.  
+If you need to consume such counters, make sure the account your process runs under belogs to Performance Monitor Users group.
+
+#### Serilog
+
+*Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.Serilog**
+
+This input enables capturing diagnostic data created through [Serilog library](https://serilog.net/). It is designed to work with [Observable Serilog sink](https://github.com/serilog/serilog-sinks-observable). 
+
+*Configuration example*
+The Serilog input has no configuration, other than the "type" property that specifies the type of the input (must be "Serilog"):
+```json
+"inputs": [
+    {
+      "type": "Serilog",
+    }
+    // (other inputs, filters and outputs)
+```
+
+*Example: instantiating a Serilog logger that uses EventFlow Serilog input*
+
+eventFlowConfig.json:
+```json
+{
+  "inputs": [
+    {
+      "type": "Serilog",
+    }
+  ],
+  "outputs": [
+    {
+      "type": "StdOutput"
+    }
+  ]
+}
+```
+
+Program.cs:
+```csharp
+using System;
+using System.Linq;
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Diagnostics.EventFlow.Inputs;
+using Serilog;
+using Serilog.Events;
+
+namespace SerilogEventFlow
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
+            {
+                IObserver<LogEvent> serilogInput = pipeline.Inputs.OfType<SerilogInput>().First();
+                Log.Logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+
+                Log.Information("Hello from {friend} for {family}!", "SerilogInput", "EventFlow");
+                Log.CloseAndFlush();
+                Console.ReadKey();
+            }
+        }
+    }
+}
+```
 
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
