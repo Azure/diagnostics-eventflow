@@ -252,7 +252,7 @@ This output writes data to the [Application Insights](https://azure.microsoft.co
 #### Elastic Search
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**
 
-This output writes data to the [Elastic Search](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
+This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
 ```json
 {
     "type": "ElasticSearch",
@@ -266,11 +266,31 @@ This output writes data to the [Elastic Search](https://www.elastic.co/products/
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | type | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
-| indexNamePrefix | string | No | Specifies the prefix to be used when creating the Elastic Search index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elastic Search index. If not specified, a prefix will not be used. |
-| serviceUri | URL:port | Yes | Specifies where the Elastic Search cluster is. This is needed for EventFlow to locate the cluster and send the data. |
-| basicAuthenticationUserName | string | No | Specifies the user name used to authenticate with Elastic Search. To protect the cluster, authentication is often setup on the cluster. |
-| basicAuthenticationPassword | string | No | Specifies the password used to authenticate with Elastic Search. This field should be used only if basicAuthenticationUserName is specified. |
-| eventDocumentTypeName | string | Yes | Specifies the document type to be applied when data is written. Elastic Search allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
+| indexNamePrefix | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
+| serviceUri | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. |
+| basicAuthenticationUserName | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
+| basicAuthenticationPassword | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
+| eventDocumentTypeName | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
+
+#### OMS (Operations Management Suite)
+
+*Nuget package*: **Microsoft.Diagnostics.EventFlow.Outputs.Oms**
+
+The OMS output writes data to [Operations Management Suite](https://www.microsoft.com/en-us/cloud-platform/operations-management-suite) Log Analytics workspaces. You will need to create a Log Analytics workspace in Azure and know its ID and key before using OMS output. Here is a sample configuration fragment enabling the output:
+```json
+{
+  "type": "OmsOutput",
+  "workspaceId": "<workspace-GUID>",
+  "workspaceKey": "<base-64-encoded workspace key>"
+}
+```
+Supported configuration settings are:
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| type | "OmsOutput" | Yes | Specifies the output type. For this output, it must be "OmsOutput". |
+| workspaceId | string (GUID) | Yes | Specifies the workspace identifier. |
+| workspaceKey | string (base-64) | Yes | Specifies the workspace authentication key. |
+| logTypeName | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS ingestion service). |
 
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
