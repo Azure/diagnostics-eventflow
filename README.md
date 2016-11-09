@@ -284,7 +284,9 @@ The OMS output writes data to [Operations Management Suite](https://www.microsof
   "workspaceKey": "<base-64-encoded workspace key>"
 }
 ```
+
 Supported configuration settings are:
+
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | type | "OmsOutput" | Yes | Specifies the output type. For this output, it must be "OmsOutput". |
