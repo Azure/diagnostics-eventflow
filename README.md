@@ -210,32 +210,13 @@ This input enables capturing diagnostic data created through [Serilog library](h
 *Configuration example*
 The Serilog input has no configuration, other than the "type" property that specifies the type of the input (must be "Serilog"):
 ```json
-"inputs": [
-    {
-      "type": "Serilog",
-    }
-    // (other inputs, filters and outputs)
+{
+  "type": "Serilog"
+}
 ```
 
 *Example: instantiating a Serilog logger that uses EventFlow Serilog input*
 
-eventFlowConfig.json:
-```json
-{
-  "inputs": [
-    {
-      "type": "Serilog",
-    }
-  ],
-  "outputs": [
-    {
-      "type": "StdOutput"
-    }
-  ]
-}
-```
-
-Program.cs:
 ```csharp
 using System;
 using System.Linq;
