@@ -245,6 +245,48 @@ namespace SerilogEventFlow
 }
 ```
 
+#### ILogger
+
+*Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.ILogger**
+
+This input enables capturing diagnostic data created through Microsoft.Extensions.Logging library and ILogger interface. 
+
+*Configuration example*
+The ILogger input has no configuration, other than the "type" property that specifies the type of the input (must be "ILogger"):
+```json
+{
+  "type": "ILogger"
+}
+```
+
+*Example: instantiating a ILogger that uses EventFlow ILogger input*
+
+```csharp
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Extensions.Logging;
+
+namespace LoggerEventFlow
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
+            {
+                var factory = new LoggerFactory()
+                    .AddEventFlow(pipeline);
+
+                var logger = new Logger<Program>(factory);
+                using (logger.BeginScope(myState))
+                {
+                    logger.LogInformation(""Hello from {friend} for {family}!", "LoggerInput", "EventFlow");
+                }
+            }
+        }
+    }
+}
+```
+
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
 
