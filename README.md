@@ -106,8 +106,8 @@ This input listens to traces written with System.Diagnostics.Trace API. Here is 
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "Trace" | Yes | Specifies the input type. For this input, it must be "Trace". |
-| traceLevel | Critical, Error, Warning, Information, Verbose, All | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
+| `type` | "Trace" | Yes | Specifies the input type. For this input, it must be "Trace". |
+| `traceLevel` | Critical, Error, Warning, Information, Verbose, All | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
 
 #### EventSource
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.EventSource**
@@ -130,16 +130,16 @@ This input listens to EventSource traces. EventSource classes can be created in 
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "EventSource" | Yes | Specifies the input type. For this input, it must be "EventSource". |
-| sources | JSON array | Yes | Specifies the EventSource objects to collect. |
+| `type` | "EventSource" | Yes | Specifies the input type. For this input, it must be "EventSource". |
+| `sources` | JSON array | Yes | Specifies the EventSource objects to collect. |
 
 *Sources Object*
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| providerName | provider name | Yes | This field specify what kind of input this is. For this input, it must be "EventSource" |
-| level | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
-| keywords | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+| `providerName` | provider name | Yes | This field specify what kind of input this is. For this input, it must be "EventSource" |
+| `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
+|`keywords` | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
 
 #### PerformanceCounter
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**
@@ -180,19 +180,19 @@ EventFlow PerformanceCounter input supports the first method of deterimining cou
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "PerformanceCounter" | Yes | Specifies the input type. For this input, it must be "PerformanceCounter". |
-| sampleIntervalMsec | integer | No | Specifies the sampling rate for the whole input (in milliseconds).   This is the rate at which the collection loop for the whole input executes. Default is 10 seconds. |
-| counters | JSON array of Counter objects | Yes | Specifies performance counters to collect data from. |
+| `type` | "PerformanceCounter" | Yes | Specifies the input type. For this input, it must be "PerformanceCounter". |
+| `sampleIntervalMsec` | integer | No | Specifies the sampling rate for the whole input (in milliseconds).   This is the rate at which the collection loop for the whole input executes. Default is 10 seconds. |
+| `counters` | JSON array of Counter objects | Yes | Specifies performance counters to collect data from. |
 
 *Counter class*
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| counterCategory | string | Yes | Category of the performance counter to monitor |
-| counterName | string | Yes | Name of the counter to monitor. |
-| collectionIntervalMsec | integer | No | Sampling interval for the counter. Values for the counter are read not more often than at this rate. Default is 30 seconds. |
-| processIdCounterCategory and processIdCounterName | string | No | The category and name of the performance counter that provides process ID to counter instance name mapping. It is not necessary to specify these for the "Process" counter category and for .NET performance counters. |
-| useDotNetInstanceNameConvention | boolean | No | Indicates that the counter instance names include process ID as described in [ProcessNameFormat documentation](https://msdn.microsoft.com/en-us/library/dd537616.aspx). |
+| `counterCategory` | string | Yes | Category of the performance counter to monitor |
+| `counterName` | string | Yes | Name of the counter to monitor. |
+| `collectionIntervalMsec` | integer | No | Sampling interval for the counter. Values for the counter are read not more often than at this rate. Default is 30 seconds. |
+| `processIdCounterCategory` and `processIdCounterName` | string | No | The category and name of the performance counter that provides process ID to counter instance name mapping. It is not necessary to specify these for the "Process" counter category and for .NET performance counters. |
+| `useDotNetInstanceNameConvention` | boolean | No | Indicates that the counter instance names include process ID as described in [ProcessNameFormat documentation](https://msdn.microsoft.com/en-us/library/dd537616.aspx). |
 
 *Important usage note*
 
@@ -259,7 +259,7 @@ This output writes data to the console window. Here is an example showing all po
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "StdOutput" | Yes | Specifies the output type. For this output, it must be "StdOutput". |
+| `type` | "StdOutput" | Yes | Specifies the output type. For this output, it must be "StdOutput". |
 
 #### Event Hub
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.EventHub**
@@ -274,14 +274,14 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
-| eventHubName | event hub name | No | Specifies the name of the event hub. |
-| connectionString | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
+| `type` | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
+| `eventHubName` | event hub name | No | Specifies the name of the event hub. |
+| `connectionString` | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
 
 #### Application Insights
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**
 
-This output writes data to the [Application Insights](https://azure.microsoft.com/en-us/documentation/articles/app-insights-overview/). Here is an example showing all possible settings:
+This output writes data to the [Azure Application Insights service](https://azure.microsoft.com/en-us/documentation/articles/app-insights-overview/). Here is an example showing all possible settings:
 ```json
 {
     "type": "ApplicationInsights",
@@ -290,10 +290,14 @@ This output writes data to the [Application Insights](https://azure.microsoft.co
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "ApplicationInsights" | Yes | Specifies the output type. For this output, it must be "ApplicationInsights". |
-| instrumentationKey | GUID | Yes | Specifies the instrumentation key for the targeted Application Insights resource. The key is in the form of a GUID. The key can be found on the Application Insights blade in Azure Portal. |
+| `type` | "ApplicationInsights" | Yes | Specifies the output type. For this output, it must be "ApplicationInsights". |
+| `instrumentationKey` | GUID | Yes | Specifies the instrumentation key for the targeted Application Insights resource. The key is in the form of a GUID. The key can be found on the Application Insights blade in Azure Portal. |
 
-#### Elastic Search
+*Standard metadata support*
+
+Application Insights output supports `metric` and `request` metadata. Each event decorated with either of these metadata types will be reported as Application Insights *metric* or *request*, respectively, enabling rich support for visualization and alerting that Application Insights provides. All other events will be reported as Application Insights *traces*. 
+
+#### Elasticsearch
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**
 
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
@@ -309,12 +313,30 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
-| indexNamePrefix | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
-| serviceUri | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. |
-| basicAuthenticationUserName | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
-| basicAuthenticationPassword | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
-| eventDocumentTypeName | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
+| `type` | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
+| `indexNamePrefix` | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
+| `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. |
+| `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
+| `basicAuthenticationPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
+| `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
+
+*Standard metadata support*
+
+Elasticsearch output supports `metric` and `request` metadata. Events decorated with this metadata will get additional properties when sent to Elasticsearch.
+
+Fields injected by `metric` metadata are:
+| Field | Description |
+| :---- | :-------------- |
+| `MetricName` | The name of the metric, read directly from the metadata. |
+| `Value` | The value of the metric, read from the event property specified by `metricValueProperty`. |
+
+Fields injected byt the `request` metadata are:
+| Field | Description |
+| :---- | :-------------- |
+| `RequestName` | The name of the request, read the event property specified by `requestNameProperty`. |
+| `Duration` | Request duration, read from the event property specified by `durationProperty` (if available). |
+| `IsSuccess` | Success indicator,  read from the event property specified by `isSuccessProperty` (if available). |
+| `ResponseCode` | Response code for the request, read from the event property specified by `durationProperty` (if available). | 
 
 #### OMS (Operations Management Suite)
 
@@ -333,10 +355,10 @@ Supported configuration settings are:
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "OmsOutput" | Yes | Specifies the output type. For this output, it must be "OmsOutput". |
-| workspaceId | string (GUID) | Yes | Specifies the workspace identifier. |
-| workspaceKey | string (base-64) | Yes | Specifies the workspace authentication key. |
-| logTypeName | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS ingestion service). |
+| `type` | "OmsOutput" | Yes | Specifies the output type. For this output, it must be "OmsOutput". |
+| `workspaceId` | string (GUID) | Yes | Specifies the workspace identifier. |
+| `workspaceKey` | string (base-64) | Yes | Specifies the workspace authentication key. |
+| `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS ingestion service). |
 
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
@@ -354,8 +376,8 @@ This filter discards all data that satisfies the include expression. Here is an 
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "drop" | Yes | Specifies the filter type. For this filter, it must be "drop". |
-| include | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
+| `type` | "drop" | Yes | Specifies the filter type. For this filter, it must be "drop". |
+| `include` | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 
 #### metadata
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Core**
@@ -372,10 +394,41 @@ This filter adds additional metadata to all data that satisfies the include expr
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "metadata" | Yes | Specifies the filter type. For this filter, it must be "metadata". |
-| metadata | string | Yes | Specifies the metadata type. This field is used only if type is "metadata", so it shouldn't appear in other filter types. The metadata type is user-defined and is persisted along with metadata tag added to the event data. |
-| include | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
+| `type` | "metadata" | Yes | Specifies the filter type. For this filter, it must be "metadata". |
+| `metadata` | string | Yes | Specifies the metadata type. This field is used only if type is "metadata", so it shouldn't appear in other filter types. The metadata type is user-defined and is persisted along with metadata tag added to the event data. |
+| `include` | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 | *[others]* | string | No | Specifies custom properties that should be added along with this metadata object. When the event data is processed by other filters or outputs, these properties can be accessed. The names of these properties are custom-defined and the possible set is open-ended. For a particular filter, zero or more custom properties can be defined. In the example above, customTag1 and customTag2 are such properties. |
+
+### Standard metadata types
+
+EventFlow core library defines a couple of standard metadata types: `metric` and `request`. They have pre-defined set of fields and are recognized by [Application Insights](#application-insights) and [Elasticsearch](#elasticsearch) outputs (see documentation for each output, respectively, to learn how they handle standard metadata).
+
+**Metric metadata type**
+
+Metrics are named time series of floating-point values. Metric metadata defines how metrics are derived from ordinary events. Following fields are supported:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `metadata` | "metric" | Yes | Indicates metric metadata definition; must be "metric". |
+| `metricName` | string | Yes | The name of the metric. |
+| `metricValue` | double | (see Remarks) | The value of the metric. This is useful for "counter" type of metric when each occurrence of a particular event should result in an increment of the counter. |
+| `metricValueProperty` | string | (see Remarks) | The name of the event property that holds the metric value. | 
+
+Remarks: 
+1. Either `metricValue` or `metricValueProperty` must be specified.
+
+**Request metadata type**
+
+Requests are special events that represent invocations of a network service by its clients. Request metadata defines how requests are derived from ordinary events. Following fields are supported:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `metadata` | "request" | Yes | Indicates request metadata definition; must be "request". |
+| `requestNameProperty` | string | Yes | The name of the event property that contanis the name of the request (to distinguish between different kinds of requests). |
+| `isSuccessProperty` | string | No | The name of the event property that specifies whether the request ended successfully. It is expected that the event property is, or can be converted to a boolean. |
+| `durationProperty` | string | No | The name of the event property that specifies the request duration (execution time). |
+| `durationUnit` | "TimeSpan", "milliseconds", "seconds", "minutes" or "hours" | No | Specifies the type of data used by request duration property. If not set, it is assumed that request duration is expressed as a double value, representing milliseconds. |
+| `responseCodeProperty` | string | No | The name of the event property that specifies response code associated with the request. A response code describes in more detail the outcome of the request. It is expected that the event property is, or can be converted to a string. |
 
 ### Health Reporter
 Every software component can generate errors or warnings the developer should be aware of. The EventFlow library is no exception. An EventFlow health reporter reports errors and warnings generated by any components in the EventFlow pipeline.
@@ -397,11 +450,11 @@ This health reporter writes all errors, warnings, and informational traces gener
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| type | "CsvHealthReporter" | Yes | Specifies the health reporter type. For this reporter, it must be "CsvHealthReporter". |
-| logFileFolder | file path | No | Specifies a path for the CSV log file to be written. It can be an absolute path, or a relative path. If it's a relative path, then it's computed relative to the directory where the EventFlow core library is in. However, if it's an ASP.NET application, it's relative to the app_data folder. |
-| logFilePrefix | file path | No | Specifies a prefix used for the CSV log file. CsvHealthReporter creates the log file name by combining this prefix with the date of when the file is generated. If the prefix is omitted, then a default prefix of "HealthReport" is used. |
-| minReportLevel | Error, Warning, Message | No | Specifies the collection report level. Report traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Error, and Warning traces are collected. Default is Error. |
-| throttlingPeriodMsec | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
+| `type` | "CsvHealthReporter" | Yes | Specifies the health reporter type. For this reporter, it must be "CsvHealthReporter". |
+| `logFileFolder` | file path | No | Specifies a path for the CSV log file to be written. It can be an absolute path, or a relative path. If it's a relative path, then it's computed relative to the directory where the EventFlow core library is in. However, if it's an ASP.NET application, it's relative to the app_data folder. |
+| `logFilePrefix` | file path | No | Specifies a prefix used for the CSV log file. CsvHealthReporter creates the log file name by combining this prefix with the date of when the file is generated. If the prefix is omitted, then a default prefix of "HealthReport" is used. |
+| `minReportLevel` | Error, Warning, Message | No | Specifies the collection report level. Report traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Error, and Warning traces are collected. Default is Error. |
+| `throttlingPeriodMsec` | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
 
 #### ServiceFabricHealthReporter
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.ServiceFabric**
@@ -427,11 +480,11 @@ Here is an example of all the possible settings:
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| pipelineBufferSize | number | No | Specifies how many events the pipeline can buffer if the events cannot flow through the pipeline fast enough. This buffer protects loss of data in cases where there is a sudden burst of data. |
-| maxEventBatchSize | number | No | Specifies the maximum number of events to be batched before the batch gets pushed through the pipeline to filters and outputs. The batch is pushed down when it reaches the maxEventBatchSize, or its oldest event has been in the batch for more than maxBatchDelayMsec milliseconds. |
-| maxBatchDelayMsec | number of milliseconds | No | Specifies the maximum time that events are held in a batch before the batch gets pushed through the pipeline to filters and outputs. The batch is pushed down when it reaches the maxEventBatchSize, or its oldest event has been in the batch for more than maxBatchDelayMsec milliseconds. |
-| maxConcurrency | number | No | Specifies the maximum number of threads that events can be processed. Each event will be processed by a single thread, by multiple threads can process different events simultaneously. |
-| pipelineCompletionTimeoutMsec | number of milliseconds | No | Specifies the timeout to wait for the pipeline to shutdown and clean up. The shutdown process starts when the DiagnosePipeline object is disposed, which usually happens on application exit. |
+| `pipelineBufferSize` | number | No | Specifies how many events the pipeline can buffer if the events cannot flow through the pipeline fast enough. This buffer protects loss of data in cases where there is a sudden burst of data. |
+| `maxEventBatchSize` | number | No | Specifies the maximum number of events to be batched before the batch gets pushed through the pipeline to filters and outputs. The batch is pushed down when it reaches the maxEventBatchSize, or its oldest event has been in the batch for more than maxBatchDelayMsec milliseconds. |
+| `maxBatchDelayMsec` | number of milliseconds | No | Specifies the maximum time that events are held in a batch before the batch gets pushed through the pipeline to filters and outputs. The batch is pushed down when it reaches the maxEventBatchSize, or its oldest event has been in the batch for more than maxBatchDelayMsec milliseconds. |
+| `maxConcurrency` | number | No | Specifies the maximum number of threads that events can be processed. Each event will be processed by a single thread, by multiple threads can process different events simultaneously. |
+| `pipelineCompletionTimeoutMsec` | number of milliseconds | No | Specifies the timeout to wait for the pipeline to shutdown and clean up. The shutdown process starts when the DiagnosePipeline object is disposed, which usually happens on application exit. |
 
 ## Logical Expressions
 The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && Id == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
@@ -444,7 +497,7 @@ Regular Expression: `~=` (provide a regular expression pattern on the right)
 
 Logical: `&&`, `||`, `!` (the precedence is `!` > `&&` > `||`)
 
-Grouping: `(Expression)` (grouping can be used to change the evaluation order of expressions with logical operators)
+Grouping: `(expression)` (grouping can be used to change the evaluation order of expressions with logical operators)
 
 ## Store Secret Securely
 If you don't want to put sensitive information in the EventFlow configuration file, you can store the information at a secured place and pass it to the configuration at run time. Here is the sample code:
