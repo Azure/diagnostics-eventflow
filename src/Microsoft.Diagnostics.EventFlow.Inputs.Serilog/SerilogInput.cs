@@ -96,7 +96,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 try
                 {
-                    payload[property.Key] = property.Value.ToString();
+                    payload[property.Key] = ToRawValue(property.Value);
                 }
                 catch (Exception e)
                 {
@@ -105,6 +105,43 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
 
             return eventData;
+        }
+
+        private object ToRawValue(LogEventPropertyValue logEventValue)
+        {
+            // Special-case a few types of LogEventPropertyValue that allow us to maintain better type fidelity.
+            // For everything else take the default string rendering as the data.
+            ScalarValue scalarValue = logEventValue as ScalarValue;
+            if (scalarValue != null)
+            {
+                return scalarValue.Value;
+            }
+
+            SequenceValue sequenceValue = logEventValue as SequenceValue;
+            if (sequenceValue != null)
+            {
+                object[] arrayResult = sequenceValue.Elements.OfType<ScalarValue>().Select(e => e.Value).ToArray();
+                if (arrayResult.Length == sequenceValue.Elements.Count)
+                {
+                    // All values extracted successfully, it is a flat array of scalars
+                    return arrayResult;
+                }
+            }
+
+            DictionaryValue dictionaryValue = logEventValue as DictionaryValue;
+            if (dictionaryValue != null)
+            {
+                IDictionary<string, object> dictionaryResult = dictionaryValue.Elements
+                    .Where(kvPair => kvPair.Key.Value is string && kvPair.Value is ScalarValue)
+                    .ToDictionary(kvPair => (string) kvPair.Key.Value, kvPair => ((ScalarValue) kvPair.Value).Value);
+                if (dictionaryResult.Count == dictionaryValue.Elements.Count)
+                {
+                    return dictionaryResult;
+                }
+            }
+
+            // Fall back to string rendering of the value
+            return logEventValue.ToString();
         }
     }
 }
