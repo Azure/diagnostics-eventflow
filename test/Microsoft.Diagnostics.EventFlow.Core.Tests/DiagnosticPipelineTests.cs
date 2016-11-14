@@ -161,7 +161,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 }
 
                 // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                await Task.Delay(TimeSpan.FromMilliseconds(300));
 
                 // We should have got good events and warnings about bad events
                 Assert.Equal(TestBatchSize / 2, unitTestOutput.CallCount);
@@ -206,7 +206,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 }
 
                 // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                await Task.Delay(TimeSpan.FromMilliseconds(300));
 
                 // We should have got good events and warnings about bad events
                 Assert.Equal(TestEventCount / 2, unitTestOutput.EventCount);
@@ -339,7 +339,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 }
 
                 // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                await Task.Delay(TimeSpan.FromMilliseconds(300));
 
                 // We should have at least TestEventCount / MaxEventBatchSize calls to the output
                 int expectedMinCallCount = TestEventCount / settings.MaxEventBatchSize;
