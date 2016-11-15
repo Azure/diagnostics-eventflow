@@ -74,7 +74,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (var payload in eventData.Payload)
             {
-                traceRecord.properties.Add(payload.Key, payload.Value.ToString());
+                traceRecord.properties.Add(payload.Key, payload.Value);
             }
 
             sbEventData.records.Add(traceRecord);
@@ -105,8 +105,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     metricName = metadata["metricName"],
                     time = eventData.Timestamp,
                     timeGrain = null,
-                    dimensions = null,
+                    dimensions = new Dictionary<string, object>()
                 };
+
+                foreach (var payload in eventData.Payload)
+                {
+                    metricRecord.dimensions.Add(payload.Key, payload.Value);
+                }
 
                 sbEventData.records.Add(metricRecord);
             }

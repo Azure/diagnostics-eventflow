@@ -3,6 +3,7 @@
 
   "dependencies": {
     "Microsoft.ApplicationInsights": "2.1.0",
+    "Microsoft.Diagnostics.Correlation.Common": "1.0.0-preview1",
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "NETStandard.Library": "1.6.0"
   },

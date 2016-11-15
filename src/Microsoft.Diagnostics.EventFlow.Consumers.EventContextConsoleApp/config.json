@@ -1,0 +1,28 @@
+﻿{
+  "healthReporter": {
+    "type": "CsvHealthReporter",
+    "logFileFolder": ".",
+    "logFilePrefix": "HealthReport",
+    "minReportLevel": "Warning",
+    "throttlingPeriodMsec": "1000"
+  },
+  "inputs": [
+    {
+      "type": "Trace",
+      "traceLevel": "Warning"
+    }
+  ],
+  "filters": [
+  ],
+  "outputs": [
+    {
+      "type": "ApplicationInsights",
+      "instrumentationKey": "**REMOVED**"
+    },
+    {
+      "type": "StdOutput"
+    }
+  ],
+
+  "schema-version": "2016-08-11"
+}

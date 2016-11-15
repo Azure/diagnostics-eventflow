@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Diagnostics.Correlation.Common;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -80,6 +81,25 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             {
                 Trace.TraceInformation("Message for unit test");
                 subject.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceShouldSubmitTheDataWithContext()
+        {
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                ContextResolver.SetRequestContext(new MyContext("123"));
+                Trace.TraceInformation("Message for unit test");
+                subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkContext(data, "123"))), Times.Exactly(1));
             }
         }
 
@@ -282,6 +302,31 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             string path = Path.GetRandomFileName();
             path = path.Replace(".", "");
             return path;
+        }
+
+
+        private class MyContext
+        {
+            public readonly string CorrelationId;
+
+            public MyContext(string correlationId)
+            {
+                CorrelationId = correlationId;
+            }
+        }
+
+        private bool checkContext(EventData data, string correlationId)
+        {
+            object context;
+            if (data.TryGetPropertyValue("EventContext", out context))
+            {
+                var ctx = context as MyContext;
+                if (ctx != null)
+                {
+                    return ctx.CorrelationId == correlationId;
+                }
+            }
+            return false;
         }
     }
 }
