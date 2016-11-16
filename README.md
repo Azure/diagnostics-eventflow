@@ -489,7 +489,7 @@ The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `
 
 | Parameter | Default Value | Description |
 | :-------- | :-------------- | :---------- |
-| `healthEntityName` | (none) | The name of the health entity that will be used to report EventFlow pipeline health to Service Fabric. Usually set to a value that helps you identify the service using the pipeline, for example "MyApplication-MyService-DiagnosticsPipeline". |
+| `healthEntityName` | (none) | The name of the health entity that will be used to report EventFlow pipeline health to Service Fabric. Usually it is set to a value that helps you identify the service using the pipeline, for example "MyApplication-MyService-DiagnosticsPipeline". |
 | `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of the (Service Fabric) service configuration package.| 
 
 The recommended place to create the diagnostic pipeline is in the service `Main()` method:
