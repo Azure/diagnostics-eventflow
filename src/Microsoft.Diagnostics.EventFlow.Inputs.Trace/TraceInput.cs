@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using Microsoft.Diagnostics.Correlation.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 
@@ -198,6 +199,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 if (!string.IsNullOrEmpty(relatedActivityId))
                 {
                     eventPayload["RelatedActivityID"] = relatedActivityId;
+                }
+
+                var eventContext = ContextResolver.GetRequestContext<object>();
+                if (eventContext != null)
+                {
+                    eventPayload["EventContext"] = eventContext;
                 }
 
                 this.subject.OnNext(eventEntry);

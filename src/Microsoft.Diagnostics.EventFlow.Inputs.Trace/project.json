@@ -4,7 +4,8 @@
   "dependencies": {
     "Microsoft.Diagnostics.EventFlow.Core": {
       "target": "project"
-    }
+    },
+    "Microsoft.Diagnostics.Correlation.Common" : "1.0.0-preview1"
   },
 
   "frameworks": {
