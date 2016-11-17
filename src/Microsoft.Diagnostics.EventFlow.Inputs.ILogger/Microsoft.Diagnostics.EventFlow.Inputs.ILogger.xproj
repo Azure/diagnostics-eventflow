@@ -4,7 +4,7 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
-  <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\targets\DotNet\Microsoft.DotNet.Props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>6928aa36-ae20-4a44-881b-c1b9f34995eb</ProjectGuid>
     <RootNamespace>Microsoft.Diagnostics.EventFlow.Inputs.ILogger</RootNamespace>
@@ -15,5 +15,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\targets\DotNet\Microsoft.DotNet.targets" />
 </Project>
