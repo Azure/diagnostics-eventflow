@@ -4,7 +4,6 @@
 // ------------------------------------------------------------
 
 using System.Linq;
-using Microsoft.Diagnostics.EventFlow.Inputs.ILogger.Logger;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
@@ -19,7 +18,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             var loggerInputs = pipeline.Inputs?.Where(i => i is LoggerInput).ToArray();
             Validation.Requires.NotNullEmptyOrNullElements(loggerInputs, "LoggerInput");
 
-            factory.AddProvider(new EventFlowLoggerProvider(loggerInputs.First() as LoggerInput));
+            factory.AddProvider(new EventFlowLoggerProvider(loggerInputs.First() as LoggerInput, pipeline.HealthReporter));
             return factory;
         }
     }

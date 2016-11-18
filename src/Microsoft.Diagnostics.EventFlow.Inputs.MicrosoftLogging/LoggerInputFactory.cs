@@ -11,7 +11,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     {
         public LoggerInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
-            Validation.Requires.NotNull(configuration, nameof(configuration));
             Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
 
             return new LoggerInput(healthReporter);

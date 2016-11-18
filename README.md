@@ -255,7 +255,7 @@ This input enables capturing diagnostic data created through Microsoft.Extension
 The ILogger input has no configuration, other than the "type" property that specifies the type of the input (must be "ILogger"):
 ```json
 {
-  "type": "ILogger"
+  "type": "Microsoft.Extensions.Logging"
 }
 ```
 

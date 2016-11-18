@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
@@ -41,33 +42,46 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 };
 
                 var eventPayload = eventEntry.Payload;
-                eventPayload["Message"] = message;
-                eventPayload["EventId"] = eventId.Id;
+                InvokeAndReport(() => eventPayload.AddOrDuplicate("Message", message));
+                InvokeAndReport(() => eventPayload.AddOrDuplicate("EventId", eventId.Id));
+
                 if (eventId.Name != null)
                 {
-                    eventPayload["EventName"] = eventId.Name;
+                    InvokeAndReport(() => eventPayload.AddOrDuplicate("EventName", eventId.Name));
                 }
                 if (exception != null)
                 {
-                    eventPayload["Exception"] = exception;
+                    InvokeAndReport(() => eventPayload.AddOrDuplicate("Exception", exception));
                 }
                 if (payload != null)
                 {
                     foreach (var kv in payload)
-                        eventPayload.Add(kv);
+                        InvokeAndReport(() => eventPayload.AddOrDuplicate(kv));
                 }
 
                 this.subject.OnNext(eventEntry);
             }
             catch (Exception ex)
             {
-                this.healthReporter?.ReportProblem($"Failed to write message. Error: {ex}", TraceTag);
+                this.healthReporter.ReportWarning($"Failed to write message. Error: {ex.ToString()}", TraceTag);
             }
         }
 
         public void Dispose()
         {
             this.subject.Dispose();
+        }
+
+        private void InvokeAndReport(Func<DictionaryExtenstions.AddResult> action)
+        {
+            Debug.Assert(action != null);
+            var result = action.Invoke();
+            if (result.KeyChanged)
+            {
+                this.healthReporter.ReportWarning(
+                    $"The property with the key \"{result.OldKey}\" already exist in the event payload. Value was added under key \"{result.NewKey}\"",
+                    nameof(EventFlowLogger));
+            }
         }
     }
 }

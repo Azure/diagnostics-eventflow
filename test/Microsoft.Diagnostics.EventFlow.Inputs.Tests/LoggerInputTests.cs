@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -170,6 +171,54 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
+        [Fact]
+        public void LoggerShouldSubmitContextWithDuplicates()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+
+            using (LoggerInput target = new LoggerInput(healthReporterMock.Object))
+            {
+                var diagnosticPipeline = createPipeline(target, healthReporterMock.Object);
+                using (target.Subscribe(subject.Object))
+                {
+                    var factory = new LoggerFactory();
+                    factory.AddEventFlow(diagnosticPipeline);
+                    var logger = new Logger<LoggerInputTests>(factory);
+                    var expectedPayload = new Dictionary<string, object>
+                    {
+                        ["id"] = 1,
+                        ["Message"] = "message",
+                        ["EventId"] = 9,
+                        ["Scope"] = "scope"
+                    };
+
+                    using (logger.BeginScope("scope {id}", 2))
+                    {
+                        subject.Setup(s => s.OnNext(It.IsAny<EventData>())).Callback((EventData data) =>
+                        {
+                            foreach (var kv in expectedPayload)
+                                Assert.Contains(kv, data.Payload);
+                            assertContainsDuplicate(data.Payload, "id", 2);
+                            assertContainsDuplicate(data.Payload, "Message", "log message 1");
+                            assertContainsDuplicate(data.Payload, "EventId", 0);
+                            assertContainsDuplicate(data.Payload, "Scope", "scope 2");
+                        });
+
+                        logger.LogInformation("log message {id}, {Message}, {EventId}, {Scope}",
+                            expectedPayload["id"], expectedPayload["Message"], expectedPayload["EventId"], expectedPayload["Scope"]);
+                    }
+                }
+            }
+        }
+
+        private void assertContainsDuplicate(IDictionary<string, object> payload, string keyPrefix, object expectedValue)
+        {
+            var duplicates = payload.Keys.Where(k => k.StartsWith("keyPrefix") && k != keyPrefix).ToArray();
+            Assert.Equal(1, duplicates.Length);
+            Assert.Equal(expectedValue, payload[duplicates.First()]);
+        }
+
         private DiagnosticPipeline createPipeline(LoggerInput input, IHealthReporter reporter)
         {
             return new DiagnosticPipeline(reporter, new[] { input }, null, new[] { new EventSink(new FakeOutput(), null) });
@@ -218,12 +267,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
     public static class LoggerExtensions
     {
-        public static IDisposable BeginScope<TState>(this Extensions.Logging.ILogger logger, TState state)
+        public static IDisposable BeginScope<TState>(this ILogger logger, TState state)
         {
             return logger.BeginScope(state);
         }
 
-        public static void LogNone(this Extensions.Logging.ILogger logger, string message)
+        public static void LogNone(this ILogger logger, string message)
         {
             logger.Log(Extensions.Logging.LogLevel.None, 0, message, null, (state, exception) => "");
         }

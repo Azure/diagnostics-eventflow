@@ -9,27 +9,34 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 
-namespace Microsoft.Diagnostics.EventFlow.Inputs.ILogger.Logger
+namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    internal class EventFlowLogger : Extensions.Logging.ILogger
+    internal class EventFlowLogger : ILogger
     {
         private readonly string categoryName;
         private readonly LoggerInput loggerInput;
+        private readonly IHealthReporter healthReporter;
+
         private Scope<object> scope;
 
-        public EventFlowLogger(string categoryName, LoggerInput loggerInput)
+        public EventFlowLogger(string categoryName, LoggerInput loggerInput, IHealthReporter healthReporter)
         {
-            Debug.Assert(categoryName != null);
-            Debug.Assert(loggerInput != null);
+            Validation.Requires.NotNull(categoryName, nameof(categoryName));
+            Validation.Requires.NotNull(loggerInput, nameof(loggerInput));
+            Validation.Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.categoryName = categoryName;
             this.loggerInput = loggerInput;
+            this.healthReporter = healthReporter;
         }
 
         public void Log<TState>(Extensions.Logging.LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            Validation.Requires.NotNull(formatter, nameof(formatter));
+
             if (!IsEnabled(logLevel))
                 return;
+
             var message = formatter(state, exception);
 
             Dictionary<string, object> properties = new Dictionary<string, object>();
@@ -46,16 +53,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ILogger.Logger
                 if (formattedState != null)
                 {
                     for (int i = 0; i < formattedState.Count - 1; i++)
-                    {
-                        if (!properties.ContainsKey(formattedState[i].Key)) //message and scope may have the same property
-                            properties.Add(formattedState[i].Key, formattedState[i].Value);
-                    }
+                        InvokeAndReport(() => properties.AddOrDuplicate(formattedState[i]));
+
                     //last KV is the whole 'scope' message, we will add it formatted
-                    properties.Add("Scope", formattedState.ToString());
+                    InvokeAndReport(() => properties.AddOrDuplicate("Scope", formattedState.ToString()));
                 }
                 else
                 {
-                    properties.Add("Scope", scope.State);
+                    InvokeAndReport(() => properties.AddOrDuplicate("Scope", scope.State));
                 }
             }
 
@@ -106,6 +111,18 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ILogger.Logger
                     return LogLevel.Informational;
             }
             return LogLevel.Verbose;
+        }
+
+        private void InvokeAndReport(Func<DictionaryExtenstions.AddResult> action)
+        {
+            Debug.Assert(action != null);
+            var result = action.Invoke();
+            if (result.KeyChanged)
+            {
+                this.healthReporter.ReportWarning(
+                    $"The property with the key \"{result.OldKey}\" already exist in the event payload. Value was added under key \"{result.NewKey}\"",
+                    nameof(EventFlowLogger));
+            }
         }
     }
 }

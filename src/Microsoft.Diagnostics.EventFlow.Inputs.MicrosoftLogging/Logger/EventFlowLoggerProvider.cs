@@ -5,21 +5,25 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Diagnostics.EventFlow.Inputs.ILogger.Logger
+namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class EventFlowLoggerProvider : ILoggerProvider
     {
         private readonly LoggerInput loggerInput;
+        private readonly IHealthReporter reporter;
 
-        public EventFlowLoggerProvider(LoggerInput loggerInput)
+        public EventFlowLoggerProvider(LoggerInput loggerInput, IHealthReporter reporter)
         {
             Validation.Requires.NotNull(loggerInput, nameof(loggerInput));
+            Validation.Requires.NotNull(reporter, nameof(reporter));
+
             this.loggerInput = loggerInput;
+            this.reporter = reporter;
         }
 
-        public Extensions.Logging.ILogger CreateLogger(string categoryName)
+        public ILogger CreateLogger(string categoryName)
         {
-            return new EventFlowLogger(categoryName, loggerInput);
+            return new EventFlowLogger(categoryName, loggerInput, reporter);
         }
 
         public void Dispose() { }

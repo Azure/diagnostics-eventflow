@@ -26,13 +26,13 @@
   "description": "Provides an input implementation for capturing diagnostics data sourced through Microsoft.Extensions.Logging.ILogger",
   "packOptions": {
     "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
-    "summary": "ILogger input for Microsoft Diagnostics EventFlow",
+    "summary": "Microsoft.Extension.Logging input for Microsoft Diagnostics EventFlow",
     "tags": [
       "Microsoft",
       "Diagnostics",
       "EventFlow",
       "Inputs",
-      "ILogger"
+      "MicrosoftLogging"
     ],
     "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
     "requireLicenseAcceptance": true

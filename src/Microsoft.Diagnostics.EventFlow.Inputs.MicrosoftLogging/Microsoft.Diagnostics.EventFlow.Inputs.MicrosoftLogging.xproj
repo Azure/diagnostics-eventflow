@@ -6,8 +6,8 @@
   </PropertyGroup>
   <Import Project="..\..\targets\DotNet\Microsoft.DotNet.Props" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>6928aa36-ae20-4a44-881b-c1b9f34995eb</ProjectGuid>
-    <RootNamespace>Microsoft.Diagnostics.EventFlow.Inputs.ILogger</RootNamespace>
+    <ProjectGuid>e987f059-33cd-4f0e-8680-63c8033d54d8</ProjectGuid>
+    <RootNamespace>Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
