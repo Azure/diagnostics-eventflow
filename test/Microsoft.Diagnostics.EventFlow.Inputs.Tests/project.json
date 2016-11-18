@@ -8,6 +8,7 @@
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.Trace": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.Serilog": { "target": "project" },
+    "Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging": { "target": "project" },
     "Moq": "4.6.36-alpha",
     "System.ComponentModel.Primitives": "4.1.0",
     "System.Runtime.Serialization.Primitives": "4.1.1",
