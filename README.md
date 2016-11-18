@@ -387,7 +387,7 @@ This filter adds additional metadata to all data that satisfies the include expr
 {
     "type": "metadata",
     "metadata": "metric",
-    "include": "ProviderName == MyEventProvider && Id == 3",
+    "include": "ProviderName == MyEventProvider && EventId == 3",
     "customTag1": "tag1",
     "customTag2": "tag2"
 }
@@ -517,7 +517,7 @@ public static void Main(string[] args)
 ```
 
 ## Logical Expressions
-The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && Id == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
+The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && EventId == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
 
 Here are the supported operators:
 
