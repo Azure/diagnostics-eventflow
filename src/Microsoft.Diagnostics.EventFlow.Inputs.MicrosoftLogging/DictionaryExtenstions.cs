@@ -41,17 +41,18 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return new AddResult();
             }
 
-            Random random = new Random(DateTime.Now.Millisecond);
             string newKey = key + "_";
             //update property key till there are no such key in dict
             do
             {
-                newKey += random.Next(0, 10);
+                newKey += random.Value.Next(0, 10);
             }
             while (dictionary.ContainsKey(newKey));
 
             dictionary.Add(newKey, value);
             return new AddResult(key, newKey);
         }
+
+        private static Lazy<Random> random = new Lazy<Random>();
     }
 }
