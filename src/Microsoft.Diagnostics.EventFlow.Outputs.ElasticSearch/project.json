@@ -2,9 +2,9 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Elasticsearch.Net": "2.4.3",
+    "Elasticsearch.Net": "[2.4.3, 5.0)",
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
-    "NEST": "2.4.3",
+    "NEST": "[2.4.3, 5.0)",
     "NETStandard.Library": "1.6.0"
   },
 
