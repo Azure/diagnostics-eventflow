@@ -19,6 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         private EventFlowSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
+        private bool disposed;
 
         public TraceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -161,8 +162,20 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         protected override void Dispose(bool disposing)
         {
+            if (!this.disposed)
+            {
+                lock (this.subject)
+                {
+                    if (!this.disposed)
+                    {
+                        this.disposed = true;
+                        Trace.Listeners.Remove(this);
+                        this.subject.Dispose();
+                    }
+                }
+            }
+
             base.Dispose(disposing);
-            this.subject.Dispose();
         }
 
         private void Initialize(TraceInputConfiguration traceInputConfiguration)
@@ -170,6 +183,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Debug.Assert(traceInputConfiguration != null);
             Debug.Assert(this.healthReporter != null);
 
+            this.disposed = false;
             this.subject = new EventFlowSubject<EventData>();
 
             Filter = new EventTypeFilter(traceInputConfiguration.TraceLevel);

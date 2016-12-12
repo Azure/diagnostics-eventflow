@@ -46,11 +46,14 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark
                 new EventSink(evenSequenceNumberOutput, new IFilter[] {evenSequenceNumberFilter })
             };
 
+            var configuration = new DiagnosticPipelineConfiguration();
+            configuration.PipelineCompletionTimeoutMsec = Convert.ToInt32(CoolDownTime.TotalMilliseconds);
             var pipeline = new DiagnosticPipeline(
                 healthReporter, 
                 new IObservable<EventData>[] { eventSourceInput },
                 new IFilter[] { metadataFilter },
-                sinks);
+                sinks,
+                configuration);
 
             Console.WriteLine(string.Format("Starting test... will take {0} seconds", (WarmUpTime + MeasurementTime).TotalSeconds));
             Console.WriteLine("A dot represents 10 000 events submitted");
