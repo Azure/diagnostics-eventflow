@@ -594,6 +594,25 @@ using (DiagnosticPipeline pipeline = DiagnosticPipelineFactory.CreatePipeline(co
 }
 ```
 
+## Platform Support
+EventFlow supports full .NET Framework (.NET 4.5 series and 4.6 series) and .NET Core, but not all inputs and outputs are supported on all platforms. 
+The following table lists platform support for standard inputs and outputs.  
+
+| Input Name | .NET 4.5 | .NET 4.6 | .NET Core |
+| :------------ | :---- | :---- | :---- |
+| *Inputs* |
+| [System.Diagnostics.Trace](#trace) | Yes | Yes | Yes |
+| [EventSource](#eventsource) | No | Yes | Yes |
+| [PerformanceCounter](#performancecounter) | Yes | Yes | No |
+| [Serilog](#serilog) | Yes | Yes | Yes |
+| [Microsoft.Extensions.Logging](#microsoftextensionslogging) | Yes | Yes | Yes |
+| *Outputs* |
+| [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
+| [Application Insights](#application-insights) | Yes | Yes | No |
+| [Azure EventHub](#event-hub) | Yes | Yes | No |
+| [Elastic Search](#elasticsearch) | Yes | Yes | Yes |
+| [OMS (Operations Management Suite)](#oms-operations-management-suite) | Yes | Yes | Yes |
+
 ## Contribution
 * Prereq
     * Visual Studio 2015 Update 3 or above
