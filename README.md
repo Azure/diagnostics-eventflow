@@ -5,14 +5,18 @@ The EventFlow library suite allows applications to define what diagnostics data 
 It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework. It comes with the following inputs and outputs:
 
 **Inputs**
-- Trace (aka System.Diagnostics.Trace)
-- EventSource 
+- [Trace (a.k.a. System.Diagnostics.Trace)](#trace) 
+- [EventSource](#eventsource)
+- [PerformanceCounter](#performancecounter)
+- [Serilog](#serilog)
+- [Microsoft.Extensions.Logging](#microsoftextensionslogging)
  
 **Outputs**
-- StdOutput (console output)
-- Application Insights
-- Azure EventHub
-- Elastic Search
+- [StdOutput (console output)](#stdoutput)
+- [Application Insights](#application-insights)
+- [Azure EventHub](#event-hub)
+- [Elastic Search](#elasticsearch)
+- [OMS (Operations Management Suite)](#oms-operations-management-suite)
 
 The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
 
@@ -245,7 +249,7 @@ namespace SerilogEventFlow
 }
 ```
 
-#### Microsoft.Extensions.Logging.ILogger
+#### Microsoft.Extensions.Logging
 
 *Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.Microsoft.Extensions.Logging**
 
