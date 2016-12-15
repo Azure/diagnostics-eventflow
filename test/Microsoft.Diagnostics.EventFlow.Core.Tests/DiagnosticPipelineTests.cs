@@ -34,7 +34,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async Task ShouldPassOneInputToOneOutput()
+        public void ShouldPassOneInputToOneOutput()
         {
             // Setup
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
@@ -56,14 +56,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                 // Execrise
                 unitTestInput.SendMessage("Test information");
-
-                // Give it a small delay to let the pipeline process through.
-                await Task.Delay(100);
-
-                // Verify
-                mockOutput.Verify(o => o.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
-                    It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
             }
+
+            // Verify
+            mockOutput.Verify(o => o.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
+                It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
         }
 
         [Fact]
@@ -125,7 +122,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async Task UsableIfExceptionInGlobalFilterOccurs()
+        public void UsableIfExceptionInGlobalFilterOccurs()
         {
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             UnitTestOutput unitTestOutput = new UnitTestOutput();
@@ -159,18 +156,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         unitTestInput.SendMessage("Hi!");
                     }
                 }
-
-                // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(300));
-
-                // We should have got good events and warnings about bad events
-                Assert.Equal(TestBatchSize / 2, unitTestOutput.CallCount);
-                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Filtering)), Times.Exactly(TestBatchSize / 2));
             }
+
+            // We should have got good events and warnings about bad events
+            Assert.Equal(TestBatchSize / 2, unitTestOutput.CallCount);
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Filtering)), Times.Exactly(TestBatchSize / 2));
         }
 
         [Fact]
-        public async Task UsableIfExceptionInOutputSpecificFilterOccurs()
+        public void UsableIfExceptionInOutputSpecificFilterOccurs()
         {
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             UnitTestOutput unitTestOutput = new UnitTestOutput();
@@ -204,18 +198,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         unitTestInput.SendMessage("Hi!");
                     }
                 }
-
-                // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(300));
-
-                // We should have got good events and warnings about bad events
-                Assert.Equal(TestEventCount / 2, unitTestOutput.EventCount);
-                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Filtering)), Times.Exactly(TestEventCount / 2));
             }
+
+            // We should have got good events and warnings about bad events
+            Assert.Equal(TestEventCount / 2, unitTestOutput.EventCount);
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Filtering)), Times.Exactly(TestEventCount / 2));
         }
 
         [Fact]
-        public async Task CanDisposePipelineStuckInAFilter()
+        public void CanDisposePipelineStuckInAFilter()
         {
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             UnitTestOutput unitTestOutput = new UnitTestOutput();
@@ -247,8 +238,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     unitTestInput.SendMessage("Hi!");
                 }
 
-                // Wait a little bit for the pipeline to process messages and get stuck in the filter. 
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
                 stopwatch = Stopwatch.StartNew();
             }
 
@@ -262,7 +251,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async Task CanDisposePipelineStuckInAnOutput()
+        public void CanDisposePipelineStuckInAnOutput()
         {
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             UnitTestOutput unitTestOutput = new UnitTestOutput();
@@ -294,8 +283,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     unitTestInput.SendMessage("Hi!");
                 }
 
-                // Wait a little bit for the pipeline to process messages and get stuck in the output. 
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
                 stopwatch = Stopwatch.StartNew();
             }
 
@@ -309,7 +296,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async Task UsableIfExceptionInOutputOccurs()
+        public void UsableIfExceptionInOutputOccurs()
         {
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
 
@@ -337,17 +324,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 {
                     unitTestInput.SendMessage("Hi!");
                 }
-
-                // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(300));
-
-                // We should have at least TestEventCount / MaxEventBatchSize calls to the output
-                int expectedMinCallCount = TestEventCount / settings.MaxEventBatchSize;
-                Assert.InRange(unitTestOutput.CallCount, expectedMinCallCount, TestEventCount);
-                // Half of these calls (modulo 1) should have failed
-                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Output)),
-                    Times.Between(unitTestOutput.CallCount / 2, unitTestOutput.CallCount / 2 + 1, Range.Inclusive));
             }
+
+            // We should have at least TestEventCount / MaxEventBatchSize calls to the output
+            int expectedMinCallCount = TestEventCount / settings.MaxEventBatchSize;
+            Assert.InRange(unitTestOutput.CallCount, expectedMinCallCount, TestEventCount);
+            // Half of these calls (modulo 1) should have failed
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Output)),
+                Times.Between(unitTestOutput.CallCount / 2, unitTestOutput.CallCount / 2 + 1, Range.Inclusive));
         }
     }
 }
