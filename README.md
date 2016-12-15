@@ -610,7 +610,7 @@ The following table lists platform support for standard inputs and outputs.
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
 | [Application Insights](#application-insights) | Yes | Yes | No |
 | [Azure EventHub](#event-hub) | Yes | Yes | No |
-| [Elastic Search](#elasticsearch) | Yes | Yes | Yes |
+| [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
 | [OMS (Operations Management Suite)](#oms-operations-management-suite) | Yes | Yes | Yes |
 
 ## Contribution
