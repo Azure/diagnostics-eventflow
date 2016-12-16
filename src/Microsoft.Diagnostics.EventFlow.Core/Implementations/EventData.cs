@@ -17,7 +17,6 @@ namespace Microsoft.Diagnostics.EventFlow
     public class EventData: IDeepCloneable<EventData>
     {
         private Dictionary<string, object> payload;
-
         private Dictionary<string, List<EventMetadata>> metadata;
 
         public DateTimeOffset Timestamp { get; set; }
@@ -175,6 +174,11 @@ namespace Microsoft.Diagnostics.EventFlow
             }
 
             return converted;
+        }
+
+        public void AddPayloadProperty(string key, object value, IHealthReporter healthReporter, string context)
+        {
+            PayloadDictionaryUtilities.AddPayloadProperty(this.Payload, key, value, healthReporter, context);
         }
 
         public EventData DeepClone()
