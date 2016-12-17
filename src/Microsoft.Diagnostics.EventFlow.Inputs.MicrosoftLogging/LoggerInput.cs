@@ -41,22 +41,23 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     Level = level
                 };
 
-                var eventPayload = eventEntry.Payload;
-                InvokeAndReport(() => eventPayload.AddOrDuplicate("Message", message));
-                InvokeAndReport(() => eventPayload.AddOrDuplicate("EventId", eventId.Id));
+                AddPayloadProperty(eventEntry, "Message", message);
+                AddPayloadProperty(eventEntry, "EventId", eventId.Id);
 
                 if (eventId.Name != null)
                 {
-                    InvokeAndReport(() => eventPayload.AddOrDuplicate("EventName", eventId.Name));
+                    AddPayloadProperty(eventEntry, "EventName", eventId.Name);
                 }
                 if (exception != null)
                 {
-                    InvokeAndReport(() => eventPayload.AddOrDuplicate("Exception", exception));
+                    AddPayloadProperty(eventEntry, "Exception", exception);
                 }
                 if (payload != null)
                 {
                     foreach (var kv in payload)
-                        InvokeAndReport(() => eventPayload.AddOrDuplicate(kv));
+                    {
+                        AddPayloadProperty(eventEntry, kv.Key, kv.Value);
+                    }
                 }
 
                 this.subject.OnNext(eventEntry);
@@ -72,16 +73,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject.Dispose();
         }
 
-        private void InvokeAndReport(Func<DictionaryExtenstions.AddResult> action)
+        private void AddPayloadProperty(EventData eventData, string key, object value)
         {
-            Debug.Assert(action != null);
-            var result = action.Invoke();
-            if (result.KeyChanged)
-            {
-                this.healthReporter.ReportWarning(
-                    $"The property with the key \"{result.OldKey}\" already exist in the event payload. Value was added under key \"{result.NewKey}\"",
-                    nameof(EventFlowLogger));
-            }
+            Debug.Assert(eventData != null);
+            Debug.Assert(!string.IsNullOrEmpty(key));
+
+            eventData.AddPayloadProperty(key, value, this.healthReporter, nameof(EventFlowLogger));
         }
     }
 }

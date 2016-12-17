@@ -76,22 +76,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             };
 
             var payload = eventData.Payload;
-
-            if (logEvent.Exception != null)
-            {
-                payload["Exception"] = logEvent.Exception;
-            }
-
-            // Inability to render the message, or any other LogEvent property, should not stop us from sending the event down the pipeline
-            try
-            {
-                payload["Message"] = logEvent.RenderMessage();
-            }
-            catch (Exception e)
-            {
-                healthReporter.ReportWarning($"{nameof(SerilogInput)}: event message could not be rendered{Environment.NewLine}{e.ToString()}");
-            }
-
             foreach (var property in logEvent.Properties.Where(property => property.Value != null))
             {
                 try
@@ -102,6 +86,21 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 {
                     healthReporter.ReportWarning($"{nameof(SerilogInput)}: event property '{property.Key}' could not be rendered{Environment.NewLine}{e.ToString()}");
                 }
+            }
+
+            if (logEvent.Exception != null)
+            {
+                eventData.AddPayloadProperty("Exception", logEvent.Exception, healthReporter, nameof(SerilogInput));
+            }
+
+            // Inability to render the message, or any other LogEvent property, should not stop us from sending the event down the pipeline
+            try
+            {
+                eventData.AddPayloadProperty("Message", logEvent.RenderMessage(), healthReporter, nameof(SerilogInput));
+            }
+            catch (Exception e)
+            {
+                healthReporter.ReportWarning($"{nameof(SerilogInput)}: event message could not be rendered{Environment.NewLine}{e.ToString()}");
             }
 
             return eventData;
@@ -133,7 +132,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 IDictionary<string, object> dictionaryResult = dictionaryValue.Elements
                     .Where(kvPair => kvPair.Key.Value is string && kvPair.Value is ScalarValue)
-                    .ToDictionary(kvPair => (string) kvPair.Key.Value, kvPair => ((ScalarValue) kvPair.Value).Value);
+                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => ((ScalarValue)kvPair.Value).Value);
                 if (dictionaryResult.Count == dictionaryValue.Elements.Count)
                 {
                     return dictionaryResult;

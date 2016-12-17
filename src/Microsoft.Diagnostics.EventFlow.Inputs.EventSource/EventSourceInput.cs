@@ -68,7 +68,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         protected override void OnEventWritten(EventWrittenEventArgs eventArgs)
         {
-            this.subject.OnNext(eventArgs.ToEventData());
+            this.subject.OnNext(eventArgs.ToEventData(this.healthReporter, nameof(EventSourceInput)));
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -143,7 +143,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.EventSources = eventSources;
             if (this.EventSources.Count() == 0)
             {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured");
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", nameof(EventSourceInput));
                 return;
             }
 

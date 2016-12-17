@@ -53,14 +53,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 if (formattedState != null)
                 {
                     for (int i = 0; i < formattedState.Count - 1; i++)
-                        InvokeAndReport(() => properties.AddOrDuplicate(formattedState[i]));
+                    {
+                        KeyValuePair<string, object> current = formattedState[i];
+                        AddPayloadProperty(properties, current.Key, current.Value);
+                    }
 
                     //last KV is the whole 'scope' message, we will add it formatted
-                    InvokeAndReport(() => properties.AddOrDuplicate("Scope", formattedState.ToString()));
+                    AddPayloadProperty(properties, "Scope", formattedState.ToString());
                 }
                 else
                 {
-                    InvokeAndReport(() => properties.AddOrDuplicate("Scope", scope.State));
+                    AddPayloadProperty(properties, "Scope", scope.State);
                 }
             }
 
@@ -113,16 +116,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             return LogLevel.Verbose;
         }
 
-        private void InvokeAndReport(Func<DictionaryExtenstions.AddResult> action)
+        private void AddPayloadProperty(IDictionary<string, object> payload, string key, object value)
         {
-            Debug.Assert(action != null);
-            var result = action.Invoke();
-            if (result.KeyChanged)
-            {
-                this.healthReporter.ReportWarning(
-                    $"The property with the key \"{result.OldKey}\" already exist in the event payload. Value was added under key \"{result.NewKey}\"",
-                    nameof(EventFlowLogger));
-            }
+            Debug.Assert(payload != null);
+            Debug.Assert(!string.IsNullOrEmpty(key));
+
+            PayloadDictionaryUtilities.AddPayloadProperty(payload, key, value, this.healthReporter, nameof(EventFlowLogger));
         }
     }
 }

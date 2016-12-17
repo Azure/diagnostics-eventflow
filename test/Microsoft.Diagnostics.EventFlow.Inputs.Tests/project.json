@@ -6,6 +6,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
+    "Microsoft.Diagnostics.EventFlow.Inputs.EventSource": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.Trace": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.Serilog": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging": { "target": "project" },
@@ -31,8 +32,7 @@
       ]
     },
     "net46": {
-      "dependencies": {
-        "Microsoft.Diagnostics.EventFlow.Inputs.EventSource": { "target": "project" },
+      "dependencies": {        
         "Microsoft.NETCore.Platforms": "1.0.1"
       }
     }

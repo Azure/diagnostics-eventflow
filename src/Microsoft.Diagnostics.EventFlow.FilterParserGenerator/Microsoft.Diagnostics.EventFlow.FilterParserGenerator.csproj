@@ -108,8 +108,14 @@
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\Metadata\EventMetadata.cs">
       <Link>EventMetadata.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\PayloadDictionaryUtilities.cs">
+      <Link>PayloadDictionaryUtilities.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Interfaces\IDeepCloneable.cs">
       <Link>IDeepCloneable.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Interfaces\IHealthReporter.cs">
+      <Link>IHealthReporter.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
