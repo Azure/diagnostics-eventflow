@@ -25,7 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow
             }
 
             string newKey = key + "_";
-            //update property key till there are no such key in dict
+            //update property key till there is no such key in dict
             do
             {
                 newKey += PayloadDictionaryUtilities.random.Value.Next(0, 10);
