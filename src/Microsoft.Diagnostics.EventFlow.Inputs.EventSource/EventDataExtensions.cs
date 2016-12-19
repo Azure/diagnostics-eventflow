@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
-using Microsoft.Diagnostics.Correlation.Common;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -30,11 +29,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             eventPayload["EventId"] = eventSourceEvent.EventId;
             eventPayload["EventName"] = eventSourceEvent.EventName;
             eventPayload["ActivityID"] = ActivityPathString(eventSourceEvent.ActivityId);
-            var eventContext = ContextResolver.GetRequestContext<object>();
-            if (eventContext != null)
-            {
-                eventPayload["EventContext"] = eventContext;
-            }
 
             try
             {
