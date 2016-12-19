@@ -5,7 +5,6 @@
 
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Diagnostics.Correlation.Common;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -19,12 +18,6 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.EventContextConsoleApp
     {
         public void Initialize(ITelemetry telemetry)
         {
-            //add request id to every event
-            var ctx = ContextResolver.GetRequestContext<MyContext>();
-            if (ctx != null)
-            {
-                telemetry.Context.Operation.Id = ctx.CorrelationId;
-            }
         }
     }
 
@@ -60,11 +53,6 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.EventContextConsoleApp
             {
                 for (int i = 0; i < 10; i++)
                 {
-                    ContextResolver.SetRequestContext(new MyContext
-                    {
-                        CorrelationId = Guid.NewGuid().ToString(),
-                        OtherId = i.ToString()
-                    });
                     Trace.TraceWarning($"{DateTime.UtcNow:o} this is log message");
                 }
                 Task.Delay(10000).Wait();

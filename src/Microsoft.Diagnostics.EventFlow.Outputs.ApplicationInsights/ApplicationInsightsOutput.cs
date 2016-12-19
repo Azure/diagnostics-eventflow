@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.Diagnostics.Correlation.Common;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Microsoft.Extensions.Configuration;
@@ -67,13 +66,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var e in events)
                 {
-                    //restore event context so ApplicationInsights TelemetryInitializer could access it
-                    object eventContext;
-                    if (e.TryGetPropertyValue("EventContext", out eventContext))
-                    {
-                        ContextResolver.SetRequestContext(eventContext);
-                    }
-
                     if (cancellationToken.IsCancellationRequested)
                     {
                         return CompletedTask;
