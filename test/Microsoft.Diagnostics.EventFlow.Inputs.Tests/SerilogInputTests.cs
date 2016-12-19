@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using System;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Diagnostics.EventFlow.Inputs;
-using Serilog;
 using Moq;
+using Serilog;
 using Xunit;
-using Serilog.Events;
-using System.Threading;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -116,6 +116,34 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 logger.Fatal("Fatal");
                 observer.Verify(s => s.OnNext(It.Is<EventData>(data => data.Level == LogLevel.Critical)));
                 observer.ResetCalls();
+            }
+        }
+
+        [Fact]
+        public void HandlesDuplicatePropertyNames()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+
+                Exception e = new Exception("Whoa!");
+                string message = "I say: {Message} and you pay attention, no {Exception:l}";
+                logger.Warning(e, message, "Keyser Söze", "excuses");                
+
+                observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
+                       data.Payload["Message"].Equals("Keyser Söze")
+                    && data.Payload["Exception"].Equals("excuses")
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && key != "Message")].Equals("I say: \"Keyser Söze\" and you pay attention, no excuses")
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Exception") && key != "Exception")].Equals(e)
+                )), Times.Exactly(1));
+
+                healthReporterMock.Verify(o => o.ReportWarning(
+                        It.Is<string>(s => s.Contains("already exist in the event payload")), 
+                        It.Is<string>(s => s == nameof(SerilogInput))), 
+                    Times.Exactly(2));
             }
         }
     }

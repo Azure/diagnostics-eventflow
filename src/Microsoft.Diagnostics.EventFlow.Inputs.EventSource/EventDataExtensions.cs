@@ -15,34 +15,36 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     internal static class EventDataExtensions
     {
-        public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent)
+        public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent, IHealthReporter healthReporter, string context)
         {
+            Debug.Assert(healthReporter != null);
+
             EventData eventData = new EventData
             {
                 ProviderName = eventSourceEvent.EventSource.Name,
                 Timestamp = DateTime.UtcNow,
-                Level = (LogLevel) (int) eventSourceEvent.Level,
-                Keywords = (long) eventSourceEvent.Keywords
+                Level = (LogLevel)(int)eventSourceEvent.Level,
+                Keywords = (long)eventSourceEvent.Keywords
             };
 
-            var eventPayload = eventData.Payload;
-            eventPayload["EventId"] = eventSourceEvent.EventId;
-            eventPayload["EventName"] = eventSourceEvent.EventName;
-            eventPayload["ActivityID"] = ActivityPathString(eventSourceEvent.ActivityId);
+            eventSourceEvent.ExtractPayloadData(eventData);
+
+            eventData.AddPayloadProperty("EventId", eventSourceEvent.EventId, healthReporter, context);
+            eventData.AddPayloadProperty("EventName", eventSourceEvent.EventName, healthReporter, context);
+            eventData.AddPayloadProperty("ActivityID", ActivityPathString(eventSourceEvent.ActivityId), healthReporter, context);
 
             try
             {
                 if (eventSourceEvent.Message != null)
                 {
                     // If the event has a badly formatted manifest, the FormattedMessage property getter might throw
-                    eventData.Payload["Message"] = string.Format(CultureInfo.InvariantCulture, eventSourceEvent.Message, eventSourceEvent.Payload.ToArray());
+                    eventData.AddPayloadProperty("Message",
+                        string.Format(CultureInfo.InvariantCulture, eventSourceEvent.Message, eventSourceEvent.Payload.ToArray()),
+                        healthReporter,
+                        context);
                 }
             }
-            catch
-            {
-            }
-
-            eventSourceEvent.ExtractPayloadData(eventData);
+            catch { }
 
             return eventData;
         }
