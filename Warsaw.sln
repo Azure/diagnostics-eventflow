@@ -109,8 +109,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuspecs", "Nuspecs", "{3B5E
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.Serilog", "src\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.xproj", "{C80DF85E-9756-4E30-989F-0D160B444F39}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Consumers.EventContextConsoleApp", "src\Microsoft.Diagnostics.EventFlow.Consumers.EventContextConsoleApp\Microsoft.Diagnostics.EventFlow.Consumers.EventContextConsoleApp.xproj", "{320377E7-BA11-42AA-BDE1-29BA875CE34B}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging", "src\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.xproj", "{E987F059-33CD-4F0E-8680-63C8033D54D8}"
 EndProject
 Global
@@ -297,14 +295,6 @@ Global
 		{C80DF85E-9756-4E30-989F-0D160B444F39}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C80DF85E-9756-4E30-989F-0D160B444F39}.Release|x64.ActiveCfg = Release|Any CPU
 		{C80DF85E-9756-4E30-989F-0D160B444F39}.Release|x64.Build.0 = Release|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Debug|x64.Build.0 = Debug|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Release|x64.ActiveCfg = Release|Any CPU
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B}.Release|x64.Build.0 = Release|Any CPU
 		{E987F059-33CD-4F0E-8680-63C8033D54D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E987F059-33CD-4F0E-8680-63C8033D54D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E987F059-33CD-4F0E-8680-63C8033D54D8}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -340,7 +330,6 @@ Global
 		{15E2ED90-4B9A-42BD-97BB-C6AD2B1863AF} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE} = {FC86C736-6428-431B-B83F-940BF7182757}
 		{C80DF85E-9756-4E30-989F-0D160B444F39} = {47200F40-43E1-4B09-B803-A921FED2BF05}
-		{320377E7-BA11-42AA-BDE1-29BA875CE34B} = {D67068AF-16BB-4037-BE4E-B642419089BA}
 		{E987F059-33CD-4F0E-8680-63C8033D54D8} = {47200F40-43E1-4B09-B803-A921FED2BF05}
 	EndGlobalSection
 EndGlobal
