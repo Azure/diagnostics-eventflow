@@ -10,7 +10,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
-using Microsoft.Diagnostics.Correlation.Common;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -33,12 +32,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             eventData.AddPayloadProperty("EventId", eventSourceEvent.EventId, healthReporter, context);
             eventData.AddPayloadProperty("EventName", eventSourceEvent.EventName, healthReporter, context);
             eventData.AddPayloadProperty("ActivityID", ActivityPathString(eventSourceEvent.ActivityId), healthReporter, context);
-            var eventContext = ContextResolver.GetRequestContext<object>();
-            if (eventContext != null)
-            {
-                eventData.AddPayloadProperty("EventContext", eventContext, healthReporter, context);
-            }
-
             try
             {
                 if (eventSourceEvent.Message != null)

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Diagnostics.Correlation.Common;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Filters;
@@ -78,7 +77,6 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.SimpleBenchmark
                     name = "ImportantEvent";
                 }
 
-                ContextResolver.SetRequestContext(new {correlationId = eventSequenceNo});
                 BenchmarkEventSource.Log.ComplexMessage(
                     Guid.NewGuid(), 
                     Guid.NewGuid(), 
