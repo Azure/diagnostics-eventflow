@@ -32,6 +32,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             eventData.AddPayloadProperty("EventId", eventSourceEvent.EventId, healthReporter, context);
             eventData.AddPayloadProperty("EventName", eventSourceEvent.EventName, healthReporter, context);
             eventData.AddPayloadProperty("ActivityID", ActivityPathString(eventSourceEvent.ActivityId), healthReporter, context);
+
             try
             {
                 if (eventSourceEvent.Message != null)
