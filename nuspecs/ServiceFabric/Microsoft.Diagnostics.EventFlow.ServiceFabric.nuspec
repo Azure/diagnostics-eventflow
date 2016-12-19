@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Diagnostics.EventFlow.ServiceFabric</id>
+    <version>1.0.0-preview4</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <projectUrl>https://github.com/Azure/diagnostics-eventflow</projectUrl>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <summary>Support components for Service Fabic to use Microsoft Diagnostics EventFlow</summary>
+    <description>Provides types that simplify the use of EventFlow library by Microsoft Service Fabric services.</description>
+    <tags>Microsoft, Diagnostics, EventFlow, Service Fabric</tags>
+    <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.0.0-preview4, )" />
+        <dependency id="Microsoft.ServiceFabric" version="[5.1.163, )" />
+      </group>      
+    </dependencies>
+  </metadata>
+</package>
