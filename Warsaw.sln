@@ -58,7 +58,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E7AA4B2F-C884-48F2-B521-4355D84F6CEF}"
 	ProjectSection(SolutionItems) = preProject
 		tools\buildRelease.cmd = tools\buildRelease.cmd
-		tools\createNugetPackages.cmd = tools\createNugetPackages.cmd
+		tools\createNugetPackages.ps1 = tools\createNugetPackages.ps1
 		tools\restore.cmd = tools\restore.cmd
 		tools\runtest.cmd = tools\runtest.cmd
 		tools\scorch.cmd = tools\scorch.cmd
@@ -104,6 +104,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalTests", "Function
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuspecs", "Nuspecs", "{3B5ED5A8-29C6-4DF3-B8E8-C422453415C5}"
 	ProjectSection(SolutionItems) = preProject
+		nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec = nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec
 		nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec = nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec
 	EndProjectSection
 EndProject
