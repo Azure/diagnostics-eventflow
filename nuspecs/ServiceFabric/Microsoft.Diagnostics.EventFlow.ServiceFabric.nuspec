@@ -19,4 +19,8 @@
       </group>      
     </dependencies>
   </metadata>
+  <files>
+    <file src="src\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$configuration$\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" target="lib\net451\" />
+    <file src="nuspecs\ServiceFabric\content\PackageRoot\Config\eventFlowConfig.json" target="content\PackageRoot\Config\" />
+  </files>
 </package>

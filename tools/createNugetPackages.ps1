@@ -28,7 +28,7 @@ try
             &"dotnet" pack "$projectFile" --no-build -c "$Configuration" -o "$destination"
         }
         &$nugetCmd pack "$repoRoot\nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec" -OutputDirectory "$destination"
-        &$nugetCmd pack "$repoRoot\nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec" -OutputDirectory "$destination"
+        &$nugetCmd pack "$repoRoot\nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec" -BasePath "$repoRoot" -OutputDirectory "$destination" -Properties "Configuration=$Configuration"
     }
     else
     {
@@ -37,7 +37,7 @@ try
             &"dotnet" pack "$projectFile" --no-build -c "$Configuration" -o "$destination" --version-suffix $Suffix
         }
         &$nugetCmd pack "$repoRoot\nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec" -OutputDirectory "$destination" -Suffix $Suffix
-        &$nugetCmd pack "$repoRoot\nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec" -OutputDirectory "$destination" -Suffix $Suffix
+        &$nugetCmd pack "$repoRoot\nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec" -BasePath "$repoRoot" -OutputDirectory "$destination" -Suffix $Suffix -Properties "Configuration=$Configuration"
     }    
 }
 finally 
