@@ -251,7 +251,7 @@ namespace SerilogEventFlow
 
 #### Microsoft.Extensions.Logging
 
-*Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.Microsoft.Extensions.Logging**
+*Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging**
 
 This input enables capturing diagnostic data created through Microsoft.Extensions.Logging library and ILogger interface. 
 
