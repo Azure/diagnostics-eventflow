@@ -371,12 +371,14 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 Elasticsearch output supports `metric` and `request` metadata. Events decorated with this metadata will get additional properties when sent to Elasticsearch.
 
 Fields injected by `metric` metadata are:
+
 | Field | Description |
 | :---- | :-------------- |
 | `MetricName` | The name of the metric, read directly from the metadata. |
 | `Value` | The value of the metric, read from the event property specified by `metricValueProperty`. |
 
 Fields injected byt the `request` metadata are:
+
 | Field | Description |
 | :---- | :-------------- |
 | `RequestName` | The name of the request, read the event property specified by `requestNameProperty`. |
