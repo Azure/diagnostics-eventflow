@@ -310,6 +310,147 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
+        [Fact]
+        public void CanCreateAllStandardPipelineItems()
+        {
+#if NET46
+            string pipelineConfiguration = @"
+                {
+                    ""inputs"": [
+                        {
+                            ""type"": ""EventSource"",
+                            ""sources"": [
+                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                            ]
+                        },
+                        {
+                            ""type"": ""Microsoft.Extensions.Logging""
+                        },
+                        {
+                            ""type"": ""Trace""
+                        },
+                        {
+                            ""type"": ""Serilog""
+                        },
+                        {
+                            ""type"": ""PerformanceCounter"",
+                            ""counters"": [
+                                {
+                                    ""counterCategory"": ""Process"",
+                                    ""counterName"": ""Private Bytes""
+                                }
+                            ]
+                        }
+                    ],
+
+                    ""outputs"": [
+                        {
+                            ""type"": ""StdOutput"",
+                        },
+                        {
+                            ""type"": ""ElasticSearch"",
+                            ""serviceUri"": ""https://myElasticSearchCluster:9200"",
+                            ""eventDocumentTypeName"": ""diagData""
+                        }, 
+                        {
+                            ""type"": ""OmsOutput"",
+                            ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
+                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                        }, 
+                        {
+                            ""type"": ""EventHub"",
+                            ""connectionString"": ""unused""
+                        }, 
+                        {
+                            ""type"": ""ApplicationInsights"",
+                            ""instrumentationKey"": ""00000000-0000-0000-0000-000000000000""
+                        } 
+                    ],
+
+                    ""schemaVersion"": ""2016-08-11""
+                }";
+#else
+            string pipelineConfiguration = @"
+                {
+                    ""inputs"": [
+                        {
+                            ""type"": ""EventSource"",
+                            ""sources"": [
+                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                            ]
+                        },
+                        {
+                            ""type"": ""Microsoft.Extensions.Logging""
+                        },
+                        {
+                            ""type"": ""Trace""
+                        },
+                        {
+                            ""type"": ""Serilog""
+                        }
+                    ],
+
+                    ""outputs"": [
+                        {
+                            ""type"": ""StdOutput"",
+                        },
+                        {
+                            ""type"": ""ElasticSearch"",
+                            ""serviceUri"": ""https://myElasticSearchCluster:9200"",
+                            ""eventDocumentTypeName"": ""diagData""
+                        }, 
+                        {
+                            ""type"": ""OmsOutput"",
+                            ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
+                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                        } 
+                    ],
+
+                    ""schemaVersion"": ""2016-08-11""
+                }";
+#endif
+
+            try
+            {
+                using (var configFile = new TemporaryFile())
+                {
+                    configFile.Write(pipelineConfiguration);
+                    ConfigurationBuilder builder = new ConfigurationBuilder();
+                    builder.AddJsonFile(configFile.FilePath);
+                    var configuration = builder.Build();
+
+                    using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
+                    {
+                        Assert.NotNull(pipeline);
+                                                
+                        Assert.Collection(pipeline.Inputs, 
+                            i => Assert.IsType(typeof(EventSourceInput), i),
+                            i => Assert.IsType(typeof(LoggerInput), i),
+                            i => Assert.IsType(typeof(TraceInput), i),
+                            i => Assert.IsType(typeof(SerilogInput), i)
+#if NET46
+                            , i => Assert.IsType(typeof(PerformanceCounterInput), i)
+#endif
+                        );
+
+                        Assert.Collection(pipeline.Sinks,
+                            s => Assert.IsType(typeof(StdOutput), s.Output),
+                            s => Assert.IsType(typeof(ElasticSearchOutput), s.Output),
+                            s => Assert.IsType(typeof(OmsOutput), s.Output)
+#if NET46
+                            , s => Assert.IsType(typeof(EventHubOutput), s.Output)
+                            , s => Assert.IsType(typeof(ApplicationInsightsOutput), s.Output)
+#endif
+                        );
+                    }
+                }
+            }
+            finally
+            {
+                TryDeleteFile(CsvHealthReporter.DefaultLogFilePrefix, delayMilliseconds: 500);
+            }
+        }
+
         private static async void TryDeleteFile(string startWith, string extension = ".csv", int delayMilliseconds = 0)
         {
             // Clean up

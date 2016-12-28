@@ -161,23 +161,23 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public void ShouldParseConfigfileCorrect(string level)
         {
             string configJsonString = @"
-{
-  ""noise"": [
-    {
-      ""type"": ""EventSource"",
-      ""sources"": [
-        { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
-        { ""providerName"": ""MyCompany-AirTrafficControlApplication-Frontend"" }
-      ]
-    }
-  ],
-  ""healthReporter"": {
-    ""logFileFolder"": ""..\\App_Data\\"",
-    ""logFilePrefix"": ""TestHealthReport"",
-    ""minReportLevel"": ""@Level""
-  }
-}
-";
+            {
+              ""noise"": [
+                {
+                  ""type"": ""EventSource"",
+                  ""sources"": [
+                    { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                    { ""providerName"": ""MyCompany-AirTrafficControlApplication-Frontend"" }
+                  ]
+                }
+              ],
+              ""healthReporter"": {
+                ""logFileFolder"": ""..\\App_Data\\"",
+                ""logFilePrefix"": ""TestHealthReport"",
+                ""minReportLevel"": ""@Level""
+              }
+            }
+            ";
             configJsonString = configJsonString.Replace("@Level", level);
             using (var configFile = new TemporaryFile())
             {
