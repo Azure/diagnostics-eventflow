@@ -8,7 +8,11 @@
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.EventSource": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Inputs.Trace": { "target": "project" },
+    "Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging": { "target": "project" },
+    "Microsoft.Diagnostics.EventFlow.Inputs.Serilog": { "target": "project" },
     "Microsoft.Diagnostics.EventFlow.Outputs.StdOutput": { "target": "project" },
+    "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch": { "target": "project" },    
+    "Microsoft.Diagnostics.EventFlow.Outputs.Oms": { "target": "project" },
     "Microsoft.Extensions.Configuration": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Moq": "4.6.36-alpha",
@@ -33,7 +37,10 @@
     },
     "net46": {
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1"
+        "Microsoft.NETCore.Platforms": "1.0.1",
+        "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter": { "target": "project" },
+        "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights": { "target": "project" },
+        "Microsoft.Diagnostics.EventFlow.Outputs.EventHub": { "target": "project" }
       }
     }
   },
