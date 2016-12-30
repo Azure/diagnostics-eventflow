@@ -359,7 +359,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         }, 
                         {
                             ""type"": ""EventHub"",
-                            ""connectionString"": ""unused""
+                            ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
                         }, 
                         {
                             ""type"": ""ApplicationInsights"",
