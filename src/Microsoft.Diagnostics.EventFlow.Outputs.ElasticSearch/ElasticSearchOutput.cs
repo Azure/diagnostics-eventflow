@@ -76,7 +76,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
 
                 BulkRequest request = new BulkRequest();
-                request.Refresh = true;
 
                 List<IBulkOperation> operations = new List<IBulkOperation>();
                 string documentTypeName = this.connectionData.Configuration.EventDocumentTypeName;
@@ -116,7 +115,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private IEnumerable<IBulkOperation> GetCreateOperationsForEvent(EventData eventData, string currentIndexName, string documentTypeName)
         {
             bool reportedAsMetricOrRequest = false;
-            BulkCreateOperation<EventData> operation;
+            BulkIndexOperation<EventData> operation;
 
             // Synthesize a separate record for each metric and request metadata associated with the event
             IReadOnlyCollection<EventMetadata> metadataSet;
@@ -135,9 +134,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     var metricEventData = eventData.DeepClone();
                     metricEventData.Payload[nameof(MetricData.MetricName)] = metricData.MetricName;
                     metricEventData.Payload[nameof(MetricData.Value)] = metricData.Value;
-                    operation = new BulkCreateOperation<EventData>(metricEventData);
-                    operation.Index = currentIndexName;
-                    operation.Type = documentTypeName;
+                    operation = CreateOperation(metricEventData, currentIndexName, documentTypeName);
                     reportedAsMetricOrRequest = true;
                     yield return operation;
                 }
@@ -169,9 +166,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     {
                         requestEventData.Payload[nameof(RequestData.ResponseCode)] = requestData.ResponseCode;
                     }
-                    operation = new BulkCreateOperation<EventData>(requestEventData);
-                    operation.Index = currentIndexName;
-                    operation.Type = documentTypeName;
+                    operation = CreateOperation(requestEventData, currentIndexName, documentTypeName);
                     reportedAsMetricOrRequest = true;
                     yield return operation;
                 }
@@ -179,11 +174,17 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if (!reportedAsMetricOrRequest)
             {
-                operation = new BulkCreateOperation<EventData>(eventData);
-                operation.Index = currentIndexName;
-                operation.Type = documentTypeName;
+                operation = CreateOperation(eventData, currentIndexName, documentTypeName);
                 yield return operation;
             }
+        }
+
+        private static BulkIndexOperation<EventData> CreateOperation(EventData eventData, string currentIndexName, string documentTypeName)
+        {
+            BulkIndexOperation<EventData> operation = new BulkIndexOperation<EventData>(eventData);            
+            operation.Index = currentIndexName;
+            operation.Type = documentTypeName;
+            return operation;
         }
 
         private void Initialize(ElasticSearchOutputConfiguration esOutputConfiguration)

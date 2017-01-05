@@ -1,10 +1,10 @@
 {
-  "version": "1.0.0-*",
+  "version": "2.0.0-*",
 
   "dependencies": {
-    "Elasticsearch.Net": "[2.4.3, 5.0)",
+    "Elasticsearch.Net": "5.0.0",
     "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
-    "NEST": "[2.4.3, 5.0)",
+    "NEST": "5.0.0",
     "NETStandard.Library": "1.6.0"
   },
 
