@@ -346,7 +346,7 @@ Application Insights output supports `metric` and `request` metadata. Each event
 #### Elasticsearch
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**
 
-**Note: *Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 5.x**
+**Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 5.x**
 
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
 ```json
