@@ -115,7 +115,7 @@ This input listens to traces written with System.Diagnostics.Trace API. Here is 
 | `traceLevel` | Critical, Error, Warning, Information, Verbose, All | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
 
 #### EventSource
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.EventSource**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.EventSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.EventSource/)
 
 This input listens to EventSource traces. EventSource classes can be created in the application by deriving from the [System.Diagnostics.Tracing.EventSource](https://msdn.microsoft.com/en-us/library/system.diagnostics.tracing.eventsource(v=vs.110).aspx) class. Here is an example showing all possible settings:
 ```json
