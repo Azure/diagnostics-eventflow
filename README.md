@@ -25,6 +25,7 @@ The EventFlow suite supports .NET applications and .NET Core applications. It al
 - Azure Cloud Service
 - Azure Virtual Machines
 
+The core of the library, as well as inputs and outputs listed above [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
 
 ## Getting Started
 1. To quickly get started, you can create a simple console application in VisualStudio and install the Nuget package Microsoft.Diagnostics.EventFlow. 
@@ -99,7 +100,7 @@ plugins. These extension declarations act like references. On pipeline initializ
 These define what data will flow into the engine. At least one input is required. Each input type has its own set of parameters.
 
 #### Trace
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.Trace**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.Trace**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Trace/)
 
 This input listens to traces written with System.Diagnostics.Trace API. Here is an example showing all possible settings:
 ```json
@@ -146,7 +147,7 @@ This input listens to EventSource traces. EventSource classes can be created in 
 |`keywords` | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
 
 #### PerformanceCounter
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter/)
 
 This input enables gathering data from Windows performance counters. Only *process-specific* counters are supported, that is, the counter must have an instance that is associated with the current process. For machine-wide counters use an external agent such as [Azure Diagnostics Agent](https://azure.microsoft.com/en-us/documentation/articles/azure-diagnostics/) or create a custom input.
 
@@ -207,7 +208,7 @@ If you need to consume such counters, make sure the account your process runs un
 
 #### Serilog
 
-*Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.Serilog**
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Serilog**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Serilog/)
 
 This input enables capturing diagnostic data created through [Serilog library](https://serilog.net/). It is designed to work with [Observable Serilog sink](https://github.com/serilog/serilog-sinks-observable). 
 
@@ -251,7 +252,7 @@ namespace SerilogEventFlow
 
 #### Microsoft.Extensions.Logging
 
-*Nuget package:* **Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging**
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging/)
 
 This input enables capturing diagnostic data created through Microsoft.Extensions.Logging library and ILogger interface. 
 
@@ -295,7 +296,7 @@ namespace LoggerEventFlow
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
 
 #### StdOutput
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.StdOutput**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.StdOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.StdOutput/)
 
 This output writes data to the console window. Here is an example showing all possible settings:
 ```json
@@ -308,7 +309,7 @@ This output writes data to the console window. Here is an example showing all po
 | `type` | "StdOutput" | Yes | Specifies the output type. For this output, it must be "StdOutput". |
 
 #### Event Hub
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.EventHub**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
 
 This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-us/documentation/articles/event-hubs-overview/). Here is an example showing all possible settings:
 ```json
@@ -325,7 +326,7 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 | `connectionString` | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
 
 #### Application Insights
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights/)
 
 This output writes data to the [Azure Application Insights service](https://azure.microsoft.com/en-us/documentation/articles/app-insights-overview/). Here is an example showing all possible settings:
 ```json
@@ -344,7 +345,7 @@ This output writes data to the [Azure Application Insights service](https://azur
 Application Insights output supports `metric` and `request` metadata. Each event decorated with either of these metadata types will be reported as Application Insights *metric* or *request*, respectively, enabling rich support for visualization and alerting that Application Insights provides. All other events will be reported as Application Insights *traces*. 
 
 #### Elasticsearch
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
 
 **Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 5.x**
 
@@ -390,7 +391,7 @@ Fields injected byt the `request` metadata are:
 
 #### OMS (Operations Management Suite)
 
-*Nuget package*: **Microsoft.Diagnostics.EventFlow.Outputs.Oms**
+*Nuget package*: [**Microsoft.Diagnostics.EventFlow.Outputs.Oms**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.Oms/)
 
 The OMS output writes data to [Operations Management Suite](https://www.microsoft.com/en-us/cloud-platform/operations-management-suite) Log Analytics workspaces. You will need to create a Log Analytics workspace in Azure and know its ID and key before using OMS output. Here is a sample configuration fragment enabling the output:
 ```json
@@ -415,7 +416,7 @@ As data comes through the EventFlow pipeline, the application can add extra proc
 With metadata tags, filters and outputs operating further down the pipeline can apply different processing for different data. For example, an output component can choose to send only data with a certain tag. Each filter type has its own set of parameters.
 
 #### drop
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Core**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
 This filter discards all data that satisfies the include expression. Here is an example showing all possible settings:
 ```json
@@ -430,7 +431,7 @@ This filter discards all data that satisfies the include expression. Here is an 
 | `include` | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 
 #### metadata
-*Nuget Package*: **Microsoft.Diagnostics.EventFlow.Core**
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
 This filter adds additional metadata to all data that satisfies the include expression. Here is an example showing all possible settings:
 ```json
