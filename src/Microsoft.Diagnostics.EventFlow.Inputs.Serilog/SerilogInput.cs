@@ -106,7 +106,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             return eventData;
         }
 
-        private object ToRawValue(LogEventPropertyValue logEventValue)
+        private static object ToRawValue(LogEventPropertyValue logEventValue)
         {
             // Special-case a few types of LogEventPropertyValue that allow us to maintain better type fidelity.
             // For everything else take the default string rendering as the data.
@@ -119,7 +119,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             SequenceValue sequenceValue = logEventValue as SequenceValue;
             if (sequenceValue != null)
             {
-                object[] arrayResult = sequenceValue.Elements.OfType<ScalarValue>().Select(e => e.Value).ToArray();
+                object[] arrayResult = sequenceValue.Elements.Select(e => ToRawScalar(e)).ToArray();
                 if (arrayResult.Length == sequenceValue.Elements.Count)
                 {
                     // All values extracted successfully, it is a flat array of scalars
@@ -127,12 +127,32 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 }
             }
 
+            StructureValue structureValue = logEventValue as StructureValue;
+            if (structureValue != null)
+            {
+                IDictionary<string, object> structureResult = new Dictionary<string, object>(structureValue.Properties.Count);
+                foreach (var property in structureValue.Properties)
+                {
+                    structureResult[property.Name] = ToRawScalar(property.Value);
+                }
+
+                if (structureResult.Count == structureValue.Properties.Count)
+                {
+                    if (structureValue.TypeTag != null)
+                    {
+                        structureResult["$type"] = structureValue.TypeTag;
+                    }
+
+                    return structureResult;
+                }
+            }
+
             DictionaryValue dictionaryValue = logEventValue as DictionaryValue;
             if (dictionaryValue != null)
             {
                 IDictionary<string, object> dictionaryResult = dictionaryValue.Elements
-                    .Where(kvPair => kvPair.Key.Value is string && kvPair.Value is ScalarValue)
-                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => ((ScalarValue)kvPair.Value).Value);
+                    .Where(kvPair => kvPair.Key.Value is string)
+                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => ToRawScalar(kvPair.Value));
                 if (dictionaryResult.Count == dictionaryValue.Elements.Count)
                 {
                     return dictionaryResult;
@@ -141,6 +161,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             // Fall back to string rendering of the value
             return logEventValue.ToString();
+        }
+
+        private static object ToRawScalar(LogEventPropertyValue value)
+        {
+            ScalarValue scalarValue = value as ScalarValue;
+            if (scalarValue != null)
+            {
+                return scalarValue.Value;
+            }
+
+            return value.ToString();
         }
     }
 }
