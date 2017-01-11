@@ -8,6 +8,7 @@ using System.Linq;
 using Moq;
 using Serilog;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -144,6 +145,26 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                         It.Is<string>(s => s.Contains("already exist in the event payload")), 
                         It.Is<string>(s => s == nameof(SerilogInput))), 
                     Times.Exactly(2));
+            }
+        }
+
+        [Fact]
+        public void RepresentsStructuresAsRawDictionaries()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+
+                var structure = new { A = "alpha", B = "bravo" };
+                logger.Information("Here is {@AStructure}", structure);
+
+                observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
+                    ((IDictionary<string, object>)data.Payload["AStructure"])["A"].Equals("alpha") &&
+                    ((IDictionary<string, object>)data.Payload["AStructure"])["B"].Equals("bravo")
+                )));
             }
         }
     }
