@@ -469,7 +469,7 @@ This filter discards all data that satisfies the include expression. Here is an 
 #### metadata
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
-This filter adds additional metadata to all data that satisfies the include expression. Here is an example showing all possible settings:
+This filter adds additional metadata to all event data that satisfies the include expression. The filter recognizes a few standard properties (`type`, `metadata` and `include`); the rest are custom properties, specific for the given metadata type:
 ```json
 {
     "type": "metadata",
@@ -483,8 +483,45 @@ This filter adds additional metadata to all data that satisfies the include expr
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "metadata" | Yes | Specifies the filter type. For this filter, it must be "metadata". |
 | `metadata` | string | Yes | Specifies the metadata type. This field is used only if type is "metadata", so it shouldn't appear in other filter types. The metadata type is user-defined and is persisted along with metadata tag added to the event data. |
-| `include` | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
+| `include` | logical expression | Yes | Specifies the logical expression that determines if the metadata is applied to the event data. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 | *[others]* | string | No | Specifies custom properties that should be added along with this metadata object. When the event data is processed by other filters or outputs, these properties can be accessed. The names of these properties are custom-defined and the possible set is open-ended. For a particular filter, zero or more custom properties can be defined. In the example above, customTag1 and customTag2 are such properties. |
+
+Here are a few examples of using the metadata filter:
+
+1. Submit a metric with a value of 1 (a counter) whenever there is a Service Fabric stateful service run failure
+    ```json
+    {
+    "type": "metadata",
+    "metadata": "metric",
+    "include": "ProviderName==Microsoft-ServiceFabric-Services 
+                && EventName==StatefulRunAsyncFailure",
+    "metricName": "StatefulRunAsyncFailure",
+    "metricValue": "1.0"
+    }
+    ```
+2. Turn processor time performance counter into a metric
+    ```json
+    {
+      "type": "metadata",
+      "metadata": "metric",
+      "include": "ProviderName==EventFlow-PerformanceCounterInput && CounterCategory==Process 
+                  && CounterName==\"% Processor Time\"",
+      "metricName": "MyServiceProcessorTimePercent",
+      "metricValueProperty": "Value"
+    }
+    ```
+3. Turn a custom EventSource event into a request. The event has 3 interesting properties: requestTypeName indicates what kind of request it was; durationMsec has the total request processing duration and ‘isSuccess’ indicates whether the processing succeeded or failed
+    ```json
+    {
+      "type": "metadata",
+      "metadata": "request",
+      "include": "ProviderName==MyCompany-MyApplication-FrontEndService 
+                  && EventName==ServiceRequestStop",
+      "requestNameProperty": "requestTypeName",
+      "durationProperty": "durationMsec",
+      "isSuccessProperty": "isSuccess"
+    }
+    ```
 
 ### Standard metadata types
 
