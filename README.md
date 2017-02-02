@@ -92,9 +92,9 @@ The core of the library, as well as inputs and outputs listed above [are availab
 ```
 
 ## Configuration Details
-The EventFlow pipeline is built around three core concepts: inputs, outputs, and filters. The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
-also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. At last, the extensions section allows declaration of custom developed
-plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search in the extensions first for input, output, or filter implementations.
+The EventFlow pipeline is built around three core concepts: [inputs](#inputs), [outputs](#outputs), and [filters](#filters). The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
+also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. Finally, the extensions section allows declaration of custom developed
+plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search extensions to instantiate custom  inputs, outputs, or filters.
 
 ### Inputs
 These define what data will flow into the engine. At least one input is required. Each input type has its own set of parameters.
@@ -414,6 +414,42 @@ Supported configuration settings are:
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
 With metadata tags, filters and outputs operating further down the pipeline can apply different processing for different data. For example, an output component can choose to send only data with a certain tag. Each filter type has its own set of parameters.
+
+Filters can appear in two places in the EventFlow configuration: on the same level as inputs and outputs (_global filters_) and as part of output declaration (_output-specific filters_). Global filters are applied to all data coming from the inputs. Output-specific filters are applied to just one output, just before the data reaches the output. Here is an example with two global filters and one output-specific filter:
+
+```json
+{
+    "inputs": [...],
+
+    "filters": [
+        // The following are global filters
+        {
+            "type": "drop",
+            "include": "..."
+        },
+        {
+            "type": "drop",
+            "include": "..."
+        }
+    ],
+
+    "outputs": [
+        {
+            "type": "ApplicationInsights",
+            "instrumentationKey": "00000000-0000-0000-0000-000000000000",
+            "filters": [
+                {
+                    "type": "metadata",
+                    "metadata": "metric",
+                    // ... 
+                }
+            ]
+        }
+    ]
+}
+```
+
+EventFlow comes with two standard filter types: `drop` and `metadata`.
 
 #### drop
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
