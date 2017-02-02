@@ -1,9 +1,14 @@
-﻿using Microsoft.Diagnostics.EventFlow;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using Microsoft.Diagnostics.EventFlow;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Serilog.Configuration;
 using Serilog.Debugging;
-using System;
 using System.Linq;
+using Validation;
 
 namespace Serilog
 {
@@ -24,8 +29,8 @@ namespace Serilog
         /// instead.</remarks>
         public static LoggerConfiguration EventFlow(this LoggerSinkConfiguration loggerSinkConfiguration, DiagnosticPipeline diagnosticPipeline)
         {
-            if (loggerSinkConfiguration == null) throw new ArgumentNullException(nameof(loggerSinkConfiguration));
-            if (diagnosticPipeline == null) throw new ArgumentNullException(nameof(diagnosticPipeline));
+            Requires.NotNull(loggerSinkConfiguration, nameof(loggerSinkConfiguration));
+            Requires.NotNull(diagnosticPipeline, nameof(diagnosticPipeline));
 
             var input = diagnosticPipeline.Inputs.OfType<SerilogInput>().FirstOrDefault();
 
