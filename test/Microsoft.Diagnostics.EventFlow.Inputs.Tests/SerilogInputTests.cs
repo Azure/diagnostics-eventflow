@@ -9,6 +9,7 @@ using Moq;
 using Serilog;
 using Xunit;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             using (var serilogInput = new SerilogInput(healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
-                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
 
                 string message = "Just an information";
                 logger.Information(message);
@@ -42,7 +43,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             using (var serilogInput = new SerilogInput(healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
-                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
 
                 // Render the string value without quotes; render the double value with fixed decimal point, 1 digit after decimal point
                 string message = "{alpha:l}{bravo:f1}{charlie}";
@@ -66,7 +67,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             using (var serilogInput = new SerilogInput(healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
-                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
 
                 Exception e = new Exception();
                 e.Data["ID"] = 23;
@@ -91,7 +92,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             {
                 var logger = new LoggerConfiguration()
                     .MinimumLevel.Verbose()
-                    .WriteTo.Observers(events => events.Subscribe(serilogInput))
+                    .WriteTo.Sink(serilogInput)
                     .CreateLogger();
 
                 logger.Information("Info");
@@ -128,17 +129,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             using (var serilogInput = new SerilogInput(healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
-                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
 
                 Exception e = new Exception("Whoa!");
-                string message = "I say: {Message} and you pay attention, no {Exception:l}";
+                const string message = "I say: {Message} and you pay attention, no {Exception:l}";
                 logger.Warning(e, message, "Keyser Söze", "excuses");                
 
                 observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
-                       data.Payload["Message"].Equals("Keyser Söze")
-                    && data.Payload["Exception"].Equals("excuses")
-                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && key != "Message")].Equals("I say: \"Keyser Söze\" and you pay attention, no excuses")
-                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Exception") && key != "Exception")].Equals(e)
+                       data.Payload["Message"].Equals("I say: \"Keyser Söze\" and you pay attention, no excuses")
+                    && data.Payload["Exception"].Equals(e)
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && key != "Message")].Equals("Keyser Söze")
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Exception") && key != "Exception")].Equals("excuses")
                 )), Times.Exactly(1));
 
                 healthReporterMock.Verify(o => o.ReportWarning(
@@ -156,7 +157,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             using (var serilogInput = new SerilogInput(healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
-                var logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
 
                 var structure = new { A = "alpha", B = "bravo" };
                 logger.Information("Here is {@AStructure}", structure);
@@ -166,6 +167,28 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                     ((IDictionary<string, object>)data.Payload["AStructure"])["B"].Equals("bravo")
                 )));
             }
+        }
+
+        [Fact]
+        public void ConfigurationCanFindAndWriteToAnInputWithinAPipeline()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var mockOutput = new Mock<IOutput>();
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object))
+            using (var pipeline = new DiagnosticPipeline(
+                    healthReporterMock.Object,
+                    new[] { serilogInput },
+                    new IFilter[0],
+                    new[] { new EventSink(mockOutput.Object, new IFilter[0]) }))
+            {
+                var logger = new LoggerConfiguration()
+                    .WriteTo.EventFlow(pipeline)
+                    .CreateLogger();
+
+                logger.Information("Hello, world!");
+            }
+            mockOutput.Verify(output => output.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
+                It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
         }
     }
 }

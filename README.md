@@ -210,7 +210,7 @@ If you need to consume such counters, make sure the account your process runs un
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Serilog**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Serilog/)
 
-This input enables capturing diagnostic data created through [Serilog library](https://serilog.net/). It is designed to work with [Observable Serilog sink](https://github.com/serilog/serilog-sinks-observable). 
+This input enables capturing diagnostic data created through [Serilog library](https://serilog.net/).
 
 *Configuration example*
 The Serilog input has no configuration, other than the "type" property that specifies the type of the input (must be "Serilog"):
@@ -226,9 +226,7 @@ The Serilog input has no configuration, other than the "type" property that spec
 using System;
 using System.Linq;
 using Microsoft.Diagnostics.EventFlow;
-using Microsoft.Diagnostics.EventFlow.Inputs;
 using Serilog;
-using Serilog.Events;
 
 namespace SerilogEventFlow
 {
@@ -238,10 +236,12 @@ namespace SerilogEventFlow
         {
             using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
             {
-                IObserver<LogEvent> serilogInput = pipeline.Inputs.OfType<SerilogInput>().First();
-                Log.Logger = new LoggerConfiguration().WriteTo.Observers(events => events.Subscribe(serilogInput)).CreateLogger();
+                Log.Logger = new LoggerConfiguration()
+                    .WriteTo.EventFlow(pipeline)
+                    .CreateLogger();
 
                 Log.Information("Hello from {friend} for {family}!", "SerilogInput", "EventFlow");
+                
                 Log.CloseAndFlush();
                 Console.ReadKey();
             }

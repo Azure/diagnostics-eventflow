@@ -20,7 +20,9 @@
 
   "buildOptions": {
     "keyFile": "../../PublicKey.snk",
-    "delaySign": true
+    "delaySign": true,
+    "warningsAsErrors": true,
+    "xmlDoc":  true
   },
 
   "authors": [ "Microsoft" ],
