@@ -8,8 +8,12 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
+    /// <summary>
+    /// Factory for Serilog input elements.
+    /// </summary>
     public class SerilogInputFactory : IPipelineItemFactory<SerilogInput>
     {
+        /// <inheritdoc/>
         public SerilogInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));

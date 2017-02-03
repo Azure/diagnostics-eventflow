@@ -8,10 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Serilog.Events;
 using Validation;
+using Serilog.Core;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class SerilogInput : IObserver<LogEvent>, IObservable<EventData>, IDisposable
+    /// <summary>
+    /// An input that supplies events from the Serilog structured logging library.
+    /// </summary>
+    public class SerilogInput : ILogEventSink, IObservable<EventData>, IDisposable
     {
         private static readonly IDictionary<LogEventLevel, LogLevel> ToLogLevel =
             new Dictionary<LogEventLevel, LogLevel>
@@ -27,6 +31,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private EventFlowSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
 
+        /// <summary>
+        /// Construct a <see cref="SerilogInput"/>.
+        /// </summary>
+        /// <param name="healthReporter">A health reporter through which the input can report errors.</param>
         public SerilogInput(IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -35,31 +43,24 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject = new EventFlowSubject<EventData>();
         }
 
-        void IObserver<LogEvent>.OnCompleted()
+        void ILogEventSink.Emit(LogEvent logEvent)
         {
-            this.subject.OnCompleted();
-        }
-
-        void IObserver<LogEvent>.OnError(Exception error)
-        {
-            this.subject.OnError(error);
-        }
-
-        void IObserver<LogEvent>.OnNext(LogEvent value)
-        {
-            if (value == null)
+            if (logEvent == null)
             {
                 return;
             }
 
-            EventData e = ToEventData(value);
+            EventData e = ToEventData(logEvent);
             this.subject.OnNext(e);
         }
+
+        /// <inheritdoc/>
         public IDisposable Subscribe(IObserver<EventData> observer)
         {
             return this.subject.Subscribe(observer);
         }
 
+        /// <inheritdoc/>
         public virtual void Dispose()
         {
             this.subject.Dispose();
@@ -76,18 +77,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             };
 
             var payload = eventData.Payload;
-            foreach (var property in logEvent.Properties.Where(property => property.Value != null))
-            {
-                try
-                {
-                    payload[property.Key] = ToRawValue(property.Value);
-                }
-                catch (Exception e)
-                {
-                    healthReporter.ReportWarning($"{nameof(SerilogInput)}: event property '{property.Key}' could not be rendered{Environment.NewLine}{e.ToString()}");
-                }
-            }
 
+            // Prefer the built-in `Message` and `Exception` properties by adding them to the payload
+            // first. If other attached data items have conflicting names, they will be added as
+            // `Message_1` and so-on.
             if (logEvent.Exception != null)
             {
                 eventData.AddPayloadProperty("Exception", logEvent.Exception, healthReporter, nameof(SerilogInput));
@@ -101,6 +94,18 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             catch (Exception e)
             {
                 healthReporter.ReportWarning($"{nameof(SerilogInput)}: event message could not be rendered{Environment.NewLine}{e.ToString()}");
+            }
+
+            foreach (var property in logEvent.Properties.Where(property => property.Value != null))
+            {
+                try
+                {
+                    eventData.AddPayloadProperty(property.Key, ToRawValue(property.Value), healthReporter, nameof(SerilogInput));
+                }
+                catch (Exception e)
+                {
+                    healthReporter.ReportWarning($"{nameof(SerilogInput)}: event property '{property.Key}' could not be rendered{Environment.NewLine}{e.ToString()}");
+                }
             }
 
             return eventData;
