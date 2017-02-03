@@ -92,9 +92,9 @@ The core of the library, as well as inputs and outputs listed above [are availab
 ```
 
 ## Configuration Details
-The EventFlow pipeline is built around three core concepts: inputs, outputs, and filters. The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
-also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. At last, the extensions section allows declaration of custom developed
-plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search in the extensions first for input, output, or filter implementations.
+The EventFlow pipeline is built around three core concepts: [inputs](#inputs), [outputs](#outputs), and [filters](#filters). The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
+also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. Finally, the extensions section allows declaration of custom developed
+plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search extensions to instantiate custom  inputs, outputs, or filters.
 
 ### Inputs
 These define what data will flow into the engine. At least one input is required. Each input type has its own set of parameters.
@@ -415,6 +415,42 @@ Supported configuration settings are:
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
 With metadata tags, filters and outputs operating further down the pipeline can apply different processing for different data. For example, an output component can choose to send only data with a certain tag. Each filter type has its own set of parameters.
 
+Filters can appear in two places in the EventFlow configuration: on the same level as inputs and outputs (_global filters_) and as part of output declaration (_output-specific filters_). Global filters are applied to all data coming from the inputs. Output-specific filters are applied to just one output, just before the data reaches the output. Here is an example with two global filters and one output-specific filter:
+
+```json
+{
+    "inputs": [...],
+
+    "filters": [
+        // The following are global filters
+        {
+            "type": "drop",
+            "include": "..."
+        },
+        {
+            "type": "drop",
+            "include": "..."
+        }
+    ],
+
+    "outputs": [
+        {
+            "type": "ApplicationInsights",
+            "instrumentationKey": "00000000-0000-0000-0000-000000000000",
+            "filters": [
+                {
+                    "type": "metadata",
+                    "metadata": "metric",
+                    // ... 
+                }
+            ]
+        }
+    ]
+}
+```
+
+EventFlow comes with two standard filter types: `drop` and `metadata`.
+
 #### drop
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
@@ -433,7 +469,7 @@ This filter discards all data that satisfies the include expression. Here is an 
 #### metadata
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
-This filter adds additional metadata to all data that satisfies the include expression. Here is an example showing all possible settings:
+This filter adds additional metadata to all event data that satisfies the include expression. The filter recognizes a few standard properties (`type`, `metadata` and `include`); the rest are custom properties, specific for the given metadata type:
 ```json
 {
     "type": "metadata",
@@ -447,8 +483,45 @@ This filter adds additional metadata to all data that satisfies the include expr
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "metadata" | Yes | Specifies the filter type. For this filter, it must be "metadata". |
 | `metadata` | string | Yes | Specifies the metadata type. This field is used only if type is "metadata", so it shouldn't appear in other filter types. The metadata type is user-defined and is persisted along with metadata tag added to the event data. |
-| `include` | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
+| `include` | logical expression | Yes | Specifies the logical expression that determines if the metadata is applied to the event data. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 | *[others]* | string | No | Specifies custom properties that should be added along with this metadata object. When the event data is processed by other filters or outputs, these properties can be accessed. The names of these properties are custom-defined and the possible set is open-ended. For a particular filter, zero or more custom properties can be defined. In the example above, customTag1 and customTag2 are such properties. |
+
+Here are a few examples of using the metadata filter:
+
+1. Submit a metric with a value of 1 (a counter) whenever there is a Service Fabric stateful service run failure
+    ```json
+    {
+    "type": "metadata",
+    "metadata": "metric",
+    "include": "ProviderName==Microsoft-ServiceFabric-Services 
+                && EventName==StatefulRunAsyncFailure",
+    "metricName": "StatefulRunAsyncFailure",
+    "metricValue": "1.0"
+    }
+    ```
+2. Turn processor time performance counter into a metric
+    ```json
+    {
+      "type": "metadata",
+      "metadata": "metric",
+      "include": "ProviderName==EventFlow-PerformanceCounterInput && CounterCategory==Process 
+                  && CounterName==\"% Processor Time\"",
+      "metricName": "MyServiceProcessorTimePercent",
+      "metricValueProperty": "Value"
+    }
+    ```
+3. Turn a custom EventSource event into a request. The event has 3 interesting properties: requestTypeName indicates what kind of request it was; durationMsec has the total request processing duration and ‘isSuccess’ indicates whether the processing succeeded or failed
+    ```json
+    {
+      "type": "metadata",
+      "metadata": "request",
+      "include": "ProviderName==MyCompany-MyApplication-FrontEndService 
+                  && EventName==ServiceRequestStop",
+      "requestNameProperty": "requestTypeName",
+      "durationProperty": "durationMsec",
+      "isSuccessProperty": "isSuccess"
+    }
+    ```
 
 ### Standard metadata types
 
