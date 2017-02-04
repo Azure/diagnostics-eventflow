@@ -27,28 +27,26 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 Keywords = (long)eventSourceEvent.Keywords
             };
 
-            eventSourceEvent.ExtractPayloadData(eventData);
-
-            eventData.AddPayloadProperty("EventId", eventSourceEvent.EventId, healthReporter, context);
-            eventData.AddPayloadProperty("EventName", eventSourceEvent.EventName, healthReporter, context);
-            eventData.AddPayloadProperty("ActivityID", ActivityPathString(eventSourceEvent.ActivityId), healthReporter, context);
+            IDictionary<string, object> payloadData = eventData.Payload;
+            payloadData.Add("EventId", eventSourceEvent.EventId);
+            payloadData.Add("EventName", eventSourceEvent.EventName);
+            payloadData.Add("ActivityID", ActivityPathString(eventSourceEvent.ActivityId));
             try
             {
                 if (eventSourceEvent.Message != null)
                 {
                     // If the event has a badly formatted manifest, the FormattedMessage property getter might throw
-                    eventData.AddPayloadProperty("Message",
-                        string.Format(CultureInfo.InvariantCulture, eventSourceEvent.Message, eventSourceEvent.Payload.ToArray()),
-                        healthReporter,
-                        context);
+                    payloadData.Add("Message", string.Format(CultureInfo.InvariantCulture, eventSourceEvent.Message, eventSourceEvent.Payload.ToArray()));
                 }
             }
             catch { }
 
+            eventSourceEvent.ExtractPayloadData(eventData, healthReporter, context);
+
             return eventData;
         }
 
-        private static void ExtractPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData)
+        private static void ExtractPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData, IHealthReporter healthReporter, string context)
         {
             if (eventSourceEvent.Payload == null || eventSourceEvent.PayloadNames == null)
             {
@@ -62,7 +60,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             while (payloadEnumerator.MoveNext())
             {
                 payloadNamesEnunmerator.MoveNext();
-                payloadData.Add(payloadNamesEnunmerator.Current, payloadEnumerator.Current);
+                eventData.AddPayloadProperty(payloadNamesEnunmerator.Current, payloadEnumerator.Current, healthReporter, context);
             }
         }
 

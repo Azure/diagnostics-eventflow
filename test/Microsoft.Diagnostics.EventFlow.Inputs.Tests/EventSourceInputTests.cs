@@ -37,12 +37,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 EventSourceInputTestSource.Log.Tricky(7, "TrickyEvent", "Actual message");
 
                 observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
-                       data.Payload["Message"].Equals("Actual message")
-                    && data.Payload["EventId"].Equals(7)
-                    && data.Payload["EventName"].Equals("TrickyEvent")
-                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && key != "Message")].Equals("Manifest message")
-                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("EventId") && key != "EventId")].Equals(1)
-                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("EventName") && key != "EventName")].Equals("Tricky")
+                       data.Payload["Message"].Equals("Manifest message")
+                    && data.Payload["EventId"].Equals(1)
+                    && data.Payload["EventName"].Equals("Tricky")
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && key != "Message")].Equals("Actual message")
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("EventId") && key != "EventId")].Equals(7)
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("EventName") && key != "EventName")].Equals("TrickyEvent")
                 )), Times.Exactly(1));
 
                 healthReporterMock.Verify(o => o.ReportWarning(

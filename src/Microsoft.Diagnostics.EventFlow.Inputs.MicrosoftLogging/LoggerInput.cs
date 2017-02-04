@@ -41,16 +41,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     Level = level
                 };
 
-                AddPayloadProperty(eventEntry, "Message", message);
-                AddPayloadProperty(eventEntry, "EventId", eventId.Id);
+                IDictionary<string, object> payloadData = eventEntry.Payload;
+                payloadData.Add("Message", message);
+                payloadData.Add("EventId", eventId.Id);
 
                 if (eventId.Name != null)
                 {
-                    AddPayloadProperty(eventEntry, "EventName", eventId.Name);
+                    payloadData.Add("EventName", eventId.Name);
                 }
                 if (exception != null)
                 {
-                    AddPayloadProperty(eventEntry, "Exception", exception);
+                    payloadData.Add("Exception", exception);
                 }
                 if (payload != null)
                 {
