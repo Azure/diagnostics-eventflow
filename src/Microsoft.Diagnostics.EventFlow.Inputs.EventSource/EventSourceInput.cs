@@ -15,6 +15,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class EventSourceInput : EventListener, IObservable<EventData>, IDisposable
     {
+        private static readonly Guid TplEventSourceGuid = new Guid("2e5dba47-a3d2-4d16-8ee0-6671ffdcd7b5");
+        private static readonly long TaskFlowActivityIds = 0x80;
+
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
         private List<EventSource> eventSourcesPresentAtConstruction;        
@@ -113,25 +116,33 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         private void EnableAsNecessary(EventSource eventSource)
         {
-            EventSourceConfiguration provider = this.EventSources.FirstOrDefault(p => p.ProviderName == eventSource.Name);
-            if (provider != null)
+            // Special case: enable TPL activity flow for better tracing of nested activities.
+            if (eventSource.Guid == TplEventSourceGuid)
             {
-                // LIMITATION: There is a known issue where if we listen to the FrameworkEventSource, the dataflow pipeline may hang when it
-                // tries to process the Threadpool event. The reason is the dataflow pipeline itself is using Task library for scheduling async
-                // tasks, which then itself also fires Threadpool events on FrameworkEventSource at unexpected locations, and trigger deadlocks.
-                // Hence, we like special case this and mask out Threadpool events.
-                EventKeywords keywords = provider.Keywords;
-                if (provider.ProviderName == "System.Diagnostics.Eventing.FrameworkEventSource")
+                this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)TaskFlowActivityIds);
+            }
+            else
+            {
+                EventSourceConfiguration provider = this.EventSources.FirstOrDefault(p => p.ProviderName == eventSource.Name);
+                if (provider != null)
                 {
-                    // Turn off the Threadpool | ThreadTransfer keyword. Definition is at http://referencesource.microsoft.com/#mscorlib/system/diagnostics/eventing/frameworkeventsource.cs
-                    // However, if keywords was to begin with, then we need to set it to All first, which is 0xFFFFF....
-                    if (keywords == 0)
+                    // LIMITATION: There is a known issue where if we listen to the FrameworkEventSource, the dataflow pipeline may hang when it
+                    // tries to process the Threadpool event. The reason is the dataflow pipeline itself is using Task library for scheduling async
+                    // tasks, which then itself also fires Threadpool events on FrameworkEventSource at unexpected locations, and trigger deadlocks.
+                    // Hence, we like special case this and mask out Threadpool events.
+                    EventKeywords keywords = provider.Keywords;
+                    if (provider.ProviderName == "System.Diagnostics.Eventing.FrameworkEventSource")
                     {
-                        keywords = EventKeywords.All;
+                        // Turn off the Threadpool | ThreadTransfer keyword. Definition is at http://referencesource.microsoft.com/#mscorlib/system/diagnostics/eventing/frameworkeventsource.cs
+                        // However, if keywords was to begin with, then we need to set it to All first, which is 0xFFFFF....
+                        if (keywords == 0)
+                        {
+                            keywords = EventKeywords.All;
+                        }
+                        keywords &= (EventKeywords)~0x12;
                     }
-                    keywords &= (EventKeywords) ~0x12;
+                    this.EnableEvents(eventSource, provider.Level, keywords);
                 }
-                this.EnableEvents(eventSource, provider.Level, keywords);
             }
         }
 
