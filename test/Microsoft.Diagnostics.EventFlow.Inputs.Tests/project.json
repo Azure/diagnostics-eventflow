@@ -1,7 +1,9 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "debugType": "portable"
+    "debugType": "portable",
+    "keyFile": "../../PublicKey.snk",
+    "delaySign": true
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
