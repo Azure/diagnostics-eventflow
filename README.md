@@ -204,7 +204,7 @@ EventFlow PerformanceCounter input supports the first method of deterimining cou
 Some performance counters require the user to be a member of the Performance Monitor Users system group. 
 This can manifest itself by health reporter reporting "category does not exist" errors from PerformanceCounter output, 
 despite the fact that the category and counter are properly configured and clearly visible in Windows Performance Monitor. 
-If you need to consume such counters, make sure the account your process runs under belogs to Performance Monitor Users group.
+If you need to consume such counters, make sure the account your process runs under belongs to Performance Monitor Users group.
 
 #### Serilog
 
