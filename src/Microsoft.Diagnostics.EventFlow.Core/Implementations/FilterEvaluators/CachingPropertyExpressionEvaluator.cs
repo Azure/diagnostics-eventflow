@@ -6,6 +6,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 
 namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
 {
@@ -84,6 +85,16 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
                     return parsedDateTimeOffsetValue;
                 }
                 else return null;
+            }
+            else if (eventPropertyValueType.GetTypeInfo().IsEnum)
+            {
+                object retval = null;
+                try
+                {
+                    retval = Enum.Parse(eventPropertyValueType, this.value);
+                }
+                catch (Exception) { }
+                return retval;
             }
             else
             {

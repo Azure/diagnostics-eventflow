@@ -110,5 +110,22 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new InequalityEvaluator("GuidProperty", "not a GUID value");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
+
+        [Fact]
+        public void EnumPropertyEquality()
+        {
+            var evaluator = new InequalityEvaluator("EnumProperty", "Warning");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new InequalityEvaluator("EnumProperty", "3");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+            
+            evaluator = new InequalityEvaluator("EnumProperty", "Error");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new InequalityEvaluator("EnumProperty", "2");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+        }
     }
 }

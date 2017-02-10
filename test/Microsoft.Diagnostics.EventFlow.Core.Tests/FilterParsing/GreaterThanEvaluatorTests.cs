@@ -442,5 +442,22 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new GreaterThanEvaluator("TwoMinutesAgoProperty", timestampString);
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
+
+        [Fact]
+        public void EnumPropertyEquality()
+        {
+            var evaluator = new GreaterThanEvaluator("EnumProperty", "Error");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new GreaterThanEvaluator("EnumProperty", "2");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+            
+            evaluator = new GreaterThanEvaluator("EnumProperty", "Warning");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new GreaterThanEvaluator("EnumProperty", "3");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+        }
     }
 }
