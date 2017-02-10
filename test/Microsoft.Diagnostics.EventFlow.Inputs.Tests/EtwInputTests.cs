@@ -16,6 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 #if NET46
     public class EtwInputTests
     {
+        private TimeSpan TraceSessionActivationTimeout = TimeSpan.FromSeconds(2);
 
         [Fact]
         public void ReportsEvents()
@@ -35,6 +36,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 var traceSession = new TestTraceEventSession();
                 input.SessionFactory = () => traceSession;
                 input.Activate();
+                traceSession.ProcessingStarted.WaitOne(TraceSessionActivationTimeout);
 
                 traceSession.ReportEvent(LogLevel.Informational, 0, "Hey");
 
@@ -65,6 +67,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 var traceSession = new TestTraceEventSession();
                 input.SessionFactory = () => traceSession;
                 input.Activate();
+                traceSession.ProcessingStarted.WaitOne(TraceSessionActivationTimeout);
 
                 traceSession.ReportEvent(LogLevel.Informational, 0, "First");
 
@@ -102,7 +105,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 input.SessionFactory = () => traceSession;
 
                 traceSession.ReportEvent(LogLevel.Informational, 0, "First");
+
                 input.Activate();
+                traceSession.ProcessingStarted.WaitOne(TraceSessionActivationTimeout);
+
                 traceSession.ReportEvent(LogLevel.Informational, 0, "Second");
 
                 observer.Verify(o => o.OnNext(It.IsAny<EventData>()), Times.Exactly(1));
@@ -128,6 +134,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 var traceSession = new TestTraceEventSession();
                 input.SessionFactory = () => traceSession;
                 input.Activate();
+                traceSession.ProcessingStarted.WaitOne(TraceSessionActivationTimeout);
 
                 healthReporterMock.Verify(o => o.ReportWarning(It.Is<string>(s => s.Contains("no providers configured")), 
                     It.IsAny<string>()), Times.Exactly(1));

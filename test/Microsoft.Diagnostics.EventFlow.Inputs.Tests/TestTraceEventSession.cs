@@ -21,6 +21,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         private ManualResetEvent disposedEvent = new ManualResetEvent(false);
         private Action<EventData> onEvent;
 
+        public ManualResetEvent ProcessingStarted = new ManualResetEvent(false);
+
         public bool IsDisposed
         {
             get { return this.disposedEvent == null; }
@@ -54,6 +56,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
 
             this.onEvent = onEvent;
+            this.ProcessingStarted.Set();
 
             // Using non-zero, but fairly long timeout to ensure that a bad test calling this method will eventually terminate.
             this.disposedEvent.WaitOne(TimeSpan.FromMinutes(5));
@@ -67,6 +70,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 this.disposedEvent = null;
                 e.Set();
                 e.Dispose();
+                this.ProcessingStarted.Dispose();
             }
         }
 
