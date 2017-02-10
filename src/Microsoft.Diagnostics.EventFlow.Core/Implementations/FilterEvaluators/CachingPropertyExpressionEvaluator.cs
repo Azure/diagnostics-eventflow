@@ -90,7 +90,7 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
                 object retval = null;
                 try
                 {
-                    retval = Convert.ChangeType(this.value, eventPropertyValueType, CultureInfo.CurrentCulture);
+                    retval = Convert.ChangeType(this.value, eventPropertyValueType, CultureInfo.InvariantCulture);
                 }
                 catch { }
                 return retval;
