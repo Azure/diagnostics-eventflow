@@ -96,7 +96,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 return;
             }
 
-            this.onEvent(eventData);
+            this.onEvent?.Invoke(eventData);
         }
 
         public void ReportEvent(LogLevel level, long keywords, string message)
