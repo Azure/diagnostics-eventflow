@@ -91,7 +91,9 @@
   <ItemGroup>
     <!--We can't use wildcard here since it's expanded before build, which is empty.-->
     <FilesToSign Include="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
                           $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
+                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
                           $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;
                           $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
                           $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
@@ -106,7 +108,6 @@
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
