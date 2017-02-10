@@ -10,6 +10,7 @@ It runs in the same process as the application, so communication overhead is min
 - [PerformanceCounter](#performancecounter)
 - [Serilog](#serilog)
 - [Microsoft.Extensions.Logging](#microsoftextensionslogging)
+- [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
  
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
@@ -142,8 +143,8 @@ This input listens to EventSource traces. EventSource classes can be created in 
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| `providerName` | provider name | Yes | This field specify what kind of input this is. For this input, it must be "EventSource" |
-| `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
+| `providerName` | provider name | Yes | Specifies the name of the EventSource to track. |
+| `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is LogAlways, which means "provider decides what events are raised", which usually results in all events being raised. |
 |`keywords` | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
 
 #### PerformanceCounter
@@ -291,6 +292,48 @@ namespace LoggerEventFlow
     }
 }
 ```
+
+#### ETW (Event Tracing for Windows)
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Etw**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Etw/)
+
+This input captures data from Microsoft Event Tracing for Windows (ETW) providers. Both manifest-based providers as well as providers based on managed `EventSource` infrastructure are supported. The data is captured machine-wide and requires that the identity the process uses belongs to Performance Log Users built-in administrative group.
+
+*Note* 
+
+To capture data from EventSources running in the same process as EventFlow, the [EventSource input](#eventsource) is a better choice, with better performance and no additional security requirements.
+
+*Configuration example*
+```json
+{
+    "type": "ETW",
+    "providers": [
+        {
+            "providerName": "Microsoft-ServiceFabric",
+            "level": "Warning",
+            "keywords": "0x7F"
+        }
+    ]
+}
+```
+
+*Top Object*
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "ETW" | Yes | Specifies the input type. For this input, it must be "ETW". |
+| `providers` | JSON array | Yes | Specifies ETW providers to collect data from. |
+
+*Providers object*
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `providerName` | provider name | Yes(*) | Specifies the name of the ETW provider to track. |
+| `providerGuid` | provider GUID | Yes(*) | Specifies the GUID of the ETW provider to track. |
+| `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is LogAlways, which means "provider decides what events are raised", which usually results in all events being raised. |
+|`keywords` | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+
+(*) Either providerName, or providerGuid must be specified. When both are specified, provider GUID takes precedence.
 
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
@@ -676,7 +719,7 @@ using (DiagnosticPipeline pipeline = DiagnosticPipelineFactory.CreatePipeline(co
 EventFlow supports full .NET Framework (.NET 4.5 series and 4.6 series) and .NET Core, but not all inputs and outputs are supported on all platforms. 
 The following table lists platform support for standard inputs and outputs.  
 
-| Input Name | .NET 4.5 | .NET 4.6 | .NET Core |
+| Input Name | .NET 4.5.1 | .NET 4.6 | .NET Core |
 | :------------ | :---- | :---- | :---- |
 | *Inputs* |
 | [System.Diagnostics.Trace](#trace) | Yes | Yes | Yes |
@@ -684,6 +727,7 @@ The following table lists platform support for standard inputs and outputs.
 | [PerformanceCounter](#performancecounter) | Yes | Yes | No |
 | [Serilog](#serilog) | Yes | Yes | Yes |
 | [Microsoft.Extensions.Logging](#microsoftextensionslogging) | Yes | Yes | Yes |
+| [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows) | Yes | Yes | No |
 | *Outputs* |
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
 | [Application Insights](#application-insights) | Yes | Yes | No |

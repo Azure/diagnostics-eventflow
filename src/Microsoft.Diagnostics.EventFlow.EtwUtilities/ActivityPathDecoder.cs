@@ -7,12 +7,12 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace Microsoft.Diagnostics.EventFlow.Inputs
+namespace Microsoft.Diagnostics.EventFlow.Utilities.Etw
 {
     /// <summary>
     /// A class to decode ETW Activity ID GUIDs into activity paths.
     /// </summary>
-    internal static class ActivityPathDecoder
+    public static class ActivityPathDecoder
     {
         /// <summary>
         /// The encoding for a list of numbers used to make Activity  Guids.   Basically

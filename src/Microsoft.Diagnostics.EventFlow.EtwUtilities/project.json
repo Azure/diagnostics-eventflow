@@ -1,9 +1,7 @@
 {
-  "version": "1.0.2-*",
+  "version": "1.0.0-*",
 
-  "dependencies": {    
-    "Microsoft.Diagnostics.EventFlow.Core": { "target": "project" },
-    "Microsoft.Diagnostics.EventFlow.EtwUtilities": { "target": "project" },
+  "dependencies": {
     "NETStandard.Library": "1.6.0"
   },
 
@@ -14,26 +12,27 @@
         "System.Diagnostics.Process": "4.1.0"
       }
     },
-    "net46": {}
+    "net451": {}
   },
 
   "buildOptions": {
+    "allowUnsafe": true,
     "keyFile": "../../PublicKey.snk",
     "delaySign": true
   },
 
   "authors": [ "Microsoft" ],
   "copyright": "© Microsoft Corporation. All rights reserved.",
-  "description": "Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Tracing.EventSource infrastructure.",
+  "description": "Provides utility classes for processing data from Event Tracing for Windows (ETW) providers.",
   "packOptions": {
     "projectUrl": "https://github.com/Azure/diagnostics-eventflow",
-    "summary": "EventSource input for Microsoft Diagnostics EventFlow",
+    "summary": "Support package containing utility classes for processing data from Event Tracing for Windows (ETW) providers",
     "tags": [
       "Microsoft",
       "Diagnostics",
       "EventFlow",
-      "Inputs",
-      "EventSource"
+      "Utilities",
+      "Event Tracing for Windows"
     ],
     "licenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
     "requireLicenseAcceptance": true

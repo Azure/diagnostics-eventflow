@@ -72,7 +72,9 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;" />
       <CoreAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
@@ -80,7 +82,8 @@
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;" />
     </ItemGroup>
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
     <Move SourceFiles="@(CoreAssemblies)" DestinationFolder="$(OutputPath)\core" />
@@ -101,7 +104,9 @@
                           $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
                           $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
@@ -115,7 +120,9 @@
   <Target Name="CopySignedAssembliesBack" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
     <!--Full framework assemblies-->
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net46"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\bin\$(Configuration)\net451"/>
@@ -129,6 +136,7 @@
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451"/>
     <!--.Net core assemblies-->
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\bin\$(Configuration)\netstandard1.6"/>

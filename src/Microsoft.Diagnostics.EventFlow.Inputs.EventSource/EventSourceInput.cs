@@ -7,20 +7,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Utilities.Etw;
+using Microsoft.Extensions.Configuration;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class EventSourceInput : EventListener, IObservable<EventData>, IDisposable
     {
-        private static readonly Guid TplEventSourceGuid = new Guid("2e5dba47-a3d2-4d16-8ee0-6671ffdcd7b5");
-        private static readonly long TaskFlowActivityIds = 0x80;
-
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
-        private List<EventSource> eventSourcesPresentAtConstruction;        
+        private List<EventSource> eventSourcesPresentAtConstruction;
         private EventFlowSubject<EventData> subject;
 
         public EventSourceInput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -117,9 +115,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private void EnableAsNecessary(EventSource eventSource)
         {
             // Special case: enable TPL activity flow for better tracing of nested activities.
-            if (eventSource.Guid == TplEventSourceGuid)
+            if (eventSource.Guid == TplActivities.TplEventSourceGuid)
             {
-                this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)TaskFlowActivityIds);
+                this.EnableEvents(eventSource, EventLevel.LogAlways, (EventKeywords)TplActivities.TaskFlowActivityIdsKeyword);
             }
             else
             {
