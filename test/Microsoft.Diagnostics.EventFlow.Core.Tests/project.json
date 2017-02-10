@@ -42,7 +42,9 @@
         "Microsoft.NETCore.Platforms": "1.0.1",
         "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter": { "target": "project" },
         "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights": { "target": "project" },
-        "Microsoft.Diagnostics.EventFlow.Outputs.EventHub": { "target": "project" }
+        "Microsoft.Diagnostics.EventFlow.Outputs.EventHub": { "target": "project" },
+        "Microsoft.Diagnostics.EventFlow.Inputs.Etw": { "target": "project" },
+        "Microsoft.Diagnostics.Tracing.TraceEvent": "1.0.41"
       }
     }
   },

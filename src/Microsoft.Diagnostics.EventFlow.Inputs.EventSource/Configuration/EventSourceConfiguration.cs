@@ -34,7 +34,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 
         public override int GetHashCode()
         {
-            return ProviderName.GetHashCode();
+            return ProviderName?.GetHashCode() ?? 0;
         }
     }
 }

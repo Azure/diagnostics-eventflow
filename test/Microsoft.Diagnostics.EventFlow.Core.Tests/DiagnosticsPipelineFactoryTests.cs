@@ -340,6 +340,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                                     ""counterName"": ""Private Bytes""
                                 }
                             ]
+                        },
+                        {
+                            ""type"": ""ETW"",
+                            ""providers"": [
+                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                            ]
                         }
                     ],
 
@@ -430,6 +436,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             i => Assert.IsType(typeof(SerilogInput), i)
 #if NET46
                             , i => Assert.IsType(typeof(PerformanceCounterInput), i)
+                            , i => Assert.IsType(typeof(EtwInput), i)
 #endif
                         );
 

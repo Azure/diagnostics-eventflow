@@ -6,7 +6,7 @@
 using System;
 using System.Text;
 
-namespace Microsoft.Diagnostics.EventFlow.Inputs
+namespace Microsoft.Diagnostics.EventFlow.Utilities.Etw
 {
     /// <summary>
     /// Provides a cached reusable instance of a StringBuilder per thread. It is an optimization that reduces the number of instances constructed and collected.

@@ -112,6 +112,12 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging", "src\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.xproj", "{E987F059-33CD-4F0E-8680-63C8033D54D8}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.Inputs.Etw", "src\Microsoft.Diagnostics.EventFlow.Inputs.Etw\Microsoft.Diagnostics.EventFlow.Inputs.Etw.xproj", "{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Diagnostics.EventFlow.EtwUtilities", "src\Microsoft.Diagnostics.EventFlow.EtwUtilities\Microsoft.Diagnostics.EventFlow.EtwUtilities.xproj", "{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{C0F892AE-D5F5-42FD-943C-6428CA252650}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -304,6 +310,22 @@ Global
 		{E987F059-33CD-4F0E-8680-63C8033D54D8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E987F059-33CD-4F0E-8680-63C8033D54D8}.Release|x64.ActiveCfg = Release|Any CPU
 		{E987F059-33CD-4F0E-8680-63C8033D54D8}.Release|x64.Build.0 = Release|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD}.Release|x64.Build.0 = Release|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Debug|x64.Build.0 = Debug|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Release|x64.ActiveCfg = Release|Any CPU
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -332,5 +354,7 @@ Global
 		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE} = {FC86C736-6428-431B-B83F-940BF7182757}
 		{C80DF85E-9756-4E30-989F-0D160B444F39} = {47200F40-43E1-4B09-B803-A921FED2BF05}
 		{E987F059-33CD-4F0E-8680-63C8033D54D8} = {47200F40-43E1-4B09-B803-A921FED2BF05}
+		{C81591D6-AF6B-4B55-B6EB-A5CBD9E73EDD} = {47200F40-43E1-4B09-B803-A921FED2BF05}
+		{9235A262-D532-4A06-91D4-6CF6F0BE2BCA} = {C0F892AE-D5F5-42FD-943C-6428CA252650}
 	EndGlobalSection
 EndGlobal
