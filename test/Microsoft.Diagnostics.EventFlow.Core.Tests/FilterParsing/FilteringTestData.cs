@@ -45,6 +45,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 
             eventData.Payload.Add("TwoMinutesAgoProperty", DateTime.Now - TimeSpan.FromMinutes(2));
 
+            eventData.Payload.Add("EnumProperty", LogLevel.Warning);
+
             // Special properties for regex evaluator testing
             eventData.Payload.Add("AbaShortProperty", "abaaaa");
             eventData.Payload.Add("AbaLongProperty", "abaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
