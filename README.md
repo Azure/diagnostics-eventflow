@@ -430,7 +430,7 @@ Fields injected byt the `request` metadata are:
 | `RequestName` | The name of the request, read the event property specified by `requestNameProperty`. |
 | `Duration` | Request duration, read from the event property specified by `durationProperty` (if available). |
 | `IsSuccess` | Success indicator,  read from the event property specified by `isSuccessProperty` (if available). |
-| `ResponseCode` | Response code for the request, read from the event property specified by `durationProperty` (if available). | 
+| `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). | 
 
 #### OMS (Operations Management Suite)
 
