@@ -683,6 +683,17 @@ public static void Main(string[] args)
 }
 ```
 
+### Support for Service Fabric settings and application parameters
+Version 1.0.1 of the EventFlow Service Fabric NuGet package introduced the ability to refer to Service Fabric settings from EventFlow configuration using special syntax for values:
+
+`servicefabric:/<section-name>/<setting-name>`
+
+where `<section-name>` is the name of Service Fabric configuration section and `<setting-name>` is the name of the Service Fabric configuration setting that is providing the value for some EventFlow setting. For example:
+
+`"basicAuthenticationUserPassword": "servicefabric:/DiagnosticPipelineParameters/ElasticSearchUserPassword"`
+
+The EventFlow configuration entry above means "take the ElasticSearchUserPassword setting from DiagnosticPipelineParameters section of the Service Fabric service configuration and use its value as the value for the EventFlow basicAuthenticationUserPassword setting". As with other Service Fabric settings, the values can also be overriden by Service Fabric application parameters. For more information on this see [Manage application parameters for multiple environments](https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-manage-multiple-environment-app-configuration) topic in Service Fabric documentation.
+
 ## Logical Expressions
 The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && EventId == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
 
