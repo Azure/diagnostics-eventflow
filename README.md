@@ -77,7 +77,7 @@ The core of the library, as well as inputs and outputs listed above [are availab
 }
 ```
 3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the Application Insights section.
-4. To add a StdOutput output, install the Microsoft.Diagnostic.EventFlow.Outputs.StdOutput nuget package. Then add the following in the outputs array in eventFlowConfig.json:
+4. To add a StdOutput output, install the Microsoft.Diagnostics.EventFlow.Outputs.StdOutput nuget package. Then add the following in the outputs array in eventFlowConfig.json:
 ```json
     {
         "type": "StdOutput"
