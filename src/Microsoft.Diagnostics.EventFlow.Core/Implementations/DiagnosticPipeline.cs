@@ -99,7 +99,7 @@ namespace Microsoft.Diagnostics.EventFlow
                 filterTransform = new FilterAction(
                     this.GlobalFilters,
                     this.cancellationTokenSource.Token,
-                    this.pipelineConfiguration.MaxEventBatchSize,
+                    MaxNumberOfBatchesInProgress,
                     this.pipelineConfiguration.MaxConcurrency,
                     healthReporter,
                     this.OnEventsFilteredOut);
