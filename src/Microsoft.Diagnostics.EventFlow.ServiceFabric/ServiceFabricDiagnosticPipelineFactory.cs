@@ -11,13 +11,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Diagnostics.EventFlow;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.ServiceFabric;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 {
     public static class ServiceFabricDiagnosticPipelineFactory
     {
-        public static readonly string ConfigurationPackageName = "Config";
         public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>\w+)";
 
         public static DiagnosticPipeline CreatePipeline(string healthEntityName, string configurationFileName = "eventFlowConfig.json")
@@ -29,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
             var healthReporter = new ServiceFabricHealthReporter(healthEntityName);
 
             CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
-            ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject(ConfigurationPackageName);
+            ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject(ServiceFabricConfigurationProvider.DefaultConfigurationPackageName);
             string configFilePath = Path.Combine(configPackage.Path, configurationFileName);
             if (!File.Exists(configFilePath))
             {
@@ -40,7 +40,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 
             ConfigurationBuilder configBuilder = new ConfigurationBuilder();
             configBuilder.AddJsonFile(configFilePath);
-            configBuilder.AddServiceFabric(ConfigurationPackageName);
+            configBuilder.AddServiceFabric(ServiceFabricConfigurationProvider.DefaultConfigurationPackageName);
             IConfigurationRoot configurationRoot = configBuilder.Build().ApplyFabricConfigurationOverrides(healthReporter);
 
             return DiagnosticPipelineFactory.CreatePipeline(configurationRoot, new ServiceFabricHealthReporter(healthEntityName));
@@ -82,6 +82,9 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
                 }
                 catch (RegexMatchTimeoutException)
                 {
+                    healthReporter.ReportWarning(
+                                $"Configuration entry with key '{kvp.Key}' and value '{kvp.Value}' could not be checked if it represents a configuration value reference--a timeout occurred when the value was being parsed.",
+                                EventFlowContextIdentifiers.Configuration);
                     continue;
                 }
             }
