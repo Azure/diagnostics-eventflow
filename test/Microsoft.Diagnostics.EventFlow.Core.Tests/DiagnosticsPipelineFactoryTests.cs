@@ -13,6 +13,7 @@ using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Microsoft.Diagnostics.EventFlow.Outputs;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;
@@ -88,7 +89,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""category"": ""healthReporter"",
                             ""type"": ""CustomHealthReporter"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.TestHelpers.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.TestHelpers""
                         }
                     ],
                     ""healthReporter"": {
@@ -103,8 +104,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 builder.AddJsonFile(configFile.FilePath);
                 var configuration = builder.Build();
 
-                var mocked = new Mock<IHealthReporter>();
-                var isHP = mocked is IHealthReporter;
                 using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
                 {
                     Assert.NotNull(pipeline);
@@ -165,7 +164,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                          {
                             ""category"": ""healthReporter"",
                             ""type"": ""CustomHealthReporter"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.TestHelpers.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.TestHelpers""
                         }
                     ]
                 }";
@@ -262,22 +261,22 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                          {
                             ""category"": ""healthReporter"",
                             ""type"": ""CustomHealthReporter"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.TestHelpers.CustomHealthReporter, Microsoft.Diagnostics.EventFlow.TestHelpers""
                         },
                         {
                             ""category"": ""inputFactory"",
                             ""type"": ""EventSource"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.UnitTestInputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.TestHelpers.UnitTestInputFactory, Microsoft.Diagnostics.EventFlow.TestHelpers""
                         },
                          {
                             ""category"": ""filterFactory"",
                             ""type"": ""metadata"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.UnitTestFilterFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.TestHelpers.UnitTestFilterFactory, Microsoft.Diagnostics.EventFlow.TestHelpers""
                         },
                          {
                             ""category"": ""outputFactory"",
                             ""type"": ""StdOutput"",
-                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.Core.Tests.UnitTestOutputFactory, Microsoft.Diagnostics.EventFlow.Core.Tests""
+                            ""qualifiedTypeName"": ""Microsoft.Diagnostics.EventFlow.TestHelpers.UnitTestOutputFactory, Microsoft.Diagnostics.EventFlow.TestHelpers""
                         }
                     ]
                 }";

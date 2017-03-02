@@ -9,11 +9,11 @@ using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
-namespace Microsoft.Diagnostics.EventFlow.Core.Tests
+namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 {
-    internal class CustomHealthReporter : CsvHealthReporter, IHealthReporter, IDisposable
+    public class CustomHealthReporter : CsvHealthReporter, IHealthReporter, IDisposable
     {
-        internal CsvHealthReporterConfiguration ConfigurationWrapper
+        public CsvHealthReporterConfiguration ConfigurationWrapper
         {
             get
             {

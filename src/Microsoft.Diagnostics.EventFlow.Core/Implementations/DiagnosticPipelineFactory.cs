@@ -322,6 +322,7 @@ namespace Microsoft.Diagnostics.EventFlow
             inputFactories["Serilog"] = "Microsoft.Diagnostics.EventFlow.Inputs.SerilogInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Serilog, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             inputFactories["Microsoft.Extensions.Logging"] = "Microsoft.Diagnostics.EventFlow.Inputs.LoggerInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             inputFactories["ETW"] = "Microsoft.Diagnostics.EventFlow.Inputs.EtwInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Etw, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            inputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsightsInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
