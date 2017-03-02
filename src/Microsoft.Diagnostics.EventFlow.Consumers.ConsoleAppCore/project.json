@@ -5,7 +5,7 @@
   },
 
   "dependencies": {
-    "Microsoft.Diagnostics.EventFlow.Core": "1.0.1-*",
+    "Microsoft.Diagnostics.EventFlow.Core": "1.0.2-*",
     "Microsoft.Diagnostics.EventFlow.Inputs.Trace": "1.0.0-*",
     "Microsoft.Diagnostics.EventFlow.Outputs.StdOutput": "1.0.0-*",
     "Microsoft.NETCore.App": {
