@@ -532,6 +532,7 @@ This filter adds additional metadata to all event data that satisfies the includ
 Here are a few examples of using the metadata filter:
 
 1. Submit a metric with a value of 1 (a counter) whenever there is a Service Fabric stateful service run failure
+
     ```json
     {
     "type": "metadata",
@@ -542,7 +543,9 @@ Here are a few examples of using the metadata filter:
     "metricValue": "1.0"
     }
     ```
+    
 2. Turn processor time performance counter into a metric
+
     ```json
     {
       "type": "metadata",
@@ -553,7 +556,9 @@ Here are a few examples of using the metadata filter:
       "metricValueProperty": "Value"
     }
     ```
+    
 3. Turn a custom EventSource event into a request. The event has 3 interesting properties: requestTypeName indicates what kind of request it was; durationMsec has the total request processing duration and ‘isSuccess’ indicates whether the processing succeeded or failed
+
     ```json
     {
       "type": "metadata",
