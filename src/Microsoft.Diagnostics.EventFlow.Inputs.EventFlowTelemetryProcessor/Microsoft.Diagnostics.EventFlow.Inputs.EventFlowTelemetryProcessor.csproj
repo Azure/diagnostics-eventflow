@@ -1,22 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.</Description>
+    <Description>Provides an implementation of Application Insights telemetry processor that feeds Application Insights telemetry into EventFlow pipeline. 
+    This allows sending diagnostics data from applications instrumented with Application Insights to destinations other than Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFrameworks>net451</TargetFrameworks>
     <DelaySign>true</DelaySign>
-    <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</AssemblyName>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor</AssemblyName>
     <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</PackageId>
-    <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Application Insights</PackageTags>
+    <PackageId>Microsoft.Diagnostics.EventFlow.EventFlowTelemetryProcessor</PackageId>
+    <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;Application Insights;Telemetry processor</PackageTags>
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
     <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.2.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>

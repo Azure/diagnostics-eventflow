@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Trace\Microsoft.Diagnostics.EventFlow.Inputs.Trace.csproj" />

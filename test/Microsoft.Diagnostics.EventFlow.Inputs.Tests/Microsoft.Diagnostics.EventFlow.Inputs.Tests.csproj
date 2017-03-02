@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.EtwUtilities\Microsoft.Diagnostics.EventFlow.EtwUtilities.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj" />
@@ -24,8 +25,10 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Etw\Microsoft.Diagnostics.EventFlow.Inputs.Etw.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor\Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor.csproj" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="1.0.41" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.2.0" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
@@ -42,6 +45,12 @@
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ApplicationInsights.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -21,6 +21,15 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
     public class ApplicationInsightsOutput : IOutput
     {
         private static readonly Task CompletedTask = Task.FromResult<object>(null);
+        private static readonly SeverityLevel[] ToSeverityLevel = new SeverityLevel[]
+        {
+            SeverityLevel.Verbose, // LogLevel is not using value 0, so this should never be used
+            SeverityLevel.Critical,
+            SeverityLevel.Error,
+            SeverityLevel.Warning,
+            SeverityLevel.Information,
+            SeverityLevel.Verbose
+        };
 
         private TelemetryClient telemetryClient;
         private readonly IHealthReporter healthReporter;
@@ -91,6 +100,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                         object message = null;
                         e.Payload.TryGetValue("Message", out message);
                         TraceTelemetry t = new TraceTelemetry(message as string ?? string.Empty);
+                        t.SeverityLevel = ToSeverityLevel[(int)e.Level];
                         AddProperties(t, e);
 
                         telemetryClient.TrackTrace(t);
@@ -168,7 +178,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     rt.Duration = requestData.Duration.Value;
                     // TODO: add an option to extract request start time from event data
                     DateTimeOffset startTime = e.Timestamp.Subtract(requestData.Duration.Value);
-                    rt.StartTime = startTime.ToUniversalTime();
+                    rt.Timestamp = startTime.ToUniversalTime();
                 }
 
                 rt.Name = requestData.RequestName;

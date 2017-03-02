@@ -13,11 +13,14 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public class EventFlowSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable
+    public class EventFlowSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable, IItemWithLabels
     {
         private readonly object lockObject = new object();
         private volatile ImmutableList<IObserver<SubjectType>> observers = ImmutableList<IObserver<SubjectType>>.Empty;
         private volatile bool notifyingObservers = false;
+        private Lazy<IDictionary<string, string>> labelsSource = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>());
+
+        public IDictionary<string, string> Labels { get { return this.labelsSource.Value; } }
 
         public void Dispose()
         {

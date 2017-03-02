@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Inputs;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Moq;
 using Xunit;
 

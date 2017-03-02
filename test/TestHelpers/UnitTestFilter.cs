@@ -4,14 +4,11 @@
 // ------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.FilterEvaluators;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Diagnostics.EventFlow.Core.Tests
+namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 {
     public class UnitTestFilter : IFilter
     {

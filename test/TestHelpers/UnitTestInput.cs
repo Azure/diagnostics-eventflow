@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Diagnostics.EventFlow.Core.Tests
+namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 {
-    internal class UnitTestInput : IObservable<EventData>, IDisposable
+    public class UnitTestInput : IObservable<EventData>, IDisposable
     {
         private EventFlowSubject<EventData> subject;
         public UnitTestInput()
