@@ -49,7 +49,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 PerformanceCounterCategory category = new PerformanceCounterCategory(counterConfiguration.ProcessIdCounterCategory);
 
                 string[] processInstanceNames = category.GetInstanceNames()
-                    .Where(inst => inst.StartsWith(currentProcess.ProcessName))
+                    .Where(inst => inst.ToLowerInvariant().StartsWith(currentProcess.ProcessName.ToLowerInvariant()))
                     .ToArray();
 
                 foreach (string processInstanceName in processInstanceNames)
