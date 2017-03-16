@@ -195,7 +195,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (var payloadItem in e.Payload)
             {
-                AddProperty(item, payloadItem.Key, payloadItem.Value.ToString());
+                AddProperty(item, payloadItem.Key, payloadItem.Value?.ToString());
             }
         }
 
