@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Provides an input implementation for capturing diagnostics data from Event Tracing for Windows (ETW) providers.</Description>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Authors>Microsoft</Authors>
+    <TargetFramework>net451</TargetFramework>
+    <DelaySign>true</DelaySign>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Etw</AssemblyName>
+    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.Etw</PackageId>
+    <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;ETW;Event Tracing for Windows</PackageTags>
+    <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
+    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\Microsoft.Diagnostics.EventFlow.EtwUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="1.0.41" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

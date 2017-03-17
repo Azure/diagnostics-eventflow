@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.</Description>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <Authors>Microsoft</Authors>
+    <TargetFramework>net451</TargetFramework>
+    <DelaySign>true</DelaySign>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</AssemblyName>
+    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</PackageId>
+    <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Application Insights</PackageTags>
+    <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
+    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

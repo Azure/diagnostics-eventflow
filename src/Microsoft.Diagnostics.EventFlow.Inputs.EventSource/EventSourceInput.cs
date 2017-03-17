@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using Microsoft.Diagnostics.EventFlow.Configuration;
@@ -18,7 +19,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     {
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
-        private List<EventSource> eventSourcesPresentAtConstruction;
+        // This does not really need to be a ConcurrentQueue, but the ConcurrentQueue has a very convenient-to-use TryDequeue method.
+        private ConcurrentQueue<EventSource> eventSourcesPresentAtConstruction;
         private EventFlowSubject<EventData> subject;
 
         public EventSourceInput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -81,16 +83,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             // Locking on 'this' is generally a bad practice because someone from outside could put a lock on us, and this is outside of our control.
             // But in the case of this class it is an unlikely scenario, and because of the bug described above, 
             // we cannot rely on construction to prepare a private lock object for us.
+
+            // Also note that we are using a queue to cover the case when EnableEvents() called from EnableInitialSources()
+            // may result in reentrant call into OnEventSourceCreated().
             lock (this)
             {
                 if (!this.constructed)
                 {
                     if (this.eventSourcesPresentAtConstruction == null)
                     {
-                        this.eventSourcesPresentAtConstruction = new List<EventSource>();
+                        this.eventSourcesPresentAtConstruction = new ConcurrentQueue<EventSource>();
                     }
 
-                    this.eventSourcesPresentAtConstruction.Add(eventSource);
+                    this.eventSourcesPresentAtConstruction.Enqueue(eventSource);
                 }
                 else
                 {
@@ -104,11 +109,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Assumes.False(this.constructed);
             if (this.eventSourcesPresentAtConstruction != null)
             {
-                foreach (EventSource eventSource in this.eventSourcesPresentAtConstruction)
-                {
+                EventSource eventSource;
+                while (this.eventSourcesPresentAtConstruction.TryDequeue(out eventSource))
+                { 
                     EnableAsNecessary(eventSource);
                 }
-                this.eventSourcesPresentAtConstruction.Clear(); // Do not hold onto EventSource references that are already initialized.
             }
         }
 

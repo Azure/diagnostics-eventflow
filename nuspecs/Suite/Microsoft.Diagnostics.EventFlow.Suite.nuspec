@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Microsoft.Diagnostics.EventFlow</id>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <projectUrl>https://github.com/Azure/diagnostics-eventflow</projectUrl>
@@ -14,24 +14,24 @@
     <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
     <dependencies>
       <group targetFramework=".NETFramework4.5.1">
-        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="[1.0.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="[1.1.0, )" />
       </group>
       <group targetFramework=".NETFramework4.6">
-        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.EventSource" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="[1.0.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.EventSource" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.EventHub" version="[1.1.0, )" />
       </group>
       <group targetFramework=".NETStandard1.6">
-        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.EventSource" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.StdOutput" version="[1.0.0, )" />
-        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch" version="[1.0.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Core" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.EventSource" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Inputs.Trace" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.StdOutput" version="[1.1.0, )" />
+        <dependency id="Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch" version="[1.1.0, )" />
       </group>
     </dependencies>
   </metadata>

@@ -95,8 +95,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     unitTestInput.SendMessage($"Message {i}");
                 }
 
-                // Wait for the pipeline to drain. 
-                await Task.Delay(TimeSpan.FromMilliseconds(TestBatchSize * (unitTestOutput.SendEventsDelay.TotalMilliseconds + settings.MaxBatchDelayMsec)));
+                // Wait for the pipeline to drain (use ten times batch delay time for extra padding). 
+                await Task.Delay(TimeSpan.FromMilliseconds(TestBatchSize * (unitTestOutput.SendEventsDelay.TotalMilliseconds + settings.MaxBatchDelayMsec * 10)));
 
                 // At least one message should get to the output.
                 Assert.True(unitTestOutput.CallCount > 0);
@@ -109,8 +109,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 healthReporterMock.ResetCalls();
                 unitTestInput.SendMessage("Final message");
 
-                // Wait for the message to be processed (use double batch delay time for extra padding)
-                await Task.Delay(TimeSpan.FromMilliseconds(unitTestOutput.SendEventsDelay.TotalMilliseconds + settings.MaxBatchDelayMsec * 2));
+                // Wait for the message to be processed (use ten times batch delay time for extra padding)
+                await Task.Delay(TimeSpan.FromMilliseconds(unitTestOutput.SendEventsDelay.TotalMilliseconds + settings.MaxBatchDelayMsec * 10));
 
                 // The message should have come through.
                 Assert.Equal(1, unitTestOutput.CallCount);
