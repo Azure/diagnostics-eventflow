@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <DebugType>portable</DebugType>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.Tests</AssemblyName>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dotnet5.4;portable-net451+win8</PackageTargetFallback>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.1.0</RuntimeFrameworkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Trace\Microsoft.Diagnostics.EventFlow.Inputs.Trace.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />    
+    <PackageReference Include="Moq" Version="4.7.1" />
+    <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>

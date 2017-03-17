@@ -17,7 +17,7 @@ try
         Remove-Item "$destination" -Recurse -Force
     }
 
-    $nugetProjects = &'findstr.exe' /sm packOptions project.json
+    $nugetProjects = &'findstr.exe' /sm PackageId *.csproj
 
     $nugetCmd = Join-Path $PSScriptRoot nuget.exe
 
