@@ -10,8 +10,7 @@
     <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <VersionPrefix>1.1.0</VersionPrefix>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.TableStorage</PackageId>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>    
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
