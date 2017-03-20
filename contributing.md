@@ -1,5 +1,5 @@
 * Prerequisites
-    * Visual Studio 2015 Update 3 or above
+    * Visual Studio 2017
 
 * Build
 
