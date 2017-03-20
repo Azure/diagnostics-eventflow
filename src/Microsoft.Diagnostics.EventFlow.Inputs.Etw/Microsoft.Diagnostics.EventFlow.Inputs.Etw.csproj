@@ -34,5 +34,13 @@
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
+   
+   <!--
+    Remove TraceEvent native binaries that are not really needed-the Etw input Nuget package depends on TraceEvent Nuget package
+    and TraceEvent Nuget package will take care of installing them into user's Project.
+  -->
+  <Target Name="RemoveTraceEventNativeBinaries" AfterTargets="Build">
+    <RemoveDir Directories="$(OutputPath)x86;$(OutputPath)amd64" />
+  </Target>
 
 </Project>
