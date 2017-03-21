@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Microsoft.Diagnostics.EventFlow.ServiceFabric</id>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <projectUrl>https://github.com/Azure/diagnostics-eventflow</projectUrl>
