@@ -65,7 +65,22 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
                 this.nodeName,
                 healthInformation);
 
-            this.fabricClient.HealthManager.ReportHealth(healthReport);
+            try
+            {
+                this.fabricClient.HealthManager.ReportHealth(healthReport);
+            }
+            catch (FabricException e)
+            {
+                // A stale report exception indicates a newer report was submitted for the same entity.
+                // Because we are reporting health for deployed service package, this can happen if multiple instances or replicas
+                // of the same service are deployed on the same cluster node. We could report on service instances/replicas instead,
+                // and that would make health reports unique, but would also significantly complicate EventFlow setup, 
+                // so we just suppress the error instead.
+                if (e.ErrorCode != FabricErrorCode.FabricHealthStaleReport)
+                {
+                    throw;
+                }
+            }
         }
 
         public void Dispose()
