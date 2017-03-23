@@ -791,7 +791,7 @@ EventFlow employs the following policies with regards to concurrency:
 2. EventFlow will ensure that only one filter at a time is evaluating any given EventData object. That said, the same filter can be invoked concurrently for different events.
 3. Outputs will invoked concurrently for different batches of data. 
 
-### Using custom pipeline intems imperatively
+### Using custom pipeline items imperatively
 The simplest way to use custom EventFlow elements is to create a pipeline imperatively, in code. You just need to create a read-only collections of the inputs, global filters and sinks and pass them to `DiagnosticPipeline` constructor. Custom and standard elements can be combined freely; each of the standard pipeline elements has a public constructor and associated public configuration class and can be created imperatively.
 
 ### Creating a pipeline with custom elements using configuration
