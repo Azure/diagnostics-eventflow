@@ -731,6 +731,147 @@ using (DiagnosticPipeline pipeline = DiagnosticPipelineFactory.CreatePipeline(co
 }
 ```
 
+## Extensibility
+Every pipeline element type (input, filter, output and health reporter) is a point of extensibility, that is, custom elements of these types can be used inside the pipeline. Contracts for all EventFlow element types are provided by [EventFlow.Core assembly](https://github.com/Azure/diagnostics-eventflow/tree/master/src/Microsoft.Diagnostics.EventFlow.Core/Interfaces) (except from the input type, see below).
+
+### EventData class
+EventFlow pipelines operate on [EventData objects](https://github.com/Azure/diagnostics-eventflow/blob/master/src/Microsoft.Diagnostics.EventFlow.Core/Implementations/EventData.cs). Each EventData object represents a single telemetry record (event) and has the following public properties and methods:
+
+| Name | Type | Description |
+| :------------ | :---- | :---------------- |
+| `Timestamp` | `DateTimeOffset` | Indicates time when the event has been created. |
+| `ProviderName` | `string` | Identifies the source of the event. |
+| `Level` | `LogLevel` (enumeration) | Provides basic severity assesment of the event: is it a critical error, regular error, a warning, etc. |
+| `Keywords` | `long` | Provides means to efficiently classify events. The field is supposed to be interpreted as set of bits (64 bits available). The meaning of each bit is specific to the event provider; EventFlow does not interpret them in any way. |
+| `Payload` | `IDictionary<string, object>` | Stores event properties |
+| `TryGetMetadata(string kind, out IReadOnlyCollection<EventMetadata> metadata)` | bool | Retrieves metadata of given kind (if any) from the event. Returns true if metadata of given kind was found, otherwise failse. |
+| `SetMetadata(EventMetatada metadata)` | void | Adds (attaches) a new piece of metadata to the event. |
+| `GetValueFromPayload<T>(string name, ProcessPayload<T> handler)` | bool | Retrieves a payload value from the payload (set of event properties). Although the payload can be accessed directly via `Payload` property, this method is useful because it will check whether the property exists and perform basic type conversion as necessary. |
+| `AddPayloadProperty(string key, object value, IHealthReporter healthReporter, string context)` | void | Adds a new payload property to the event, performing property name disambiguation as necessary. The `healthReporter` and `context` parameters are used to produce a warning in case the name dismabiguation _is_ necessary (had to be changed because the event alread had a property with name equal to `key` parameter). |
+| `DeepClone()` | `EventData` | Performs a deep clone operation on the EventData. The resulting copy is independent from the original and either can be modified without affecting the other (e.g. properties or metadata can be added or removed). The only exception is that _payload values_ are not cloned (and thus are shared between the copies). |
+
+Note that EventData type is not thread-safe. Don't try to use it concurrently from multiple threads. 
+
+### EventFlow pipeline element types
+#### Inputs
+Inputs are producing new events (`EventData` instances). Anything that implements `IObservable<EventData>` can be used as an input for EventFlow. `IObservable<T>` is a standard .NET interface in the System namespace.
+#### Filters
+Filters have a dual role: they modify events (e.g. by decorating them with metadata) and instruct EventFlow to keep or discard the event. They are expected to implement the `IFilter` interface:
+```csharp
+public enum FilterResult
+{
+    KeepEvent = 0,
+    DiscardEvent = 1
+}
+public interface IFilter
+{
+    FilterResult Evaluate(EventData eventData);
+}
+```
+#### Outputs
+Output's purpose is to send data to its final destination. It is expected to implement `IOutput` interface:
+```csharp
+public interface IOutput
+{
+    Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
+}
+```
+The output receives a batch of events, along with transmission sequence number and a cancellation token. The transmission sequence number can be treated as an identifier for the `SendEventsAsync()` method invocation; it is guaranteed to be unique for each invocation, but there is no guarantee that there will be no "gaps", nor that it will be stricly increasing. The cancellation token should be used to cancel long-running operations if necessary; typically it is passed as a parameter to asynchronous i/o operations.
+
+### Pipeline structure and threading considerations
+Every EventFlow pipeline can be created imperatively, i.e. in the program code. The structure of every pipeline is reflected in the constructor of the `DiagnosticPipeline` class and is as follows:
+
+1. One or more inputs produce events.
+2. A set of common filters (also known as 'global' filters) does initial filtering.
+3. Then the events are sent to one or more outputs (by cloning them as necessary). Each output can have its own set of filters. A combination of an output and a set of filters associated with that output is called a 'sink'.
+
+EventFlow employs the following policies with regards to concurrency:
+
+1. Inputs are free to call OnNext() on associated observers using any thread.
+2. EventFlow will ensure that only one filter at a time is evaluating any given EventData object. That said, the same filter can be invoked concurrently for different events.
+3. Outputs will invoked concurrently for different batches of data. 
+
+### Using custom pipeline intems imperatively
+The simplest way to use custom EventFlow elements is to create a pipeline imperatively, in code. You just need to create a read-only collections of the inputs, global filters and sinks and pass them to `DiagnosticPipeline` constructor. Custom and standard elements can be combined freely; each of the standard pipeline elements has a public constructor and associated public configuration class and can be created imperatively.
+
+### Creating a pipeline with custom elements using configuration
+To create an EventFlow pipeline with custom elements from configuration each custom element needs a factory. The factory is an object implementing `IPipelineItemFactory<TPipelineItem>` and is expected to have a parameter-less constructor.
+
+The factory's `CreateItem(IConfiguration configuration, IHealthReporter healthReporter)` method will receive a configuration fragment that represents the pipeline item being created. The health reporter is available to report issues in case configuration is corrupt or some other problem occurrs during item creation. The health reporter can also be passed to and used by the created pipeline item.
+
+For EventFlow to know about the item factory it must appear in the 'extensions' section of the configuration file. Each extension record has 3 properties:
+
+1. "category" identifies extension type. Currently types recognized by DiagnosticPipelineFactory are inptuFactory, filterFactory, outputFactory or healthReporter. 
+2. "type" is the tag that identifies the extension in other parts of the configuration document(s). It is totally up to the user of an extension what she uses here.
+3. "qualifiedTypeName" is the string that allows DiagnosticPipelineFactory to instantiate the extension factory
+
+Here is a very simple example that illustrates how to create a custom output and instantiate it from a configuration file.
+
+```csharp
+namespace EventFlowCustomOutput
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (DiagnosticPipelineFactory.CreatePipeline("eventFlowConfig.json"))
+            {
+                Trace.TraceError("Hello, world!");
+                Thread.Sleep(1000);
+            }
+        }
+    }
+
+    class CustomOutput : IOutput
+    {
+        public Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        {
+            foreach(var e in events)
+            {
+                Console.WriteLine($"CustomOutput: event says '{e.Payload["Message"]?.ToString() ?? "nothing"}'");
+            }
+            return Task.CompletedTask;
+        }
+    }
+
+    class CustomOutputFactory : IPipelineItemFactory<CustomOutput>
+    {
+        public CustomOutput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        {
+            return new CustomOutput();
+        }
+    }
+}
+```
+
+(content of eventFlowConfig.json)
+
+```json
+{
+  "inputs": [
+    {
+      "type": "Trace"
+    }
+  ],
+  "filters": [
+  ],
+  "outputs": [
+    {
+      "type":  "CustomOutput"
+    }
+  ],
+  "schemaVersion": "2016-08-11",
+
+  "extensions": [
+    {
+      "category": "outputFactory",
+      "type": "CustomOutput",
+      "qualifiedTypeName": "EventFlowCustomOutput.CustomOutputFactory, EventFlowCustomOutput"
+    }
+  ]
+}
+```
+
 ## Platform Support
 EventFlow supports full .NET Framework (.NET 4.5 series and 4.6 series) and .NET Core, but not all inputs and outputs are supported on all platforms. 
 The following table lists platform support for standard inputs and outputs.  
