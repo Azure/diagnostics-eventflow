@@ -83,6 +83,27 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         [Fact]
+        public void ReportsMessageTemplate()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
+
+                string messageTemplate = "Hello, {Name}!";
+                logger.Information(messageTemplate, "World");
+
+                observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
+                       data.Payload["Message"].Equals("Hello, World!")
+                    && data.Level == LogLevel.Informational
+                    && data.Payload["MessageTemplate"].Equals(messageTemplate)
+                )));
+            }
+        }
+
+        [Fact]
         public void ReportsLevelsProperly()
         {
             var healthReporterMock = new Mock<IHealthReporter>();
