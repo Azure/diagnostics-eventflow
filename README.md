@@ -739,15 +739,15 @@ EventFlow pipelines operate on [EventData objects](https://github.com/Azure/diag
 
 | Name | Type | Description |
 | :------------ | :---- | :---------------- |
-| `Timestamp` | `DateTimeOffset` | Indicates time when the event has been created. |
+| `Timestamp` | `DateTimeOffset` | Indicates time when the event was created. |
 | `ProviderName` | `string` | Identifies the source of the event. |
 | `Level` | `LogLevel` (enumeration) | Provides basic severity assesment of the event: is it a critical error, regular error, a warning, etc. |
-| `Keywords` | `long` | Provides means to efficiently classify events. The field is supposed to be interpreted as set of bits (64 bits available). The meaning of each bit is specific to the event provider; EventFlow does not interpret them in any way. |
+| `Keywords` | `long` | Provides means to efficiently classify events. The field is supposed to be interpreted as a set of bits (64 bits available). The meaning of each bit is specific to the event provider; EventFlow does not interpret them in any way. |
 | `Payload` | `IDictionary<string, object>` | Stores event properties |
-| `TryGetMetadata(string kind, out IReadOnlyCollection<EventMetadata> metadata)` | bool | Retrieves metadata of given kind (if any) from the event. Returns true if metadata of given kind was found, otherwise failse. |
+| `TryGetMetadata(string kind, out IReadOnlyCollection<EventMetadata> metadata)` | bool | Retrieves metadata of a given kind (if any) from the event. Returns true if metadata of given kind was found, otherwise false. |
 | `SetMetadata(EventMetatada metadata)` | void | Adds (attaches) a new piece of metadata to the event. |
 | `GetValueFromPayload<T>(string name, ProcessPayload<T> handler)` | bool | Retrieves a payload value from the payload (set of event properties). Although the payload can be accessed directly via `Payload` property, this method is useful because it will check whether the property exists and perform basic type conversion as necessary. |
-| `AddPayloadProperty(string key, object value, IHealthReporter healthReporter, string context)` | void | Adds a new payload property to the event, performing property name disambiguation as necessary. The `healthReporter` and `context` parameters are used to produce a warning in case the name dismabiguation _is_ necessary (had to be changed because the event alread had a property with name equal to `key` parameter). |
+| `AddPayloadProperty(string key, object value, IHealthReporter healthReporter, string context)` | void | Adds a new payload property to the event, performing property name disambiguation as necessary. The `healthReporter` and `context` parameters are used to produce a warning in case the name disambiguation _is_ necessary (had to be changed because the event already had a property with name equal to `key` parameter). |
 | `DeepClone()` | `EventData` | Performs a deep clone operation on the EventData. The resulting copy is independent from the original and either can be modified without affecting the other (e.g. properties or metadata can be added or removed). The only exception is that _payload values_ are not cloned (and thus are shared between the copies). |
 
 Note that EventData type is not thread-safe. Don't try to use it concurrently from multiple threads. 
@@ -776,7 +776,7 @@ public interface IOutput
     Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken);
 }
 ```
-The output receives a batch of events, along with transmission sequence number and a cancellation token. The transmission sequence number can be treated as an identifier for the `SendEventsAsync()` method invocation; it is guaranteed to be unique for each invocation, but there is no guarantee that there will be no "gaps", nor that it will be stricly increasing. The cancellation token should be used to cancel long-running operations if necessary; typically it is passed as a parameter to asynchronous i/o operations.
+The output receives a batch of events, along with transmission sequence number and a cancellation token. The transmission sequence number can be treated as an identifier for the `SendEventsAsync()` method invocation; it is guaranteed to be unique for each invocation, but there is no guarantee that there will be no "gaps", nor that it will be strictly increasing. The cancellation token should be used to cancel long-running operations if necessary; typically it is passed as a parameter to asynchronous i/o operations.
 
 ### Pipeline structure and threading considerations
 Every EventFlow pipeline can be created imperatively, i.e. in the program code. The structure of every pipeline is reflected in the constructor of the `DiagnosticPipeline` class and is as follows:
@@ -801,7 +801,7 @@ The factory's `CreateItem(IConfiguration configuration, IHealthReporter healthRe
 
 For EventFlow to know about the item factory it must appear in the 'extensions' section of the configuration file. Each extension record has 3 properties:
 
-1. "category" identifies extension type. Currently types recognized by DiagnosticPipelineFactory are inptuFactory, filterFactory, outputFactory or healthReporter. 
+1. "category" identifies extension type. Currently types recognized by DiagnosticPipelineFactory are inputFactory, filterFactory, outputFactory or healthReporter. 
 2. "type" is the tag that identifies the extension in other parts of the configuration document(s). It is totally up to the user of an extension what she uses here.
 3. "qualifiedTypeName" is the string that allows DiagnosticPipelineFactory to instantiate the extension factory
 
