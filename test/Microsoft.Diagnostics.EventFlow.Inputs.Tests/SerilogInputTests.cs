@@ -96,7 +96,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 logger.Information(messageTemplate, "World");
 
                 observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
-                       data.Payload["Message"].Equals("Hello, World!")
+                       data.Payload["Message"].Equals("Hello, \"World\"!")
                     && data.Level == LogLevel.Informational
                     && data.Payload["MessageTemplate"].Equals(messageTemplate)
                 )));
@@ -159,7 +159,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
                        data.Payload["Message"].Equals("I say: \"Keyser Söze\" and you pay attention, no excuses")
                     && data.Payload["Exception"].Equals(e)
-                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && key != "Message")].Equals("Keyser Söze")
+                    && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Message") && !key.EndsWith("Template") && key != "Message")].Equals("Keyser Söze")
                     && data.Payload[data.Payload.Keys.First(key => key.StartsWith("Exception") && key != "Exception")].Equals("excuses")
                 )), Times.Exactly(1));
 
