@@ -96,6 +96,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 healthReporter.ReportWarning($"{nameof(SerilogInput)}: event message could not be rendered{Environment.NewLine}{e.ToString()}");
             }
 
+            // MessageTemplate is always present on Serilog events
+            eventData.AddPayloadProperty("MessageTemplate", logEvent.MessageTemplate.Text, healthReporter, nameof(SerilogInput));
+
             foreach (var property in logEvent.Properties.Where(property => property.Value != null))
             {
                 try
