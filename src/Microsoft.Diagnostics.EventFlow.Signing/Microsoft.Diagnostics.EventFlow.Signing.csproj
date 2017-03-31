@@ -51,6 +51,15 @@
     <Error Condition="!Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets'))" />
   </Target>
   <Import Project="..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets" Condition="Exists('..\..\packages\MicroBuild.Core.0.2.0\build\MicroBuild.Core.targets')" />
+
+  <!--
+    Remove TraceEvent native binaries that are not really needed-the Etw input Nuget package depends on TraceEvent Nuget package
+    and TraceEvent Nuget package will take care of installing them into user's Project.
+  -->
+  <Target Name="RemoveTraceEventNativeBinaries" AfterTargets="Build">
+    <RemoveDir Directories="$(OutputPath)x86;$(OutputPath)amd64" />
+  </Target>
+  
   <!--
     The signing task expect the assemblies to sign under some certain folder. So before signing, we move the assemblies to
     the expected folder. After signing, we move the signed assemblies back to its original place for nuget packaging.
