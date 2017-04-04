@@ -76,6 +76,16 @@ The core of the library, as well as inputs and outputs listed above [are availab
     "extensions": []
 }
 ```
+   
+Note: if your project targets .NET Core the eventFlowConfig.json file will not be automatically added. To fix this you can just copy the example listed above and save it under the name "eventFlowConfig.json" in your project folder. Then, open your project file (this assumes you are using Visual Studio 2017/MSBuild 15 csproj-based project system) and add the following snippet to your project:
+   ```xml
+   <ItemGroup>
+    <None Include="eventFlowConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+   ```
+   
 3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the Application Insights section.
 4. To add a StdOutput output, install the Microsoft.Diagnostics.EventFlow.Outputs.StdOutput nuget package. Then add the following in the outputs array in eventFlowConfig.json:
 ```json
