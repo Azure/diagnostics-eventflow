@@ -351,8 +351,11 @@ To capture data from EventSources running in the same process as EventFlow, the 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights/)
 
 Application Insights input is designed for the following scenario:
+
 1. You have an application that uses Application Insights for monitoring and diagnostics.
-2. You want to send a portion of your Application Insights telemetry to some destination other than Application Insights (e.g. Azure EventHub or Elasticsearch; the assumption is there is an EventFlow output for where the data needs to go).
+2. You want to send a portion of your Application Insights telemetry to some destination other than Application Insights (e.g. Azure EventHub or Elasticsearch; the assumption is there is an EventFlow output for where the data needs to go). 
+
+For example, you might want to leverage [Application Insights sampling capabilities](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-sampling) to reduce the amount of data analyzed by Application Insights without losing analysis fidelity, while sending full raw logs to Elasticsearch to do detailed log search during problem troubleshooting.
 
 *Usage*
 1. Add the `EventFlowTelemetryProcessor` to your Application Insights configuration file (it goes into `TelemetryProcessors` element):
@@ -367,6 +370,7 @@ Application Insights input is designed for the following scenario:
      <!-- ... -->
    </ApplicationInsights>
    ```
+   *Note that the order of telemetry processors does matter.* In particular, if the `EventFlowTelemetryProcessor` is placed before the Application Insights sampling processor, EventFlow will capture all telemetry, but if the `EventFlowTelemetryProcessor` is placed after the sampling processor, it will only "see" telemetry that was sampled in. For more information on configuring Application Insights see [Application Insights configuration documentation](https://docs.microsoft.com/azure/application-insights/app-insights-configuration-with-applicationinsights-config).
 
 2. In the EventFlow configuration make sure to include the Application Insights input. It does not take any parameters:
    ```json
