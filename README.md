@@ -11,6 +11,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Serilog](#serilog)
 - [Microsoft.Extensions.Logging](#microsoftextensionslogging)
 - [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
+- [Application Insights](#application-insights-input)
  
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
@@ -344,6 +345,48 @@ To capture data from EventSources running in the same process as EventFlow, the 
 |`keywords` | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
 
 (*) Either providerName, or providerGuid must be specified. When both are specified, provider GUID takes precedence.
+
+#### Application Insights input
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelementryProcessor**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor/)
+
+Application Insights input is designed for the following scenario:
+1. You have an application that uses Application Insights for monitoring and diagnostics.
+2. You want to send a portion of your Application Insights telemetry to some destination other than Application Insights (e.g. Azure EventHub or Elasticsearch; the assumption is there is an EventFlow output for where the data needs to go).
+
+*Usage*
+1. Add the `EventFlowTelemetryProcessor` to your Application Insights configuration file (it goes into `TelemetryProcessors` element):
+   ```xml
+   <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" >
+     <!-- ... -->
+     <TelemetryProcessors>
+        <!-- ... -->
+        <Add Type="Microsoft.Diagnostics.EventFlow.ApplicationInsights.EventFlowTelemetryProcessor, Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor" />
+        <!-- ... -->
+     </TelemetryProcessors>
+     <!-- ... -->
+   </ApplicationInsights>
+   ```
+
+2. In the EventFlow configuration make sure to include the Application Insights input. It does not take any parameters:
+   ```json
+   { "type": "ApplicationInsights" }
+   ```
+
+3. In your application code, after the EventFlow pipeline is created, find the `EventFlowTelemetryProcessor` and set its `Pipeline` property to the instance of the EventFlow pipeline:
+   ```csharp
+   using (var pipeline = DiagnosticPipelineFactory.CreatePipeline("eventFlowConfig.json"))
+   {
+       // ...
+       EventFlowTelemetryProcessor efTelemetryProcessor = TelemetryConfiguration.Active.TelemetryProcessors.OfType<EventFlowTelemetryProcessor>().First();
+       efTelemetryProcessor.Pipeline = pipeline;
+       // ...
+   }
+   ```
+
+This is it-after the `EventFlowTelemetryProcessor.Pipeline` property is set, the `EventFlowTelemetryProcessor` will start sending AI telemetry into the EventFlow pipeline.
+
+Application Insights input supports all standard Application Insights telemetry types: trace, request, event, dependency, metric, exception, page view and availability. 
 
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
