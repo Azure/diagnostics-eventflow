@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Xunit;

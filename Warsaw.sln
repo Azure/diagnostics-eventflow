@@ -105,7 +105,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp", "src\Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp\Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp.csproj", "{9BC644CD-01DC-4B3E-A6D0-B26AD07DE34F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor", "src\Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor\Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor.csproj", "{D8AD5E1D-BA05-4064-B3DF-2180CE680657}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights", "src\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.csproj", "{D8AD5E1D-BA05-4064-B3DF-2180CE680657}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelpers", "test\TestHelpers\TestHelpers.csproj", "{F7BB746D-9863-4831-B950-8FC64A39ACB6}"
 EndProject

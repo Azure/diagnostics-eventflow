@@ -25,7 +25,7 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Etw\Microsoft.Diagnostics.EventFlow.Inputs.Etw.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor\Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.csproj" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="1.0.41" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.2.0" />

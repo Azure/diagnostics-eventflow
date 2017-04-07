@@ -8,11 +8,11 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451</TargetFrameworks>
     <DelaySign>true</DelaySign>
-    <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor</AssemblyName>
+    <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</AssemblyName>
     <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>Microsoft.Diagnostics.EventFlow.EventFlowTelemetryProcessor</PackageId>
+    <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;Application Insights;Telemetry processor</PackageTags>
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
     <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>

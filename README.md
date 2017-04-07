@@ -348,7 +348,7 @@ To capture data from EventSources running in the same process as EventFlow, the 
 
 #### Application Insights input
 
-*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelementryProcessor**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor/)
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights/)
 
 Application Insights input is designed for the following scenario:
 1. You have an application that uses Application Insights for monitoring and diagnostics.
@@ -361,7 +361,7 @@ Application Insights input is designed for the following scenario:
      <!-- ... -->
      <TelemetryProcessors>
         <!-- ... -->
-        <Add Type="Microsoft.Diagnostics.EventFlow.ApplicationInsights.EventFlowTelemetryProcessor, Microsoft.Diagnostics.EventFlow.Inputs.EventFlowTelemetryProcessor" />
+        <Add Type="Microsoft.Diagnostics.EventFlow.ApplicationInsights.EventFlowTelemetryProcessor, Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights" />
         <!-- ... -->
      </TelemetryProcessors>
      <!-- ... -->
