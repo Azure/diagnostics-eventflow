@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Defines core interfaces and types that comprise Microsoft.Diagnostics.EventFlow library.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.1.0</VersionPrefix>
+    <VersionPrefix>1.1.1</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
     <DelaySign>true</DelaySign>
