@@ -23,9 +23,9 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
         public Func<long, bool> FailureCondition = null;
         public ConcurrentQueue<EventData> CapturedEvents = new ConcurrentQueue<EventData>();
 
-        public UnitTestOutput(UnitTestOutputConfiguration configuration)
+        public UnitTestOutput(UnitTestOutputConfiguration configuration = null)
         {
-            this.configuration = configuration;
+            this.configuration = configuration ?? new UnitTestOutputConfiguration();
         }
 
         public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
