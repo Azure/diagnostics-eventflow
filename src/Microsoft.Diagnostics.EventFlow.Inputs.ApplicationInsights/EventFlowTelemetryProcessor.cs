@@ -72,18 +72,16 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
 
                 var eventPayload = eventData.Payload;
 
-                var request = item as RequestTelemetry;
-                if (request != null)
+                if (item is RequestTelemetry)
                 {
+                    var request = item as RequestTelemetry;
                     eventData.Level = LogLevel.Informational;
                     AddRequestProperties(eventPayload, request);
                     AddMetricValues(eventData, request.Metrics);
-                    goto AddCommonProperties;
                 }
-
-                var trace = item as TraceTelemetry;
-                if (trace != null)
+                else if (item is TraceTelemetry)
                 {
+                    var trace = item as TraceTelemetry;
                     if (trace.SeverityLevel.HasValue)
                     {
                         eventData.Level = ToLogLevel[(int)trace.SeverityLevel.Value];
@@ -93,38 +91,30 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
                         eventData.Level = LogLevel.Verbose;
                     }
                     AddTraceProperties(eventPayload, trace);
-                    goto AddCommonProperties;
                 }
-
-                var evt = item as EventTelemetry;
-                if (evt != null)
+                else if (item is EventTelemetry)
                 {
+                    var evt = item as EventTelemetry;
                     eventData.Level = LogLevel.Informational;
                     AddEventProperties(eventPayload, evt);
                     AddMetricValues(eventData, evt.Metrics);
-                    goto AddCommonProperties;
                 }
-
-                var dependencyCall = item as DependencyTelemetry;
-                if (dependencyCall != null)
+                else if (item is DependencyTelemetry)
                 {
+                    var dependencyCall = item as DependencyTelemetry;
                     eventData.Level = LogLevel.Informational;
                     AddDependencyProperties(eventPayload, dependencyCall);
                     AddMetricValues(eventData, dependencyCall.Metrics);
-                    goto AddCommonProperties;
                 }
-
-                var metric = item as MetricTelemetry;
-                if (metric != null)
+                else if (item is MetricTelemetry)
                 {
+                    var metric = item as MetricTelemetry;
                     eventData.Level = LogLevel.Informational;
                     AddMetricProperties(eventPayload, metric);
-                    goto AddCommonProperties;
                 }
-
-                var exception = item as ExceptionTelemetry;
-                if (exception != null)
+                else if (item is ExceptionTelemetry)
                 {
+                    var exception = item as ExceptionTelemetry;
                     if (exception.SeverityLevel.HasValue)
                     {
                         eventData.Level = ToLogLevel[(int)exception.SeverityLevel.Value];
@@ -133,31 +123,24 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
                     {
                         eventData.Level = LogLevel.Warning;
                     }
-
                     AddExceptionProperties(eventPayload, exception);
                     AddMetricValues(eventData, exception.Metrics);
-                    goto AddCommonProperties;
                 }
-
-                var pageView = item as PageViewTelemetry;
-                if (pageView != null)
+                else if (item is PageViewTelemetry)
                 {
+                    var pageView = item as PageViewTelemetry;
                     eventData.Level = LogLevel.Informational;
                     AddPageViewProperties(eventPayload, pageView);
                     AddMetricValues(eventData, pageView.Metrics);
-                    goto AddCommonProperties;
                 }
-
-                var availability = item as AvailabilityTelemetry;
-                if (availability != null)
+                else if (item is AvailabilityTelemetry)
                 {
+                    var availability = item as AvailabilityTelemetry;
                     eventData.Level = availability.Success ? LogLevel.Informational : LogLevel.Warning;
                     AddAvailabilityProperties(eventPayload, availability);
                     AddMetricValues(eventData, availability.Metrics);
-                    goto AddCommonProperties;
                 }
 
-            AddCommonProperties:
                 var itemWithProperties = item as ISupportProperties;
                 if (itemWithProperties != null)
                 {
@@ -183,13 +166,13 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
         {
             if (context.Component != null && !string.IsNullOrEmpty(context.Component.Version))
             {
-                AddPayloadProperty(eventData, "context_component_version", context.Component.Version);
+                AddPayloadProperty(eventData, "ai_component_version", context.Component.Version);
             }
 
             var deviceContext = context.Device;
             if (deviceContext != null)
             {
-                const string deviceContextPrefix = "context_device_";
+                const string deviceContextPrefix = "ai_device_";
                 if (!string.IsNullOrEmpty(deviceContext.Type))
                 {
                     AddPayloadProperty(eventData, deviceContextPrefix + "type", deviceContext.Type);
@@ -215,7 +198,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             var cloudContext = context.Cloud;
             if (context.Cloud != null)
             {
-                const string cloudContextPrefix = "context_cloud_";
+                const string cloudContextPrefix = "ai_cloud_";
                 if (!string.IsNullOrEmpty(cloudContext.RoleName))
                 {
                     AddPayloadProperty(eventData, cloudContextPrefix + "role_name", cloudContext.RoleName);
@@ -229,7 +212,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             var sessionContext = context.Session;
             if (sessionContext != null)
             {
-                const string sessionContextPrefix = "context_session_";
+                const string sessionContextPrefix = "ai_session_";
                 if (!string.IsNullOrEmpty(sessionContext.Id))
                 {
                     AddPayloadProperty(eventData, sessionContextPrefix + "id", sessionContext.Id);
@@ -243,7 +226,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             var userContext = context.User;
             if (userContext != null)
             {
-                const string userContextPrefix = "context_user_";
+                const string userContextPrefix = "ai_user_";
                 if (!string.IsNullOrEmpty(userContext.Id))
                 {
                     AddPayloadProperty(eventData, userContextPrefix + "id", userContext.Id);
@@ -265,7 +248,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             var operationContext = context.Operation;
             if (operationContext != null)
             {
-                const string operationContextPrefix = "context_operation_";
+                const string operationContextPrefix = "ai_operation_";
                 if (!string.IsNullOrEmpty(operationContext.Id))
                 {
                     AddPayloadProperty(eventData, operationContextPrefix + "id", operationContext.Id);
@@ -290,14 +273,14 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
 
             if (context.Location != null && !string.IsNullOrEmpty(context.Location.Ip))
             {
-                AddPayloadProperty(eventData, "context_location_ip", context.Location.Ip);
+                AddPayloadProperty(eventData, "ai_location_ip", context.Location.Ip);
             }
 
             if (context.Properties != null)
             {
                 foreach(var property in context.Properties)
                 {
-                    AddPayloadProperty(eventData, "context_" + property.Key, property.Value);
+                    AddPayloadProperty(eventData, "ai_" + property.Key, property.Value);
                 }
             }
         }
