@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Session;
 using Validation;
+using Microsoft.Diagnostics.EventFlow.Utilities.Etw;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -73,7 +74,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             if (!isProcessing)
             {
                 isProcessing = true;
-                this.inner.Source.Dynamic.All += (traceEvent) => onEvent(traceEvent.ToEventData(this.healthReporter));
+                this.inner.Source.Dynamic.All += (traceEvent) => 
+                {
+                    // Suppress events from TplEventSource--they are mostly interesting for debugging task processing and interaction,
+                    // and not that useful for production tracing. However, TPL EventSource must be enabled to get hierarchical activity IDs.
+                    if (!TplActivities.TplEventSourceGuid.Equals(traceEvent.ProviderGuid))
+                    {
+                        onEvent(traceEvent.ToEventData(this.healthReporter));
+                    }
+                };
                 this.inner.Source.Process();
             }
         }

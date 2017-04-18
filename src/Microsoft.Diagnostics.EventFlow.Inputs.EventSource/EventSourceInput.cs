@@ -71,7 +71,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         protected override void OnEventWritten(EventWrittenEventArgs eventArgs)
         {
-            this.subject.OnNext(eventArgs.ToEventData(this.healthReporter, nameof(EventSourceInput)));
+            // Suppress events from TplEventSource--they are mostly interesting for debugging task processing and interaction,
+            // and not that useful for production tracing. However, TPL EventSource must be enabled to get hierarchical activity IDs.
+            if (!TplActivities.TplEventSourceGuid.Equals(eventArgs.EventSource.Guid))
+            {
+                this.subject.OnNext(eventArgs.ToEventData(this.healthReporter, nameof(EventSourceInput)));
+            }
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
