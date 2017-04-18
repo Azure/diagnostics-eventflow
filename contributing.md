@@ -12,6 +12,8 @@
 
         tools\buildRelease.cmd
 
+    You can also build from Visual Studio, but _you must run `tools\restore.cmd` at least once_ before building from VS is attempted, otherwise you will encounter errors.
+    
 * Test
 
     Run the following command:
