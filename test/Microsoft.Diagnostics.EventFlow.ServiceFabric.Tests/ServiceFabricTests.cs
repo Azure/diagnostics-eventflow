@@ -20,7 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
             };
 
             IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
-            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, healthReporterMock.Object);
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, "unused-configuration-package-path", healthReporterMock.Object);
 
             string verificationError;
             bool isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
@@ -41,7 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
             };
 
             IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
-            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, healthReporterMock.Object);
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, "unused-configuration-package-path", healthReporterMock.Object);
 
             string verificationError;
             bool isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
@@ -65,7 +65,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
             };
 
             IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
-            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, healthReporterMock.Object);
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, "unused-configuration-package-path", healthReporterMock.Object);
             healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
             healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
 
@@ -74,6 +74,55 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
             Assert.False(isOK, verificationError);
 
             configurationSource["delta"] = "BravoCharlie";
+            isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.True(isOK, verificationError);
+        }
+
+        [Fact]
+        public void ConfigurationIsNotChangedIfFileReferenceIsEmpty()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var configurationSource = new Dictionary<string, string>()
+            {
+                ["alpha"] = "Alpha",
+                ["bravo:charlie"] = "BravoCharlie",
+                ["delta"] = "servicefabricfile:/  "
+            };
+
+            IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, "unused-configuration-package-path", healthReporterMock.Object);
+
+            string verificationError;
+            bool isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.True(isOK, verificationError);
+
+            healthReporterMock.Verify(o => o.ReportWarning(
+                        It.Is<string>(s => s.Contains("but the file name part is missing")),
+                        It.Is<string>(s => s == EventFlowContextIdentifiers.Configuration)),
+                    Times.Exactly(1));
+        }
+
+        [Fact]
+        public void ConfigurationUpdatedWithFileReferences()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var configurationSource = new Dictionary<string, string>()
+            {
+                ["alpha"] = "Alpha",
+                ["bravo:charlie"] = "BravoCharlie",
+                ["delta"] = "servicefabricfile:/ApplicationInsights.config"
+            };
+
+            IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, @"C:\FabricCluster\work\Config\AppInstance00", healthReporterMock.Object);
+            healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+
+            string verificationError;
+            bool isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.False(isOK, verificationError);
+
+            configurationSource["delta"] = @"C:\FabricCluster\work\Config\AppInstance00\ApplicationInsights.config";
             isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
             Assert.True(isOK, verificationError);
         }

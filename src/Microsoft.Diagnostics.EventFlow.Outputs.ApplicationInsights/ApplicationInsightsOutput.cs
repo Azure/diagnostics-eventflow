@@ -15,6 +15,8 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Microsoft.Extensions.Configuration;
 using Validation;
+using Microsoft.ApplicationInsights.Extensibility;
+using System.IO;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -124,15 +126,28 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Debug.Assert(aiOutputConfiguration != null);
             Debug.Assert(this.healthReporter != null);
 
-            if (string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
+            if (string.IsNullOrWhiteSpace(aiOutputConfiguration.ConfigurationFilePath))
             {
-                string errorMessage = $"{nameof(ApplicationInsightsOutput)}: Application Insights instrumentation key is is not set)";
-                this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
+                if (string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
+                {
+                    string errorMessage = $"{nameof(ApplicationInsightsOutput)}: Application Insights instrumentation key is is not set)";
+                    this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                    throw new Exception(errorMessage);
+                }
 
-            this.telemetryClient = new TelemetryClient();
-            this.telemetryClient.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
+                this.telemetryClient = new TelemetryClient();
+                this.telemetryClient.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
+            }
+            else
+            {
+                string configurationFileContent = File.ReadAllText(aiOutputConfiguration.ConfigurationFilePath);
+                TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.CreateFromConfiguration(configurationFileContent);
+                if (!string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
+                {
+                    telemetryConfiguration.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
+                }
+                this.telemetryClient = new TelemetryClient(telemetryConfiguration);
+            }
         }
 
         private void TrackMetric(EventData e, IReadOnlyCollection<EventMetadata> metadata)

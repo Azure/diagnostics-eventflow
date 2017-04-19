@@ -19,6 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
     public static class ServiceFabricDiagnosticPipelineFactory
     {
         public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>\w+)";
+        public static readonly string FabricConfigurationFileReference = @"servicefabricfile:/(?<filename>.+)";
 
         public static DiagnosticPipeline CreatePipeline(string healthEntityName, string configurationFileName = "eventFlowConfig.json")
         {
@@ -41,17 +42,22 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
             ConfigurationBuilder configBuilder = new ConfigurationBuilder();
             configBuilder.AddJsonFile(configFilePath);
             configBuilder.AddServiceFabric(ServiceFabricConfigurationProvider.DefaultConfigurationPackageName);
-            IConfigurationRoot configurationRoot = configBuilder.Build().ApplyFabricConfigurationOverrides(healthReporter);
+            IConfigurationRoot configurationRoot = configBuilder.Build().ApplyFabricConfigurationOverrides(configPackage.Path, healthReporter);
 
             return DiagnosticPipelineFactory.CreatePipeline(configurationRoot, new ServiceFabricHealthReporter(healthEntityName));
         }
 
-        internal static IConfigurationRoot ApplyFabricConfigurationOverrides(this IConfigurationRoot configurationRoot, IHealthReporter healthReporter)
+        internal static IConfigurationRoot ApplyFabricConfigurationOverrides(
+            this IConfigurationRoot configurationRoot, 
+            string configPackagePath,
+            IHealthReporter healthReporter)
         {
             Debug.Assert(configurationRoot != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(configPackagePath));
             Debug.Assert(healthReporter != null);
 
             Regex fabricValueReferenceRegex = new Regex(FabricConfigurationValueReference, RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+            Regex fabricFileReferenceRegex = new Regex(FabricConfigurationFileReference, RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
 
             // Use ToList() to ensure that configuration is fully enumerated before starting to modify it.
             foreach (var kvp in configurationRoot.AsEnumerable().ToList())
@@ -77,6 +83,23 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
                         else
                         {
                             configurationRoot[kvp.Key] = newValue;
+                        }
+                    }
+
+                    Match fileReferenceMatch = fabricFileReferenceRegex.Match(kvp.Value);
+                    if (fileReferenceMatch.Success)
+                    {
+                        string configFileName = fileReferenceMatch.Groups["filename"].Value;
+                        if (string.IsNullOrWhiteSpace(configFileName))
+                        {
+                            healthReporter.ReportWarning(
+                                $"Configuration file reference '{kvp.Value}' was encountered but the file name part is missing",
+                                EventFlowContextIdentifiers.Configuration);
+                        }
+                        else
+                        {
+                            string configFilePath = Path.Combine(configPackagePath, configFileName);
+                            configurationRoot[kvp.Key] = configFilePath;
                         }
                     }
                 }
