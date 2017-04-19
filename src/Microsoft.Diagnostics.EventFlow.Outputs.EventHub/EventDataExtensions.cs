@@ -39,7 +39,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             public List<ShoeBoxRecord> records = new List<ShoeBoxRecord>();
         }
 
-        private static readonly JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore };
+        private static readonly JsonSerializerSettings serializerSetting = new JsonSerializerSettings()
+        {
+            NullValueHandling = NullValueHandling.Ignore, 
+            DateFormatHandling = DateFormatHandling.IsoDateFormat
+        };
 
         public static MessagingEventData ToMessagingEventData(this EventData eventData, out int messageSize)
         {
