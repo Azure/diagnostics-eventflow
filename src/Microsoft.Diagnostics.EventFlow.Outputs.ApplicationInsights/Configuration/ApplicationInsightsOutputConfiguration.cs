@@ -10,5 +10,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     public class ApplicationInsightsOutputConfiguration: ItemConfiguration
     {
         public string InstrumentationKey { get; set; }
+        public string ConfigurationFilePath { get; set; }
     }
 }
