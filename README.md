@@ -432,13 +432,17 @@ This output writes data to the [Azure Application Insights service](https://azur
 ```json
 {
     "type": "ApplicationInsights",
-    "instrumentationKey": "00000000-0000-0000-0000-000000000000"
+    "instrumentationKey": "00000000-0000-0000-0000-000000000000",
+    "configurationFilePath": "path-to-ApplicationInsights.config"
 }
 ```
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "ApplicationInsights" | Yes | Specifies the output type. For this output, it must be "ApplicationInsights". |
-| `instrumentationKey` | GUID | Yes | Specifies the instrumentation key for the targeted Application Insights resource. The key is in the form of a GUID. The key can be found on the Application Insights blade in Azure Portal. |
+| `instrumentationKey` | GUID | No | Specifies the instrumentation key for the targeted Application Insights resource. The key is in the form of a GUID. The key can be found on the Application Insights blade in Azure Portal. The value in this field overrides any value in the Application Insights configuration file (see the `configurationFilePath` parameter below). If `configurationFilePath` is not set, instrumentation key must be specified. |
+| `configurationFilePath` | string | No | Specifies the path to Application Insights configuration file. This parameter is optional-if no value is specified, default configuration for the Application Insights output will be used. For more information see [Application Insights documentation](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-configuration-with-applicationinsights-config) |
+
+In Service Fabric environment the Application Insights configuration file can should be part of the default service configuration package (the 'Config' package). To resolve the path of the configuration file within the service configuration package set the value of `configurationFilePath` to `servicefabricfile:/ApplicationInsights.config`. For more information on this syntax see [Service Fabric support](#service-fabric-support)
 
 *Standard metadata support*
 
@@ -755,6 +759,12 @@ where `<section-name>` is the name of Service Fabric configuration section and `
 `"basicAuthenticationUserPassword": "servicefabric:/DiagnosticPipelineParameters/ElasticSearchUserPassword"`
 
 The EventFlow configuration entry above means "take the ElasticSearchUserPassword setting from DiagnosticPipelineParameters section of the Service Fabric service configuration and use its value as the value for the EventFlow basicAuthenticationUserPassword setting". As with other Service Fabric settings, the values can also be overriden by Service Fabric application parameters. For more information on this see [Manage application parameters for multiple environments](https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-manage-multiple-environment-app-configuration) topic in Service Fabric documentation.
+
+Version 1.1.2 added support for resolving paths to other configuration files that are part of the default service configuration package. The syntax is:
+
+`servicefabricfile:/<configuration-file-name>`
+
+At run time this value will be substituted with a full path to the configuration file with the given name. This is especially useful if an EventFlow pipeline element wraps an existing library that has its own configuration file format (as is the case with Application Insights, for example). 
 
 ## Logical Expressions
 The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && EventId == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
