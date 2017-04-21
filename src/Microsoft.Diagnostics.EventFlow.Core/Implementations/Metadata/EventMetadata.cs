@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Validation;
+using System.Diagnostics;
 
 namespace Microsoft.Diagnostics.EventFlow.Metadata
 {
@@ -57,5 +58,39 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
         {
             return this.MetadataType.GetHashCode();
         }
+
+        // Retrieves an event value from a property that is named in the metadata. For example, if the metadataPropertyName parameter is
+        // "ResponseCodeProperty", we read the "ResponseCodeProperty" from the metadata. Suppose its value is "returnCode". 
+        // Then we look into the event and try to find "returnCode" property in the payload. If successful, we return its value to the caller
+        // (e.g. it could be "200 OK", indicating successful HTTP call).
+        public DataRetrievalResult GetEventPropertyValue<T>(
+            EventData eventData,
+            string metadataPropertyName,
+            out T eventPropertyValue)
+        {
+            Requires.NotNull(eventData, nameof(eventData));
+            Requires.NotNullOrEmpty(metadataPropertyName, nameof(metadataPropertyName));
+            eventPropertyValue = default(T);
+
+            string eventPropertyName = this[metadataPropertyName];
+            if (string.IsNullOrWhiteSpace(eventPropertyName))
+            {
+                return DataRetrievalResult.MissingMetadataProperty(metadataPropertyName);
+            }
+
+            T value = default(T);
+            if (!eventData.GetValueFromPayload<T>(eventPropertyName, (v) => value = v))
+            {
+                return DataRetrievalResult.DataMissingOrInvalid(eventPropertyName);
+            }
+            else
+            {
+                eventPropertyValue = value;
+            }
+
+            return DataRetrievalResult.Success;
+        }
+
+
     }
 }

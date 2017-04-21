@@ -26,6 +26,11 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             Requires.NotNull(metricMetadata, nameof(metricMetadata));
             metric = null;
 
+            if (!MetricMetadataKind.Equals(metricMetadata.MetadataType, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return DataRetrievalResult.InvalidMetadataType(metricMetadata.MetadataType, MetricMetadataKind);
+            }
+
             string metricName = metricMetadata[MetricNameMoniker];
             if (string.IsNullOrEmpty(metricName))
             {
@@ -59,7 +64,8 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             metric = new MetricData();
             metric.MetricName = metricName;
             metric.Value = value;
-            return DataRetrievalResult.Success();
+
+            return DataRetrievalResult.Success;
         }
     }
 }
