@@ -114,29 +114,22 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private IEnumerable<IBulkOperation> GetCreateOperationsForEvent(EventData eventData, string currentIndexName, string documentTypeName)
         {
-            bool reportedAsMetricOrRequest = false;
+            bool reportedAsSpecialEvent = false;
             BulkIndexOperation<EventData> operation;
-
-            // Synthesize a separate record for each metric and request metadata associated with the event
             IReadOnlyCollection<EventMetadata> metadataSet;
+
+            // Synthesize a separate record for each metric, request, dependency and exception metadata associated with the event
+
             if (eventData.TryGetMetadata(MetricData.MetricMetadataKind, out metadataSet))
             {
                 foreach (var metricMetadata in metadataSet)
                 {
-                    MetricData metricData;
-                    var result = MetricData.TryGetData(eventData, metricMetadata, out metricData);
-                    if (result.Status != DataRetrievalStatus.Success)
+                    operation = CreateMetricOperation(eventData, metricMetadata, currentIndexName, documentTypeName);
+                    if (operation != null)
                     {
-                        this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
-                        continue;
-                    }
-
-                    var metricEventData = eventData.DeepClone();
-                    metricEventData.Payload[nameof(MetricData.MetricName)] = metricData.MetricName;
-                    metricEventData.Payload[nameof(MetricData.Value)] = metricData.Value;
-                    operation = CreateOperation(metricEventData, currentIndexName, documentTypeName);
-                    reportedAsMetricOrRequest = true;
-                    yield return operation;
+                        reportedAsSpecialEvent = true;
+                        yield return operation;
+                    }                    
                 }
             }
 
@@ -144,39 +137,167 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var requestMetadata in metadataSet)
                 {
-                    RequestData requestData;
-                    var result = RequestData.TryGetData(eventData, requestMetadata, out requestData);
-                    if (result.Status != DataRetrievalStatus.Success)
+                    operation = CreateRequestOperation(eventData, requestMetadata, currentIndexName, documentTypeName);
+                    if (operation != null)
                     {
-                        this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
-                        continue;
+                        reportedAsSpecialEvent = true;
+                        yield return operation;
                     }
-
-                    var requestEventData = eventData.DeepClone();
-                    requestEventData.Payload[nameof(RequestData.RequestName)] = requestData.RequestName;
-                    if (requestData.Duration != null)
-                    {
-                        requestEventData.Payload[nameof(RequestData.Duration)] = requestData.Duration;
-                    }
-                    if (requestData.IsSuccess != null)
-                    {
-                        requestEventData.Payload[nameof(RequestData.IsSuccess)] = requestData.IsSuccess;
-                    }
-                    if (requestData.ResponseCode != null)
-                    {
-                        requestEventData.Payload[nameof(RequestData.ResponseCode)] = requestData.ResponseCode;
-                    }
-                    operation = CreateOperation(requestEventData, currentIndexName, documentTypeName);
-                    reportedAsMetricOrRequest = true;
-                    yield return operation;
                 }
             }
 
-            if (!reportedAsMetricOrRequest)
+            if (eventData.TryGetMetadata(DependencyData.DependencyMetadataKind, out metadataSet))
+            {
+                foreach (var dependencyMetadata in metadataSet)
+                {
+                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName, documentTypeName);
+                    if (operation != null)
+                    {
+                        reportedAsSpecialEvent = true;
+                        yield return operation;
+                    }
+                }
+            }
+
+            if (eventData.TryGetMetadata(DependencyData.DependencyMetadataKind, out metadataSet))
+            {
+                foreach (var dependencyMetadata in metadataSet)
+                {
+                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName, documentTypeName);
+                    if (operation != null)
+                    {
+                        reportedAsSpecialEvent = true;
+                        yield return operation;
+                    }
+                }
+            }
+
+            if (eventData.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out metadataSet))
+            {
+                foreach (var exceptionMetadata in metadataSet)
+                {
+                    operation = CreateExceptionOperation(eventData, exceptionMetadata, currentIndexName, documentTypeName);
+                    if (operation != null)
+                    {
+                        reportedAsSpecialEvent = true;
+                        yield return operation;
+                    }
+                }
+            }
+
+            if (!reportedAsSpecialEvent)
             {
                 operation = CreateOperation(eventData, currentIndexName, documentTypeName);
                 yield return operation;
             }
+        }
+
+        private BulkIndexOperation<EventData> CreateMetricOperation(
+            EventData eventData, 
+            EventMetadata metricMetadata,
+            string currentIndexName, 
+            string documentTypeName)
+        {
+            var result = MetricData.TryGetData(eventData, metricMetadata, out MetricData metricData);
+            if (result.Status != DataRetrievalStatus.Success)
+            {
+                this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                return null;
+            }
+
+            var metricEventData = eventData.DeepClone();
+            metricEventData.Payload[nameof(MetricData.MetricName)] = metricData.MetricName;
+            metricEventData.Payload[nameof(MetricData.Value)] = metricData.Value;
+            var operation = CreateOperation(metricEventData, currentIndexName, documentTypeName);
+            return operation;
+        }
+
+        private BulkIndexOperation<EventData> CreateRequestOperation(
+            EventData eventData,
+            EventMetadata requestMetadata,
+            string currentIndexName,
+            string documentTypeName)
+        {
+            var result = RequestData.TryGetData(eventData, requestMetadata, out RequestData requestData);
+            if (result.Status != DataRetrievalStatus.Success)
+            {
+                this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                return null;
+            }
+
+            var requestEventData = eventData.DeepClone();
+            requestEventData.Payload[nameof(RequestData.RequestName)] = requestData.RequestName;
+            if (requestData.Duration != null)
+            {
+                requestEventData.Payload[nameof(RequestData.Duration)] = requestData.Duration;
+            }
+            if (requestData.IsSuccess != null)
+            {
+                requestEventData.Payload[nameof(RequestData.IsSuccess)] = requestData.IsSuccess;
+            }
+            if (requestData.ResponseCode != null)
+            {
+                requestEventData.Payload[nameof(RequestData.ResponseCode)] = requestData.ResponseCode;
+            }
+            var operation = CreateOperation(requestEventData, currentIndexName, documentTypeName);
+            return operation;
+        }
+
+        private BulkIndexOperation<EventData> CreateDependencyOperation(
+            EventData eventData,
+            EventMetadata dependencyMetadata,
+            string currentIndexName,
+            string documentTypeName)
+        {
+            var result = DependencyData.TryGetData(eventData, dependencyMetadata, out DependencyData dependencyData);
+            if (result.Status != DataRetrievalStatus.Success)
+            {
+                this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                return null;
+            }
+
+            var dependencyEventData = eventData.DeepClone();
+            if (dependencyData.Duration != null)
+            {
+                dependencyEventData.Payload[nameof(DependencyData.Duration)] = dependencyData.Duration;
+            }
+            if (dependencyData.IsSuccess != null)
+            {
+                dependencyEventData.Payload[nameof(DependencyData.IsSuccess)] = dependencyData.IsSuccess;
+            }
+            if (dependencyData.ResponseCode != null)
+            {
+                dependencyEventData.Payload[nameof(DependencyData.ResponseCode)] = dependencyData.ResponseCode;
+            }
+            if (dependencyData.Target != null)
+            {
+                dependencyEventData.Payload[nameof(DependencyData.Target)] = dependencyData.Target;
+            }
+            if (dependencyData.DependencyType != null)
+            {
+                dependencyEventData.Payload[nameof(DependencyData.DependencyType)] = dependencyData.DependencyType;
+            }
+            var operation = CreateOperation(dependencyEventData, currentIndexName, documentTypeName);
+            return operation;
+        }
+
+        private BulkIndexOperation<EventData> CreateExceptionOperation(
+            EventData eventData,
+            EventMetadata exceptionMetadata,
+            string currentIndexName,
+            string documentTypeName)
+        {
+            var result = ExceptionData.TryGetData(eventData, exceptionMetadata, out ExceptionData exceptionData);
+            if (result.Status != DataRetrievalStatus.Success)
+            {
+                this.healthReporter.ReportProblem("ElasticSearchOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                return null;
+            }
+
+            var exceptionEventData = eventData.DeepClone();
+            exceptionEventData.Payload[nameof(ExceptionData.Exception)] = exceptionData.Exception.ToString();
+            var operation = CreateOperation(exceptionEventData, currentIndexName, documentTypeName);
+            return operation;
         }
 
         private static BulkIndexOperation<EventData> CreateOperation(EventData eventData, string currentIndexName, string documentTypeName)

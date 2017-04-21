@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Metadata
@@ -12,23 +13,19 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
         Success = 0,
         MetadataPropertyMissing = 1,
         InvalidMetadataValue = 2,
-        DataMissingOrInvalid = 3
+        DataMissingOrInvalid = 3,
+        InvalidMetadataType = 4
     }
 
     public class DataRetrievalResult
     {
-        private static readonly DataRetrievalResult SuccessResult = new DataRetrievalResult() { Status = DataRetrievalStatus.Success };
+        public static readonly DataRetrievalResult Success = new DataRetrievalResult() { Status = DataRetrievalStatus.Success };
 
         public DataRetrievalStatus Status { get; private set; }
         public string Message { get; private set; }
 
         // Prevent public construction
         private DataRetrievalResult() { }
-
-        public static DataRetrievalResult Success()
-        {
-            return SuccessResult;
-        }
 
         public static DataRetrievalResult MissingMetadataProperty(string missingPropertyName)
         {
@@ -61,6 +58,33 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
                 Status = DataRetrievalStatus.DataMissingOrInvalid,
                 Message = $"The expected event property '{propertyName}' is either missing from event data, or its value is invalid"
             };
+        }
+
+        public static DataRetrievalResult InvalidMetadataType(string actualMetadataType, string expectedMetadataType)
+        {
+            Requires.NotNullOrWhiteSpace(expectedMetadataType, nameof(expectedMetadataType));
+
+            return new DataRetrievalResult()
+            {
+                Status = DataRetrievalStatus.InvalidMetadataType,
+                Message = $"Was expecting metadata of type '{expectedMetadataType}' but the actual metadata type is '{actualMetadataType}'"
+            };
+        }
+
+        public override bool Equals(object obj)
+        {
+            DataRetrievalResult other = obj as DataRetrievalResult;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return this.Status == other.Status && string.Equals(this.Message, other.Message, StringComparison.Ordinal);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Message != null ? this.Message.GetHashCode() ^ (int)this.Status : (int)this.Status;
         }
     }
 }

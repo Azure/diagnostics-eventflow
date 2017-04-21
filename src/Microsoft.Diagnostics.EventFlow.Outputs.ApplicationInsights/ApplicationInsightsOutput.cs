@@ -6,17 +6,20 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
 using Validation;
-using Microsoft.ApplicationInsights.Extensibility;
-using System.IO;
+
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -83,21 +86,28 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     }
 
                     IReadOnlyCollection<EventMetadata> metadata;
-                    bool handled = false;
 
                     if (e.TryGetMetadata(MetricData.MetricMetadataKind, out metadata))
                     {
                         TrackMetric(e, metadata);
-                        handled = true;
                     }
-
-                    if (e.TryGetMetadata(RequestData.RequestMetadataKind, out metadata))
+                    else if (e.TryGetMetadata(RequestData.RequestMetadataKind, out metadata))
                     {
                         TrackRequest(e, metadata);
-                        handled = true;
                     }
-
-                    if (!handled)
+                    else if (e.TryGetMetadata(DependencyData.DependencyMetadataKind, out metadata))
+                    {
+                        TrackDependency(e, metadata);
+                    }
+                    else if (e.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out metadata))
+                    {
+                        TrackException(e, metadata);
+                    }
+                    else if (e.TryGetMetadata(EventTelemetryData.EventMetadataKind, out metadata))
+                    {
+                        TrackAiEvent(e, metadata);
+                    }
+                    else
                     {
                         object message = null;
                         e.Payload.TryGetValue("Message", out message);
@@ -156,8 +166,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (EventMetadata metricMetadata in metadata)
             {
-                MetricData metricData;
-                var result = MetricData.TryGetData(e, metricMetadata, out metricData);
+                var result = MetricData.TryGetData(e, metricMetadata, out MetricData metricData);
                 if (result.Status != DataRetrievalStatus.Success)
                 {
                     this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
@@ -178,8 +187,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (EventMetadata requestMetadata in metadata)
             {
-                RequestData requestData;
-                var result = RequestData.TryGetData(e, requestMetadata, out requestData);
+                var result = RequestData.TryGetData(e, requestMetadata, out RequestData requestData);
                 if (result.Status != DataRetrievalStatus.Success)
                 {
                     this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
@@ -200,16 +208,94 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 rt.Success = requestData.IsSuccess;
                 rt.ResponseCode = requestData.ResponseCode;
 
-                AddProperties(rt, e);
+                AddProperties(rt, e, setTimestampFromEventData: false);
 
                 telemetryClient.TrackRequest(rt);
             }
         }
 
-        private void AddProperties(ISupportProperties item, EventData e)
+        private void TrackDependency(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        {
+            Debug.Assert(metadata != null);
+
+            foreach (EventMetadata dependencyMetadata in metadata)
+            {
+                var result = DependencyData.TryGetData(e, dependencyMetadata, out DependencyData dependencyData);
+                if (result.Status != DataRetrievalStatus.Success)
+                {
+                    this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                    continue;
+                }
+
+                var dt = new DependencyTelemetry();
+
+                if (dependencyData.Duration != null)
+                {
+                    dt.Duration = dependencyData.Duration.Value;
+                    // TODO: add an option to extract request start time from event data
+                    DateTimeOffset startTime = e.Timestamp.Subtract(dependencyData.Duration.Value);
+                    dt.Timestamp = startTime.ToUniversalTime();
+                }
+
+                dt.Success = dependencyData.IsSuccess;
+                dt.ResultCode = dependencyData.ResponseCode;
+                dt.Target = dependencyData.Target;
+                dt.Type = dependencyData.DependencyType;
+
+                AddProperties(dt, e, setTimestampFromEventData: false);
+
+                telemetryClient.TrackDependency(dt);
+            }
+        }
+
+        private void TrackException(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        {
+            Debug.Assert(metadata != null);
+
+            foreach (EventMetadata exceptionMetadata in metadata)
+            {
+                var result = ExceptionData.TryGetData(e, exceptionMetadata, out ExceptionData exceptionData);
+                if (result.Status != DataRetrievalStatus.Success)
+                {
+                    this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                    continue;
+                }
+
+                var et = new ExceptionTelemetry();
+                et.Exception = exceptionData.Exception;
+
+                AddProperties(et, e);
+
+                telemetryClient.TrackException(et);
+            }
+        }
+
+        private void TrackAiEvent(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        {
+            Debug.Assert(metadata != null);
+
+            foreach (EventMetadata eventMetadata in metadata)
+            {
+                var result = EventTelemetryData.TryGetData(e, eventMetadata, out EventTelemetryData eventData);
+                if (result.Status != DataRetrievalStatus.Success)
+                {
+                    this.healthReporter.ReportWarning("ApplicationInsightsOutput: " + result.Message, EventFlowContextIdentifiers.Output);
+                    continue;
+                }
+
+                var et = new EventTelemetry();
+                et.Name = eventData.Name;
+
+                AddProperties(et, e);
+
+                telemetryClient.TrackEvent(et);
+            }
+        }
+
+        private void AddProperties(ISupportProperties item, EventData e, bool setTimestampFromEventData = true)
         {
             ITelemetry telemetry = item as ITelemetry;
-            if (telemetry != null)
+            if (telemetry != null && setTimestampFromEventData)
             {
                 telemetry.Timestamp = e.Timestamp;
             }

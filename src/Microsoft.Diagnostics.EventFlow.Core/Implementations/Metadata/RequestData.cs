@@ -9,28 +9,12 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Metadata
 {
-    public enum DurationUnit
-    {
-        TimeSpan,
-        Milliseconds,
-        Seconds,
-        Minutes,
-        Hours
-    };
-
-    public class RequestData
+    public class RequestData: NetworkCallData
     {
         public static readonly string RequestMetadataKind = "request";
         public static readonly string RequestNamePropertyMoniker = "requestNameProperty";
-        public static readonly string IsSuccessPropertyMoniker = "isSuccessProperty";
-        public static readonly string DurationPropertyMoniker = "durationProperty";
-        public static readonly string DurationUnitMoniker = "durationUnit";
-        public static readonly string ResponseCodePropertyMoniker = "responseCodeProperty";
 
         public string RequestName { get; private set; }
-        public TimeSpan? Duration { get; private set; }
-        public bool? IsSuccess { get; private set; }
-        public string ResponseCode { get; private set; }
 
         // Ensure that RequestData can only be created using TryGetRequestData() method
         private RequestData() { }
@@ -44,66 +28,30 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             Requires.NotNull(requestMetadata, nameof(requestMetadata));
             request = null;
 
-            string requestNameProperty = requestMetadata[RequestNamePropertyMoniker];
-            if (string.IsNullOrWhiteSpace(requestNameProperty))
+            if (!RequestMetadataKind.Equals(requestMetadata.MetadataType, System.StringComparison.OrdinalIgnoreCase))
             {
-                return DataRetrievalResult.MissingMetadataProperty(RequestNamePropertyMoniker);
+                return DataRetrievalResult.InvalidMetadataType(requestMetadata.MetadataType, RequestMetadataKind);
             }
 
-            string requestName = null;
-            if (!eventData.GetValueFromPayload<string>(requestNameProperty, (v) => requestName = v))
+            // Inability to retrieve request name is not a terminating error--ignore the return value from GetEventPropertyValue here.
+            requestMetadata.GetEventPropertyValue(eventData, RequestNamePropertyMoniker, out string requestName);
+
+            DataRetrievalResult result = GetSuccessValue(eventData, requestMetadata, out bool? success);
+            if (result.Status != DataRetrievalStatus.Success)
             {
-                return DataRetrievalResult.DataMissingOrInvalid(requestNameProperty);
+                return result;
             }
 
-            bool? success = null;
-            string isSuccessProperty = requestMetadata[IsSuccessPropertyMoniker];
-            if (!string.IsNullOrWhiteSpace(isSuccessProperty))
+            result = GetDurationValue(eventData, requestMetadata, out TimeSpan? duration);
+            if (result.Status != DataRetrievalStatus.Success)
             {
-                if (!eventData.GetValueFromPayload<bool>(isSuccessProperty, (v) => success = v))
-                {
-                    return DataRetrievalResult.DataMissingOrInvalid(isSuccessProperty);
-                }
+                return result;
             }
 
-            TimeSpan? duration = null;
-            string durationProperty = requestMetadata[DurationPropertyMoniker];
-            if (!string.IsNullOrWhiteSpace(durationProperty))
+            result = GetResponseCodeValue(eventData, requestMetadata, out string responseCode);
+            if (result.Status != DataRetrievalStatus.Success)
             {
-                DurationUnit durationUnit;
-                string durationUnitOverride = requestMetadata[DurationUnitMoniker];
-                if (string.IsNullOrEmpty(durationUnitOverride) || !Enum.TryParse<DurationUnit>(durationUnitOverride, ignoreCase: true, result: out durationUnit))
-                {
-                    // By default we assume duration is stored as a double value representing milliseconds
-                    durationUnit = DurationUnit.Milliseconds;
-                }
-
-                if (durationUnit != DurationUnit.TimeSpan)
-                {
-                    double tempDuration = 0.0;
-                    if (!eventData.GetValueFromPayload<double>(durationProperty, (v) => tempDuration = v))
-                    {
-                        return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
-                    }
-                    duration = ToTimeSpan(tempDuration, durationUnit);
-                }
-                else
-                {
-                    if (!eventData.GetValueFromPayload<TimeSpan>(durationProperty, (v) => duration = v))
-                    {
-                        return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
-                    }
-                }
-            }
-
-            string responseCode = null;
-            string responseCodeProperty = requestMetadata[ResponseCodePropertyMoniker];
-            if (!string.IsNullOrWhiteSpace(responseCodeProperty))
-            {
-                if (!eventData.GetValueFromPayload<string>(responseCodeProperty, (v) => responseCode = v))
-                {
-                    return DataRetrievalResult.DataMissingOrInvalid(responseCodeProperty);
-                }
+                return result;
             }
 
             request = new RequestData();
@@ -111,24 +59,8 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             request.IsSuccess = success;
             request.Duration = duration;
             request.ResponseCode = responseCode;
-            return DataRetrievalResult.Success();
-        }
 
-        private static TimeSpan ToTimeSpan(double value, DurationUnit durationUnit)
-        {
-            switch (durationUnit)
-            {
-                case DurationUnit.Milliseconds:
-                    return TimeSpan.FromMilliseconds(value);
-                case DurationUnit.Seconds:
-                    return TimeSpan.FromSeconds(value);
-                case DurationUnit.Minutes:
-                    return TimeSpan.FromMinutes(value);
-                case DurationUnit.Hours:
-                    return TimeSpan.FromHours(value);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(durationUnit), "Error during request data extraction: unexpected durationUnit value");
-            }
-        }
+            return DataRetrievalResult.Success;
+        }        
     }
 }
