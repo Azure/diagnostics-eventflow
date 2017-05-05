@@ -446,7 +446,18 @@ In Service Fabric environment the Application Insights configuration file can sh
 
 *Standard metadata support*
 
-Application Insights output supports `metric` and `request` metadata. Each event decorated with either of these metadata types will be reported as Application Insights *metric* or *request*, respectively, enabling rich support for visualization and alerting that Application Insights provides. All other events will be reported as Application Insights *traces*. 
+Application Insights output supports all standard metadata (request, metric, dependency and exception). Each of these metadata types corresponds to a native Application Insights telemetry type, enabling rich support for visualization and alerting that Application Insights provides. The Application Insights output also supports *event* metadata (corresponding to AI event telemetry type). This metadata is meant to represent significant application events, like a new user registered with the system or a new version of the code being deployed. Event metadata supports following properties:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `metadata` | "ai_event" | Yes | Indicates Application Insights event metadata; must be "ai_event". |
+| `eventNameProperty` | string | (see Remarks) | The name of the event property that will be used as the name of the AI event telemetry. |
+| `eventName` | string | (see Remarks) | The name of the event (if the name is supposed to be taken verbatim from metadata). |
+
+Remarks:
+1. Either `eventNameProperty` or `eventName` must be given.
+
+All other events will be reported as Application Insights *traces* (telemetry of type Trace). 
 
 #### Elasticsearch
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
@@ -475,7 +486,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 
 *Standard metadata support*
 
-Elasticsearch output supports `metric` and `request` metadata. Events decorated with this metadata will get additional properties when sent to Elasticsearch.
+Elasticsearch output supports all standard metadata types. Events decorated with metadata will get additional properties when sent to Elasticsearch.
 
 Fields injected by `metric` metadata are:
 
@@ -634,7 +645,7 @@ Here are a few examples of using the metadata filter:
 
 ### Standard metadata types
 
-EventFlow core library defines a couple of standard metadata types: `metric` and `request`. They have pre-defined set of fields and are recognized by [Application Insights](#application-insights) and [Elasticsearch](#elasticsearch) outputs (see documentation for each output, respectively, to learn how they handle standard metadata).
+EventFlow core library defines several standard metadata types. They have pre-defined set of fields and are recognized by [Application Insights](#application-insights) and [Elasticsearch](#elasticsearch) outputs (see documentation for each output, respectively, to learn how they handle standard metadata).
 
 **Metric metadata type**
 
@@ -662,6 +673,29 @@ Requests are special events that represent invocations of a network service by i
 | `durationProperty` | string | No | The name of the event property that specifies the request duration (execution time). |
 | `durationUnit` | "TimeSpan", "milliseconds", "seconds", "minutes" or "hours" | No | Specifies the type of data used by request duration property. If not set, it is assumed that request duration is expressed as a double value, representing milliseconds. |
 | `responseCodeProperty` | string | No | The name of the event property that specifies response code associated with the request. A response code describes in more detail the outcome of the request. It is expected that the event property is, or can be converted to a string. |
+
+**Dependency metadata type**
+
+Dependency event represents the act of calling a service that your service depends on. It has the following properties:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `metadata` | "dependency" | Yes | Indicates dependency metadata definition; must be "dependency". |
+| `isSuccessProperty` | string | No | The name of the event property that specifies whether the request ended successfully. It is expected that the event property is, or can be converted to a boolean. |
+| `durationProperty` | string | No | The name of the event property that specifies the request duration (execution time). |
+| `durationUnit` | "TimeSpan", "milliseconds", "seconds", "minutes" or "hours" | No | Specifies the type of data used by request duration property. If not set, it is assumed that request duration is expressed as a double value, representing milliseconds. |
+| `responseCodeProperty` | string | No | The name of the event property that specifies response code associated with the request. A response code describes in more detail the outcome of the request. It is expected that the event property is, or can be converted to a string. |
+| `targetProperty` | string | Yes | The name of the event property that specifies the target of the call, i.e. the identifier of the service that your service depends on. |
+| `dependencyType` | string | No | An optional, user-defined designation of the dependency type. For example, it could be "SQL", "cache", "customer_data_service" or similar. |
+
+**Exception metadata type**
+
+Exception event corresponds to an occurrence of an unexpected exception. Usually a small amount of exceptions is continuously being thrown, caught and handled by a .NET process, this is normal and should not raise a concern. On the other hand, if an exception is unhandled, or unexpected, it needs to be logged and examined. This metadata is meant to cover the second case. It has the following properties:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `metadata` | "exception" | Yes | Indicates exception metadata definition; must be "exception". |
+| `exceptionProperty` | string | Yes | The name of the event property that carries the (unexpected) exception object. Note that (for maximum information fidelity) the expected type of the event property is `System.Exception`. In other words, the actual exception is expected to be part of event data, and not just a stringified version of it. |
 
 ### Health Reporter
 Every software component can generate errors or warnings the developer should be aware of. The EventFlow library is no exception. An EventFlow health reporter reports errors and warnings generated by any components in the EventFlow pipeline.
