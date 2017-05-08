@@ -20,23 +20,32 @@ namespace Microsoft.Extensions.Configuration.ServiceFabric
             Requires.NotNullOrEmpty(configurationPackageName, nameof(configurationPackageName));
 
             this.configurationPackageName = configurationPackageName;
+            CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
+            activationContext.ConfigurationPackageModifiedEvent += (sender, e) => {
+                this.Load(e.NewPackage, reload: true);
+                this.OnReload();
+            };
         }
 
         public override void Load()
         {
-            // TODO: react to configuration changes by listening to ConfiugrationPackageActivationContext.ConfigurationPackageModifiedEvent
+            ConfigurationPackage configPackage = FabricRuntime.GetActivationContext().GetConfigurationPackageObject(this.configurationPackageName);
+            this.Load(configPackage);
+        }
 
-            CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
-            ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject(this.configurationPackageName);
+        private void Load(ConfigurationPackage configPackage, bool reload = false)
+        {
+            if (reload)
+            {
+                Data.Clear();
+            }
+
             foreach (var configurationSection in configPackage.Settings.Sections)
             {
-                foreach(var property in configurationSection.Parameters)
+                foreach (var property in configurationSection.Parameters)
                 {
-                    // We omit encrypted values due to security concerns--if you need them, use Service Fabric APIs to access them
-                    if (!property.IsEncrypted)
-                    {
-                        Data[ConfigurationPath.Combine(configurationSection.Name, property.Name)] = property.Value;
-                    }
+                    string propertyPath = ConfigurationPath.Combine(configurationSection.Name, property.Name);
+                    Data[propertyPath] = property.IsEncrypted ? property.DecryptValue().ToUnsecureString() : property.Value;
                 }
             }
         }
