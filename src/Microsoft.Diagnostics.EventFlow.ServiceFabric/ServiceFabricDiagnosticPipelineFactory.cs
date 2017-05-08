@@ -21,16 +21,32 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
         public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>\w+)";
         public static readonly string FabricConfigurationFileReference = @"servicefabricfile:/(?<filename>.+)";
 
-        public static DiagnosticPipeline CreatePipeline(string healthEntityName, string configurationFileName = "eventFlowConfig.json")
+        public static DiagnosticPipeline CreatePipeline(
+            string healthEntityName, 
+            string configurationFileName = "eventFlowConfig.json",
+            string configurationPackageName = ServiceFabricConfigurationProvider.DefaultConfigurationPackageName)
         {
             // TODO: dynamically re-configure the pipeline when configuration changes, without stopping the service
 
             Requires.NotNullOrWhiteSpace(healthEntityName, nameof(healthEntityName));
+            Requires.NotNullOrWhiteSpace(configurationFileName, nameof(configurationFileName));
+            Requires.NotNullOrWhiteSpace(configurationPackageName, nameof(configurationPackageName));
 
             var healthReporter = new ServiceFabricHealthReporter(healthEntityName);
 
             CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
-            ConfigurationPackage configPackage = activationContext.GetConfigurationPackageObject(ServiceFabricConfigurationProvider.DefaultConfigurationPackageName);
+            ConfigurationPackage configPackage;
+            try
+            {
+                configPackage = activationContext.GetConfigurationPackageObject(configurationPackageName);
+            }
+            catch
+            {
+                string errorMessage = $"{nameof(ServiceFabricDiagnosticPipelineFactory)}: configuration package '{configurationPackageName}' is missing or inaccessible";
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw;
+            }
+
             string configFilePath = Path.Combine(configPackage.Path, configurationFileName);
             if (!File.Exists(configFilePath))
             {
