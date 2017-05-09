@@ -6,6 +6,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Security;
+using Validation;
 
 namespace Microsoft.Extensions.Configuration.ServiceFabric
 {
@@ -13,10 +14,7 @@ namespace Microsoft.Extensions.Configuration.ServiceFabric
     {
         public static string ToUnsecureString(this SecureString secureString)
         {
-            if (secureString == null)
-            {
-                throw new ArgumentNullException();
-            }
+            Requires.NotNull(secureString, nameof(secureString));
 
             IntPtr unmanagedString = IntPtr.Zero;
 
