@@ -20,10 +20,11 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
     {
         public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>\w+)";
         public static readonly string FabricConfigurationFileReference = @"servicefabricfile:/(?<filename>.+)";
+        public const string DefaultConfigurationFileName = "eventFlowConfig.json";
 
         public static DiagnosticPipeline CreatePipeline(
             string healthEntityName, 
-            string configurationFileName = "eventFlowConfig.json",
+            string configurationFileName = DefaultConfigurationFileName,
             string configurationPackageName = ServiceFabricConfigurationProvider.DefaultConfigurationPackageName)
         {
             // TODO: dynamically re-configure the pipeline when configuration changes, without stopping the service
