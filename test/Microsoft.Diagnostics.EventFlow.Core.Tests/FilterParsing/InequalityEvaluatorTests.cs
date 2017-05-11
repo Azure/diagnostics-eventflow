@@ -77,6 +77,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new InequalityEvaluator("IntProperty", "65000");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new InequalityEvaluator("IntProperty", "0XFDE8");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new InequalityEvaluator("PositiveIntProperty", "0xBF68");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             evaluator = new InequalityEvaluator("IntProperty", "5000000000");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
@@ -112,7 +118,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
         }
 
         [Fact]
-        public void EnumPropertyEquality()
+        public void EnumPropertyInequality()
         {
             var evaluator = new InequalityEvaluator("EnumProperty", "Warning");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
@@ -126,6 +132,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new InequalityEvaluator("EnumProperty", "2");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+        }
+
+        [Fact]
+        public void KeywordPropertyInequality()
+        {
+            var evaluator = new InequalityEvaluator("Keywords", "0xbadbad");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new InequalityEvaluator("Keywords", "0xc001");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
     }
 }

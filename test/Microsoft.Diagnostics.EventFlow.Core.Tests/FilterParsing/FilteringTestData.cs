@@ -16,6 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
         static FilteringTestData()
         {
             var eventData = new EventData();
+            eventData.Keywords = 0xbadbad;
 
             eventData.Payload.Add("EventId", (int) 1234);
             eventData.Payload.Add("Message", "Test event with many properties of different types");
@@ -25,6 +26,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 
             eventData.Payload.Add("IntProperty", (int)-65000);
             eventData.Payload.Add("LongProperty", (long)-5000000000);
+            eventData.Payload.Add("PositiveIntProperty", (int)49000);
+            eventData.Payload.Add("PositiveLongProperty", (long)6000000012);
             eventData.Payload.Add("ShortProperty", (short)-18000);
             eventData.Payload.Add("SbyteProperty", (sbyte)-20);
 
