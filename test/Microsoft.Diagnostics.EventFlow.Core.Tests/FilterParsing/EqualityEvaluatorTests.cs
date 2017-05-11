@@ -109,6 +109,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new EqualityEvaluator("IntProperty", "0");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new EqualityEvaluator("PositiveIntProperty", "0xbf68");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveIntProperty", "49000");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveIntProperty", "0X1");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             // Not an int value
             evaluator = new EqualityEvaluator("IntProperty", "5000000000");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
@@ -124,6 +133,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("LongProperty", "0");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveLongProperty", "0X165A0BC0C");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveLongProperty", "6000000012");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveLongProperty", "0x1");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("LongProperty", "not a long value");
@@ -170,10 +188,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             var evaluator = new EqualityEvaluator("UintProperty", "80000");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new EqualityEvaluator("UintProperty", "0x13880");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             evaluator = new EqualityEvaluator("UintProperty", "-80000");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("UintProperty", "80001");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("UintProperty", "0x13881");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("UintProperty", "0");
@@ -189,10 +213,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             var evaluator = new EqualityEvaluator("UlongProperty", "5100000000");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new EqualityEvaluator("UlongProperty", "0X12FFBD300");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             evaluator = new EqualityEvaluator("UlongProperty", "-5100000000");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("UlongProperty", "5100000001");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("UlongProperty", "0X12FFBD301");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("UlongProperty", "0");
@@ -375,6 +405,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new EqualityEvaluator("EnumProperty", "2");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+        }
+
+        [Fact]
+        public void KeywordPropertyEquality()
+        {
+            var evaluator = new EqualityEvaluator("Keywords", "0xbadbad");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("Keywords", "0xc001");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
     }
 }

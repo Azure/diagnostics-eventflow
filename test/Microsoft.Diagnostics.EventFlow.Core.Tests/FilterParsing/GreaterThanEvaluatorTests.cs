@@ -444,7 +444,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
         }
 
         [Fact]
-        public void EnumPropertyEquality()
+        public void EnumPropertyGreaterThan()
         {
             var evaluator = new GreaterThanEvaluator("EnumProperty", "Error");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
@@ -457,7 +457,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 
             evaluator = new GreaterThanEvaluator("EnumProperty", "3");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
-
         }
     }
 }
