@@ -160,6 +160,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             evaluator = new EqualityEvaluator("ShortProperty", "0");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new EqualityEvaluator("PositiveShortProperty", "0x4268");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveShortProperty", "17000");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveShortProperty", "0X1");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             // Not a short value
             evaluator = new EqualityEvaluator("ShortProperty", "80000");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
@@ -175,6 +184,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("SbyteProperty", "0");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveSbyteProperty", "0xf");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveSbyteProperty", "15");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("PositiveSbyteProperty", "0X1");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             // Not a sbyte value
@@ -238,10 +256,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             var evaluator = new EqualityEvaluator("UshortProperty", "18200");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new EqualityEvaluator("UshortProperty", "0X4718");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             evaluator = new EqualityEvaluator("UshortProperty", "-18200");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("UshortProperty", "18199");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("UshortProperty", "0x4719");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("UshortProperty", "0");
@@ -258,7 +282,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             var evaluator = new EqualityEvaluator("ByteProperty", "7");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
+            evaluator = new EqualityEvaluator("ByteProperty", "0x7");
+            Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
             evaluator = new EqualityEvaluator("ByteProperty", "8");
+            Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
+
+            evaluator = new EqualityEvaluator("ByteProperty", "0X8");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
 
             evaluator = new EqualityEvaluator("ByteProperty", "-3");
