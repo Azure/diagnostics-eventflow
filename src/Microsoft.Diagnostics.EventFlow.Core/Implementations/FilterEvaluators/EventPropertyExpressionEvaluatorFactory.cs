@@ -33,6 +33,9 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
                 case "~=":
                     return new RegexEvaluator(propertyName, value);
 
+                case "&==":
+                    return new BitwiseEqualityEvaluator(propertyName, value);
+
                 default:
                     throw new ArgumentException("Unknown operator", nameof(op));
             }

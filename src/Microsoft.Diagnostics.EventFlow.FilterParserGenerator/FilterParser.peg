@@ -35,6 +35,7 @@ operator
   / "=="
   / "!="
   / "~="
+  / "&=="
 
 value
   = (letterDigit / "-") (letterDigit / "-" / ":" / ".")*
