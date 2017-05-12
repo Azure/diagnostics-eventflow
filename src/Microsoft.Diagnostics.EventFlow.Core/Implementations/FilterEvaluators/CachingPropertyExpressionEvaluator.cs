@@ -88,10 +88,10 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
                 }
                 else return null;
             }
-            // Special-case long, ulong, int and uint to allow hexadecimal notation
+            // Special-case integer properties to allow hexadecimal notation
             else if (eventPropertyValueType == typeof(long))
             {
-                return ParseNumber<long>(Int64.TryParse);                
+                return ParseNumber<long>(Int64.TryParse);
             }
             else if (eventPropertyValueType == typeof(ulong))
             {
@@ -104,6 +104,22 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
             else if (eventPropertyValueType == typeof(uint))
             {
                 return ParseNumber<uint>(UInt32.TryParse);
+            }
+            else if (eventPropertyValueType == typeof(short))
+            {
+                return ParseNumber<short>(Int16.TryParse);
+            }
+            else if (eventPropertyValueType == typeof(ushort))
+            {
+                return ParseNumber<ushort>(UInt16.TryParse);
+            }
+            else if (eventPropertyValueType == typeof(byte))
+            {
+                return ParseNumber<byte>(Byte.TryParse);
+            }
+            else if (eventPropertyValueType == typeof(sbyte))
+            {
+                return ParseNumber<sbyte>(SByte.TryParse);
             }
             else if (eventPropertyValueType.GetTypeInfo().IsEnum)
             {

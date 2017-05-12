@@ -30,6 +30,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             eventData.Payload.Add("PositiveLongProperty", (long)6000000012);
             eventData.Payload.Add("ShortProperty", (short)-18000);
             eventData.Payload.Add("SbyteProperty", (sbyte)-20);
+            eventData.Payload.Add("PositiveShortProperty", (short)17000);
+            eventData.Payload.Add("PositiveSbyteProperty", (sbyte)15);
 
             eventData.Payload.Add("UintProperty", (uint)80000);
             eventData.Payload.Add("UlongProperty", (ulong)5100000000);
