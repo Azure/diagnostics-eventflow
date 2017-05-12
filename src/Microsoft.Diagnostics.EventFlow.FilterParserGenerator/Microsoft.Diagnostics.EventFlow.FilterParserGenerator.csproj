@@ -17,6 +17,9 @@
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\FilterEvaluators\AlternativeEvaluator.cs">
       <Link>AlternativeEvaluator.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\FilterEvaluators\BitwiseEqualityEvaluator.cs">
+      <Link>BitwiseEqualityEvaluator.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\FilterEvaluators\CachingPropertyExpressionEvaluator.cs">
       <Link>CachingPropertyExpressionEvaluator.cs</Link>
     </Compile>
@@ -61,6 +64,9 @@
     </Compile>
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\LogLevel.cs">
       <Link>LogLevel.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\Metadata\DataRetrievalResult.cs">
+      <Link>DataRetrievalResult.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\Metadata\EventMetadata.cs">
       <Link>EventMetadata.cs</Link>

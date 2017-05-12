@@ -808,6 +808,8 @@ Here are the supported operators:
 
 Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
 
+Bitwise Equality: `&==` (true if bit mask is set, i.e., (lhsValue & rhsValue) == rhsValue, this is useful when filter on properties like Keywords)
+
 Regular Expression: `~=` (provide a regular expression pattern on the right)
 
 Logical: `&&`, `||`, `!` (the precedence is `!` > `&&` > `||`)

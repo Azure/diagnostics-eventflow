@@ -132,6 +132,24 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
         }
 
         [Fact]
+        public void BinaryAndOperator()
+        {
+            var result = parser.Parse(" Keywords&==321 ");
+            Assert.Equal("(__BitwiseEqualityEvaluator:Keywords&==321)", result.SemanticsString);
+
+            result = parser.Parse("Keywords &== 321");
+            Assert.Equal("(__BitwiseEqualityEvaluator:Keywords&==321)", result.SemanticsString);
+
+            result = parser.Parse("Keywords &== 0xFF");
+            Assert.Equal("(__BitwiseEqualityEvaluator:Keywords&==0xFF)", result.SemanticsString);
+
+            result = parser.Parse("!(Keywords &== 0xFF)");
+            Assert.Equal("(NOT(__BitwiseEqualityEvaluator:Keywords&==0xFF))", result.SemanticsString);
+
+            Assert.Throws(typeof(ArgumentException), () => parser.Parse("Keywords &== abc"));
+        }
+
+        [Fact]
         public void InvalidOperatorSpacing()
         {
             Assert.ThrowsAny<Exception>(() => parser.Parse(" delta> =17 "));
