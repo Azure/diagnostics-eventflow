@@ -1,6 +1,7 @@
-﻿//-----------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-//-----------------------------------------------------------------------------
+﻿// ------------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------------------------------------------
 
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
 
             if (!isValidRhsValue)
             {
-                throw new ArgumentException($"The rhs value '{value}' of &= operator is not integral type");
+                throw new ArgumentException($"The right-hand side value '{value}' of &== operator is not integral type");
             }
         }
 
@@ -43,28 +44,48 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
 
         public override bool Evaluate(EventData e)
         {
-            object propertyValue;
-            if (!e.TryGetPropertyValue(this.propertyName, out propertyValue))
+            if (e == null)
+            {
+                throw new ArgumentNullException(nameof(e));
+            }
+
+            object eventPropertyValue;
+            if (!e.TryGetPropertyValue(this.propertyName, out eventPropertyValue))
             {
                 return false;
             }
 
-            var valueAsString = propertyValue.ToString();
-            if (valueAsString.StartsWith("-"))
+            if (eventPropertyValue is long)
             {
-                long lhsValue;
-                if (long.TryParse(valueAsString, out lhsValue))
-                {
-                    return (lhsValue & this.signedRhsValue) == this.signedRhsValue;
-                }
+                return ((long)eventPropertyValue & this.signedRhsValue) == this.signedRhsValue;
             }
-            else
+            else if (eventPropertyValue is ulong)
             {
-                ulong lhsValue;
-                if(ulong.TryParse(valueAsString, out lhsValue))
-                {
-                    return (lhsValue & this.unsignedRhsValue) == this.unsignedRhsValue;
-                }
+                return ((ulong)eventPropertyValue & this.unsignedRhsValue) == this.unsignedRhsValue;
+            }
+            else if (eventPropertyValue is int)
+            {
+                return ((int)eventPropertyValue & this.signedRhsValue) == this.signedRhsValue;
+            }
+            else if (eventPropertyValue is uint)
+            {
+                return ((uint)eventPropertyValue & this.unsignedRhsValue) == this.unsignedRhsValue;
+            }
+            if (eventPropertyValue is short)
+            {
+                return ((short)eventPropertyValue & this.signedRhsValue) == this.signedRhsValue;
+            }
+            else if (eventPropertyValue is ushort)
+            {
+                return ((ushort)eventPropertyValue & this.unsignedRhsValue) == this.unsignedRhsValue;
+            }
+            else if (eventPropertyValue is sbyte)
+            {
+                return ((sbyte)eventPropertyValue & this.signedRhsValue) == this.signedRhsValue;
+            }
+            else if (eventPropertyValue is byte)
+            {
+                return ((byte)eventPropertyValue & this.unsignedRhsValue) == this.unsignedRhsValue;
             }
 
             return false;
