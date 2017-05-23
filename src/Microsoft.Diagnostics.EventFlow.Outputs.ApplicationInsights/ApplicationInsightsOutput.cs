@@ -35,6 +35,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             SeverityLevel.Information,
             SeverityLevel.Verbose
         };
+        private static Lazy<Random> RandomGenerator = new Lazy<Random>();
 
         private TelemetryClient telemetryClient;
         private readonly IHealthReporter healthReporter;
@@ -312,10 +313,27 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private void AddProperty(ISupportProperties item, string propertyName, string propertyValue)
         {
-            if (propertyValue != null)
+            if (propertyName == null)
             {
-                item.Properties.Add(propertyName, propertyValue);
+                return;
             }
+
+            var properties = item.Properties;
+            if (!properties.ContainsKey(propertyName))
+            {
+                properties.Add(propertyName, propertyValue);
+                return;
+            }
+
+            string newPropertyName = propertyName + "_";
+            //update property key till there is no such key in dict
+            do
+            {
+                newPropertyName += RandomGenerator.Value.Next(0, 10);
+            }
+            while (properties.ContainsKey(newPropertyName));
+
+            properties.Add(newPropertyName, propertyValue);
         }
     }
 }
