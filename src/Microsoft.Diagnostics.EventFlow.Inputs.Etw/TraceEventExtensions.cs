@@ -22,7 +22,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             EventData eventData = new EventData
             {
                 ProviderName = traceEvent.ProviderName,
-                Timestamp = DateTime.UtcNow,
+                Timestamp = traceEvent.TimeStamp.ToUniversalTime(),
                 Level = (LogLevel)(int)traceEvent.Level,
                 Keywords = (long)traceEvent.Keywords
             };
