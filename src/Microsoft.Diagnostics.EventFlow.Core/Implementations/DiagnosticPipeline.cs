@@ -19,15 +19,13 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public class DiagnosticPipeline : IDisposable
     {
-        private List<IDisposable> pipelineLinkDisposables;
-        private List<IDisposable> inputSubscriptions;
-        private List<Task> pipelineCompletionTasks;
+        private List<IDisposable> pipelineDisposables;
+        private List<Task> outputCompletionTasks;
         private bool disposed;
         private bool disposeDependencies;
         private CancellationTokenSource cancellationTokenSource;
         private IDataflowBlock pipelineHead;
         private DiagnosticPipelineConfiguration pipelineConfiguration;
-        private volatile int eventsInProgress;
 
         public DiagnosticPipeline(
             IHealthReporter healthReporter,
@@ -35,7 +33,8 @@ namespace Microsoft.Diagnostics.EventFlow
             IReadOnlyCollection<IFilter> globalFilters,
             IReadOnlyCollection<EventSink> sinks,
             DiagnosticPipelineConfiguration pipelineConfiguration = null,
-            bool disposeDependencies = false)
+            bool disposeDependencies = false,
+            TaskScheduler taskScheduler = null)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(inputs, nameof(inputs));
@@ -43,9 +42,8 @@ namespace Microsoft.Diagnostics.EventFlow
             Requires.NotNull(sinks, nameof(sinks));
             Requires.Argument(sinks.Count > 0, nameof(sinks), "There must be at least one sink");
 
-            this.eventsInProgress = 0;
-
             this.pipelineConfiguration = pipelineConfiguration ?? new DiagnosticPipelineConfiguration();
+            taskScheduler = taskScheduler ?? TaskScheduler.Current;
 
             // An estimatie how many batches of events to allow inside the pipeline.
             // We want to be able to process full buffer of events, but also have enough batches in play in case of high concurrency.
@@ -62,30 +60,31 @@ namespace Microsoft.Diagnostics.EventFlow
             this.HealthReporter = healthReporter;
             this.cancellationTokenSource = new CancellationTokenSource();
             var propagateCompletion = new DataflowLinkOptions() { PropagateCompletion = true };
-            this.pipelineLinkDisposables = new List<IDisposable>();
-            this.pipelineCompletionTasks = new List<Task>();
+
+            // One disposable for each input subscription plus one for the batch timer.
+            this.pipelineDisposables = new List<IDisposable>(inputs.Count + 1);
 
             var inputBuffer = new BufferBlock<EventData>(
                 new DataflowBlockOptions()
                 {
                     BoundedCapacity = this.pipelineConfiguration.PipelineBufferSize,
-                    CancellationToken = this.cancellationTokenSource.Token
+                    CancellationToken = this.cancellationTokenSource.Token,
+                    TaskScheduler = taskScheduler
                 });
             this.pipelineHead = inputBuffer;
-            this.pipelineCompletionTasks.Add(inputBuffer.Completion);
 
             var batcher = new BatchBlock<EventData>(
                     this.pipelineConfiguration.MaxEventBatchSize,
                     new GroupingDataflowBlockOptions()
                     {
                         BoundedCapacity = this.pipelineConfiguration.MaxEventBatchSize,
-                        CancellationToken = this.cancellationTokenSource.Token
+                        CancellationToken = this.cancellationTokenSource.Token,
+                        TaskScheduler = taskScheduler
                     }
                 );
-            this.pipelineLinkDisposables.Add(inputBuffer.LinkTo(batcher, propagateCompletion));
-            this.pipelineCompletionTasks.Add(batcher.Completion);
+            inputBuffer.LinkTo(batcher, propagateCompletion);
 
-            this.pipelineLinkDisposables.Add(new Timer(
+            this.pipelineDisposables.Add(new Timer(
                 (unused) => batcher.TriggerBatch(),
                 state: null,
                 dueTime: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec),
@@ -102,10 +101,9 @@ namespace Microsoft.Diagnostics.EventFlow
                     MaxNumberOfBatchesInProgress,
                     this.pipelineConfiguration.MaxConcurrency,
                     healthReporter,
-                    this.OnEventsFilteredOut);
+                    taskScheduler);
                 var globalFiltersBlock = filterTransform.GetFilterBlock();
-                this.pipelineLinkDisposables.Add(batcher.LinkTo(globalFiltersBlock, propagateCompletion));
-                this.pipelineCompletionTasks.Add(globalFiltersBlock.Completion);
+                batcher.LinkTo(globalFiltersBlock, propagateCompletion);
                 sinkSource = globalFiltersBlock;
             }
             else
@@ -113,35 +111,26 @@ namespace Microsoft.Diagnostics.EventFlow
                 sinkSource = batcher;
             }
 
-            if (sinks.Count > 1)
+            bool usingBroadcastBlock = sinks.Count > 1;
+            if (usingBroadcastBlock)
             {
-                // After broadcasting we will effectively have (sinks.Count - 1) * batch.Length more events in the pipeline, 
-                // because the broadcaster is cloning the events for the sake of each sink (filters-output combination).
-                var eventCounter = new TransformBlock<EventData[], EventData[]>(
-                    (batch) => { Interlocked.Add(ref this.eventsInProgress, (sinks.Count - 1) * batch.Length);  return batch; },
-                    new ExecutionDataflowBlockOptions()
-                    {
-                        BoundedCapacity = MaxNumberOfBatchesInProgress,
-                        CancellationToken = this.cancellationTokenSource.Token
-                    });
-                this.pipelineLinkDisposables.Add(sinkSource.LinkTo(eventCounter, propagateCompletion));
-                this.pipelineCompletionTasks.Add(eventCounter.Completion);
-
                 var broadcaster = new BroadcastBlock<EventData[]>(
                     (events) => events?.Select((e) => e.DeepClone()).ToArray(),
                     new DataflowBlockOptions()
                     {
                         BoundedCapacity = MaxNumberOfBatchesInProgress,
-                        CancellationToken = this.cancellationTokenSource.Token
+                        CancellationToken = this.cancellationTokenSource.Token,
+                        TaskScheduler = taskScheduler
                     });
-                this.pipelineLinkDisposables.Add(eventCounter.LinkTo(broadcaster, propagateCompletion));
-                this.pipelineCompletionTasks.Add(broadcaster.Completion);
+                sinkSource.LinkTo(broadcaster, propagateCompletion);
                 sinkSource = broadcaster;
             }
 
+            this.outputCompletionTasks = new List<Task>(sinks.Count);
             foreach (var sink in sinks)
             {
                 ISourceBlock<EventData[]> outputSource = sinkSource;
+
                 if (sink.Filters != null && sink.Filters.Count > 0)
                 {
                     filterTransform = new FilterAction(
@@ -150,11 +139,26 @@ namespace Microsoft.Diagnostics.EventFlow
                         MaxNumberOfBatchesInProgress,
                         this.pipelineConfiguration.MaxConcurrency,
                         healthReporter,
-                        this.OnEventsFilteredOut);
+                        taskScheduler);
                     var filterBlock = filterTransform.GetFilterBlock();
-                    this.pipelineLinkDisposables.Add(sinkSource.LinkTo(filterBlock, propagateCompletion));
-                    this.pipelineCompletionTasks.Add(filterBlock.Completion);
+
+                    if (usingBroadcastBlock)
+                    {
+                        var lossReportingPropagator = new LossReportingPropagatorBlock<EventData[]>(this.HealthReporter);
+                        sinkSource.LinkTo(lossReportingPropagator, propagateCompletion);
+                        lossReportingPropagator.LinkTo(filterBlock, propagateCompletion);
+                    }
+                    else
+                    {
+                        sinkSource.LinkTo(filterBlock, propagateCompletion);
+                    }
                     outputSource = filterBlock;
+                }
+                else if (usingBroadcastBlock)
+                {
+                    var lossReportingPropagator = new LossReportingPropagatorBlock<EventData[]>(this.HealthReporter);
+                    sinkSource.LinkTo(lossReportingPropagator, propagateCompletion);
+                    outputSource = lossReportingPropagator;
                 }
 
                 OutputAction outputAction = new OutputAction(
@@ -163,20 +167,16 @@ namespace Microsoft.Diagnostics.EventFlow
                     MaxNumberOfBatchesInProgress,
                     this.pipelineConfiguration.MaxConcurrency,
                     healthReporter,
-                    (eventsSentCount) => Interlocked.Add(ref this.eventsInProgress, -eventsSentCount));
+                    taskScheduler);
                 var outputBlock = outputAction.GetOutputBlock();
-                this.pipelineLinkDisposables.Add(outputSource.LinkTo(outputBlock, propagateCompletion));
-                this.pipelineCompletionTasks.Add(outputBlock.Completion);
+                outputSource.LinkTo(outputBlock, propagateCompletion);
+                this.outputCompletionTasks.Add(outputBlock.Completion);
             }
 
-            IObserver<EventData> inputBufferObserver = new TargetBlockObserver<EventData>(
-                inputBuffer, 
-                this.HealthReporter,
-                () => Interlocked.Increment(ref this.eventsInProgress));
-            this.inputSubscriptions = new List<IDisposable>(inputs.Count);
+            IObserver<EventData> inputBufferObserver = new TargetBlockObserver<EventData>(inputBuffer, this.HealthReporter);            
             foreach (var input in inputs)
             {
-                this.inputSubscriptions.Add(input.Subscribe(inputBufferObserver));
+                this.pipelineDisposables.Add(input.Subscribe(inputBufferObserver));
             }
 
             this.disposed = false;
@@ -192,17 +192,13 @@ namespace Microsoft.Diagnostics.EventFlow
 
             this.disposed = true;
 
-            DisposeOf(this.inputSubscriptions);
-
-            TimeSpan pipelineDrainWaitTime = PollWaitForPipelineDrain();
+            DisposeOf(this.pipelineDisposables);
 
             pipelineHead.Complete();
-            // We want to give the completion logic some non-zero wait time for the pipeline blocks to dispose of their internal resources.
-            TimeSpan completionWaitTime = TimeSpan.FromMilliseconds(Math.Max(100, this.pipelineConfiguration.PipelineCompletionTimeoutMsec - pipelineDrainWaitTime.TotalMilliseconds));
-            Task.WaitAll(this.pipelineCompletionTasks.ToArray(), completionWaitTime);
+            // The completion should propagate all the way to the outputs. When all outputs complete, the pipeline has been drained successfully.
+            Task.WhenAny(Task.WhenAll(this.outputCompletionTasks.ToArray()), Task.Delay(this.pipelineConfiguration.PipelineCompletionTimeoutMsec)).GetAwaiter().GetResult();
 
             this.cancellationTokenSource.Cancel();
-            DisposeOf(this.pipelineLinkDisposables);
 
             if (this.disposeDependencies)
             {
@@ -230,37 +226,12 @@ namespace Microsoft.Diagnostics.EventFlow
             }
         }
 
-        private TimeSpan PollWaitForPipelineDrain()
-        {
-            TimeSpan waitTime = TimeSpan.Zero;
-            TimeSpan HundredMsec = TimeSpan.FromMilliseconds(100);
-            TimeSpan MaxWaitTime = TimeSpan.FromMilliseconds(this.pipelineConfiguration.PipelineCompletionTimeoutMsec);
-
-            while (this.eventsInProgress > 0)
-            {
-                Thread.Sleep(HundredMsec);
-                waitTime += HundredMsec;
-                if (waitTime >= MaxWaitTime)
-                {
-                    break;
-                }
-            }
-
-            return waitTime;
-        }
-
-        private void OnEventsFilteredOut(int eventsRemoved)
-        {
-            Interlocked.Add(ref this.eventsInProgress, -eventsRemoved);
-        }
-
         private class FilterAction
         {
             private IReadOnlyCollection<IFilter> filters;
             private ParallelOptions parallelOptions;
             private ExecutionDataflowBlockOptions executionDataflowBlockOptions;
             private IHealthReporter healthReporter;
-            private Action<int> eventsRemovedNotification;
 
             // The stacks in the pool are used as temporary containers for filtered events.
             // Pooling them avoids creation of a new stack every time the filter action is invoked.
@@ -272,28 +243,28 @@ namespace Microsoft.Diagnostics.EventFlow
                 int boundedCapacity,
                 int maxDegreeOfParallelism,
                 IHealthReporter healthReporter,
-                Action<int> eventsRemovedNotification)
+                TaskScheduler taskScheduler)
             {
                 Requires.NotNull(filters, nameof(filters));
                 Requires.Range(boundedCapacity > 0, nameof(boundedCapacity));
                 Requires.Range(maxDegreeOfParallelism > 0, nameof(maxDegreeOfParallelism));
                 Requires.NotNull(healthReporter, nameof(healthReporter));
-                Requires.NotNull(eventsRemovedNotification, nameof(eventsRemovedNotification));
 
                 this.filters = filters;
                 this.healthReporter = healthReporter;
 
                 this.parallelOptions = new ParallelOptions();
                 parallelOptions.CancellationToken = cancellationToken;
+                parallelOptions.TaskScheduler = taskScheduler;
 
                 this.executionDataflowBlockOptions = new ExecutionDataflowBlockOptions
                 {
                     BoundedCapacity = boundedCapacity,
                     MaxDegreeOfParallelism = maxDegreeOfParallelism,
                     SingleProducerConstrained = false,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    TaskScheduler = taskScheduler
                 };
-                this.eventsRemovedNotification = eventsRemovedNotification;
                 this.stackPool = new ConcurrentBag<ConcurrentStack<EventData>>();
             }
 
@@ -330,11 +301,6 @@ namespace Microsoft.Diagnostics.EventFlow
                 EventData[] eventsFiltered = eventsToKeep.ToArray();
                 eventsToKeep.Clear();
                 this.stackPool.Add(eventsToKeep);
-                int eventsRemoved = eventsToFilter.Length - eventsFiltered.Length;
-                if (eventsRemoved > 0)
-                {
-                    this.eventsRemovedNotification(eventsRemoved);
-                }
                 return eventsFiltered;
             }
 
@@ -353,7 +319,6 @@ namespace Microsoft.Diagnostics.EventFlow
             private CancellationToken cancellationToken;
             private ExecutionDataflowBlockOptions executionDataflowBlockOptions;
             private IHealthReporter healthReporter;
-            private Action<int> eventsSentNotification;
 
             public OutputAction(
                 IOutput output,
@@ -361,23 +326,22 @@ namespace Microsoft.Diagnostics.EventFlow
                 int boundedCapacity,
                 int maxDegreeOfParallelism,
                 IHealthReporter healthReporter,
-                Action<int> eventsSentNotification)
+                TaskScheduler taskScheduler)
             {
                 Requires.NotNull(output, nameof(output));
                 Requires.NotNull(healthReporter, nameof(healthReporter));
-                Requires.NotNull(eventsSentNotification, nameof(eventsSentNotification));
 
                 this.output = output;
                 this.cancellationToken = cancellationToken;
                 this.healthReporter = healthReporter;
-                this.eventsSentNotification = eventsSentNotification;
 
                 this.executionDataflowBlockOptions = new ExecutionDataflowBlockOptions
                 {
                     BoundedCapacity = boundedCapacity,
                     MaxDegreeOfParallelism = maxDegreeOfParallelism,
                     SingleProducerConstrained = false,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    TaskScheduler = taskScheduler
                 };
             }
 
@@ -394,10 +358,6 @@ namespace Microsoft.Diagnostics.EventFlow
                         this.healthReporter.ReportWarning(
                             nameof(DiagnosticPipeline) + ": an output has thrown an exception while sending data" + Environment.NewLine + e.ToString(),
                             EventFlowContextIdentifiers.Output);
-                    }
-                    finally
-                    {
-                        this.eventsSentNotification(events.Length);
                     }
                 }
             }

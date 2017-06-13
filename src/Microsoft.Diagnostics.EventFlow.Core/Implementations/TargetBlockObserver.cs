@@ -16,17 +16,14 @@ namespace Microsoft.Diagnostics.EventFlow
     {
         private readonly ITargetBlock<TInput> target;
         private readonly IHealthReporter healthReporter;
-        private readonly Action newValueAction;
 
-        public TargetBlockObserver(ITargetBlock<TInput> target, IHealthReporter healthReporter, Action newValueAction)
+        public TargetBlockObserver(ITargetBlock<TInput> target, IHealthReporter healthReporter)
         {
             Requires.NotNull(target, nameof(target));
             Requires.NotNull(healthReporter, nameof(healthReporter));
-            Requires.NotNull(newValueAction, nameof(newValueAction));
 
             this.target = target;
             this.healthReporter = healthReporter;
-            this.newValueAction = newValueAction;
         }
 
         internal Task<bool> SendAsyncToTarget(TInput value)
@@ -48,11 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow
         {
             if (!target.Post(value))
             {
-                healthReporter.ReportWarning("An event was dropped from the diagnostic pipeline because there was not enough capacity", EventFlowContextIdentifiers.Throttling);
-            }
-            else
-            {
-                newValueAction();
+                healthReporter.ReportThrottling();
             }
         }
     }
