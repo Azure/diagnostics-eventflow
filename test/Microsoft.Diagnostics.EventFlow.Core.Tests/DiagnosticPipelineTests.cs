@@ -64,11 +64,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async Task UsableIfBufferOverflowOccurs()
+        public void UsableIfBufferOverflowOccurs()
         {
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
+            var deterministicTaskScheduler = new DeterministicTaskScheduler();
             UnitTestOutput unitTestOutput = new UnitTestOutput();
-            unitTestOutput.SendEventsDelay = TimeSpan.FromMilliseconds(100);
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
@@ -85,7 +85,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 new IObservable<EventData>[] { unitTestInput },
                 null,
                 new EventSink[] { new EventSink(unitTestOutput, null) },
-                settings))
+                settings,
+                disposeDependencies: false,
+                taskScheduler: deterministicTaskScheduler))
             {
                 // Six events in quick succession will cause a buffer overflow 
                 // (we have a buffer of 1 set for the pipeline, but the pipeline has 3 blocks, so the actual buffer space is 3).
@@ -95,11 +97,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     unitTestInput.SendMessage($"Message {i}");
                 }
 
-                // Wait for the pipeline to drain (use ten times batch delay time for extra padding). 
-                await Task.Delay(TimeSpan.FromMilliseconds(TestBatchSize * (unitTestOutput.SendEventsDelay.TotalMilliseconds + settings.MaxBatchDelayMsec * 10)));
+                // Wait for the pipeline to drain 
+                deterministicTaskScheduler.RunTasksUntilIdle();
 
-                // At least one message should get to the output.
-                Assert.True(unitTestOutput.CallCount > 0);
+                Assert.True(unitTestOutput.CallCount > 0, "At least one message should get to the output");
 
                 // We should get a warning about throttling
                 healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Throttling)), Times.AtLeastOnce());
@@ -109,8 +110,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 healthReporterMock.ResetCalls();
                 unitTestInput.SendMessage("Final message");
 
-                // Wait for the message to be processed (use ten times batch delay time for extra padding)
-                await Task.Delay(TimeSpan.FromMilliseconds(unitTestOutput.SendEventsDelay.TotalMilliseconds + settings.MaxBatchDelayMsec * 10));
+                // Give the pipeline a chance to process the message
+                deterministicTaskScheduler.RunTasksUntilIdle();
 
                 // The message should have come through.
                 Assert.Equal(1, unitTestOutput.CallCount);
@@ -332,6 +333,100 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             // Half of these calls (modulo 1) should have failed
             healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Output)),
                 Times.Between(unitTestOutput.CallCount / 2, unitTestOutput.CallCount / 2 + 1, Range.Inclusive));
+        }
+
+        [Fact]
+        public async Task WarnsAboutThrottlingIfOneSinkIsSlow()
+        {
+            Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
+
+            UnitTestOutput fastOutput = new UnitTestOutput();
+            UnitTestOutput slowOutput = new UnitTestOutput();
+            slowOutput.SendEventsDelay = TimeSpan.FromMilliseconds(50);
+
+            const int InputBufferSize = 10;
+            const int BurstCount = 100;
+
+            DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
+            {
+                MaxBatchDelayMsec = 10,
+                PipelineBufferSize = InputBufferSize,
+                MaxEventBatchSize = 4,
+                MaxConcurrency = 2,
+                PipelineCompletionTimeoutMsec = 1000
+            };
+
+            using (UnitTestInput unitTestInput = new UnitTestInput())
+            using (DiagnosticPipeline pipeline = new DiagnosticPipeline(
+                healthReporterMock.Object,
+                new IObservable<EventData>[] { unitTestInput },
+                null,
+                new EventSink[] { new EventSink(fastOutput, null), new EventSink(slowOutput, null) },
+                settings))
+            {
+                for (int burst = 0; burst < BurstCount; burst++)
+                {
+                    // Each burst fills the input buffer
+                    for (int i = 0; i < InputBufferSize; i++)
+                    {
+                        unitTestInput.SendMessage($"{burst}--{i}");
+                    }
+
+                    // Give the pipeline some time to process events--the fast output will keep up, the slow one, certainly not
+                    bool eventsReceived = await TaskUtils.PollWaitAsync(() => fastOutput.EventCount == (burst+1) * InputBufferSize, TimeSpan.FromSeconds(2));
+                    Assert.True(eventsReceived);
+                }
+
+                // Slow output should have received some, but not all events
+                Assert.InRange(slowOutput.EventCount, 1, BurstCount * InputBufferSize - 1);
+            }
+            
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Throttling)),
+                    Times.AtLeastOnce());
+        }
+
+        [Fact]
+        public async Task DoesNotWarnIfNoThrottlingOccurs()
+        {
+            Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
+
+            // Need two outputs to force the pipeline to use the BroadcastBlock.
+            UnitTestOutput firstOutput = new UnitTestOutput();
+            UnitTestOutput secondOutput = new UnitTestOutput();
+
+            const int InputBufferSize = 100;
+
+            DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
+            {
+                MaxBatchDelayMsec = 10,
+                PipelineBufferSize = InputBufferSize,
+                MaxEventBatchSize = 4,
+                MaxConcurrency = 2,
+                PipelineCompletionTimeoutMsec = 1000
+            };
+
+            using (UnitTestInput unitTestInput = new UnitTestInput())
+            using (DiagnosticPipeline pipeline = new DiagnosticPipeline(
+                healthReporterMock.Object,
+                new IObservable<EventData>[] { unitTestInput },
+                null,
+                new EventSink[] { new EventSink(firstOutput, null), new EventSink(secondOutput, null) },
+                settings))
+            {
+                for (int i = 0; i < InputBufferSize; i++)
+                {
+                    unitTestInput.SendMessage(i.ToString());
+                }
+
+                // There should be no problem for both outputs to receive all events
+                bool eventsReceived = await TaskUtils.PollWaitAsync(() => firstOutput.EventCount == InputBufferSize, TimeSpan.FromMilliseconds(100));
+                Assert.True(eventsReceived);
+                eventsReceived = await TaskUtils.PollWaitAsync(() => secondOutput.EventCount == InputBufferSize, TimeSpan.FromMilliseconds(100));
+                Assert.True(eventsReceived);
+            }
+
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Throttling)),
+                    Times.Never());
         }
     }
 }
