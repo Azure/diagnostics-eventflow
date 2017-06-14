@@ -139,25 +139,18 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if (string.IsNullOrWhiteSpace(aiOutputConfiguration.ConfigurationFilePath))
             {
-                if (string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
-                {
-                    string errorMessage = $"{nameof(ApplicationInsightsOutput)}: Application Insights instrumentation key is not set)";
-                    this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                    throw new Exception(errorMessage);
-                }
-
-                this.telemetryClient = new TelemetryClient();
-                this.telemetryClient.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
+                this.telemetryClient = new TelemetryClient();                
             }
             else
             {
                 string configurationFileContent = File.ReadAllText(aiOutputConfiguration.ConfigurationFilePath);
                 TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.CreateFromConfiguration(configurationFileContent);
-                if (!string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
-                {
-                    telemetryConfiguration.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
-                }
                 this.telemetryClient = new TelemetryClient(telemetryConfiguration);
+            }
+
+            if (!string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
+            {
+                this.telemetryClient.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
             }
         }
 
