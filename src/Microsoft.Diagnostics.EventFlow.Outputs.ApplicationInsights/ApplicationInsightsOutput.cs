@@ -172,7 +172,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 MetricTelemetry mt = new MetricTelemetry();
                 mt.Name = metricData.MetricName;
-                mt.Value = metricData.Value;
+                mt.Sum = metricData.Value;
                 AddProperties(mt, e);
                 telemetryClient.TrackMetric(mt);
                 tracked = true;
