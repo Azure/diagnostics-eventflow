@@ -4,7 +4,7 @@
     <Description>Provides an implementation of Application Insights telemetry processor that feeds Application Insights telemetry into EventFlow pipeline. 
     This allows sending diagnostics data from applications instrumented with Application Insights to destinations other than Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451</TargetFrameworks>
     <DelaySign>true</DelaySign>
@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.2.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup>
