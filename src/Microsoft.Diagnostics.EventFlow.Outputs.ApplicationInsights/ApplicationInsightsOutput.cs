@@ -87,28 +87,30 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     }
 
                     IReadOnlyCollection<EventMetadata> metadata;
+                    bool tracked = false;
 
                     if (e.TryGetMetadata(MetricData.MetricMetadataKind, out metadata))
                     {
-                        TrackMetric(e, metadata);
+                        tracked = TrackMetric(e, metadata);
                     }
                     else if (e.TryGetMetadata(RequestData.RequestMetadataKind, out metadata))
                     {
-                        TrackRequest(e, metadata);
+                        tracked = TrackRequest(e, metadata);
                     }
                     else if (e.TryGetMetadata(DependencyData.DependencyMetadataKind, out metadata))
                     {
-                        TrackDependency(e, metadata);
+                        tracked = TrackDependency(e, metadata);
                     }
                     else if (e.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out metadata))
                     {
-                        TrackException(e, metadata);
+                        tracked = TrackException(e, metadata);
                     }
                     else if (e.TryGetMetadata(EventTelemetryData.EventMetadataKind, out metadata))
                     {
-                        TrackAiEvent(e, metadata);
+                        tracked = TrackAiEvent(e, metadata);
                     }
-                    else
+
+                    if (!tracked)
                     {
                         object message = null;
                         e.Payload.TryGetValue("Message", out message);
@@ -154,9 +156,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
         }
 
-        private void TrackMetric(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        private bool TrackMetric(EventData e, IReadOnlyCollection<EventMetadata> metadata)
         {
             Debug.Assert(metadata != null);
+            bool tracked = false;
 
             foreach (EventMetadata metricMetadata in metadata)
             {
@@ -172,12 +175,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 mt.Value = metricData.Value;
                 AddProperties(mt, e);
                 telemetryClient.TrackMetric(mt);
+                tracked = true;
             }
+
+            return tracked;
         }
 
-        private void TrackRequest(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        private bool TrackRequest(EventData e, IReadOnlyCollection<EventMetadata> metadata)
         {
             Debug.Assert(metadata != null);
+            bool tracked = false;
 
             foreach (EventMetadata requestMetadata in metadata)
             {
@@ -205,12 +212,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 AddProperties(rt, e, setTimestampFromEventData: false);
 
                 telemetryClient.TrackRequest(rt);
+                tracked = true;
             }
+
+            return tracked;
         }
 
-        private void TrackDependency(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        private bool TrackDependency(EventData e, IReadOnlyCollection<EventMetadata> metadata)
         {
             Debug.Assert(metadata != null);
+            bool tracked = false;
 
             foreach (EventMetadata dependencyMetadata in metadata)
             {
@@ -239,12 +250,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 AddProperties(dt, e, setTimestampFromEventData: false);
 
                 telemetryClient.TrackDependency(dt);
+                tracked = true;
             }
+
+            return tracked;
         }
 
-        private void TrackException(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        private bool TrackException(EventData e, IReadOnlyCollection<EventMetadata> metadata)
         {
             Debug.Assert(metadata != null);
+            bool tracked = false;
 
             foreach (EventMetadata exceptionMetadata in metadata)
             {
@@ -261,12 +276,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 AddProperties(et, e);
 
                 telemetryClient.TrackException(et);
+                tracked = true;
             }
+
+            return tracked;
         }
 
-        private void TrackAiEvent(EventData e, IReadOnlyCollection<EventMetadata> metadata)
+        private bool TrackAiEvent(EventData e, IReadOnlyCollection<EventMetadata> metadata)
         {
             Debug.Assert(metadata != null);
+            bool tracked = false;
 
             foreach (EventMetadata eventMetadata in metadata)
             {
@@ -283,7 +302,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 AddProperties(et, e);
 
                 telemetryClient.TrackEvent(et);
+                tracked = true;
             }
+
+            return tracked;
         }
 
         private void AddProperties(ISupportProperties item, EventData e, bool setTimestampFromEventData = true)
