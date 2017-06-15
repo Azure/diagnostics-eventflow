@@ -17,8 +17,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private readonly LoggerInput loggerInput;
         private readonly IHealthReporter healthReporter;
 
-        private Scope<object> scope;
-
         public EventFlowLogger(string categoryName, LoggerInput loggerInput, IHealthReporter healthReporter)
         {
             Validation.Requires.NotNull(categoryName, nameof(categoryName));
@@ -47,24 +45,31 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 for (int i = 0; i < formattedState.Count - 1; i++)
                     properties.Add(formattedState[i].Key, formattedState[i].Value);
             }
-            if (scope?.State != null)
-            {
-                var formattedState = scope.State as FormattedLogValues;
-                if (formattedState != null)
-                {
-                    for (int i = 0; i < formattedState.Count - 1; i++)
-                    {
-                        KeyValuePair<string, object> current = formattedState[i];
-                        AddPayloadProperty(properties, current.Key, current.Value);
-                    }
 
-                    //last KV is the whole 'scope' message, we will add it formatted
-                    AddPayloadProperty(properties, "Scope", formattedState.ToString());
-                }
-                else
+            var scope = EventFlowLoggerScope.Current;
+            while (scope != null)
+            {
+                if (scope?.State != null)
                 {
-                    AddPayloadProperty(properties, "Scope", scope.State);
+                    var formattedState = scope.State as FormattedLogValues;
+                    if (formattedState != null)
+                    {
+                        for (int i = 0; i < formattedState.Count - 1; i++)
+                        {
+                            KeyValuePair<string, object> current = formattedState[i];
+                            AddPayloadProperty(properties, current.Key, current.Value);
+                        }
+
+                        //last KV is the whole 'scope' message, we will add it formatted
+                        AddPayloadProperty(properties, "Scope", formattedState.ToString());
+                    }
+                    else
+                    {
+                        AddPayloadProperty(properties, "Scope", scope.State);
+                    }
                 }
+
+                scope = scope.Parent;
             }
 
             loggerInput.SubmitEventData(message, ToLogLevel(logLevel), eventId, exception, categoryName, properties);
@@ -77,27 +82,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         public IDisposable BeginScope<TState>(TState state)
         {
-            if (state == null)
-                return null;
-            scope = new Scope<object>(state);
-            return scope;
-        }
-
-        private class Scope<TState> : IDisposable
-        {
-            public TState State { get; private set; }
-
-            public Scope(TState state)
-            {
-                this.State = state;
-            }
-
-            public void Dispose()
-            {
-                var disposable = State as IDisposable;
-                disposable?.Dispose();
-                State = default(TState);
-            }
+            return EventFlowLoggerScope.Push(state);
         }
 
         private LogLevel ToLogLevel(Extensions.Logging.LogLevel loggerLevel)
