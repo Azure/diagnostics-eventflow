@@ -5,6 +5,7 @@
 
 using System;
 #if NET451
+using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
@@ -23,16 +24,24 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public EventFlowLoggerScope Parent { get; private set; }
 
 #if NET451
-        private static readonly string FieldKey = $"{typeof(EventFlowLoggerScope).FullName}";
+        private static readonly string FieldKey = $"{typeof(EventFlowLoggerScope).FullName}_{AppDomain.CurrentDomain.Id}";
         public static EventFlowLoggerScope Current
         {
             get
             {
-                return (EventFlowLoggerScope)CallContext.LogicalGetData(FieldKey);
+                ObjectHandle handle = (ObjectHandle)CallContext.LogicalGetData(FieldKey);
+
+                // Unwrap the scope if it was set in the same AppDomain (as FieldKey is AppDomain-specific). 
+                if (handle != null)
+                {
+                    return (EventFlowLoggerScope)handle.Unwrap();
+                }
+
+                return null;
             }
             private set
             {
-                CallContext.LogicalSetData(FieldKey, value);
+                CallContext.LogicalSetData(FieldKey, new ObjectHandle(value));
             }
         }
 #else
