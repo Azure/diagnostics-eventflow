@@ -24,6 +24,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public EventFlowLoggerScope Parent { get; private set; }
 
 #if NET451
+        // LogicalCallContext will flow through cross app domain calls.
+        // Thus we make the FieldKey domain specific and wrap the EventFlowLoggerScope in ObjectHandle to avoid exceptions when cross app domain call happens.
         private static readonly string FieldKey = $"{typeof(EventFlowLoggerScope).FullName}_{AppDomain.CurrentDomain.Id}";
         public static EventFlowLoggerScope Current
         {
@@ -31,7 +33,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 ObjectHandle handle = (ObjectHandle)CallContext.LogicalGetData(FieldKey);
 
-                // Unwrap the scope if it was set in the same AppDomain (as FieldKey is AppDomain-specific). 
+                // Unwrap the scope if it was set in the same AppDomain (as FieldKey is AppDomain-specific).
                 if (handle != null)
                 {
                     return (EventFlowLoggerScope)handle.Unwrap();
