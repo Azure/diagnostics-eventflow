@@ -1,4 +1,4 @@
-# Microsoft.Diagnostic.EventFlow
+# Microsoft.Diagnostics.EventFlow
 
 ## Introduction
 The EventFlow library suite allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces.
