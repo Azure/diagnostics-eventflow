@@ -304,6 +304,100 @@ namespace LoggerEventFlow
 }
 ```
 
+*Example: using EventFlow ILogger input with ASP.NET Core*
+The following example shows how to enable EventFlow ILogger inside a Service Fabric stateless service that uses ASP.NET Core.
+
+1. Modify the service class so that its constructor takes a `DiagnosticPipeline` instance as a parameter:
+```csharp
+        private static void Main()
+        {
+            try
+            {
+                using (var pipeline = ServiceFabricDiagnosticPipelineFactory.CreatePipeline("CoreBasedFabricPlusEventFlow-Diagnostics"))
+                {
+                    ServiceRuntime.RegisterServiceAsync("Web1Type",
+                        context => new Web1(context, pipeline)).GetAwaiter().GetResult();
+
+                    ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(Web1).Name);
+
+                    // Prevents this host process from terminating so services keeps running. 
+                    Thread.Sleep(Timeout.Infinite);
+                }
+            }
+            catch (Exception e)
+            {
+                ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
+                throw;
+            }
+        }
+```
+
+2. In the CreateServiceInstanceListeners() method add the pipeline as a singleton service to ASP.NET dependency injection container
+
+```csharp
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
+        {
+            return new ServiceInstanceListener[]
+            {
+                new ServiceInstanceListener(serviceContext =>
+                    new WebListenerCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
+                    {
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting WebListener on {url}");
+
+                        return new WebHostBuilder().UseWebListener()
+                                    .ConfigureServices(
+                                        services => services
+                                            .AddSingleton<StatelessServiceContext>(serviceContext)
+                                            .AddSingleton<DiagnosticPipeline>(this.diagnosticPipeline))
+                                    .UseContentRoot(Directory.GetCurrentDirectory())
+                                    .UseStartup<Startup>()
+                                    .UseApplicationInsights()
+                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
+                                    .UseUrls(url)
+                                    .Build();
+                    }))
+            };
+        }
+```
+3. In the Startup class configure the loggerFactory by calling AddEventFlow on it:
+
+```csharp
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
+            var diagnosticPipeline = app.ApplicationServices.GetRequiredService<DiagnosticPipeline>();
+            loggerFactory.AddEventFlow(diagnosticPipeline);
+
+            app.UseMvc();
+        }
+```
+
+4. Now you can assume the logger factory will be constructor-injected into your controllers:
+
+```csharp
+    [Route("api/[controller]")]
+    public class ValuesController : Controller
+    {
+        private readonly ILogger<ValuesController> logger;
+
+        public ValuesController(ILogger<ValuesController> logger)
+        {
+            this.logger = logger;
+        }
+
+        // GET api/values
+        [HttpGet]
+        public IEnumerable<string> Get()
+        {
+            this.logger.LogInformation("Hey, someone just called us!");
+            return new string[] { "value1", "value2" };
+        }
+
+      // (rest of controller code is irrelevant)
+```
+
+
 #### ETW (Event Tracing for Windows)
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Etw**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Etw/)
