@@ -313,21 +313,41 @@ The following example shows how to enable EventFlow ILogger inside a Service Fab
         {
             try
             {
+                using (ManualResetEvent terminationEvent = new ManualResetEvent(initialState: false))
                 using (var pipeline = ServiceFabricDiagnosticPipelineFactory.CreatePipeline("CoreBasedFabricPlusEventFlow-Diagnostics"))
                 {
+                    Console.CancelKeyPress += (sender, eventArgs) => Shutdown(diagnosticsPipeline, terminationEvent);
+
+                    AppDomain.CurrentDomain.UnhandledException += (sender, unhandledExceptionArgs) =>
+                    {
+                        ServiceEventSource.Current.UnhandledException(unhandledExceptionArgs.ExceptionObject?.ToString() ?? "(no exception information)");
+                        Shutdown(diagnosticsPipeline, terminationEvent);
+                    };
+
                     ServiceRuntime.RegisterServiceAsync("Web1Type",
                         context => new Web1(context, pipeline)).GetAwaiter().GetResult();
 
                     ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(Web1).Name);
 
-                    // Prevents this host process from terminating so services keeps running. 
-                    Thread.Sleep(Timeout.Infinite);
+                    terminationEvent.WaitOne();
                 }
             }
             catch (Exception e)
             {
                 ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
                 throw;
+            }
+        }
+
+        private static void Shutdown(IDisposable disposable, ManualResetEvent terminationEvent)
+        {
+            try
+            {
+                disposable.Dispose();
+            }
+            finally
+            {
+                terminationEvent.Set();
             }
         }
 ```
@@ -863,21 +883,54 @@ public static void Main(string[] args)
 {
     try
     {
+        using (ManualResetEvent terminationEvent = new ManualResetEvent(initialState: false))
         using (var diagnosticsPipeline = ServiceFabricDiagnosticPipelineFactory.CreatePipeline("MyApplication-MyService-DiagnosticsPipeline"))
         {
+            Console.CancelKeyPress += (sender, eventArgs) => Shutdown(diagnosticsPipeline, terminationEvent);
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, unhandledExceptionArgs) =>
+            {
+                ServiceEventSource.Current.UnhandledException(unhandledExceptionArgs.ExceptionObject?.ToString() ?? "(no exception information)");
+                Shutdown(diagnosticsPipeline, terminationEvent);
+            };
+
             ServiceRuntime.RegisterServiceAsync("MyServiceType", ctx => new MyService(ctx)).Wait();
 
             ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(MyService).Name);
 
-            Thread.Sleep(Timeout.Infinite);
+            terminationEvent.WaitOne();
         }
     }
     catch (Exception e)
     {
         ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
         throw;
+    }    
+}
+
+private static void Shutdown(IDisposable disposable, ManualResetEvent terminationEvent)
+{
+    try
+    {
+        disposable.Dispose();
+    }
+    finally
+    {
+        terminationEvent.Set();
     }
 }
+```
+
+The purpose of handling `CancelKeyPress` and `UnhandledException` events (the latter for full .NET Framework only) is to ensure that the EventFlow pipeline is cleanly disposed.
+
+The UnhandledException event method is a very simple addition to the standard ServiceEventSource:
+
+```csharp
+    [Event(UnhandledExceptionEventId, Level = EventLevel.Error, Message = "An unhandled exception has occurred")]
+    public void UnhandledException(string exception)
+    {
+       WriteEvent(UnhandledExceptionEventId, exception);
+    }
 ```
 
 ### Support for Service Fabric settings and application parameters
