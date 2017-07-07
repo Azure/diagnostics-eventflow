@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Newtonsoft.Json;
-using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
+using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
