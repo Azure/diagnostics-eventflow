@@ -8,12 +8,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.EventHubs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
-using Microsoft.ServiceBus;
-using Microsoft.ServiceBus.Messaging;
 using Validation;
-using MessagingEventData = Microsoft.ServiceBus.Messaging.EventData;
+using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -27,9 +26,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private const int ConcurrentConnections = 4;
         private string eventHubName;
 
-        // This connections field will be used by multi-threads. Throughout this class, try to use Interlocked methods to load the field first,
+        // Clients field will be used by multi-threads. Throughout this class, try to use Interlocked methods to load the field first,
         // before accessing to guarantee your function won't be affected by another thread.
-        private EventHubConnection[] connections;
+        private EventHubClient[] clients;
         private readonly IHealthReporter healthReporter;
 
         public EventHubOutput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -66,9 +65,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             // Get a reference to the current connections array first, just in case there is another thread wanting to clean
             // up the connections with CleanUpAsync(), we won't get a null reference exception here.
-            EventHubConnection[] currentConnections = Interlocked.CompareExchange<EventHubConnection[]>(ref this.connections, this.connections, this.connections);
+            EventHubClient[] currentClients = Interlocked.CompareExchange<EventHubClient[]>(ref this.clients, this.clients, this.clients);
 
-            if (currentConnections == null || events == null || events.Count == 0)
+            if (currentClients == null || events == null || events.Count == 0)
             {
                 return;
             }
@@ -106,12 +105,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     return;
                 }
 
-                EventHubClient hubClient = currentConnections[transmissionSequenceNumber % ConcurrentConnections].HubClient;
+                EventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
 
                 List<Task> tasks = new List<Task>();
                 foreach (List<MessagingEventData> batch in batches)
                 {
-                    tasks.Add(hubClient.SendBatchAsync(batch));
+                    tasks.Add(hubClient.SendAsync(batch));
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -139,8 +138,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 throw new Exception(errorMessage);
             }
 
-            ServiceBusConnectionStringBuilder connStringBuilder = new ServiceBusConnectionStringBuilder(configuration.ConnectionString);
-            connStringBuilder.TransportType = TransportType.Amqp;
+            EventHubsConnectionStringBuilder connStringBuilder = new EventHubsConnectionStringBuilder(configuration.ConnectionString);
 
             this.eventHubName = connStringBuilder.EntityPath ?? configuration.EventHubName;
             if (string.IsNullOrWhiteSpace(this.eventHubName))
@@ -150,17 +148,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
+            connStringBuilder.EntityPath = this.eventHubName;
 
-            this.connections = new EventHubConnection[ConcurrentConnections];
-
-            // To create a MessageFactory, the connection string can't contain the EntityPath. So we set it to null here.
-            connStringBuilder.EntityPath = null;
-            for (uint i = 0; i < this.connections.Length; i++)
+            this.clients = new EventHubClient[ConcurrentConnections];
+            for (uint i = 0; i < this.clients.Length; i++)
             {
-                MessagingFactory factory = MessagingFactory.CreateFromConnectionString(connStringBuilder.ToString());
-                this.connections[i] = new EventHubConnection();
-                this.connections[i].MessagingFactory = factory;
-                this.connections[i].HubClient = factory.CreateEventHubClient(this.eventHubName);
+                this.clients[i] = EventHubClient.CreateFromConnectionString(connStringBuilder.ToString());
             }
         }
 
@@ -172,29 +165,15 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private async void CleanUpAsync()
         {
-            // Swap out the connections first, so all other callers will see this as uninitialized
-            EventHubConnection[] oldConnections = Interlocked.Exchange<EventHubConnection[]>(ref this.connections, null);
+            // Swap out the clients first, so all other callers will see this as uninitialized
+            EventHubClient[] oldClients = Interlocked.Exchange<EventHubClient[]>(ref this.clients, null);
 
-            // HubClients must be closed before the messaging factories, so hence we close in this order
             List<Task> tasks = new List<Task>();
-            foreach (EventHubConnection connection in oldConnections)
+            foreach (EventHubClient client in oldClients)
             {
-                tasks.Add(connection.HubClient.CloseAsync());
+                tasks.Add(client.CloseAsync());
             }
             await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            tasks = new List<Task>();
-            foreach (EventHubConnection connection in oldConnections)
-            {
-                tasks.Add(connection.MessagingFactory.CloseAsync());
-            }
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
-
-        private class EventHubConnection
-        {
-            public MessagingFactory MessagingFactory;
-            public EventHubClient HubClient;
         }
     }
 }
