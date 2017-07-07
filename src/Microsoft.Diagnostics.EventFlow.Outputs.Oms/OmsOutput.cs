@@ -124,7 +124,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
                 else
                 {
-                    string errorMessage = nameof(OmsOutput) + "OMS REST API returned an error. Code: " + response.StatusCode + " Description: " + response.ReasonPhrase;
+                    string responseContent = string.Empty;
+                    try
+                    {
+                        responseContent = await response.Content.ReadAsStringAsync();
+                    }
+                    catch { }
+
+                    string errorMessage = $"{nameof(OmsOutput)}: OMS REST API returned an error. Code: {response.StatusCode} Description: {response.ReasonPhrase} {responseContent}";
                     this.healthReporter.ReportProblem(errorMessage);
                 }
             }
