@@ -79,6 +79,31 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
         }
 
         [Fact]
+        public void ReferencedValueCanBeEmpty()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var configurationSource = new Dictionary<string, string>()
+            {
+                ["alpha"] = "Alpha",
+                ["bravo:charlie"] = "",
+                ["delta"] = "servicefabric:/bravo/charlie"
+            };
+
+            IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, "unused-configuration-package-path", healthReporterMock.Object);
+            healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+
+            string verificationError;
+            bool isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.False(isOK, verificationError);
+
+            configurationSource["delta"] = "";
+            isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.True(isOK, verificationError);
+        }
+
+        [Fact]
         public void ConfigurationIsNotChangedIfFileReferenceIsEmpty()
         {
             var healthReporterMock = new Mock<IHealthReporter>();
@@ -152,7 +177,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
 
                 if (!valueComparer.Equals(kvp.Value, correspondingPair.Value.Value))
                 {
-                    verificationError = $"The value for key '{kvp.Key}' was expected to be '{kvp.Value}' but instead it is '{correspondingPair.Value.Value}')";
+                    verificationError = $"The value for key '{kvp.Key}' was expected to be '{kvp.Value}' but instead it is '{correspondingPair.Value.Value}'";
                     return false;
                 }
             }

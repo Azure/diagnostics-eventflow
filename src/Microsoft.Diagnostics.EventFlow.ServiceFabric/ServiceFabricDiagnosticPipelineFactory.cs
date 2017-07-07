@@ -91,7 +91,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
                     {
                         string valueReferencePath = ConfigurationPath.Combine(valueReferenceMatch.Groups["section"].Value, valueReferenceMatch.Groups["name"].Value);
                         string newValue = configurationRoot[valueReferencePath];
-                        if (string.IsNullOrEmpty(newValue))
+                        if (newValue == null)
                         {
                             healthReporter.ReportWarning(
                                 $"Configuration value reference '{kvp.Value}' was encountered but no corresponding configuration value was found using path '{valueReferencePath}'", 
