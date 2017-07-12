@@ -4,9 +4,9 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 
@@ -17,6 +17,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private readonly string categoryName;
         private readonly LoggerInput loggerInput;
         private readonly IHealthReporter healthReporter;
+        private readonly ConcurrentBag<Stack<string>> stackPool;
 
         public EventFlowLogger(string categoryName, LoggerInput loggerInput, IHealthReporter healthReporter)
         {
@@ -27,6 +28,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.categoryName = categoryName;
             this.loggerInput = loggerInput;
             this.healthReporter = healthReporter;
+            this.stackPool = new ConcurrentBag<Stack<string>>();
         }
 
         public void Log<TState>(Extensions.Logging.LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
@@ -48,36 +50,48 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
 
             var scope = EventFlowLoggerScope.Current;
-            List<string> scopePropertyValues = new List<string>(5);
-
-            while (scope != null)
+            if (scope != null)
             {
-                if (scope?.State != null)
+                Stack<string> scopeValueStack;
+                if (!this.stackPool.TryTake(out scopeValueStack))
                 {
-                    var formattedState = scope.State as FormattedLogValues;
-                    if (formattedState != null)
-                    {
-                        for (int i = 0; i < formattedState.Count - 1; i++)
-                        {
-                            KeyValuePair<string, object> current = formattedState[i];
-                            AddPayloadProperty(properties, current.Key, current.Value);
-                        }
-
-                        //last KV is the whole 'scope' message, we will add it formatted
-                        scopePropertyValues.Add(formattedState.ToString());
-                    }
-                    else
-                    {
-                        scopePropertyValues.Add(scope.State.ToString());
-                    }
+                    scopeValueStack = new Stack<string>();
                 }
 
-                scope = scope.Parent;
-            }
+                while (scope != null)
+                {
 
-            if (scopePropertyValues.Count > 0)
-            {
-                AddPayloadProperty(properties, "Scope", string.Join(" > ", scopePropertyValues.AsEnumerable().Reverse()));
+                    if (scope.State != null)
+                    {
+                        var formattedState = scope.State as FormattedLogValues;
+                        if (formattedState != null)
+                        {
+                            for (int i = 0; i < formattedState.Count - 1; i++)
+                            {
+                                KeyValuePair<string, object> current = formattedState[i];
+                                AddPayloadProperty(properties, current.Key, current.Value);
+                            }
+
+                            //last KV is the whole 'scope' message, we will add it formatted
+                            scopeValueStack.Push(formattedState.ToString());
+                        }
+                        else
+                        {
+                            scopeValueStack.Push(scope.State.ToString());
+                        }
+                    }
+
+                    scope = scope.Parent;
+                }
+
+                if (scopeValueStack.Count > 0)
+                {
+                    AddPayloadProperty(properties, "Scope",
+                        string.Join("\r\n", scopeValueStack));
+                }
+
+                scopeValueStack.Clear();
+                this.stackPool.Add(scopeValueStack);
             }
 
             loggerInput.SubmitEventData(message, ToLogLevel(logLevel), eventId, exception, categoryName, properties);

@@ -307,7 +307,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                                 subject.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(1));
                                 var scopeProperties = savedData.Payload.Where(kvp => kvp.Key.StartsWith("Scope")).ToArray();
                                 Assert.True(scopeProperties.Length == 1);
-                                Assert.True((string)scopeProperties[0].Value == "scope1 outer > scope1 inner");
+                                Assert.True((string)scopeProperties[0].Value == "scope1 outer\r\nscope1 inner");
 
                                 waitOnTask1.Set();
                             }
@@ -329,7 +329,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                                 subject.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(2));
                                 var scopeProperties = savedData.Payload.Where(kvp => kvp.Key.StartsWith("Scope")).ToArray();
                                 Assert.True(scopeProperties.Length == 1);
-                                Assert.True((string)scopeProperties[0].Value == "scope2 outer > scope2 inner");
+                                Assert.True((string)scopeProperties[0].Value == "scope2 outer\r\nscope2 inner");
                             }
                         }
                     });
