@@ -131,7 +131,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                             LogLevel.Informational,
                             0,
                             null,
-                            new Dictionary<string, object> { { "Scope", state }, { "number", 1 } }))), Times.Exactly(1));
+                            new Dictionary<string, object> { { "Scope", state.ToString() }, { "number", 1 } }))), Times.Exactly(1));
                     }
                 }
             }
@@ -306,9 +306,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                                 subject.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(1));
                                 var scopeProperties = savedData.Payload.Where(kvp => kvp.Key.StartsWith("Scope")).ToArray();
-                                Assert.True(scopeProperties.Length == 2);
-                                Assert.True((string)scopeProperties[0].Value == "scope1 inner");
-                                Assert.True((string)scopeProperties[1].Value == "scope1 outer");
+                                Assert.True(scopeProperties.Length == 1);
+                                Assert.True((string)scopeProperties[0].Value == "scope1 outer > scope1 inner");
 
                                 waitOnTask1.Set();
                             }
@@ -329,9 +328,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                                 subject.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(2));
                                 var scopeProperties = savedData.Payload.Where(kvp => kvp.Key.StartsWith("Scope")).ToArray();
-                                Assert.True(scopeProperties.Length == 2);
-                                Assert.True((string)scopeProperties[0].Value == "scope2 inner");
-                                Assert.True((string)scopeProperties[1].Value == "scope2 outer");
+                                Assert.True(scopeProperties.Length == 1);
+                                Assert.True((string)scopeProperties[0].Value == "scope2 outer > scope2 inner");
                             }
                         }
                     });

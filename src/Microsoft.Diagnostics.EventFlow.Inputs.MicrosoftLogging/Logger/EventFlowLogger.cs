@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
 
@@ -47,6 +49,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
 
             var scope = EventFlowLoggerScope.Current;
+            List<string> scopePropertyValues = new List<string>(5);
+
             while (scope != null)
             {
                 if (scope?.State != null)
@@ -61,15 +65,20 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                         }
 
                         //last KV is the whole 'scope' message, we will add it formatted
-                        AddPayloadProperty(properties, "Scope", formattedState.ToString());
+                        scopePropertyValues.Add(formattedState.ToString());
                     }
                     else
                     {
-                        AddPayloadProperty(properties, "Scope", scope.State);
+                        scopePropertyValues.Add(scope.State.ToString());
                     }
                 }
 
                 scope = scope.Parent;
+            }
+
+            if (scopePropertyValues.Count > 0)
+            {
+                AddPayloadProperty(properties, "Scope", string.Join(" > ", scopePropertyValues.AsEnumerable().Reverse()));
             }
 
             loggerInput.SubmitEventData(message, ToLogLevel(logLevel), eventId, exception, categoryName, properties);
