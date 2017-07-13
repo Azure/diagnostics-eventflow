@@ -42,7 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 1000
+                PipelineCompletionTimeoutMsec = 5000
             };
 
             using (UnitTestInput unitTestInput = new UnitTestInput())
@@ -72,7 +72,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 1000,
+                PipelineCompletionTimeoutMsec = 5000,
                 PipelineBufferSize = 1,
                 MaxConcurrency = 1,
                 MaxEventBatchSize = 1
@@ -130,7 +130,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 1000,
+                PipelineCompletionTimeoutMsec = 5000,
                 MaxEventBatchSize = 2
             };
             UnitTestFilter unitTestFilter = new UnitTestFilter();
@@ -172,7 +172,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 1000,
+                PipelineCompletionTimeoutMsec = 5000,
                 MaxEventBatchSize = 2
             };
             UnitTestFilter unitTestFilter = new UnitTestFilter();
@@ -212,7 +212,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Mock<IHealthReporter> healthReporterMock = new Mock<IHealthReporter>();
             UnitTestOutput unitTestOutput = new UnitTestOutput();
 
-            const int CompletionTimeoutMsec = 1000;
+            const int CompletionTimeoutMsec = 5000;
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
@@ -259,7 +259,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             unitTestOutput.SendEventsDelay = TimeSpan.MaxValue;
             unitTestOutput.DisregardCancellationToken = true;
 
-            const int CompletionTimeoutMsec = 1000;
+            const int CompletionTimeoutMsec = 5000;
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
@@ -307,7 +307,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 1000,
+                PipelineCompletionTimeoutMsec = 5000,
                 MaxEventBatchSize = 2
             };
             const int TestEventCount = 32;
@@ -353,7 +353,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 PipelineBufferSize = InputBufferSize,
                 MaxEventBatchSize = 4,
                 MaxConcurrency = 2,
-                PipelineCompletionTimeoutMsec = 1000
+                PipelineCompletionTimeoutMsec = 5000
             };
 
             using (UnitTestInput unitTestInput = new UnitTestInput())
@@ -402,7 +402,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 PipelineBufferSize = InputBufferSize,
                 MaxEventBatchSize = 4,
                 MaxConcurrency = 2,
-                PipelineCompletionTimeoutMsec = 1000
+                PipelineCompletionTimeoutMsec = 5000
             };
 
             using (UnitTestInput unitTestInput = new UnitTestInput())
