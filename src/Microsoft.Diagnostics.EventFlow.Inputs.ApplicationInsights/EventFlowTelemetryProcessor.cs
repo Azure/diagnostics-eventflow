@@ -362,7 +362,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
         {
             eventPayload.Add(TelemetryTypeProperty, "metric");
             eventPayload.Add(nameof(metric.Name), metric.Name);
-            eventPayload.Add(nameof(metric.Value), metric.Value);
+            eventPayload.Add(nameof(metric.Sum), metric.Sum);
             if (metric.Count.HasValue)
             {
                 eventPayload.Add(nameof(metric.Count), metric.Count.Value);
