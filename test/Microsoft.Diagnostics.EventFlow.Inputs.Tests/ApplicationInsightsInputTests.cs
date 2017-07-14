@@ -3,8 +3,6 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#if NET46
-
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Diagnostics.EventFlow.ApplicationInsights;
@@ -100,5 +98,3 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
     }
 }
-
-#endif
