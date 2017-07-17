@@ -136,6 +136,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             UnitTestFilter unitTestFilter = new UnitTestFilter();
             unitTestFilter.EvaluationFailureCondition = "Trouble == true";
             const int TestBatchSize = 6;
+            DateTime pipelineDisposalStart;
 
             using (UnitTestInput unitTestInput = new UnitTestInput())
             using (DiagnosticPipeline pipeline = new DiagnosticPipeline(
@@ -157,10 +158,19 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         unitTestInput.SendMessage("Hi!");
                     }
                 }
+
+                pipelineDisposalStart = DateTime.Now;
             }
 
+            DateTime pipelineDisposalEnd = DateTime.Now;
+
             // We should have got good events and warnings about bad events
-            Assert.Equal(TestBatchSize / 2, unitTestOutput.CallCount);
+            Assert.True(TestBatchSize / 2 == unitTestOutput.EventCount, 
+                $"Events missing: expected: {TestBatchSize / 2}, " +
+                $"actual: {unitTestOutput.EventCount}, " +
+                $"filter invocations: {unitTestFilter.CallCount}, " +
+                $"pipeline disposal time: {(pipelineDisposalEnd - pipelineDisposalStart).TotalMilliseconds} msec");
+
             healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Filtering)), Times.Exactly(TestBatchSize / 2));
         }
 
@@ -178,6 +188,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             UnitTestFilter unitTestFilter = new UnitTestFilter();
             unitTestFilter.EvaluationFailureCondition = "Trouble == true";
             const int TestEventCount = 6;
+            DateTime pipelineDisposalStart;
 
             using (UnitTestInput unitTestInput = new UnitTestInput())
             using (DiagnosticPipeline pipeline = new DiagnosticPipeline(
@@ -199,10 +210,20 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         unitTestInput.SendMessage("Hi!");
                     }
                 }
+
+                pipelineDisposalStart = DateTime.Now;
             }
 
             // We should have got good events and warnings about bad events
-            Assert.Equal(TestEventCount / 2, unitTestOutput.EventCount);
+            DateTime pipelineDisposalEnd = DateTime.Now;
+
+            // We should have got good events and warnings about bad events
+            Assert.True(TestEventCount / 2 == unitTestOutput.EventCount,
+                $"Events missing: expected: {TestEventCount / 2}, " +
+                $"actual: {unitTestOutput.EventCount}, " +
+                $"filter invocations: {unitTestFilter.CallCount}, " +
+                $"pipeline disposal time: {(pipelineDisposalEnd - pipelineDisposalStart).TotalMilliseconds} msec");
+
             healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Filtering)), Times.Exactly(TestEventCount / 2));
         }
 
