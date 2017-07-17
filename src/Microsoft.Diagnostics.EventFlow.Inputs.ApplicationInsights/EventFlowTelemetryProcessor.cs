@@ -6,12 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Validation;
-using Microsoft.Diagnostics.EventFlow;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 
 namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
