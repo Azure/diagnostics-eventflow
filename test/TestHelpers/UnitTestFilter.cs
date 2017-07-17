@@ -14,6 +14,7 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
     {
         public TimeSpan EvaluationDelay = TimeSpan.Zero;
         private FilterEvaluator failureConditionEvaluator = new NegationEvaluator(PositiveEvaluator.Instance.Value);
+        public int CallCount = 0;
 
         public string EvaluationFailureCondition
         {
@@ -44,6 +45,8 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
             {
                 Thread.Sleep(EvaluationDelay);
             }
+
+            Interlocked.Increment(ref CallCount);
 
             if (this.failureConditionEvaluator.Evaluate(eventData))
             {

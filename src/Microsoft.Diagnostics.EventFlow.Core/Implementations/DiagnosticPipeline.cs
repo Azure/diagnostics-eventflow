@@ -19,7 +19,8 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public class DiagnosticPipeline : IDisposable
     {
-        private List<IDisposable> pipelineDisposables;
+        private List<IDisposable> inputSubscriptions;
+        private IDisposable batcherTimer;
         private List<Task> outputCompletionTasks;
         private bool disposed;
         private bool disposeDependencies;
@@ -61,8 +62,8 @@ namespace Microsoft.Diagnostics.EventFlow
             this.cancellationTokenSource = new CancellationTokenSource();
             var propagateCompletion = new DataflowLinkOptions() { PropagateCompletion = true };
 
-            // One disposable for each input subscription plus one for the batch timer.
-            this.pipelineDisposables = new List<IDisposable>(inputs.Count + 1);
+            // One disposable for each input subscription.
+            this.inputSubscriptions = new List<IDisposable>(inputs.Count);
 
             var inputBuffer = new BufferBlock<EventData>(
                 new DataflowBlockOptions()
@@ -84,11 +85,11 @@ namespace Microsoft.Diagnostics.EventFlow
                 );
             inputBuffer.LinkTo(batcher, propagateCompletion);
 
-            this.pipelineDisposables.Add(new Timer(
-                (unused) => batcher.TriggerBatch(),
+            this.batcherTimer = new Timer(
+                (unused) => { try { batcher.TriggerBatch(); } catch {} },
                 state: null,
                 dueTime: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec),
-                period: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec)));
+                period: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec));
 
             ISourceBlock<EventData[]> sinkSource;
             FilterAction filterTransform;
@@ -176,7 +177,7 @@ namespace Microsoft.Diagnostics.EventFlow
             IObserver<EventData> inputBufferObserver = new TargetBlockObserver<EventData>(inputBuffer, this.HealthReporter);            
             foreach (var input in inputs)
             {
-                this.pipelineDisposables.Add(input.Subscribe(inputBufferObserver));
+                this.inputSubscriptions.Add(input.Subscribe(inputBufferObserver));
             }
 
             this.disposed = false;
@@ -192,15 +193,15 @@ namespace Microsoft.Diagnostics.EventFlow
 
             this.disposed = true;
 
+            DisposeOf(this.inputSubscriptions);
+
             pipelineHead.Complete();
             // The completion should propagate all the way to the outputs. When all outputs complete, the pipeline has been drained successfully.
             Task.WhenAny(Task.WhenAll(this.outputCompletionTasks.ToArray()), Task.Delay(this.pipelineConfiguration.PipelineCompletionTimeoutMsec)).GetAwaiter().GetResult();
 
             this.cancellationTokenSource.Cancel();
-            
-            // Dispose pipeline elements only after an attempt at cancellation has been made.
-            // In particular, do not dispose of the batcher Timer prematurely.
-            DisposeOf(this.pipelineDisposables);
+
+            this.batcherTimer.Dispose();
 
             if (this.disposeDependencies)
             {
