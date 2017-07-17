@@ -192,13 +192,15 @@ namespace Microsoft.Diagnostics.EventFlow
 
             this.disposed = true;
 
-            DisposeOf(this.pipelineDisposables);
-
             pipelineHead.Complete();
             // The completion should propagate all the way to the outputs. When all outputs complete, the pipeline has been drained successfully.
             Task.WhenAny(Task.WhenAll(this.outputCompletionTasks.ToArray()), Task.Delay(this.pipelineConfiguration.PipelineCompletionTimeoutMsec)).GetAwaiter().GetResult();
 
             this.cancellationTokenSource.Cancel();
+            
+            // Dispose pipeline elements only after an attempt at cancellation has been made.
+            // In particular, do not dispose of the batcher Timer prematurely.
+            DisposeOf(this.pipelineDisposables);
 
             if (this.disposeDependencies)
             {
