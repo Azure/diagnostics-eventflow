@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.1.5</VersionPrefix>
+    <VersionPrefix>1.2.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
     <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</AssemblyName>
     <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
