@@ -3,10 +3,10 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using Microsoft.Diagnostics.EventFlow.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 using Serilog.Events;
 using Validation;
 using Serilog.Core;
