@@ -5,6 +5,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 using Moq;
 using Serilog;
 using Xunit;
@@ -80,6 +81,39 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                     && (data.Payload["Exception"] as Exception).Data["ID"].Equals(23)
                 )));
             }
+        }
+
+        [Fact]
+        public void ReportsError() {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object)) {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
+
+                Exception e = new Exception();
+                e.Data["ID"] = 23;
+                string message = "Something bad happened but we do not care that much";
+                logger.Error(e, message);
+
+
+                observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
+                                                                   data.Payload["Message"].Equals(message)
+                                                                   && ContainsException(data, e)
+                                                                   && data.Level == LogLevel.Error
+                                                                   && (data.Payload["Exception"] as Exception).Data["ID"].Equals(23)
+                                              )));
+            }
+        }
+
+        private bool ContainsException(EventData data, Exception exception1) {
+            IReadOnlyCollection<EventMetadata> metaData;
+            data.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out metaData);
+            foreach (EventMetadata eventMetadata in metaData) {
+                Exception exception = (Exception)data.Payload[eventMetadata.Properties[ExceptionData.ExceptionPropertyMoniker]];
+                return exception == exception1;
+            }
+            return false;
         }
 
         [Fact]
