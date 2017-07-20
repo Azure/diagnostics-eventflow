@@ -1138,9 +1138,10 @@ The following table lists platform support for standard inputs and outputs.
 | [Serilog](#serilog) | Yes | Yes | Yes |
 | [Microsoft.Extensions.Logging](#microsoftextensionslogging) | Yes | Yes | Yes |
 | [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows) | Yes | Yes | No |
+| [Application Insights input](#application-insights-input) | Yes | Yes | Yes |
 | *Outputs* |
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
-| [Application Insights](#application-insights) | Yes | Yes | No |
+| [Application Insights](#application-insights) | Yes | Yes | Yes |
 | [Azure EventHub](#event-hub) | Yes | Yes | No |
 | [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
 | [OMS (Operations Management Suite)](#oms-operations-management-suite) | Yes | Yes | Yes |
