@@ -78,7 +78,7 @@ namespace Microsoft.Diagnostics.EventFlow
                     this.pipelineConfiguration.MaxEventBatchSize,
                     new GroupingDataflowBlockOptions()
                     {
-                        BoundedCapacity = this.pipelineConfiguration.MaxEventBatchSize,
+                        BoundedCapacity = this.pipelineConfiguration.PipelineBufferSize,
                         CancellationToken = this.cancellationTokenSource.Token,
                         TaskScheduler = taskScheduler
                     }

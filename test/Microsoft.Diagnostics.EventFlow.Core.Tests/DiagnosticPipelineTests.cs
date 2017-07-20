@@ -130,7 +130,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 5000,
+                PipelineCompletionTimeoutMsec = 10000,
                 MaxEventBatchSize = 2
             };
             UnitTestFilter unitTestFilter = new UnitTestFilter();
@@ -182,7 +182,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             DiagnosticPipelineConfiguration settings = new DiagnosticPipelineConfiguration()
             {
                 MaxBatchDelayMsec = 10,
-                PipelineCompletionTimeoutMsec = 5000,
+                PipelineCompletionTimeoutMsec = 10000,
                 MaxEventBatchSize = 2
             };
             UnitTestFilter unitTestFilter = new UnitTestFilter();
