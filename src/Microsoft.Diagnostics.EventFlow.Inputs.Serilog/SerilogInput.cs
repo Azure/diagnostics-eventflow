@@ -79,17 +79,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             var payload = eventData.Payload;
 
-            if (logEvent.Level >= LogEventLevel.Error) {
-                EventMetadata eventMetadata = new EventMetadata(ExceptionData.ExceptionMetadataKind);
-                eventMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, "Exception");
-                eventData.SetMetadata(eventMetadata);
-            }
-
             // Prefer the built-in `Message` and `Exception` properties by adding them to the payload
             // first. If other attached data items have conflicting names, they will be added as
             // `Message_1` and so-on.
             if (logEvent.Exception != null)
             {
+
+                if (logEvent.Level >= LogEventLevel.Error) 
+                {
+                    EventMetadata eventMetadata = new EventMetadata(ExceptionData.ExceptionMetadataKind);
+                    eventMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, "Exception");
+                    eventData.SetMetadata(eventMetadata);
+                }
+                
                 eventData.AddPayloadProperty("Exception", logEvent.Exception, healthReporter, nameof(SerilogInput));
             }
 
