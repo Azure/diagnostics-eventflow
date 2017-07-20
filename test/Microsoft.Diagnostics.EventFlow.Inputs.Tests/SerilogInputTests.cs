@@ -106,12 +106,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
-        private bool ContainsException(EventData data, Exception exception1) {
+        private bool ContainsException(EventData data, Exception expectedException) {
             IReadOnlyCollection<EventMetadata> metaData;
             data.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out metaData);
             foreach (EventMetadata eventMetadata in metaData) {
                 Exception exception = (Exception)data.Payload[eventMetadata.Properties[ExceptionData.ExceptionPropertyMoniker]];
-                return exception == exception1;
+                return exception == expectedException;
             }
             return false;
         }
