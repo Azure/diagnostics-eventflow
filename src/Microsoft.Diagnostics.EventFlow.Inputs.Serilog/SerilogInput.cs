@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using Microsoft.Diagnostics.EventFlow.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,6 +78,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             };
 
             var payload = eventData.Payload;
+
+            if (logEvent.Level >= LogEventLevel.Error) {
+                EventMetadata eventMetadata = new EventMetadata(ExceptionData.ExceptionMetadataKind);
+                eventMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, "Exception");
+                eventData.SetMetadata(eventMetadata);
+            }
 
             // Prefer the built-in `Message` and `Exception` properties by adding them to the payload
             // first. If other attached data items have conflicting names, they will be added as
