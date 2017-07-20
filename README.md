@@ -19,6 +19,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
 - [OMS (Operations Management Suite)](#oms-operations-management-suite)
+- [ReflectInsight](#reflectinsight)
 
 The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
 
@@ -640,6 +641,55 @@ Supported configuration settings are:
 | `workspaceKey` | string (base-64) | Yes | Specifies the workspace authentication key. |
 | `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS ingestion service). |
 
+#### ReflectInsight
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Outputs.ReflectInsight**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ReflectInsight/)
+
+All configured input events will be captured and sent to [ReflectInsight](https://reflectsoftware.com/), which in turn redirects them to one or more configured destinations (i.e. Live Viewer, etc.).
+
+*Configuration example*
+
+```json
+{
+  "type": "ReflectInsight",
+  "instanceName": "myInstance"
+}
+
+```
+
+Supported configuration settings are:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "ReflectInsight" | Yes | Specifies the output type. For this output, it must be "ReflectInsight". |
+| `instanceName` | string | No | The name of the Instance to used configured in the ReflectInsight.config file, if any. |
+
+
+*Example: In this example, Trace is assumed as one of the Input sources*
+
+```csharp
+using Microsoft.Diagnostics.EventFlow;
+using System;
+
+namespace EventFlowReflectInsightConsole
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline("eventFlowConfig.json"))
+            {
+                // In this example, Trace is assumed as one of the Input sources.
+                System.Diagnostics.Trace.TraceWarning("EventFlow is working!");
+                System.Diagnostics.Trace.TraceError("EventFlow is working!");
+                Console.ReadLine();
+            }
+        }
+    }
+}
+```
+
+
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
 With metadata tags, filters and outputs operating further down the pipeline can apply different processing for different data. For example, an output component can choose to send only data with a certain tag. Each filter type has its own set of parameters.
@@ -1145,6 +1195,7 @@ The following table lists platform support for standard inputs and outputs.
 | [Azure EventHub](#event-hub) | Yes | Yes | No |
 | [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
 | [OMS (Operations Management Suite)](#oms-operations-management-suite) | Yes | Yes | Yes |
+| [ReflectInsight](#reflectinsight) | Yes | Yes | No |
 
 ## Contributions
 Refer to [contribution guide](contributing.md).
