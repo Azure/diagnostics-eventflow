@@ -17,16 +17,16 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
-    <PackageReference Include="WindowsAzure.ServiceBus" Version="3.3.2" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">    
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />    
     <PackageReference Include="Moq" Version="4.7.1" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />

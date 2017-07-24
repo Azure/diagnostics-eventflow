@@ -4,13 +4,12 @@
 // ------------------------------------------------------------
 
 using System;
-using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 {
-#if NET46
     public class EventHubOutputTests
     {
         [Fact]
@@ -21,8 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             e.Payload.Add("DateTimeOffsetProperty", new DateTimeOffset(2017, 4, 19, 10, 16, 07, TimeSpan.Zero));
 
             var messagingData = EventDataExtensions.ToMessagingEventData(e, out int messageSize);
-            StreamReader sr = new StreamReader(messagingData.GetBodyStream());
-            string messageBody = sr.ReadToEnd();            
+            string messageBody = Encoding.UTF8.GetString(messagingData.Body.Array, messagingData.Body.Offset, messagingData.Body.Count);
 
             var dateTimeRegex = new Regex(@"""DateTimeProperty"" \s* : \s* ""2017-04-19T10:15:23Z""", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromMilliseconds(100));
             Assert.Matches(dateTimeRegex, messageBody);
@@ -31,5 +29,4 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             Assert.Matches(dateTimeOffsetRegex, messageBody);
         }
     }
-#endif
 }
