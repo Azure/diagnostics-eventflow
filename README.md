@@ -296,7 +296,7 @@ namespace LoggerEventFlow
                 var logger = new Logger<Program>(factory);
                 using (logger.BeginScope(myState))
                 {
-                    logger.LogInformation(""Hello from {friend} for {family}!", "LoggerInput", "EventFlow");
+                    logger.LogInformation($"Hello from {friend} for {family}!", "LoggerInput", "EventFlow");
                 }
             }
         }
