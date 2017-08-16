@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Utilities.Etw;
 using Microsoft.Extensions.Configuration;
@@ -15,13 +16,14 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class EventSourceInput : EventListener, IObservable<EventData>, IDisposable
+    public class EventSourceInput : EventListener, IObservable<EventData>, IDisposable, IRequireActivation
     {
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
         // This does not really need to be a ConcurrentQueue, but the ConcurrentQueue has a very convenient-to-use TryDequeue method.
         private ConcurrentQueue<EventSource> eventSourcesPresentAtConstruction;
         private EventFlowSubject<EventData> subject;
+        private Task initialization;
 
         public EventSourceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -69,6 +71,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject.Dispose();
         }
 
+        public void Activate()
+        {
+            Assumes.NotNull(this.initialization);
+            this.initialization.Wait();
+        }
+
         protected override void OnEventWritten(EventWrittenEventArgs eventArgs)
         {
             // Suppress events from TplEventSource--they are mostly interesting for debugging task processing and interaction,
@@ -85,12 +93,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             // So if we are not constructed yet, we will just remember the event source reference. Once the construction is accomplished,
             // we can decide if we want to handle a given event source or not.
 
+            bool enableImmediately = false;
+
             // Locking on 'this' is generally a bad practice because someone from outside could put a lock on us, and this is outside of our control.
             // But in the case of this class it is an unlikely scenario, and because of the bug described above, 
             // we cannot rely on construction to prepare a private lock object for us.
-
-            // Also note that we are using a queue to cover the case when EnableEvents() called from EnableInitialSources()
-            // may result in reentrant call into OnEventSourceCreated().
             lock (this)
             {
                 if (!this.constructed)
@@ -104,18 +111,35 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 }
                 else
                 {
-                    EnableAsNecessary(eventSource);
+                    enableImmediately = true;
                 }
+            }
+
+            // Do not try to enable an EventSource source while holding 'this' lock. Enabling an EventSource tries to take a lock on EventListener list.
+            // (part of EventSource implementation). If another EventSource is created on a different thread, 
+            // the same lock will be taken before the call to OnEventSourceCreated() comes in and deadlock will result.
+            if (enableImmediately)
+            {
+                EnableAsNecessary(eventSource);
             }
         }
 
         private void EnableInitialSources()
         {
-            Assumes.False(this.constructed);
-            if (this.eventSourcesPresentAtConstruction != null)
+            ConcurrentQueue<EventSource> sourcesToExamine = null;
+            Assumes.True(this.constructed);
+
+            // Taking a lock to ensure that the queue of sources existing at construction is fully created and populated (if necessary).
+            // See OnEventSourceCreated() for explanation why we are locking on 'this'.
+            lock (this)
+            {                
+                sourcesToExamine = this.eventSourcesPresentAtConstruction;
+            }
+            
+            if (sourcesToExamine != null)
             {
                 EventSource eventSource;
-                while (this.eventSourcesPresentAtConstruction.TryDequeue(out eventSource))
+                while (sourcesToExamine.TryDequeue(out eventSource))
                 { 
                     EnableAsNecessary(eventSource);
                 }
@@ -162,15 +186,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.EventSources = eventSources;
             if (this.EventSources.Count() == 0)
             {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", nameof(EventSourceInput));
-                return;
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", nameof(EventSourceInput));                
             }
-
-            lock (this)  // See OnEventSourceCreated() for explanation why we are locking on 'this' here.
+            
+            // Make sure the constructor has run to completion before enabling any sources.
+            this.initialization = Task.Run(() =>
             {
-                EnableInitialSources();
                 this.constructed = true;
-            }
+                EnableInitialSources();
+            });
         }
     }
 }
