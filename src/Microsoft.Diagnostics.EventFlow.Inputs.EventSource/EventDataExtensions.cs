@@ -38,7 +38,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
             if (eventSourceEvent.RelatedActivityId != default(Guid))
             {
-                payloadData.Add(nameof(EventWrittenEventArgs.RelatedActivityId), eventSourceEvent.RelatedActivityId.ToString());
+                payloadData.Add(nameof(EventWrittenEventArgs.RelatedActivityId), ActivityPathDecoder.GetActivityPathString(eventSourceEvent.RelatedActivityId));
             }
 
             try

@@ -198,3 +198,4 @@ project.lock.json
 /nugets/
 
 .vscode
+/.vs/Warsaw/v15/sqlite3/*.ide
