@@ -124,7 +124,7 @@ This input listens to traces written with System.Diagnostics.Trace API. Here is 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Trace" | Yes | Specifies the input type. For this input, it must be "Trace". |
-| `traceLevel` | Critical, Error, Warning, Information, Verbose, All | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is All. |
+| `traceLevel` | Critical, Error, Warning, Information, Verbose, All | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is Error. |
 
 #### EventSource
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.EventSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.EventSource/)
