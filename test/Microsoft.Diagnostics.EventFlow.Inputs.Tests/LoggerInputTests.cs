@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
+using Microsoft.Diagnostics.EventFlow.Metadata;
+
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
     public class LoggerInputTests
@@ -365,14 +367,22 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             Assert.Equal(expectedSource, actualData.ProviderName);
             Assert.Equal(expectedLevel, actualData.Level);
             Assert.Equal(expectedId.Id, actualData.Payload["EventId"]);
+
             if (expectedId.Name != null)
+            {
                 Assert.Equal(expectedId.Name, actualData.Payload["EventName"]);
+            }
+
             if (expectedException != null)
             {
                 Assert.NotNull(actualData.Payload["Exception"] as Exception);
                 Assert.Equal(expectedException.GetType(), actualData.Payload["Exception"].GetType());
                 Assert.Equal(expectedException.Message, ((Exception) actualData.Payload["Exception"]).Message);
+                Assert.True(actualData.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out IReadOnlyCollection<EventMetadata> metadataCollection));
+                var exceptionMetadata = metadataCollection.Single();
+                Assert.Same(expectedException, actualData.Payload[exceptionMetadata.Properties[ExceptionData.ExceptionPropertyMoniker]]);
             }
+
             if (expectedScope != null)
             {
                 foreach (var kv in expectedScope)
@@ -380,6 +390,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                     Assert.Contains(kv, actualData.Payload);
                 }
             }
+
             return true;
         }
 

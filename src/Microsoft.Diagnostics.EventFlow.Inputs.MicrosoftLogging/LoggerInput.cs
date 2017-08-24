@@ -7,12 +7,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class LoggerInput : IObservable<EventData>, IDisposable
     {
         public static readonly string TraceTag = nameof(LoggerInput);
+
+        private const string ExceptionPropertyName = "Exception";
 
         private readonly EventFlowSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
@@ -49,10 +52,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 {
                     payloadData.Add("EventName", eventId.Name);
                 }
+
                 if (exception != null)
                 {
-                    payloadData.Add("Exception", exception);
+                    payloadData.Add(ExceptionPropertyName, exception);
+
+                    if (level == LogLevel.Error || level == LogLevel.Critical)
+                    {
+                        EventMetadata eventMetadata = new EventMetadata(ExceptionData.ExceptionMetadataKind);
+                        eventMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, ExceptionPropertyName);
+                        eventEntry.SetMetadata(eventMetadata);
+                    }
                 }
+
                 if (payload != null)
                 {
                     foreach (var kv in payload)
