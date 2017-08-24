@@ -921,7 +921,7 @@ private static void Shutdown(IDisposable disposable, ManualResetEvent terminatio
 }
 ```
 
-The purpose of handling `CancelKeyPress` and `UnhandledException` events (the latter for full .NET Framework only) is to ensure that the EventFlow pipeline is cleanly disposed.
+The purpose of handling `CancelKeyPress` and `UnhandledException` events (the latter for full .NET Framework only) is to ensure that the EventFlow pipeline is cleanly disposed. This is important for pipeline elements that rely on system-level resources. For example, Event Tracing for Windows (ETW) input creates a system-wide ETW listening session, which must be disposed when the EventFlow pipeline is shut down. Ctrl-C signal is the standard way the Service Fabric runtime uses to notify service processes that they need to perform cleanup and exit. By default the process has 30 seconds to react.
 
 The UnhandledException event method is a very simple addition to the standard ServiceEventSource:
 
