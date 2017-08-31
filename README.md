@@ -78,7 +78,7 @@ The core of the library, as well as inputs and outputs listed above [are availab
 }
 ```
    
-Note: if your project targets .NET Core the eventFlowConfig.json file will not be automatically added. To fix this you can just copy the example listed above and save it under the name "eventFlowConfig.json" in your project folder. Then, open your project file (this assumes you are using Visual Studio 2017/MSBuild 15 csproj-based project system) and add the following snippet to your project:
+Note: if your project file has VisualStudio 2017 format (with [PackageReference](https://blog.nuget.org/20170316/NuGet-now-fully-integrated-into-MSBuild.html)) the eventFlowConfig.json file will not be automatically added. To fix this you can just copy the example listed above and save it under the name "eventFlowConfig.json" in your project folder. Then, open your project file (this assumes you are using Visual Studio 2017/MSBuild 15 csproj-based project system) and add the following snippet to your project:
    ```xml
    <ItemGroup>
     <None Include="eventFlowConfig.json">
