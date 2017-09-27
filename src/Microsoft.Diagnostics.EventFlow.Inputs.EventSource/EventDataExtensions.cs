@@ -7,9 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
+#if !NETSTANDARD1_6
+using System.Runtime.InteropServices;
+#endif
 
 using Microsoft.Diagnostics.EventFlow.Utilities.Etw;
 
@@ -17,14 +19,25 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     internal static class EventDataExtensions
     {
+#if !NETSTANDARD1_6
+        [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
+        private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
+#endif
+
         public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent, IHealthReporter healthReporter, string context)
         {
             Debug.Assert(healthReporter != null);
 
+#if NETSTANDARD1_6
+            DateTime now = DateTime.UtcNow;
+#else
+            GetSystemTimePreciseAsFileTime(out long filetime);
+            DateTime now = DateTime.FromFileTimeUtc(filetime);
+#endif
             EventData eventData = new EventData
             {
                 ProviderName = eventSourceEvent.EventSource.Name,
-                Timestamp = DateTime.UtcNow,
+                Timestamp = now,
                 Level = (LogLevel)(int)eventSourceEvent.Level,
                 Keywords = (long)eventSourceEvent.Keywords
             };

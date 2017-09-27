@@ -5,15 +5,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
-using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
+#if !NETSTANDARD1_6
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+#endif
+
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
-
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -121,6 +125,33 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
+        [Fact]
+        public void MeasuresEventTimeWithHighResolution()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            // Ensure the EventSource is instantiated
+            EventSourceInputTestSource.Log.Message("warmup");
+
+            List<DateTimeOffset> eventTimes = new List<DateTimeOffset>();
+            Action<EventWrittenEventArgs> eventHandler = e => eventTimes.Add(EventDataExtensions.ToEventData(e, healthReporterMock.Object, "context-unused").Timestamp);
+            var twoMilliseconds = Math.Round(Stopwatch.Frequency / 500.0);
+            using (var listener = new EventSourceInputTestListener(eventHandler))
+            {
+                for (int i=0; i < 8; i++)
+                {
+                    EventSourceInputTestSource.Log.Message(i.ToString());
+                    var sw = Stopwatch.StartNew();
+                    while (sw.ElapsedTicks < twoMilliseconds)
+                    {
+                        // Spin wait
+                    }
+                }
+            }
+
+            Assert.True(eventTimes.Distinct().Count() == 8, "Event timestamps should have less than 1 ms resolution and thus should all be different");
+        }
+
         [EventSource(Name = "EventSourceInput-TestEventSource")]
         private class EventSourceInputTestSource : EventSource
         {
@@ -146,6 +177,32 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             public void Message(string message)
             {
                 WriteEvent(3, message);
+            }
+        }
+
+        private class EventSourceInputTestListener : EventListener
+        {
+            private Action<EventWrittenEventArgs> eventHandler;
+
+            public EventSourceInputTestListener(Action<EventWrittenEventArgs> eventHandler = null)
+            {
+                this.eventHandler = eventHandler;
+            }
+
+            protected override void OnEventWritten(EventWrittenEventArgs eventData)
+            {
+                if (this.eventHandler != null)
+                {
+                    this.eventHandler(eventData);
+                }
+            }
+
+            protected override void OnEventSourceCreated(EventSource source)
+            {
+                if (source is EventSourceInputTestSource || source is EventSourceInputTestOtherSource)
+                {
+                    this.EnableEvents(source, EventLevel.Verbose);
+                }
             }
         }
     }
