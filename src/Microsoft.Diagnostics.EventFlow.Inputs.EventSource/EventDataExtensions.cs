@@ -28,6 +28,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         {
             Debug.Assert(healthReporter != null);
 
+            // High-precision event timestamping is availabe on .NET 4.6+ and .NET Core 2.0+ 
+            // For the latter the implementation of DateTime.UtcNow has changed and we do not need to do anything.
+            // .NET Core 1.1 will use imprecise timestamp--there is no easy fix for this target.
+
 #if NETSTANDARD1_6
             DateTime now = DateTime.UtcNow;
 #else
