@@ -842,6 +842,8 @@ This health reporter writes all errors, warnings, and informational traces gener
 | `minReportLevel` | Error, Warning, Message | No | Specifies the collection report level. Report traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Error, and Warning traces are collected. Default is Error. |
 | `throttlingPeriodMsec` | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
 
+CsvHealthReporter will try to open the log file for writing during initialization. If it can't, it is considered a fatal error and will cause the whole EventFlow pipeline to fail. This can happen especially if a value for the log file path is not provided (default is used, which is application executables folder) and the application executables are residing on a read-only file system. Docker tools for Visual Studio use this configuration during debugging, so for containerized services the recommended practice is to specify the log file path explicitly.
+
 ### Pipeline Settings
 The EventFlow configuration has settings allowing the application to adjust certain behaviors of the pipeline. These range from how many events the pipeline buffer, to the timeout the pipeline should use when waiting for an operation. If this section is omitted, the pipeline will use default settings.
 Here is an example of all the possible settings:
