@@ -21,7 +21,7 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
-    #if !NET451
+#if !NET451
 
     public class EventSourceInputTests
     {
@@ -80,13 +80,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             var observer = new Mock<IObserver<EventData>>();
             using (eventSourceInput.Subscribe(observer.Object))
             {
-                
                 EventSourceInputTestSource.Log.Message("Hello!");
 
                 observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
                        data.Payload["Message"].Equals("Hello!")
                     && data.Payload["EventId"].Equals(2)
-                    && data.Payload["EventName"].Equals("Message")                    
+                    && data.Payload["EventName"].Equals("Message")
                 )), Times.Exactly(1));
 
                 healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -126,7 +125,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         // High-precision event timestamping is availabe on .NET 4.6+ and .NET Core 2.0+
-        #if NET46
+#if NET46
         [Fact]
         public void MeasuresEventTimeWithHighResolution()
         {
@@ -153,23 +152,219 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             Assert.True(eventTimes.Distinct().Count() == 8, "Event timestamps should have less than 1 ms resolution and thus should all be different");
         }
-        #endif
+#endif
+
+        [Fact]
+        public void CapturesEventsFromSourcesIdentifiedByNamePrefix()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Test"
+            });
+
+            var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object);
+            eventSourceInput.Activate();
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (eventSourceInput.Subscribe(observer.Object))
+            {
+                EventSourceInputTestSource.Log.Message("Hello!");
+
+                observer.Verify(s => s.OnNext(It.Is<EventData>(data =>
+                       data.Payload["Message"].Equals("Hello!")
+                    && data.Payload["EventId"].Equals(2)
+                    && data.Payload["EventName"].Equals("Message")
+                )), Times.Exactly(1));
+
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
+        [Fact]
+        public void OmitsEventsFromSourcesDisabledByNamePrefix()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Other"
+            });
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (var otherSource = new EventSourceInputTestOtherSource())
+            {
+                using (var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object))
+                {
+                    eventSourceInput.Activate();
+
+                    using (eventSourceInput.Subscribe(observer.Object))
+                    {
+                        otherSource.Message("Hey!");
+
+                        observer.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(1));
+
+                        healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                        healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                    }
+                }
+
+                inputConfiguration.Add(new EventSourceConfiguration()
+                {
+                    DisabledProviderNamePrefix = "EventSourceInput-Other"
+                });
+                observer.ResetCalls();
+
+                using (var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object))
+                {
+                    eventSourceInput.Activate();
+
+                    using (eventSourceInput.Subscribe(observer.Object))
+                    {
+                        otherSource.Message("You!");
+
+                        observer.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(0));  // Source disabled--should get zero events out of the input
+
+                        healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                        healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void CannotEnableAndDisableBySingleConfigurationItem()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Other",
+                DisabledProviderNamePrefix = "EventSourceInput-Test"
+            });
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object))
+            {
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Configuration)), Times.Once());
+            }
+        }
+
+        [Fact]
+        public void CannotEnableByNameAndByPrefixBySingleConfigurationItem()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Other",
+                ProviderName = "EventSourceInput-OtherTestEventSource"
+            });
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object))
+            {
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Configuration)), Times.Once());
+            }
+        }
+
+        [Fact]
+        public void DisabledSourcesCannotSpecifyLevelOrKeywords()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                DisabledProviderNamePrefix = "EventSourceInput-Other",
+                Level = EventLevel.Warning
+            });
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                DisabledProviderNamePrefix = "EventSourceInput-Test",
+                Keywords = (EventKeywords) 0x4
+            });
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object))
+            {
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Configuration)), Times.Exactly(2));
+            }
+        }
+
+        // Enabling events with different levels and keywords does not work on .NET Core 1.1. and 2.0
+        // (following up with .NET team to see if there is something we can do about it)
+#if NET46
+        [Fact]
+        public void CanEnableSameSourceWithDifferentLevelsAndKeywords()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Test",
+                Level = EventLevel.Warning,
+                Keywords = EventSourceInputTestSource.Keywords.Important
+            });
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Test",
+                Level = EventLevel.Informational,
+                Keywords = EventSourceInputTestSource.Keywords.Negligible
+            });
+
+            var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object);
+            eventSourceInput.Activate();
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (eventSourceInput.Subscribe(observer.Object))
+            {
+                EventSourceInputTestSource.Log.Tricky(1, "Foo", "Bar");     // Not captured because it is only Level=Informational
+                EventSourceInputTestSource.Log.Message("Hey!");             // Captured
+                EventSourceInputTestSource.Log.DebugMessage("Yo!");         // Not captured because Level=Verbose
+
+                observer.Verify(s => s.OnNext(It.IsAny<EventData>()), Times.Exactly(1));
+
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+#endif
 
         [EventSource(Name = "EventSourceInput-TestEventSource")]
         private class EventSourceInputTestSource : EventSource
         {
             public static EventSourceInputTestSource Log = new EventSourceInputTestSource();
 
-            [Event(1, Level = EventLevel.Informational, Message ="Manifest message")]
+            [Event(1, Level = EventLevel.Informational, Message ="Manifest message", Keywords = Keywords.Important)]
             public void Tricky(int EventId, string EventName, string Message)
             {
                 WriteEvent(1, EventId, EventName, Message);
             }
 
-            [Event(2, Level = EventLevel.Informational, Message ="{0}")]
+            [Event(2, Level = EventLevel.Informational, Message ="{0}", Keywords = Keywords.Negligible)]
             public void Message(string message)
             {
                 WriteEvent(2, message);
+            }
+
+            [Event(3, Level = EventLevel.Verbose, Message = "{0}", Keywords = Keywords.Negligible)]
+            public void DebugMessage(string message)
+            {
+                WriteEvent(3, message);
+            }
+
+            public class Keywords
+            {
+                public const EventKeywords Important = (EventKeywords) 0x1;
+                public const EventKeywords Negligible = (EventKeywords) 0x2;
             }
         }
 

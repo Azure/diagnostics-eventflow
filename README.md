@@ -143,20 +143,31 @@ This input listens to EventSource traces. EventSource classes can be created in 
 }
 ```
 
-*Top Object*
+*Top object*
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "EventSource" | Yes | Specifies the input type. For this input, it must be "EventSource". |
 | `sources` | JSON array | Yes | Specifies the EventSource objects to collect. |
 
-*Sources Object*
+*Source object (element of the sources array)*
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| `providerName` | provider name | Yes | Specifies the name of the EventSource to track. |
-| `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is LogAlways, which means "provider decides what events are raised", which usually results in all events being raised. |
-|`keywords` | An integer | No | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+| `providerName` | EventSource name | Yes(*) | Specifies the name of the EventSource to track. |
+| `providerNamePrefix` | EventSource name prefix | Yes(*) | Specifies the name prefix of EventSource(s) to track. For example, if the value is "Microsoft-ServiceFabric", all EventSources that have names starting with Microsoft-ServiceFabric (Microsoft-ServiceFabric-Services, Microsoft-ServiceFabric-Actors and so on) will be tracked. |
+| `disabledProviderNamePrefix` | provider name | Yes(*) | Specifies the name prefix of the EventSource(s) that must be ignored. No events from these sources will be captured(***). |
+| `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No(**) | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is LogAlways, which means "provider decides what events are raised", which usually results in all events being raised. |
+|`keywords` | An integer | No(**) | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+
+*Remarks*
+
+(*) Out of `providerName`, `providerNamePrefix` and `disabledProviderNamePrefix`, only one can be used for a single source. In other words, with a single source one can enable an EventSource by name, or enable a set of EventSources by prefix, or disable a set of EventSources by prefix.
+
+(**) `level` and `keywords` can be used for enabling EventSources, but not for disabling them. Disabling events using level and keywords is not supported (but one can use level and/or keywords to *selectively enable* a subset of events from a given EventSource).
+
+(***) There is an issue with .NET frameworks 4.6 and 4.7, and .NET Core framework 1.1 and 2.0 where dynamically created EventSource events are dispatched to all listeners, regardless whether listeners subscribe to events from these EventSources; for more information see https://github.com/dotnet/coreclr/issues/14434  `disabledProviderNamePrefix` property can be usesd to suppress these events.<br/>
+Disabling EventSources is not recommended under normal circumstances, as it introduces a slight performance penalty. Instead, selectively enable necessary events through combination of EventSource names, event levels, and keywords.
 
 #### PerformanceCounter
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter/)

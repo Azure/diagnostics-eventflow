@@ -198,6 +198,8 @@ project.lock.json
 /nugets/
 
 .vscode
+.vs
 
 *.ide
 *.ide-journal
+

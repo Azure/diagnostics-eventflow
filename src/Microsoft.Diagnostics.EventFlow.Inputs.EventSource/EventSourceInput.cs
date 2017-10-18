@@ -24,6 +24,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private ConcurrentQueue<EventSource> eventSourcesPresentAtConstruction;
         private EventFlowSubject<EventData> subject;
         private Task initialization;
+        private ConcurrentDictionary<string, bool> disabledSources;
+        private Action<EventWrittenEventArgs> OnEventWrittenImpl;
 
         public EventSourceInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -55,7 +57,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Requires.NotNull(eventSources, nameof(eventSources));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            Initialize(eventSources, healthReporter);
+            var myEventSources = new List<EventSourceConfiguration>(eventSources);
+            Initialize(myEventSources, healthReporter);
         }
 
         public IEnumerable<EventSourceConfiguration> EventSources { get; private set; }
@@ -83,7 +86,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             // and not that useful for production tracing. However, TPL EventSource must be enabled to get hierarchical activity IDs.
             if (!TplActivities.TplEventSourceGuid.Equals(eventArgs.EventSource.Guid))
             {
-                this.subject.OnNext(eventArgs.ToEventData(this.healthReporter, nameof(EventSourceInput)));
+                this.OnEventWrittenImpl(eventArgs);
             }
         }
 
@@ -155,46 +158,95 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
             else
             {
-                EventSourceConfiguration provider = this.EventSources.FirstOrDefault(p => p.ProviderName == eventSource.Name);
-                if (provider != null)
+                foreach(EventSourceConfiguration sourceConfiguration in this.EventSources)
                 {
-                    // LIMITATION: There is a known issue where if we listen to the FrameworkEventSource, the dataflow pipeline may hang when it
-                    // tries to process the Threadpool event. The reason is the dataflow pipeline itself is using Task library for scheduling async
-                    // tasks, which then itself also fires Threadpool events on FrameworkEventSource at unexpected locations, and trigger deadlocks.
-                    // Hence, we like special case this and mask out Threadpool events.
-                    EventKeywords keywords = provider.Keywords;
-                    if (provider.ProviderName == "System.Diagnostics.Eventing.FrameworkEventSource")
+                    if (sourceConfiguration.Enables(eventSource))
                     {
-                        // Turn off the Threadpool | ThreadTransfer keyword. Definition is at http://referencesource.microsoft.com/#mscorlib/system/diagnostics/eventing/frameworkeventsource.cs
-                        // However, if keywords was to begin with, then we need to set it to All first, which is 0xFFFFF....
-                        if (keywords == 0)
+                        // LIMITATION: There is a known issue where if we listen to the FrameworkEventSource, the dataflow pipeline may hang when it
+                        // tries to process the Threadpool event. The reason is the dataflow pipeline itself is using Task library for scheduling async
+                        // tasks, which then itself also fires Threadpool events on FrameworkEventSource at unexpected locations, and trigger deadlocks.
+                        // Hence, we like special case this and mask out Threadpool events.
+                        EventKeywords keywords = sourceConfiguration.Keywords;
+                        if (sourceConfiguration.ProviderName == "System.Diagnostics.Eventing.FrameworkEventSource")
                         {
-                            keywords = EventKeywords.All;
+                            // Turn off the Threadpool | ThreadTransfer keyword. Definition is at http://referencesource.microsoft.com/#mscorlib/system/diagnostics/eventing/frameworkeventsource.cs
+                            // However, if keywords was not set, then we need to set it to All first, which is 0xFFFFF....
+                            if (keywords == 0)
+                            {
+                                keywords = EventKeywords.All;
+                            }
+                            keywords &= (EventKeywords)~0x12;
                         }
-                        keywords &= (EventKeywords)~0x12;
+
+                        this.EnableEvents(eventSource, sourceConfiguration.Level, keywords);
                     }
-                    this.EnableEvents(eventSource, provider.Level, keywords);
                 }
             }
         }
 
-        private void Initialize(IReadOnlyCollection<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
+        private void Initialize(List<EventSourceConfiguration> eventSources, IHealthReporter healthReporter)
         {
             this.healthReporter = healthReporter;
             this.subject = new EventFlowSubject<EventData>();
 
-            this.EventSources = eventSources;
-            if (this.EventSources.Count() == 0)
+            if (eventSources.Count() == 0)
             {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", nameof(EventSourceInput));                
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", EventFlowContextIdentifiers.Configuration);                
             }
-            
+
+            var invalidConfigurationItems = new List<EventSourceConfiguration>();
+            foreach(var eventSourceConfiguration in eventSources)
+            {
+                if (!eventSourceConfiguration.Validate())
+                {
+                    healthReporter.ReportProblem($"{nameof(EventSourceInput)}: configuration for one of the sources is invalid", EventFlowContextIdentifiers.Configuration);
+                    invalidConfigurationItems.Add(eventSourceConfiguration);
+                }
+            }
+            // eventSources is a collection created by us, so we can modify it as necessary
+            eventSources.RemoveAll(config => invalidConfigurationItems.Contains(config));
+            this.EventSources = eventSources;
+
+            bool haveDisabledSources = this.EventSources.Any(config => !string.IsNullOrWhiteSpace(config.DisabledProviderNamePrefix));
+            if (haveDisabledSources)
+            {
+                this.disabledSources = new ConcurrentDictionary<string, bool>();
+                this.OnEventWrittenImpl = BroadcastEventIfSourceNotDisabled;
+            }
+            else
+            {
+                this.OnEventWrittenImpl = BroadcastEvent;
+            }
+
             // Make sure the constructor has run to completion before enabling any sources.
             this.initialization = Task.Run(() =>
             {
                 this.constructed = true;
                 EnableInitialSources();
             });
+        }
+
+        private void BroadcastEventIfSourceNotDisabled(EventWrittenEventArgs eventArgs)
+        {
+            string eventSourceName = eventArgs.EventSource.Name;
+            if (eventSourceName != null)
+            {
+                bool isDisabled;
+                if (!this.disabledSources.TryGetValue(eventSourceName, out isDisabled))
+                {
+                    isDisabled = this.EventSources.Any(eventSourceConfiguration => eventSourceConfiguration.Disables(eventArgs.EventSource));
+                    this.disabledSources[eventSourceName] = isDisabled;
+                }
+
+                if (isDisabled) { return; }
+            }
+
+            BroadcastEvent(eventArgs);
+        }
+
+        private void BroadcastEvent(EventWrittenEventArgs eventArgs)
+        {
+            this.subject.OnNext(eventArgs.ToEventData(this.healthReporter, nameof(EventSourceInput)));
         }
     }
 }
