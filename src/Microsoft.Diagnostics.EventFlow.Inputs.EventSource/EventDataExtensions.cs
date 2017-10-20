@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
+using System.Threading;
 #if !NETSTANDARD1_6
 using System.Runtime.InteropServices;
 #endif
@@ -22,6 +23,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 #if !NETSTANDARD1_6
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
+
+        private static bool hasPreciseTime = Environment.OSVersion.Version.Major >= 10 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 2);
 #endif
 
         public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent, IHealthReporter healthReporter, string context)
@@ -35,8 +38,16 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 #if NETSTANDARD1_6
             DateTime now = DateTime.UtcNow;
 #else
-            GetSystemTimePreciseAsFileTime(out long filetime);
-            DateTime now = DateTime.FromFileTimeUtc(filetime);
+            DateTime now;
+            if (hasPreciseTime)
+            {
+                GetSystemTimePreciseAsFileTime(out long filetime);
+                now = DateTime.FromFileTimeUtc(filetime);
+            }
+            else
+            {
+                now = DateTime.UtcNow;
+            }
 #endif
             EventData eventData = new EventData
             {
