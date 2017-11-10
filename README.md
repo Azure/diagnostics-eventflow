@@ -593,7 +593,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 ```json
 {
     "type": "ElasticSearch",
-    "indexNamePrefix": "app1-",
+    "indexNamePrefix": "app1",
     "serviceUri": "https://myElasticSearchCluster:9200",
     "basicAuthenticationUserName": "esUser1",
     "basicAuthenticationUserPassword": "<MyPassword>",
