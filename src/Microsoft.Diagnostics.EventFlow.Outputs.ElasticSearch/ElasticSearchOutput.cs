@@ -413,7 +413,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private string GetIndexName(ElasticSearchConnectionData connectionData)
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
-            string retval = connectionData.Configuration.IndexNamePrefix + now.Year.ToString() + Dot + now.Month.ToString() + Dot + now.Day.ToString();
+            string retval = connectionData.Configuration.IndexNamePrefix + now.ToString("yyyy" + Dot + "MM" + Dot + "dd");
             return retval;
         }
 
