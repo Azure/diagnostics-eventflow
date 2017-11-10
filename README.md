@@ -597,7 +597,10 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
     "serviceUri": "https://myElasticSearchCluster:9200",
     "basicAuthenticationUserName": "esUser1",
     "basicAuthenticationUserPassword": "<MyPassword>",
-    "eventDocumentTypeName": "diagData"
+    "eventDocumentTypeName": "diagData",
+    "numberOfShards": 1,
+    "numberOfReplicas": 1,
+    "refreshInterval": "15s"
 }
 ```
 | Field | Values/Types | Required | Description |
@@ -608,6 +611,9 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
 | `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
+| `numberOfShards` | int | No | Specifies how many shards to create the index with. If not specified, it defaults to 1.|
+| `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
+| `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
 
 *Standard metadata support*
 

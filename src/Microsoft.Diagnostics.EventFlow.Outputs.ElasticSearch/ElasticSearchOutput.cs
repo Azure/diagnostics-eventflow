@@ -383,13 +383,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 return;
             }
-
+            
             // TODO: allow the consumer to fine-tune index settings
             IndexState indexSettings = new IndexState();
             indexSettings.Settings = new IndexSettings();
-            indexSettings.Settings.NumberOfReplicas = 1;
-            indexSettings.Settings.NumberOfShards = 5;
-            indexSettings.Settings.Add("refresh_interval", "15s");
+            indexSettings.Settings.NumberOfReplicas = this.connectionData.Configuration.NumberOfReplicas;
+            indexSettings.Settings.NumberOfShards = this.connectionData.Configuration.NumberOfShards;
+            indexSettings.Settings.Add("refresh_interval", this.connectionData.Configuration.RefreshInterval);
 
             ICreateIndexResponse createIndexResult = await esClient.CreateIndexAsync(indexName, c => c.InitializeUsing(indexSettings)).ConfigureAwait(false);
 

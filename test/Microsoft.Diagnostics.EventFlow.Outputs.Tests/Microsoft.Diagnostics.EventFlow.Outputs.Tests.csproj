@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Trace\Microsoft.Diagnostics.EventFlow.Inputs.Trace.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
   </ItemGroup>
 
@@ -25,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
+    <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />    
