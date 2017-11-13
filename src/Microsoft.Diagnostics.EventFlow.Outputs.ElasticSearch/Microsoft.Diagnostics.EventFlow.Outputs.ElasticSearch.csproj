@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Provides an output implementation that sends diagnostics data to Elasticsearch.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>2.1.1</VersionPrefix>
+    <VersionPrefix>2.2.0</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
     <DelaySign>true</DelaySign>
@@ -21,7 +21,6 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <Version>2.2.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
