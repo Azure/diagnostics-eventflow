@@ -119,52 +119,73 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
 
             // Start the consumer of the report items in the collection.
-            this.writingTask = Task.Run(() =>
-            {
-                foreach (string text in this.reportCollection.GetConsumingEnumerable())
-                {
-                    if (this.newStreamRequested)
-                    {
-                        try
-                        {
-                            SetNewStreamWriter();
-                            Assumes.NotNull(StreamWriter);
-                        }
-                        finally
-                        {
-                            this.newStreamRequested = false;
-                        }
-                    }
-                    this.StreamWriter.WriteLine(text);
-                    if (DateTime.Now >= this.flushTime)
-                    {
-                        this.StreamWriter.Flush();
-                        this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
-                    }
-                }
-
-                Debug.Assert(this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted);
-                this.reportCollection.Dispose();
-                this.reportCollection = null;
-
-                if (this.StreamWriter != null)
-                {
-                    this.StreamWriter.Flush();
-                    this.StreamWriter.Dispose();
-                    this.StreamWriter = null;
-                }
-
-                if (this.fileStream != null)
-                {
-                    this.fileStream.Dispose();
-                    this.fileStream = null;
-                }
-            });
+            this.writingTask = Task.Run(() => ConsumeCollectedData());
         }
 
-        public virtual string GetReportFileName()
+        /// <summary>
+        /// Consumes data from the data collection.
+        /// </summary>
+        private void ConsumeCollectedData()
         {
-            return $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            foreach (string text in this.reportCollection.GetConsumingEnumerable())
+            {
+                if (this.newStreamRequested)
+                {
+                    try
+                    {
+                        SetNewStreamWriter();
+                        Assumes.NotNull(StreamWriter);
+                    }
+                    finally
+                    {
+                        this.newStreamRequested = false;
+                    }
+                }
+                this.StreamWriter.WriteLine(text);
+
+                if (DateTime.Now >= this.flushTime)
+                {
+
+                    this.StreamWriter.Flush();
+
+                    // Check if the file capacity is exceeded after the flush
+                    // TODO: Change the hard coded 1024 below
+                    if (this.StreamWriter.BaseStream.Position > 1024)
+                    {
+                        this.newStreamRequested = true;
+                    }
+
+                    this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
+                }
+            }
+
+            Debug.Assert(this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted);
+            this.reportCollection.Dispose();
+            this.reportCollection = null;
+
+            if (this.StreamWriter != null)
+            {
+                this.StreamWriter.Flush();
+                this.StreamWriter.Dispose();
+                this.StreamWriter = null;
+            }
+
+            if (this.fileStream != null)
+            {
+                this.fileStream.Dispose();
+                this.fileStream = null;
+            }
+        }
+
+        public virtual string GetReportFileName(string suffix = null)
+        {
+            string fileName = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}";
+            if (!string.IsNullOrEmpty(suffix))
+            {
+                fileName += "_" + suffix;
+            }
+            fileName += ".csv";
+            return fileName;
         }
 
         public void ReportHealthy(string description = null, string context = null)
@@ -232,13 +253,27 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            string logFileName = GetReportFileName();
+            string logFileName = GetReportFileName("current");
             string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);
             }
             string logFilePath = Path.Combine(logFileFolder, logFileName);
+
+            // Rotate the log file when needed
+            if (File.Exists(logFilePath))
+            {
+                string rotateFilePath = Path.Combine(logFileFolder, GetReportFileName("last"));
+
+                // Making sure writing to current stream paused before renaming the log files.
+                FinishCurrentStream();
+                if (File.Exists(rotateFilePath))
+                {
+                    File.Delete(rotateFilePath);
+                }
+                File.Move(logFilePath, rotateFilePath);
+            }
 
             // Do not update file stream or stream writer when targeting the same path.
             if (this.fileStream != null &&
@@ -249,12 +284,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             // Flush the current stream.
-            if (this.StreamWriter != null)
-            {
-                this.StreamWriter.Flush();
-                this.StreamWriter.Dispose();
-                this.StreamWriter = null;
-            }
+            FinishCurrentStream();
 
             if (this.fileStream != null)
             {
@@ -279,6 +309,16 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+        }
+
+        private void FinishCurrentStream()
+        {
+            if (this.StreamWriter != null)
+            {
+                this.StreamWriter.Flush();
+                this.StreamWriter.Dispose();
+                this.StreamWriter = null;
+            }
         }
 
         private void Initialize(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger = null)

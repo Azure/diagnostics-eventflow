@@ -15,7 +15,7 @@ namespace Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster
         {
         }
 
-        public override string GetReportFileName()
+        public override string GetReportFileName(string suffix = null)
         {
             int newCount = Interlocked.Increment(ref count);
             return base.Configuration.LogFilePrefix + newCount.ToString() + ".csv";
