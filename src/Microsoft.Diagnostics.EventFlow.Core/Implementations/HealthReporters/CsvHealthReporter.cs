@@ -119,15 +119,20 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// Avoid calling this from the reporter constructor 
         /// because CreateStreamWriter calls into virtual mehtod of GetReportFileName().
         /// </remarks>
-        public void Activate()
+        public bool Activate()
         {
             VerifyObjectIsNotDisposed();
             SetNewStreamWriter();
+            if (StreamWriter == null)
+            {
+                return false;
+            }
             Assumes.NotNull(StreamWriter);
             this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
 
             // Start the consumer of the report items in the collection.
             this.writingTask = Task.Run(() => ConsumeCollectedData());
+            return true;
         }
 
         /// <summary>
@@ -314,8 +319,17 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
                 ReportWarning($"IOExcepion happened for the LogFilePath: {originalFilePath}. Use new path: {logFilePath}", TraceTag);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Unfortunately, when there is no permission to write a csv health report, there is no where we can report the error.
+                // Push the info to the debugger and hope for the best.
+                Debug.Fail($"Fail to create EventFlow health report. Details: {ex.Message}.");
+            }
 
-            this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+            if (this.fileStream != null)
+            {
+                this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+            }
         }
 
         private void FinishCurrentStream()
@@ -457,22 +471,25 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         {
             DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RententionLogsInDays + 1);
             DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
-            IEnumerable<FileInfo> files = (
-                logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
-                logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
-
-            foreach (FileInfo file in files)
+            if (logFolder.Exists)
             {
-                try
+                IEnumerable<FileInfo> files = (
+                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
+                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
+
+                foreach (FileInfo file in files)
                 {
-                    if (file.CreationTimeUtc < criteria)
+                    try
                     {
-                        file.Delete();
+                        if (file.CreationTimeUtc < criteria)
+                        {
+                            file.Delete();
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    ReportWarning($"Fail to remove logging file. Details: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        ReportWarning($"Fail to remove logging file. Details: {ex.Message}");
+                    }
                 }
             }
         }

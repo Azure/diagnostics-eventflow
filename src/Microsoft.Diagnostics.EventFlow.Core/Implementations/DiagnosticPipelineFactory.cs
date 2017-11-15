@@ -40,7 +40,13 @@ namespace Microsoft.Diagnostics.EventFlow
                 healthReporter = CreateHealthReporter(configuration);
             }
             Verify.Operation(healthReporter != null, $"An instance of a health reporter could not be created and none was provider as a parameter to {nameof(CreatePipeline)} method");
-            (healthReporter as IRequireActivation)?.Activate();
+            bool? activateResult = (healthReporter as IRequireActivation)?.Activate();
+            // There could be various reasons lead to the health report activation failures.
+            // Bottom line is that we don't want to break the pipeline when it happens.
+            if(activateResult.HasValue && !activateResult.Value)
+            {
+                healthReporter = new IdleHealthReporter();
+            }
 
             IDictionary<string, string> inputFactories;
             IDictionary<string, string> outputFactories;

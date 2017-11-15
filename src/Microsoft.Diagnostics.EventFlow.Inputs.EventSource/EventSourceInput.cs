@@ -74,10 +74,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject.Dispose();
         }
 
-        public void Activate()
+        public bool Activate()
         {
             Assumes.NotNull(this.initialization);
             this.initialization.Wait();
+            return true;
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventArgs)
@@ -135,15 +136,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             // Taking a lock to ensure that the queue of sources existing at construction is fully created and populated (if necessary).
             // See OnEventSourceCreated() for explanation why we are locking on 'this'.
             lock (this)
-            {                
+            {
                 sourcesToExamine = this.eventSourcesPresentAtConstruction;
             }
-            
+
             if (sourcesToExamine != null)
             {
                 EventSource eventSource;
                 while (sourcesToExamine.TryDequeue(out eventSource))
-                { 
+                {
                     EnableAsNecessary(eventSource);
                 }
             }
@@ -158,7 +159,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
             else
             {
-                foreach(EventSourceConfiguration sourceConfiguration in this.EventSources)
+                foreach (EventSourceConfiguration sourceConfiguration in this.EventSources)
                 {
                     if (sourceConfiguration.Enables(eventSource))
                     {
@@ -191,11 +192,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             if (eventSources.Count() == 0)
             {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", EventFlowContextIdentifiers.Configuration);                
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", EventFlowContextIdentifiers.Configuration);
             }
 
             var invalidConfigurationItems = new List<EventSourceConfiguration>();
-            foreach(var eventSourceConfiguration in eventSources)
+            foreach (var eventSourceConfiguration in eventSources)
             {
                 if (!eventSourceConfiguration.Validate())
                 {
