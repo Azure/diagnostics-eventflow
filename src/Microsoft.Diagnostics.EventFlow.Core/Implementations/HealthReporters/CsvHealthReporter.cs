@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +31,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             Message,
             Warning,
             Error
+        }
+
+        private static class FileSuffix
+        {
+            public const string Current = "current";
+            public const string Last = "last";
         }
 
         #region Constants
@@ -253,7 +261,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            string logFileName = GetReportFileName("current");
+            string logFileName = GetReportFileName(FileSuffix.Current);
             string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
@@ -264,9 +272,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Rotate the log file when needed
             if (File.Exists(logFilePath))
             {
-                string rotateFilePath = Path.Combine(logFileFolder, GetReportFileName("last"));
+                string rotateFilePath = Path.Combine(logFileFolder, GetReportFileName(FileSuffix.Last));
 
-                // Making sure writing to current stream paused before renaming the log files.
+                // Making sure writing to current stream flushed and paused before renaming the log files.
                 FinishCurrentStream();
                 if (File.Exists(rotateFilePath))
                 {
@@ -333,10 +341,10 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Create a default throttle.
             this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(DefaultThrottlingPeriodMsec));
 
-            // Set the file size for csv health report.
+            // Set the file size for csv health report. Minimum is 1MB. Default is 8192MB.
             this.singleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
 
-            // Set default value for retention days for the logs.
+            // Set default value for retention days for the logs. Minimum value is 1.
             if (configuration.RententionLogsInDays <= 0)
             {
                 configuration.RententionLogsInDays = 30;
@@ -396,6 +404,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
             this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
+
+            // Clean up existing logging files per rentention policy
+            CleanupExistingLogs();
         }
 
         private void VerifyObjectIsNotDisposed()
@@ -438,6 +449,33 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private void OnNewReportFileRequested(object sender, EventArgs e)
         {
             this.newStreamRequested = true;
+
+            // Clean up existing logging files per rentention policy
+            CleanupExistingLogs();
+        }
+
+        private void CleanupExistingLogs()
+        {
+            DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RententionLogsInDays + 1);
+            DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
+            IEnumerable<FileInfo> files = (
+                logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Current}.csv", SearchOption.TopDirectoryOnly)).Union(
+                logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
+
+            foreach (FileInfo file in files)
+            {
+                try
+                {
+                    if (file.CreationTimeUtc < criteria)
+                    {
+                        file.Delete();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportWarning($"Fail to remove logging file. Details: {ex.Message}");
+                }
+            }
         }
 
         private void ReportText(HealthReportLevel level, string text, string context = null)
