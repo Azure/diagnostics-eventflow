@@ -48,6 +48,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private TimeSpanThrottle throttle;
         private Task writingTask;
         private HealthReportLevel minReportLevel;
+        private long singleLogFileMaximumSizeInBytes;
 
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
@@ -148,9 +149,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
                     this.StreamWriter.Flush();
 
-                    // Check if the file capacity is exceeded after the flush
-                    // TODO: Change the hard coded 1024 below
-                    if (this.StreamWriter.BaseStream.Position > 1024)
+                    // Check if the file limit is exceeded.
+                    if (this.StreamWriter.BaseStream.Position > this.singleLogFileMaximumSizeInBytes)
                     {
                         this.newStreamRequested = true;
                     }
@@ -330,8 +330,17 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Prepare the configuration, set default values, handle invalid values.
             this.Configuration = configuration;
 
-            // Create a default throttle
+            // Create a default throttle.
             this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(DefaultThrottlingPeriodMsec));
+
+            // Set the file size for csv health report.
+            this.singleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
+
+            // Set default value for retention days for the logs.
+            if (configuration.RententionLogsInDays <= 0)
+            {
+                configuration.RententionLogsInDays = 30;
+            }
 
             HealthReportLevel logLevel;
             string logLevelString = this.Configuration.MinReportLevel;

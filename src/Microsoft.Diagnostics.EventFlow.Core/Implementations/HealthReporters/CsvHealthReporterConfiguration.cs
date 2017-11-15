@@ -13,5 +13,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public string LogFilePrefix { get; set; }
         public string MinReportLevel { get; set; }
         public int? ThrottlingPeriodMsec { get; set; }
+        public int SingleLogFileMaximumSizeInMBytes { get; set; }
+        public int RententionLogsInDays { get; set; } 
     }
 }
