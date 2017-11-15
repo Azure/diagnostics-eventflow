@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Extensions.Configuration;
@@ -68,6 +69,15 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
             {
                 return base.CreateFileStream(logFilePath);
             }
+        }
+
+        internal override IEnumerable<ILogFileInfo> GetLogFiles(DirectoryInfo logFolder)
+        {
+            return new List<TestLogFileInfo>() {
+                new TestLogFileInfo(DateTime.UtcNow),
+                new TestLogFileInfo(DateTime.UtcNow.AddDays(-1)),
+                new TestLogFileInfo(DateTime.UtcNow.AddDays(-2)),
+            };
         }
 
         protected override void Dispose(bool disposing)

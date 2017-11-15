@@ -488,31 +488,40 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             CleanupExistingLogs();
         }
 
-        private void CleanupExistingLogs()
+        internal void CleanupExistingLogs(Action<ILogFileInfo> cleaner = null)
         {
+            cleaner = cleaner ?? ((fileInfo) => fileInfo.Delete());
             DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RetentionLogsInDays + 1);
             DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
-            if (logFolder.Exists)
-            {
-                IEnumerable<FileInfo> files = (
-                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
-                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
 
-                foreach (FileInfo file in files)
+            IEnumerable<ILogFileInfo> files = GetLogFiles(logFolder);
+
+            foreach (ILogFileInfo file in files)
+            {
+                try
                 {
-                    try
+                    if (file.CreationTimeUtc < criteria)
                     {
-                        if (file.CreationTimeUtc < criteria)
-                        {
-                            file.Delete();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ReportWarning($"Fail to remove logging file. Details: {ex.Message}");
+                        cleaner(file);
                     }
                 }
+                catch (Exception ex)
+                {
+                    ReportWarning($"Fail to remove logging file. Details: {ex.Message}");
+                }
             }
+        }
+
+        internal virtual IEnumerable<ILogFileInfo> GetLogFiles(DirectoryInfo logFolder)
+        {
+            if (logFolder != null && logFolder.Exists)
+            {
+                return (
+                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
+                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly))
+                    .Select(fileInfo => new FileInfoWrapper(fileInfo));
+            }
+            return Enumerable.Empty<FileInfoWrapper>();
         }
 
         private void ReportText(HealthReportLevel level, string text, string context = null)

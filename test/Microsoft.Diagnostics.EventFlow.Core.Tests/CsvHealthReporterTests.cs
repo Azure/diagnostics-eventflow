@@ -393,6 +393,21 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
+        [Fact]
+        public void ShouldCleanUpExistingLogsPerRetentionPolicy()
+        {
+            var configuration = BuildTestConfigration(logRetention: 1);
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                int removedItemCount = 0;
+                target.CleanupExistingLogs(info =>
+                {
+                    removedItemCount++;
+                });
+                Assert.Equal(2, removedItemCount);
+            }
+        }
+
         private IConfiguration BuildTestConfigration(
             long? logFileMaxInMB = null,
             int? logRetention = null)
