@@ -23,6 +23,10 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 
         public Mock<StreamWriter> StreamWriterMock { get; private set; }
         private MemoryStream memoryStream;
+        private Func<FileStream> createFileStream;
+
+        internal bool UnauthorizedExceptionUponCreatingFileStreaming { get; set; }
+
         public CustomHealthReporter(string configurationFilePath)
             : base(configurationFilePath)
         {
@@ -35,10 +39,12 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
         {
         }
 
-        public CustomHealthReporter(IConfiguration configuration, int flushPeriodMsec)
+        public CustomHealthReporter(IConfiguration configuration, int flushPeriodMsec, Func<FileStream> customCreateFileStream = null)
             : base(configuration.ToCsvHealthReporterConfiguration(), new Mock<INewReportFileTrigger>().Object, flushPeriodMsec)
         {
             Initialize();
+
+            this.createFileStream = customCreateFileStream;
         }
 
         void Initialize()
@@ -50,6 +56,18 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
         internal override void SetNewStreamWriter()
         {
             this.StreamWriter = StreamWriterMock.Object;
+        }
+
+        internal override FileStream CreateFileStream(string logFilePath)
+        {
+            if (this.createFileStream != null)
+            {
+                return this.createFileStream();
+            }
+            else
+            {
+                return base.CreateFileStream(logFilePath);
+            }
         }
 
         protected override void Dispose(bool disposing)

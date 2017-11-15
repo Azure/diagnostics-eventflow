@@ -26,6 +26,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string LogFilePrefixKey = "LogFilePrefix";
         private const string MinReportLevelKey = "MinReportLevel";
         private const string ThrottlingPeriodMsecKey = "ThrottlingPeriodMsec";
+        private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
+        private const string RetentionLogsInDaysKey = "RetentionLogsInDays";
         private const int DefaultDelayMsec = 100;
 
         [Fact]
@@ -298,14 +300,91 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
-        private IConfiguration BuildTestConfigration()
+        [Fact]
+        public void ShouldHaveDefaultLogFileSizeLimitWhenNotSetInConfigure()
         {
-            return (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const long DefaultSizeInBytes = (long)8192 * 1024 * 1024;
+                // Accepts 0
+                Assert.Equal(0, target.ConfigurationWrapper.SingleLogFileMaximumSizeInMBytes);
+                // Update to default limit & convert to bytes
+                Assert.Equal(DefaultSizeInBytes, target.SingleLogFileMaximumSizeInBytes);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetLogFileSizeLimitToDefaultWhenConfigUnderflow()
+        {
+            var configuration = BuildTestConfigration(logFileMaxInMB: -1);
+
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const long DefaultSizeInBytes = (long)8192 * 1024 * 1024;
+                Assert.Equal(-1, target.ConfigurationWrapper.SingleLogFileMaximumSizeInMBytes);
+                Assert.Equal(DefaultSizeInBytes, target.SingleLogFileMaximumSizeInBytes);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetLogFileRetentionToDefaultWhenConfigUnderFlow()
+        {
+            var configuration = BuildTestConfigration(logRetention: -1);
+
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const int DefaultRetention = 30;
+                Assert.Equal(DefaultRetention, target.ConfigurationWrapper.RetentionLogsInDays);
+            }
+        }
+
+        [Fact]
+        public void ShouldHaveDefaultLogFileRetentionWhenNotSetInConfig()
+        {
+            var configuration = BuildTestConfigration();
+            Assert.Equal(0, configuration.ToCsvHealthReporterConfiguration().RetentionLogsInDays);
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const int DefaultRetentionDays = 30;
+                Assert.Equal(DefaultRetentionDays, target.ConfigurationWrapper.RetentionLogsInDays);
+            }
+        }
+
+        [Fact]
+        public void ShouldHandleUnauthorizedAccessWhenCreatingTheFileStream()
+        {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, ()=> throw new UnauthorizedAccessException("Simulate no permission to write the file.")))
+            {
+                target.CreateNewFileWriter("anyName", ".", "123.log");
+                // Test to making sure no UnauthorizedAccessException thrown.
+                Assert.True(true);
+            }
+        }
+
+        private IConfiguration BuildTestConfigration(
+            long? logFileMaxInMB = null,
+            int? logRetention = null)
+        {
+            Dictionary<string, string> dictionary = new Dictionary<string, string>() {
                 { LogFileFolderKey, DefaultLogFolder },
                 { LogFilePrefixKey, DefaultReporterPrefix},
                 { MinReportLevelKey, DefaultMinReportLevel},
                 { ThrottlingPeriodMsecKey, DefaultThrottlingPeriodMsec}
-            }).Build();
+            };
+
+            if (logFileMaxInMB != null && logFileMaxInMB.HasValue)
+            {
+                dictionary.Add(SingleLogFileMaximumSizeInMBytesKey, logFileMaxInMB.Value.ToString());
+            }
+
+            if (logRetention != null && logRetention.HasValue)
+            {
+                dictionary.Add(RetentionLogsInDaysKey, logRetention.Value.ToString());
+            }
+
+            return (new ConfigurationBuilder()).AddInMemoryCollection(dictionary).Build();
         }
     }
 }

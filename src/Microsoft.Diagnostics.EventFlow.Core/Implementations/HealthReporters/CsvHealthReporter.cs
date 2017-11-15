@@ -55,12 +55,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private TimeSpanThrottle throttle;
         private Task writingTask;
         private HealthReportLevel minReportLevel;
-        private long singleLogFileMaximumSizeInBytes;
 
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
         private FileStream fileStream;
         internal StreamWriter StreamWriter;
+        internal long SingleLogFileMaximumSizeInBytes { get; private set; }
         #endregion
 
         #region Properties
@@ -162,7 +162,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     this.StreamWriter.Flush();
 
                     // Check if the file limit is exceeded.
-                    if (this.StreamWriter.BaseStream.Position > this.singleLogFileMaximumSizeInBytes)
+                    if (this.StreamWriter.BaseStream.Position > this.SingleLogFileMaximumSizeInBytes)
                     {
                         this.newStreamRequested = true;
                     }
@@ -305,9 +305,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             // Create a new stream writer
+            CreateNewFileWriter(logFileName, logFileFolder, logFilePath);
+
+            if (this.fileStream != null)
+            {
+                this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+            }
+        }
+
+        internal void CreateNewFileWriter(string logFileName, string logFileFolder, string logFilePath)
+        {
             try
             {
-                this.fileStream = new FileStream(logFilePath, FileMode.Append);
+                this.fileStream = this.CreateFileStream(logFilePath);
             }
             catch (IOException)
             {
@@ -323,13 +333,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 // Unfortunately, when there is no permission to write a csv health report, there is no where we can report the error.
                 // Push the info to the debugger and hope for the best.
-                Debug.Fail($"Fail to create EventFlow health report. Details: {ex.Message}.");
+                Debug.WriteLine($"Fail to create EventFlow health report. Details: {ex.Message}.");
             }
+        }
 
-            if (this.fileStream != null)
-            {
-                this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
-            }
+        internal virtual FileStream CreateFileStream(string logFilePath)
+        {
+            return new FileStream(logFilePath, FileMode.Append);
         }
 
         private void FinishCurrentStream()
@@ -355,12 +365,12 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(DefaultThrottlingPeriodMsec));
 
             // Set the file size for csv health report. Minimum is 1MB. Default is 8192MB.
-            this.singleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
+            this.SingleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
 
             // Set default value for retention days for the logs. Minimum value is 1.
-            if (configuration.RententionLogsInDays <= 0)
+            if (configuration.RetentionLogsInDays <= 0)
             {
-                configuration.RententionLogsInDays = 30;
+                configuration.RetentionLogsInDays = 30;
             }
 
             HealthReportLevel logLevel;
@@ -418,7 +428,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
             this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
 
-            // Clean up existing logging files per rentention policy
+            // Clean up existing logging files per retention policy
             CleanupExistingLogs();
         }
 
@@ -463,13 +473,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         {
             this.newStreamRequested = true;
 
-            // Clean up existing logging files per rentention policy
+            // Clean up existing logging files per retention policy
             CleanupExistingLogs();
         }
 
         private void CleanupExistingLogs()
         {
-            DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RententionLogsInDays + 1);
+            DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RetentionLogsInDays + 1);
             DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
             if (logFolder.Exists)
             {
