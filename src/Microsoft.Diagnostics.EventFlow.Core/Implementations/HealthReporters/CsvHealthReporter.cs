@@ -35,7 +35,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private static class FileSuffix
         {
-            public const string Current = "current";
             public const string Last = "last";
         }
 
@@ -261,7 +260,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            string logFileName = GetReportFileName(FileSuffix.Current);
+            string logFileName = GetReportFileName();
             string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
@@ -459,7 +458,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RententionLogsInDays + 1);
             DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
             IEnumerable<FileInfo> files = (
-                logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Current}.csv", SearchOption.TopDirectoryOnly)).Union(
+                logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
                 logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
 
             foreach (FileInfo file in files)
