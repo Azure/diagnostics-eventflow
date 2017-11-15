@@ -355,11 +355,41 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public void ShouldHandleUnauthorizedAccessWhenCreatingTheFileStream()
         {
             var configuration = BuildTestConfigration();
-            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, ()=> throw new UnauthorizedAccessException("Simulate no permission to write the file.")))
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, () => throw new UnauthorizedAccessException("Simulate no permission to write the file.")))
             {
-                target.CreateNewFileWriter("anyName", ".", "123.log");
+                target.CreateNewFileWriter(@"c:\log.log");
                 // Test to making sure no UnauthorizedAccessException thrown.
                 Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void ShouldNotRotateLogFileWhenFileDoesNotExist()
+        {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                bool rotate = false;
+                string fileName = target.RotateLogFileImp(".", path => false, path => { }, (from, to) =>
+                {
+                    rotate = true;
+                });
+                Assert.False(rotate);
+            }
+        }
+
+        [Fact]
+        public void ShouldRotateLogFileWhenFileDoesExist()
+        {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                bool rotate = false;
+                string fileName = target.RotateLogFileImp(".", path => true, path => { }, (from, to) =>
+                {
+                    rotate = true;
+                });
+                Assert.True(rotate);
             }
         }
 

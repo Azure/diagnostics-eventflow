@@ -189,15 +189,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
         }
 
-        public virtual string GetReportFileName(string suffix = null)
+        public string RotateLogFile(string logFileFolder)
         {
-            string fileName = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}";
-            if (!string.IsNullOrEmpty(suffix))
-            {
-                fileName += "_" + suffix;
-            }
-            fileName += ".csv";
-            return fileName;
+            return RotateLogFileImp(logFileFolder, File.Exists, File.Delete, File.Move);
         }
 
         public void ReportHealthy(string description = null, string context = null)
@@ -260,32 +254,48 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         #region Private or internal methods
         /// <summary>
+        /// Implementation for rotating the log file.
+        /// </summary>
+        /// <param name="logFileFolder">Log file folder.</param>
+        /// <param name="fileExist">Method to check whether a file exists or not.</param>
+        /// <param name="fileDelete">Method to delete a file.</param>
+        /// <param name="fileMove">Method to move a file.</param>
+        /// <returns></returns>
+        internal virtual string RotateLogFileImp(string logFileFolder, Func<string, bool> fileExist, Action<string> fileDelete, Action<string, string> fileMove)
+        {
+            string fileName = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            string logFilePath = Path.Combine(logFileFolder, fileName);
+
+            // Rotate the log file when needed
+            if (fileExist(logFilePath))
+            {
+                string rotateFilePath = Path.Combine(logFileFolder, $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}_{FileSuffix.Last}.csv");
+
+                // Making sure writing to current stream flushed and paused before renaming the log files.
+                FinishCurrentStream();
+                if (fileExist(rotateFilePath))
+                {
+                    fileDelete(rotateFilePath);
+                }
+                fileMove(logFilePath, rotateFilePath);
+            }
+            return logFilePath;
+        }
+
+        /// <summary>
         /// Create the stream writer for the health reporter.
         /// </summary>
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            string logFileName = GetReportFileName();
+            // Ensure Log folder exists
             string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);
             }
-            string logFilePath = Path.Combine(logFileFolder, logFileName);
 
-            // Rotate the log file when needed
-            if (File.Exists(logFilePath))
-            {
-                string rotateFilePath = Path.Combine(logFileFolder, GetReportFileName(FileSuffix.Last));
-
-                // Making sure writing to current stream flushed and paused before renaming the log files.
-                FinishCurrentStream();
-                if (File.Exists(rotateFilePath))
-                {
-                    File.Delete(rotateFilePath);
-                }
-                File.Move(logFilePath, rotateFilePath);
-            }
+            string logFilePath = RotateLogFile(logFileFolder);
 
             // Do not update file stream or stream writer when targeting the same path.
             if (this.fileStream != null &&
@@ -305,7 +315,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             // Create a new stream writer
-            CreateNewFileWriter(logFileName, logFileFolder, logFilePath);
+            CreateNewFileWriter(logFilePath);
 
             if (this.fileStream != null)
             {
@@ -313,7 +323,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
         }
 
-        internal void CreateNewFileWriter(string logFileName, string logFileFolder, string logFilePath)
+        internal void CreateNewFileWriter(string logFilePath)
         {
             try
             {
@@ -323,7 +333,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 // In case file is locked by other process, give it another shot.
                 string originalFilePath = logFilePath;
-                logFileName = $"{Path.GetFileNameWithoutExtension(logFileName)}_{Path.GetRandomFileName()}{Path.GetExtension(logFileName)}";
+                string logFileName = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
+                string logFileFolder = Path.GetDirectoryName(logFilePath);
                 logFilePath = Path.Combine(logFileFolder, logFileName);
                 this.fileStream = new FileStream(logFilePath, FileMode.Append);
 
