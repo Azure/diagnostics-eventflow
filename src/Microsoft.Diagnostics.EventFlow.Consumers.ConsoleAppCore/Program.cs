@@ -4,12 +4,8 @@
 // ------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Diagnostics.EventFlow.HealthReporters;
-using Microsoft.Diagnostics.EventFlow.Inputs;
-using Microsoft.Diagnostics.EventFlow.Outputs;
+using System.Threading;
 
 namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore
 {
@@ -17,38 +13,16 @@ namespace Microsoft.Diagnostics.EventFlow.Consumers.ConsoleAppCore
     {
         public static void Main(string[] args)
         {
-            // HealthReporter
-            var configBuilder = new ConfigurationBuilder();
-            configBuilder.AddJsonFile("config.json");
-            var configuration = configBuilder.Build();
-
-            using (IHealthReporter reporter = new CsvHealthReporter("FileReportConfig.json"))
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline("config.json"))
             {
-                // Listeners
-                List<IObservable<EventData>> inputs = new List<IObservable<EventData>>();
-                inputs.Add((new TraceInputFactory()).CreateItem(configuration, reporter));
-
-                // Senders
-                var outputs = new List<IOutput>();
-                outputs.Add(new StdOutput(reporter));
-
-                DiagnosticPipeline pipeline = new DiagnosticPipeline(
-                    reporter, 
-                    inputs,
-                    null,
-                    new EventSink[] { new EventSink(new StdOutput(reporter), null) });
-
-                // Build up the pipeline
-                Console.WriteLine("Pipeline is created.");
-
-                // Send a trace to the pipeline
-                Trace.TraceInformation("This is a message from trace . . .");
-                Trace.TraceWarning("This is a warning from trace . . .");
-
-
-                // Check the result
-                Console.WriteLine("Press any key to continue . . .");
-                Console.ReadKey(true);
+                for (int i = 0; i < 200000; i++)
+                {
+                    // You shall not need to call this unless you really want to diagnose EventHub issue.
+                    pipeline.HealthReporter.ReportHealthy("Some health report content. . .");
+                    Thread.Sleep(1);
+                }
+                Trace.TraceWarning("EventFlow is working!");
+                Console.ReadLine();
             }
         }
     }

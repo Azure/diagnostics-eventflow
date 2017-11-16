@@ -1,136 +1,24 @@
 ﻿{
   "inputs": [
     {
-      "type": "EventSource",
-      "sources": [
-        { "providerName": "Microsoft-ServiceFabric-Services" },
-        { "providerName": "MyCompany-AirTrafficControlApplication-Frontend" }
-      ]
-    },
-    {
-      "type": "PerformanceCounter",
-      "counters": [
-        {
-          "counterCategory": "Process",
-          "counterName": "% Processor Time"
-        },
-        {
-          "counterCategory": "Process",
-          "counterName": "Private Bytes"
-        },
-        {
-          "counterCategory": ".NET CLR Memory",
-          "counterName": "% Time in GC"
-        },
-        {
-          "counterCategory": "Process",
-          "counterName": "# of Exceps Thrown / sec"
-        }
-      ]
-    },
-    {
       "type": "Trace",
       "traceLevel": "Warning"
     }
   ],
 
-  "filters": [
-    {
-      "type": "drop",
-      "include": "Level == Verbose"
-    }
-  ],
-
   "outputs": [
     {
-      "type": "ApplicationInsights",
-
-      // Should be a secret, eventually
-      "InstrumentationKey": "***REMOVED***",
-
-      "filters": [
-        // EventSource-based metrics
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncFailure",
-          "metricName": "StatefulRunAsyncFailure",
-          "metricValue": "1.0"
-        },
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "ProviderName == Microsoft-ServiceFabric-Services && EventName == StatefulRunAsyncInvocation",
-          "metricName": "StatefulRunAsyncInvocation",
-          "metricValue": "1.0"
-        },
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "ProviderName == MyCompany-AirTrafficControlApplication-Frontend && EventName == RestApiOperationStop",
-          "metricName": "FrontendOperationDurationMsec",
-          "metricValueProperty": "durationMsec"
-        },
-
-        // EventSource-based request
-        {
-          "type": "metadata",
-          "metadata": "request",
-          "include": "ProviderName == MyCompany-AirTrafficControlApplication-Frontend && EventName == RestApiOperationStop",
-          "requestNameProperty": "operationName",
-          "durationProperty": "durationMsec",
-          "isSuccessProperty": "isSuccess"
-        },
-
-        // Performance counter-based metrics
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "CounterName == \"% Processor Time\"",
-          "metricName": "FrontendServiceProcessorTimePercent"
-        },
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "CounterName == \"% Time in GC\"",
-          "metricName": "FrontendServiceProcessorTimePercent"
-        },
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "CounterName == \"# of Exceps Thrown / sec\"",
-          "metricName": "FrontendServiceExceptionsThrownPerSecond"
-        },
-        {
-          "type": "metadata",
-          "metadata": "metric",
-          "include": "CounterName == \"PrivateBytes\"",
-          "metricName": "FrontendServiceProcessPrivateBytes"
-        }
-      ]
-    },
-    {
-      "type": "oms",
-      "filters": [
-        {
-          "type": "metadata",
-          "metadata": "request",
-          "include": "ProviderName == MyCompany-AirTrafficControlApplication-Frontend && EventName == RestApiOperationStop",
-          "requestNameProperty": "operationName",
-          "durationProperty": "durationMsec",
-          "returnCode": "httpCode"
-        }
-      ]
+      "type": "StdOutput"
     }
   ],
-
-  "schema-version": "2016-08-11",
-
-  "extensions": [
-    {
-      "name": "myFilter",
-      "type": "filter",
-      "factory": "MyApplication.Diagnostics.MyFilterFactory, MyApplication.Diagnostics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
-    }
-  ]
+  "healthReporter": {
+    "type": "CsvHealthReporter",
+    "logFileFolder": ".",
+    "logFilePrefix": "HealthReportAAABB",
+    "minReportLevel": "Message",
+    "throttlingPeriodMsec": "1000",
+    "singleLogFileMaximumSizeInMBytes": 1,
+    "RetentionLogsInDays": 1
+  },
+  "schema-version": "2016-08-11"
 }
