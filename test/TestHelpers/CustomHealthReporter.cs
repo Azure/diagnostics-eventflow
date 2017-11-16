@@ -25,6 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
         public Mock<StreamWriter> StreamWriterMock { get; private set; }
         private MemoryStream memoryStream;
         private Func<FileStream> createFileStream;
+        private Action setStreamWriter;
 
         internal bool UnauthorizedExceptionUponCreatingFileStreaming { get; set; }
 
@@ -40,12 +41,20 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
         {
         }
 
-        public CustomHealthReporter(IConfiguration configuration, int flushPeriodMsec, Func<FileStream> customCreateFileStream = null)
+        public CustomHealthReporter(IConfiguration configuration,
+            int flushPeriodMsec,
+            Func<FileStream> customCreateFileStream = null,
+            Action setNewStreamWriter = null
+            )
             : base(configuration.ToCsvHealthReporterConfiguration(), new Mock<INewReportFileTrigger>().Object, flushPeriodMsec)
         {
             Initialize();
 
             this.createFileStream = customCreateFileStream;
+            this.setStreamWriter = setNewStreamWriter ?? (() =>
+            {
+                this.StreamWriter = StreamWriterMock.Object;
+            });
         }
 
         void Initialize()
@@ -56,7 +65,7 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 
         internal override void SetNewStreamWriter()
         {
-            this.StreamWriter = StreamWriterMock.Object;
+            this.setStreamWriter();
         }
 
         internal override FileStream CreateFileStream(string logFilePath)

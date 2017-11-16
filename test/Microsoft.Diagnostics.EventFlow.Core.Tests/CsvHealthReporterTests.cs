@@ -28,6 +28,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string ThrottlingPeriodMsecKey = "ThrottlingPeriodMsec";
         private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
         private const string LogRetentionInDaysKey = "LogRetentionInDays";
+        private const string IsDebugModeKey = "IsDebugMode";
         private const int DefaultDelayMsec = 100;
 
         [Fact]
@@ -355,11 +356,30 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public void ShouldHandleUnauthorizedAccessWhenCreatingTheFileStream()
         {
             var configuration = BuildTestConfigration();
-            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, () => throw new UnauthorizedAccessException("Simulate no permission to write the file.")))
+            string exceptionMessage = "Simulate no permission to write the file.";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, customCreateFileStream: () => throw new UnauthorizedAccessException(exceptionMessage)))
             {
-                target.CreateNewFileWriter(@"c:\log.log");
-                // Test to making sure no UnauthorizedAccessException thrown.
+                // Exception throws within stream writer.
+                Exception ex = Assert.Throws<UnauthorizedAccessException>(() => { target.CreateNewFileWriter(@"c:\log.log"); });
+                Assert.Equal(exceptionMessage, ex.Message);
+
+                target.Activate();
+                // Test to making sure no UnauthorizedAccessException thrown on activation.
                 Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void ShouldThrowUnauthorizedAccessWhenIsDebugModeIsOn()
+        {
+            var configuration = BuildTestConfigration();
+            configuration[IsDebugModeKey] = "true";
+            string exceptionMessage = "Simulate no permission to write the file.";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, setNewStreamWriter: () => throw new UnauthorizedAccessException(exceptionMessage)))
+            {
+                Exception ex = Assert.Throws<UnauthorizedAccessException>(() => target.Activate());
+                // Test to making sure no UnauthorizedAccessException thrown on activation.
+                Assert.Equal(exceptionMessage, ex.Message);
             }
         }
 
@@ -405,6 +425,34 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     removedItemCount++;
                 });
                 Assert.Equal(2, removedItemCount);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetIsDebugModeToFalseByDefault()
+        {
+            var configuration = BuildTestConfigration();
+            Assert.Null(configuration[IsDebugModeKey]);
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.False(target.IsDebugMode);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetIsDebugModeByConfiguration()
+        {
+            var configuration = BuildTestConfigration();
+            configuration[IsDebugModeKey] = "true";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.True(target.IsDebugMode);
+            }
+
+            configuration[IsDebugModeKey] = "false";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.False(target.IsDebugMode);
             }
         }
 

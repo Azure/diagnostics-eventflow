@@ -55,12 +55,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private TimeSpanThrottle throttle;
         private Task writingTask;
         private HealthReportLevel minReportLevel;
-        private IHealthReporter innerReportWriter;
+        private Action<HealthReportLevel, string, string> innerReportWriter;
 
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
         private FileStream fileStream;
         internal StreamWriter StreamWriter;
+        internal bool IsDebugMode { get; private set; }
         internal long SingleLogFileMaximumSizeInBytes { get; private set; }
         #endregion
 
@@ -124,37 +125,44 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         {
             VerifyObjectIsNotDisposed();
             bool activated = true;
+            string message = null;
             try
             {
                 SetNewStreamWriter();
                 if (StreamWriter == null)
                 {
+                    message = $"Fail to set new stream writer for {nameof(CsvHealthReporter)}.";
+                    if (IsDebugMode)
+                    {
+                        throw new InvalidOperationException(message);
+                    }
                     activated = false;
                 }
-                Assumes.NotNull(StreamWriter);
                 this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
 
                 // Start the consumer of the report items in the collection.
                 this.writingTask = Task.Run(() => ConsumeCollectedData());
 
             }
-            catch(UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
+                if (IsDebugMode)
+                {
+                    throw;
+                }
+                message = ex.Message;
                 activated = false;
             }
 
             if (!activated)
             {
-                // No reporter, no reports.
-                DisposeInnerWriter();
-            }
-        }
-
-        private void DisposeInnerWriter()
-        {
-            if (this.innerReportWriter != null)
-            {
-                this.innerReportWriter?.Dispose();
+                if (!string.IsNullOrEmpty(message))
+                {
+                    // Unfortunately, when there is no permission to write a csv health report, there is no where we can report the error.
+                    // Push the info to the debugger and hope for the best.
+                    Debug.WriteLine($"Fail to create EventFlow health report. Details: {message}.");
+                }
+                // No report writer, no reports.
                 this.innerReportWriter = null;
             }
         }
@@ -221,19 +229,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public void ReportHealthy(string description = null, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            this.innerReportWriter?.ReportHealthy(description, context);
+            this.innerReportWriter?.Invoke(HealthReportLevel.Message, description, context);
         }
 
         public void ReportProblem(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            this.innerReportWriter?.ReportProblem(description, context);
+            this.innerReportWriter?.Invoke(HealthReportLevel.Error, description, context);
         }
 
         public void ReportWarning(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            this.innerReportWriter?.ReportWarning(description, context);
+            this.innerReportWriter?.Invoke(HealthReportLevel.Warning, description, context);
         }
 
         public void Dispose()
@@ -258,8 +266,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     this.newReportFileTrigger.NewReportFileRequested -= OnNewReportFileRequested;
                     this.newReportFileTrigger = null;
                 }
-
-                DisposeInnerWriter();
 
                 // Mark report collection as complete adding. When the collection is empty, it will dispose the stream writers.
                 this.reportCollection.CompleteAdding();
@@ -366,12 +372,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
                 ReportWarning($"IOExcepion happened for the LogFilePath: {originalFilePath}. Use new path: {logFilePath}", TraceTag);
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                // Unfortunately, when there is no permission to write a csv health report, there is no where we can report the error.
-                // Push the info to the debugger and hope for the best.
-                Debug.WriteLine($"Fail to create EventFlow health report. Details: {ex.Message}.");
-            }
         }
 
         internal virtual FileStream CreateFileStream(string logFilePath)
@@ -395,7 +395,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             this.reportCollection = new BlockingCollection<string>();
 
-            this.innerReportWriter = new ReportWriter(this.ReportText);
+            this.IsDebugMode = configuration.IsDebugMode;
+
+            this.innerReportWriter = this.ReportText;
 
             // Prepare the configuration, set default values, handle invalid values.
             this.Configuration = configuration;
