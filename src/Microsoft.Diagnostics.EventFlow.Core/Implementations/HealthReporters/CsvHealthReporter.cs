@@ -379,9 +379,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             this.SingleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
 
             // Set default value for retention days for the logs. Minimum value is 1.
-            if (configuration.RetentionLogsInDays <= 0)
+            if (configuration.LogRetentionInDays <= 0)
             {
-                configuration.RetentionLogsInDays = 30;
+                configuration.LogRetentionInDays = 30;
             }
 
             HealthReportLevel logLevel;
@@ -491,7 +491,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         internal void CleanupExistingLogs(Action<ILogFileInfo> cleaner = null)
         {
             cleaner = cleaner ?? ((fileInfo) => fileInfo.Delete());
-            DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.RetentionLogsInDays + 1);
+            DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.LogRetentionInDays + 1);
             DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
 
             IEnumerable<ILogFileInfo> files = GetLogFiles(logFolder);

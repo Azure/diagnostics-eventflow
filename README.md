@@ -850,7 +850,7 @@ This health reporter writes all errors, warnings, and informational traces gener
     "minReportLevel": "Warning",
     "throttlingPeriodMsec": "1000",
     "singleLogFileMaximumSizeInMBytes": "8192",
-    "retentionLogsInDays": "30"
+    "logRetentionInDays": "30"
 }
 ```
 | Field | Values/Types | Required | Description |
@@ -861,7 +861,7 @@ This health reporter writes all errors, warnings, and informational traces gener
 | `minReportLevel` | Error, Warning, Message | No | Specifies the collection report level. Report traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Error, and Warning traces are collected. Default is Error. |
 | `throttlingPeriodMsec` | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
 | `singleLogFileMaximumSizeInMBytes` | File size in MB/number | No | Specifies the size of the log file in MB before rotating happens. The default value is 8192 MB (8 GB). Once the size of log file exceeds the value, it will be renamed from fileName.csv to fileName_last.csv. Then logs will be written to a new fileName.csv. This setting prevents a single log file become too big. |
-| `retentionLogsInDays` | number of days for the logs files retain | No | Specifies the days for the log files to be retained. The default value is 30. Any log file created before the number of days will be removed automatically. This prevents continuous generating logs taking up the storage. |
+| `logRetentionInDays` | number of days for the logs files retain | No | Specifies the days for the log files to be retained. The default value is 30. Any log file created before the number of days will be removed automatically. This prevents continuous generating logs taking up the storage. |
 
 
 CsvHealthReporter will try to open the log file for writing during initialization. If it can't, a debug message will be output to the debugger viewer like Visual Studio Output window, etc. Docker tools for Visual Studio use this configuration during debugging, so for containerized services the recommended practice is to specify the log file path explicitly.

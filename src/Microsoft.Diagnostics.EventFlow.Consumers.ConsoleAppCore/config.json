@@ -18,7 +18,7 @@
     "minReportLevel": "Message",
     "throttlingPeriodMsec": "1000",
     "singleLogFileMaximumSizeInMBytes": 1,
-    "RetentionLogsInDays": 1
+    "logRetentionInDays": 1
   },
   "schema-version": "2016-08-11"
 }

@@ -27,7 +27,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string MinReportLevelKey = "MinReportLevel";
         private const string ThrottlingPeriodMsecKey = "ThrottlingPeriodMsec";
         private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
-        private const string RetentionLogsInDaysKey = "RetentionLogsInDays";
+        private const string LogRetentionInDaysKey = "LogRetentionInDays";
         private const int DefaultDelayMsec = 100;
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
                 const int DefaultRetention = 30;
-                Assert.Equal(DefaultRetention, target.ConfigurationWrapper.RetentionLogsInDays);
+                Assert.Equal(DefaultRetention, target.ConfigurationWrapper.LogRetentionInDays);
             }
         }
 
@@ -343,11 +343,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         public void ShouldHaveDefaultLogFileRetentionWhenNotSetInConfig()
         {
             var configuration = BuildTestConfigration();
-            Assert.Equal(0, configuration.ToCsvHealthReporterConfiguration().RetentionLogsInDays);
+            Assert.Equal(0, configuration.ToCsvHealthReporterConfiguration().LogRetentionInDays);
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
                 const int DefaultRetentionDays = 30;
-                Assert.Equal(DefaultRetentionDays, target.ConfigurationWrapper.RetentionLogsInDays);
+                Assert.Equal(DefaultRetentionDays, target.ConfigurationWrapper.LogRetentionInDays);
             }
         }
 
@@ -426,7 +426,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
             if (logRetention != null && logRetention.HasValue)
             {
-                dictionary.Add(RetentionLogsInDaysKey, logRetention.Value.ToString());
+                dictionary.Add(LogRetentionInDaysKey, logRetention.Value.ToString());
             }
 
             return (new ConfigurationBuilder()).AddInMemoryCollection(dictionary).Build();
