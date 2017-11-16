@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
 using System.Threading;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 namespace Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster
@@ -15,7 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster
         {
         }
 
-        public override string GetReportFileName()
+        internal override string RotateLogFileImp(string logFileFolder, Func<string, bool> fileExist, Action<string> fileDelete, Action<string, string> fileMove)
         {
             int newCount = Interlocked.Increment(ref count);
             return base.Configuration.LogFilePrefix + newCount.ToString() + ".csv";

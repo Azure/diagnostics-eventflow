@@ -4,6 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +24,11 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 
         public Mock<StreamWriter> StreamWriterMock { get; private set; }
         private MemoryStream memoryStream;
+        private Func<FileStream> createFileStream;
+        private Action setStreamWriter;
+
+        internal bool UnauthorizedExceptionUponCreatingFileStreaming { get; set; }
+
         public CustomHealthReporter(string configurationFilePath)
             : base(configurationFilePath)
         {
@@ -35,10 +41,20 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
         {
         }
 
-        public CustomHealthReporter(IConfiguration configuration, int flushPeriodMsec)
+        public CustomHealthReporter(IConfiguration configuration,
+            int flushPeriodMsec,
+            Func<FileStream> customCreateFileStream = null,
+            Action setNewStreamWriter = null
+            )
             : base(configuration.ToCsvHealthReporterConfiguration(), new Mock<INewReportFileTrigger>().Object, flushPeriodMsec)
         {
             Initialize();
+
+            this.createFileStream = customCreateFileStream;
+            this.setStreamWriter = setNewStreamWriter ?? (() =>
+            {
+                this.StreamWriter = StreamWriterMock.Object;
+            });
         }
 
         void Initialize()
@@ -49,7 +65,28 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 
         internal override void SetNewStreamWriter()
         {
-            this.StreamWriter = StreamWriterMock.Object;
+            this.setStreamWriter();
+        }
+
+        internal override FileStream CreateFileStream(string logFilePath)
+        {
+            if (this.createFileStream != null)
+            {
+                return this.createFileStream();
+            }
+            else
+            {
+                return base.CreateFileStream(logFilePath);
+            }
+        }
+
+        internal override IEnumerable<ILogFileInfo> GetLogFiles(DirectoryInfo logFolder)
+        {
+            return new List<TestLogFileInfo>() {
+                new TestLogFileInfo(DateTime.UtcNow),
+                new TestLogFileInfo(DateTime.UtcNow.AddDays(-1)),
+                new TestLogFileInfo(DateTime.UtcNow.AddDays(-2)),
+            };
         }
 
         protected override void Dispose(bool disposing)

@@ -26,6 +26,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string LogFilePrefixKey = "LogFilePrefix";
         private const string MinReportLevelKey = "MinReportLevel";
         private const string ThrottlingPeriodMsecKey = "ThrottlingPeriodMsec";
+        private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
+        private const string LogRetentionInDaysKey = "LogRetentionInDays";
+        private const string IsDebugModeKey = "IsDebugMode";
         private const int DefaultDelayMsec = 100;
 
         [Fact]
@@ -298,14 +301,183 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             }
         }
 
-        private IConfiguration BuildTestConfigration()
+        [Fact]
+        public void ShouldHaveDefaultLogFileSizeLimitWhenNotSetInConfigure()
         {
-            return (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>() {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const long DefaultSizeInBytes = (long)8192 * 1024 * 1024;
+                // Accepts 0
+                Assert.Equal(0, target.ConfigurationWrapper.SingleLogFileMaximumSizeInMBytes);
+                // Update to default limit & convert to bytes
+                Assert.Equal(DefaultSizeInBytes, target.SingleLogFileMaximumSizeInBytes);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetLogFileSizeLimitToDefaultWhenConfigUnderflow()
+        {
+            var configuration = BuildTestConfigration(logFileMaxInMB: -1);
+
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const long DefaultSizeInBytes = (long)8192 * 1024 * 1024;
+                Assert.Equal(-1, target.ConfigurationWrapper.SingleLogFileMaximumSizeInMBytes);
+                Assert.Equal(DefaultSizeInBytes, target.SingleLogFileMaximumSizeInBytes);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetLogFileRetentionToDefaultWhenConfigUnderFlow()
+        {
+            var configuration = BuildTestConfigration(logRetention: -1);
+
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const int DefaultRetention = 30;
+                Assert.Equal(DefaultRetention, target.ConfigurationWrapper.LogRetentionInDays);
+            }
+        }
+
+        [Fact]
+        public void ShouldHaveDefaultLogFileRetentionWhenNotSetInConfig()
+        {
+            var configuration = BuildTestConfigration();
+            Assert.Equal(0, configuration.ToCsvHealthReporterConfiguration().LogRetentionInDays);
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                const int DefaultRetentionDays = 30;
+                Assert.Equal(DefaultRetentionDays, target.ConfigurationWrapper.LogRetentionInDays);
+            }
+        }
+
+        [Fact]
+        public void ShouldHandleUnauthorizedAccessWhenCreatingTheFileStream()
+        {
+            var configuration = BuildTestConfigration();
+            string exceptionMessage = "Simulate no permission to write the file.";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, customCreateFileStream: () => throw new UnauthorizedAccessException(exceptionMessage)))
+            {
+                // Exception throws within stream writer.
+                Exception ex = Assert.Throws<UnauthorizedAccessException>(() => { target.CreateNewFileWriter(@"c:\log.log"); });
+                Assert.Equal(exceptionMessage, ex.Message);
+
+                target.Activate();
+                // Test to making sure no UnauthorizedAccessException thrown on activation.
+                Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void ShouldThrowUnauthorizedAccessWhenIsDebugModeIsOn()
+        {
+            var configuration = BuildTestConfigration();
+            configuration[IsDebugModeKey] = "true";
+            string exceptionMessage = "Simulate no permission to write the file.";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, setNewStreamWriter: () => throw new UnauthorizedAccessException(exceptionMessage)))
+            {
+                Exception ex = Assert.Throws<UnauthorizedAccessException>(() => target.Activate());
+                // Test to making sure no UnauthorizedAccessException thrown on activation.
+                Assert.Equal(exceptionMessage, ex.Message);
+            }
+        }
+
+        [Fact]
+        public void ShouldNotRotateLogFileWhenFileDoesNotExist()
+        {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                bool rotate = false;
+                string fileName = target.RotateLogFileImp(".", path => false, path => { }, (from, to) =>
+                {
+                    rotate = true;
+                });
+                Assert.False(rotate);
+            }
+        }
+
+        [Fact]
+        public void ShouldRotateLogFileWhenFileDoesExist()
+        {
+            var configuration = BuildTestConfigration();
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                bool rotate = false;
+                string fileName = target.RotateLogFileImp(".", path => true, path => { }, (from, to) =>
+                {
+                    rotate = true;
+                });
+                Assert.True(rotate);
+            }
+        }
+
+        [Fact]
+        public void ShouldCleanUpExistingLogsPerRetentionPolicy()
+        {
+            var configuration = BuildTestConfigration(logRetention: 1);
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                int removedItemCount = 0;
+                target.CleanupExistingLogs(info =>
+                {
+                    removedItemCount++;
+                });
+                Assert.Equal(2, removedItemCount);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetIsDebugModeToFalseByDefault()
+        {
+            var configuration = BuildTestConfigration();
+            Assert.Null(configuration[IsDebugModeKey]);
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.False(target.IsDebugMode);
+            }
+        }
+
+        [Fact]
+        public void ShouldSetIsDebugModeByConfiguration()
+        {
+            var configuration = BuildTestConfigration();
+            configuration[IsDebugModeKey] = "true";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.True(target.IsDebugMode);
+            }
+
+            configuration[IsDebugModeKey] = "false";
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration))
+            {
+                Assert.False(target.IsDebugMode);
+            }
+        }
+
+        private IConfiguration BuildTestConfigration(
+            long? logFileMaxInMB = null,
+            int? logRetention = null)
+        {
+            Dictionary<string, string> dictionary = new Dictionary<string, string>() {
                 { LogFileFolderKey, DefaultLogFolder },
                 { LogFilePrefixKey, DefaultReporterPrefix},
                 { MinReportLevelKey, DefaultMinReportLevel},
                 { ThrottlingPeriodMsecKey, DefaultThrottlingPeriodMsec}
-            }).Build();
+            };
+
+            if (logFileMaxInMB != null && logFileMaxInMB.HasValue)
+            {
+                dictionary.Add(SingleLogFileMaximumSizeInMBytesKey, logFileMaxInMB.Value.ToString());
+            }
+
+            if (logRetention != null && logRetention.HasValue)
+            {
+                dictionary.Add(LogRetentionInDaysKey, logRetention.Value.ToString());
+            }
+
+            return (new ConfigurationBuilder()).AddInMemoryCollection(dictionary).Build();
         }
     }
 }

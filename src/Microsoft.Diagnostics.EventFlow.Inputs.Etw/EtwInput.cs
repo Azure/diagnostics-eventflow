@@ -102,13 +102,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             // Also enable .NET Task Parallel Library hierarchical activity tracking
             this.session.EnableProvider(TplActivities.TplEventSourceGuid, TraceEventLevel.Always, TplActivities.TaskFlowActivityIdsKeyword);
 
-            Task.Factory.StartNew(() => 
+            Task.Factory.StartNew(() =>
             {
                 try
                 {
                     this.session.Process((eventData) => this.subject.OnNext(eventData));
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     this.healthReporter.ReportProblem($"{nameof(EtwInput)}: ETW session has terminated unexpectedly and events are no longer collected. {e.ToString()}");
                 }

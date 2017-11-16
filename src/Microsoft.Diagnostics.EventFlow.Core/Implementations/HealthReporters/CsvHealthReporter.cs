@@ -5,9 +5,11 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +33,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             Error
         }
 
+        private static class FileSuffix
+        {
+            public const string Last = "last";
+        }
+
         #region Constants
         internal const string DefaultLogFilePrefix = "HealthReport";
         private const int DefaultThrottlingPeriodMsec = 0;
@@ -48,11 +55,14 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private TimeSpanThrottle throttle;
         private Task writingTask;
         private HealthReportLevel minReportLevel;
+        private Action<HealthReportLevel, string, string> innerReportWriter;
 
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
         private FileStream fileStream;
         internal StreamWriter StreamWriter;
+        internal bool IsDebugMode { get; private set; }
+        internal long SingleLogFileMaximumSizeInBytes { get; private set; }
         #endregion
 
         #region Properties
@@ -114,75 +124,124 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public void Activate()
         {
             VerifyObjectIsNotDisposed();
-            SetNewStreamWriter();
-            Assumes.NotNull(StreamWriter);
-            this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
-
-            // Start the consumer of the report items in the collection.
-            this.writingTask = Task.Run(() =>
+            bool activated = true;
+            string message = null;
+            try
             {
-                foreach (string text in this.reportCollection.GetConsumingEnumerable())
+                SetNewStreamWriter();
+                if (StreamWriter == null)
                 {
-                    if (this.newStreamRequested)
+                    message = $"Fail to set new stream writer for {nameof(CsvHealthReporter)}.";
+                    if (IsDebugMode)
                     {
-                        try
-                        {
-                            SetNewStreamWriter();
-                            Assumes.NotNull(StreamWriter);
-                        }
-                        finally
-                        {
-                            this.newStreamRequested = false;
-                        }
+                        throw new InvalidOperationException(message);
                     }
-                    this.StreamWriter.WriteLine(text);
-                    if (DateTime.Now >= this.flushTime)
-                    {
-                        this.StreamWriter.Flush();
-                        this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
-                    }
+                    activated = false;
                 }
+                this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
 
-                Debug.Assert(this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted);
-                this.reportCollection.Dispose();
-                this.reportCollection = null;
+                // Start the consumer of the report items in the collection.
+                this.writingTask = Task.Run(() => ConsumeCollectedData());
 
-                if (this.StreamWriter != null)
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                if (IsDebugMode)
                 {
-                    this.StreamWriter.Flush();
-                    this.StreamWriter.Dispose();
-                    this.StreamWriter = null;
+                    throw;
                 }
+                message = ex.Message;
+                activated = false;
+            }
 
-                if (this.fileStream != null)
+            if (!activated)
+            {
+                if (!string.IsNullOrEmpty(message))
                 {
-                    this.fileStream.Dispose();
-                    this.fileStream = null;
+                    // Unfortunately, when there is no permission to write a csv health report, there is no where we can report the error.
+                    // Push the info to the debugger and hope for the best.
+                    Debug.WriteLine($"Fail to create EventFlow health report. Details: {message}.");
                 }
-            });
+                // No report writer, no reports.
+                this.innerReportWriter = null;
+            }
         }
 
-        public virtual string GetReportFileName()
+        /// <summary>
+        /// Consumes data from the data collection.
+        /// </summary>
+        private void ConsumeCollectedData()
         {
-            return $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            foreach (string text in this.reportCollection.GetConsumingEnumerable())
+            {
+                if (this.newStreamRequested)
+                {
+                    try
+                    {
+                        SetNewStreamWriter();
+                        Assumes.NotNull(StreamWriter);
+                    }
+                    finally
+                    {
+                        this.newStreamRequested = false;
+                    }
+                }
+                this.StreamWriter.WriteLine(text);
+
+                if (DateTime.Now >= this.flushTime)
+                {
+
+                    this.StreamWriter.Flush();
+
+                    // Check if the file limit is exceeded.
+                    if (this.StreamWriter.BaseStream.Position > this.SingleLogFileMaximumSizeInBytes)
+                    {
+                        this.newStreamRequested = true;
+                    }
+
+                    this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
+                }
+            }
+
+            Debug.Assert(this.reportCollection.IsAddingCompleted && this.reportCollection.IsCompleted);
+            this.reportCollection.Dispose();
+            this.reportCollection = null;
+
+            if (this.StreamWriter != null)
+            {
+                this.StreamWriter.Flush();
+                this.StreamWriter.Dispose();
+                this.StreamWriter = null;
+            }
+
+            if (this.fileStream != null)
+            {
+                this.fileStream.Dispose();
+                this.fileStream = null;
+            }
+        }
+
+        public string RotateLogFile(string logFileFolder)
+        {
+            return RotateLogFileImp(logFileFolder, File.Exists, File.Delete, File.Move);
         }
 
         public void ReportHealthy(string description = null, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Message, description, context);
+            this.innerReportWriter?.Invoke(HealthReportLevel.Message, description, context);
         }
 
         public void ReportProblem(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Error, description, context);
+            this.innerReportWriter?.Invoke(HealthReportLevel.Error, description, context);
         }
 
         public void ReportWarning(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Warning, description, context);
+            this.innerReportWriter?.Invoke(HealthReportLevel.Warning, description, context);
         }
 
         public void Dispose()
@@ -227,18 +286,48 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         #region Private or internal methods
         /// <summary>
+        /// Implementation for rotating the log file.
+        /// </summary>
+        /// <param name="logFileFolder">Log file folder.</param>
+        /// <param name="fileExist">Method to check whether a file exists or not.</param>
+        /// <param name="fileDelete">Method to delete a file.</param>
+        /// <param name="fileMove">Method to move a file.</param>
+        /// <returns></returns>
+        internal virtual string RotateLogFileImp(string logFileFolder, Func<string, bool> fileExist, Action<string> fileDelete, Action<string, string> fileMove)
+        {
+            string fileName = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            string logFilePath = Path.Combine(logFileFolder, fileName);
+
+            // Rotate the log file when needed
+            if (fileExist(logFilePath))
+            {
+                string rotateFilePath = Path.Combine(logFileFolder, $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}_{FileSuffix.Last}.csv");
+
+                // Making sure writing to current stream flushed and paused before renaming the log files.
+                FinishCurrentStream();
+                if (fileExist(rotateFilePath))
+                {
+                    fileDelete(rotateFilePath);
+                }
+                fileMove(logFilePath, rotateFilePath);
+            }
+            return logFilePath;
+        }
+
+        /// <summary>
         /// Create the stream writer for the health reporter.
         /// </summary>
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            string logFileName = GetReportFileName();
+            // Ensure Log folder exists
             string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
             if (!Directory.Exists(logFileFolder))
             {
                 Directory.CreateDirectory(logFileFolder);
             }
-            string logFilePath = Path.Combine(logFileFolder, logFileName);
+
+            string logFilePath = RotateLogFile(logFileFolder);
 
             // Do not update file stream or stream writer when targeting the same path.
             if (this.fileStream != null &&
@@ -249,12 +338,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             // Flush the current stream.
-            if (this.StreamWriter != null)
-            {
-                this.StreamWriter.Flush();
-                this.StreamWriter.Dispose();
-                this.StreamWriter = null;
-            }
+            FinishCurrentStream();
 
             if (this.fileStream != null)
             {
@@ -263,22 +347,46 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             // Create a new stream writer
+            CreateNewFileWriter(logFilePath);
+
+            if (this.fileStream != null)
+            {
+                this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+            }
+        }
+
+        internal void CreateNewFileWriter(string logFilePath)
+        {
             try
             {
-                this.fileStream = new FileStream(logFilePath, FileMode.Append);
+                this.fileStream = this.CreateFileStream(logFilePath);
             }
             catch (IOException)
             {
                 // In case file is locked by other process, give it another shot.
                 string originalFilePath = logFilePath;
-                logFileName = $"{Path.GetFileNameWithoutExtension(logFileName)}_{Path.GetRandomFileName()}{Path.GetExtension(logFileName)}";
+                string logFileName = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
+                string logFileFolder = Path.GetDirectoryName(logFilePath);
                 logFilePath = Path.Combine(logFileFolder, logFileName);
                 this.fileStream = new FileStream(logFilePath, FileMode.Append);
 
                 ReportWarning($"IOExcepion happened for the LogFilePath: {originalFilePath}. Use new path: {logFilePath}", TraceTag);
             }
+        }
 
-            this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+        internal virtual FileStream CreateFileStream(string logFilePath)
+        {
+            return new FileStream(logFilePath, FileMode.Append);
+        }
+
+        private void FinishCurrentStream()
+        {
+            if (this.StreamWriter != null)
+            {
+                this.StreamWriter.Flush();
+                this.StreamWriter.Dispose();
+                this.StreamWriter = null;
+            }
         }
 
         private void Initialize(CsvHealthReporterConfiguration configuration, INewReportFileTrigger newReportTrigger = null)
@@ -287,11 +395,24 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             this.reportCollection = new BlockingCollection<string>();
 
+            this.IsDebugMode = configuration.IsDebugMode;
+
+            this.innerReportWriter = this.ReportText;
+
             // Prepare the configuration, set default values, handle invalid values.
             this.Configuration = configuration;
 
-            // Create a default throttle
+            // Create a default throttle.
             this.throttle = new TimeSpanThrottle(TimeSpan.FromMilliseconds(DefaultThrottlingPeriodMsec));
+
+            // Set the file size for csv health report. Minimum is 1MB. Default is 8192MB.
+            this.SingleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
+
+            // Log retention days has a minimum of 1 day. Set to the default value of 30 days.
+            if (configuration.LogRetentionInDays <= 0)
+            {
+                configuration.LogRetentionInDays = 30;
+            }
 
             HealthReportLevel logLevel;
             string logLevelString = this.Configuration.MinReportLevel;
@@ -347,6 +468,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             this.newReportFileTrigger = newReportTrigger ?? UtcMidnightNotifier.Instance;
             this.newReportFileTrigger.NewReportFileRequested += OnNewReportFileRequested;
+
+            // Clean up existing logging files per retention policy
+            CleanupExistingLogs();
         }
 
         private void VerifyObjectIsNotDisposed()
@@ -389,6 +513,45 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private void OnNewReportFileRequested(object sender, EventArgs e)
         {
             this.newStreamRequested = true;
+
+            // Clean up existing logging files per retention policy
+            CleanupExistingLogs();
+        }
+
+        internal void CleanupExistingLogs(Action<ILogFileInfo> cleaner = null)
+        {
+            cleaner = cleaner ?? ((fileInfo) => fileInfo.Delete());
+            DateTime criteria = DateTime.UtcNow.Date.AddDays(-Configuration.LogRetentionInDays + 1);
+            DirectoryInfo logFolder = new DirectoryInfo(Configuration.LogFileFolder);
+
+            IEnumerable<ILogFileInfo> files = GetLogFiles(logFolder);
+
+            foreach (ILogFileInfo file in files)
+            {
+                try
+                {
+                    if (file.CreationTimeUtc < criteria)
+                    {
+                        cleaner(file);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportWarning($"Fail to remove logging file. Details: {ex.Message}");
+                }
+            }
+        }
+
+        internal virtual IEnumerable<ILogFileInfo> GetLogFiles(DirectoryInfo logFolder)
+        {
+            if (logFolder != null && logFolder.Exists)
+            {
+                return (
+                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
+                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly))
+                    .Select(fileInfo => new FileInfoWrapper(fileInfo));
+            }
+            return Enumerable.Empty<FileInfoWrapper>();
         }
 
         private void ReportText(HealthReportLevel level, string text, string context = null)
