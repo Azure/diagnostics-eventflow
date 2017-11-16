@@ -74,11 +74,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject.Dispose();
         }
 
-        public bool Activate()
+        public void Activate()
         {
             Assumes.NotNull(this.initialization);
             this.initialization.Wait();
-            return true;
         }
 
         protected override void OnEventWritten(EventWrittenEventArgs eventArgs)

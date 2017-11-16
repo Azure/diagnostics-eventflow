@@ -55,6 +55,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private TimeSpanThrottle throttle;
         private Task writingTask;
         private HealthReportLevel minReportLevel;
+        private IHealthReporter innerReportWriter;
 
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
@@ -119,20 +120,43 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// Avoid calling this from the reporter constructor 
         /// because CreateStreamWriter calls into virtual mehtod of GetReportFileName().
         /// </remarks>
-        public bool Activate()
+        public void Activate()
         {
             VerifyObjectIsNotDisposed();
-            SetNewStreamWriter();
-            if (StreamWriter == null)
+            bool activated = true;
+            try
             {
-                return false;
-            }
-            Assumes.NotNull(StreamWriter);
-            this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
+                SetNewStreamWriter();
+                if (StreamWriter == null)
+                {
+                    activated = false;
+                }
+                Assumes.NotNull(StreamWriter);
+                this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
 
-            // Start the consumer of the report items in the collection.
-            this.writingTask = Task.Run(() => ConsumeCollectedData());
-            return true;
+                // Start the consumer of the report items in the collection.
+                this.writingTask = Task.Run(() => ConsumeCollectedData());
+
+            }
+            catch(UnauthorizedAccessException)
+            {
+                activated = false;
+            }
+
+            if (!activated)
+            {
+                // No reporter, no reports.
+                DisposeInnerWriter();
+            }
+        }
+
+        private void DisposeInnerWriter()
+        {
+            if (this.innerReportWriter != null)
+            {
+                this.innerReportWriter?.Dispose();
+                this.innerReportWriter = null;
+            }
         }
 
         /// <summary>
@@ -197,19 +221,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public void ReportHealthy(string description = null, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Message, description, context);
+            this.innerReportWriter?.ReportHealthy(description, context);
         }
 
         public void ReportProblem(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Error, description, context);
+            this.innerReportWriter?.ReportProblem(description, context);
         }
 
         public void ReportWarning(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
-            ReportText(HealthReportLevel.Warning, description, context);
+            this.innerReportWriter?.ReportWarning(description, context);
         }
 
         public void Dispose()
@@ -234,6 +258,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     this.newReportFileTrigger.NewReportFileRequested -= OnNewReportFileRequested;
                     this.newReportFileTrigger = null;
                 }
+
+                DisposeInnerWriter();
 
                 // Mark report collection as complete adding. When the collection is empty, it will dispose the stream writers.
                 this.reportCollection.CompleteAdding();
@@ -368,6 +394,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             Requires.NotNull(configuration, nameof(configuration));
 
             this.reportCollection = new BlockingCollection<string>();
+
+            this.innerReportWriter = new ReportWriter(this.ReportText);
 
             // Prepare the configuration, set default values, handle invalid values.
             this.Configuration = configuration;
