@@ -408,7 +408,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Set the file size for csv health report. Minimum is 1MB. Default is 8192MB.
             this.SingleLogFileMaximumSizeInBytes = (long)(configuration.SingleLogFileMaximumSizeInMBytes > 0 ? configuration.SingleLogFileMaximumSizeInMBytes : 8192) * 1024 * 1024;
 
-            // Set default value for retention days for the logs. Minimum value is 1.
+            // Log retention days has a minimum of 1 day. Set to the default value of 30 days.
             if (configuration.LogRetentionInDays <= 0)
             {
                 configuration.LogRetentionInDays = 30;
