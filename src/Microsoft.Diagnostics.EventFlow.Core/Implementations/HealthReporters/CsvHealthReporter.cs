@@ -61,7 +61,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private int flushPeriodMsec = 5000;
         private FileStream fileStream;
         internal StreamWriter StreamWriter;
-        internal bool IsDebugMode { get; private set; }
+        internal bool EnsureOutputCanBeSaved { get; private set; }
         internal long SingleLogFileMaximumSizeInBytes { get; private set; }
         #endregion
 
@@ -132,7 +132,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 if (StreamWriter == null)
                 {
                     message = $"Fail to set new stream writer for {nameof(CsvHealthReporter)}.";
-                    if (IsDebugMode)
+                    if (EnsureOutputCanBeSaved)
                     {
                         throw new InvalidOperationException(message);
                     }
@@ -146,7 +146,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             catch (UnauthorizedAccessException ex)
             {
-                if (IsDebugMode)
+                if (EnsureOutputCanBeSaved)
                 {
                     throw;
                 }
@@ -395,7 +395,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             this.reportCollection = new BlockingCollection<string>();
 
-            this.IsDebugMode = configuration.IsDebugMode;
+            this.EnsureOutputCanBeSaved = configuration.EnsureOutputCanBeSaved;
 
             this.innerReportWriter = this.ReportText;
 

@@ -28,7 +28,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string ThrottlingPeriodMsecKey = "ThrottlingPeriodMsec";
         private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
         private const string LogRetentionInDaysKey = "LogRetentionInDays";
-        private const string IsDebugModeKey = "IsDebugMode";
+        private const string EnsureOutputCanBeSavedKey = "EnsureOutputCanBeSaved";
         private const int DefaultDelayMsec = 100;
 
         [Fact]
@@ -370,10 +370,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public void ShouldThrowUnauthorizedAccessWhenIsDebugModeIsOn()
+        public void ShouldThrowUnauthorizedAccessWhenEnsureOutputCanBeSavedIsOn()
         {
             var configuration = BuildTestConfigration();
-            configuration[IsDebugModeKey] = "true";
+            configuration[EnsureOutputCanBeSavedKey] = "true";
             string exceptionMessage = "Simulate no permission to write the file.";
             using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, setNewStreamWriter: () => throw new UnauthorizedAccessException(exceptionMessage)))
             {
@@ -429,30 +429,30 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public void ShouldSetIsDebugModeToFalseByDefault()
+        public void ShouldSetEnsureOutputCanBeSavedToFalseByDefault()
         {
             var configuration = BuildTestConfigration();
-            Assert.Null(configuration[IsDebugModeKey]);
+            Assert.Null(configuration[EnsureOutputCanBeSavedKey]);
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
-                Assert.False(target.IsDebugMode);
+                Assert.False(target.EnsureOutputCanBeSaved);
             }
         }
 
         [Fact]
-        public void ShouldSetIsDebugModeByConfiguration()
+        public void ShouldSetEnsureOutputCanBeSavedByConfiguration()
         {
             var configuration = BuildTestConfigration();
-            configuration[IsDebugModeKey] = "true";
+            configuration[EnsureOutputCanBeSavedKey] = "true";
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
-                Assert.True(target.IsDebugMode);
+                Assert.True(target.EnsureOutputCanBeSaved);
             }
 
-            configuration[IsDebugModeKey] = "false";
+            configuration[EnsureOutputCanBeSavedKey] = "false";
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
-                Assert.False(target.IsDebugMode);
+                Assert.False(target.EnsureOutputCanBeSaved);
             }
         }
 

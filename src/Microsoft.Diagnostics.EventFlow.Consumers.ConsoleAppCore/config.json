@@ -19,7 +19,7 @@
     "throttlingPeriodMsec": "1000",
     "singleLogFileMaximumSizeInMBytes": 1,
     "logRetentionInDays": 1,
-    "isDebugMode": false
+    "ensureOutputCanBeSaved": false
   },
   "schema-version": "2016-08-11"
 }
