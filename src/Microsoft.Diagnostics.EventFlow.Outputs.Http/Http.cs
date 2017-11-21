@@ -11,10 +11,13 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Xml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Newtonsoft.Json;
 using Validation;
+using ExtendedXmlSerializer.Configuration;
+using ExtendedXmlSerializer.ExtensionModel.Xml;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -102,6 +105,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     }
                     break;
 
+                case "xml":
+                    if (string.IsNullOrWhiteSpace(this.configuration.HttpContentType))
+                    {
+                        this.configuration.HttpContentType = "text/xml";
+                    }
+                    break;
+
                 default:
                     errorMessage = $"{nameof(configuration)}: unknown ContentType \"{nameof(this.configuration.ContentType)}\" specified";
                     healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
@@ -133,6 +143,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                         {
                             payload += JsonConvert.SerializeObject(evt) + "\n";
                         }
+                        break;
+
+                    case "xml":
+                        var serializer = new ConfigurationContainer().Create();
+                        payload = serializer.Serialize(new XmlWriterSettings { Indent = false }, events);
                         break;
 
                     default:

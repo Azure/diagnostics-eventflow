@@ -552,7 +552,7 @@ This output writes data to a webserver using diffent encoding methods (plain tex
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Http" | Yes | Specifies the output type. For this output, it must be "Http". |
 | `serviceUri` | string | Yes | Target service URL endpoint (can be HTTP and HTTPS) |
-| `contentType` | "text", "json", "json-lines" | No | Defines the content type (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items and "json-lines" one line per json object (multiple objects) |
+| `contentType` | "text", "json", "json-lines", "xml" | No | Defines the content type (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items, "json-lines" one line per json object (multiple objects) and "xml" will encode all events as xml document |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with webserver. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with webserver. This field should be used only if basicAuthenticationUserName is specified. |
 | `httpContentType` | string | No | Defines the HTTP Content-Type header |
