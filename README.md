@@ -15,6 +15,7 @@ It runs in the same process as the application, so communication overhead is min
  
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
+- [HTTP (json/plain via http)](#http)
 - [Application Insights](#application-insights)
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
@@ -532,6 +533,30 @@ This output writes data to the console window. Here is an example showing all po
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "StdOutput" | Yes | Specifies the output type. For this output, it must be "StdOutput". |
+
+#### Http
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.Http**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.Http/)
+
+This output writes data to a webserver using diffent encoding methods (plain text and json). Here is an example showing all possible settings:
+```json
+{
+    "type": "Http",
+    "serviceUri": "https://example.com/",
+    "contentType": "json",
+    "httpContentType": "application/x-custom-type",
+    "basicAuthenticationUserName": "httpUser1",
+    "basicAuthenticationUserPassword": "<MyPassword>"
+}
+```
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "Http" | Yes | Specifies the output type. For this output, it must be "Http". |
+| `serviceUri` | string | Yes | Target service URL endpoint (can be HTTP and HTTPS) |
+| `contentType` | "text", "json", "json-lines" | No | Defines the content type (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items and "json-lines" one line per json object (multiple objects) |
+| `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with webserver. |
+| `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with webserver. This field should be used only if basicAuthenticationUserName is specified. |
+| `httpContentType` | string | No | Defines the HTTP Content-Type header |
+
 
 #### Event Hub
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
