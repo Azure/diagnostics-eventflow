@@ -16,6 +16,8 @@ It runs in the same process as the application, so communication overhead is min
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
 - [HTTP (json/plain via http)](#http)
+- [TCP (json/plain via tcp)](#tcp)
+- [UDP (json/plain via udp)](#udp)
 - [Application Insights](#application-insights)
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
@@ -557,6 +559,43 @@ This output writes data to a webserver using diffent encoding methods (plain tex
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with webserver. This field should be used only if basicAuthenticationUserName is specified. |
 | `httpContentType` | string | No | Defines the HTTP Content-Type header |
 
+#### Tcp
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.TcpOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.TcpOutput/)
+
+This output writes data to a TCP socket using diffent encoding methods (plain text and json, eg. for logstash). Here is an example showing all possible settings:
+```json
+{
+    "type": "Tcp",
+    "serviceHost": "example.com",
+    "servicePort": 8000,
+    "format": "json"
+}
+```
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "Tcp" | Yes | Specifies the output type. For this output, it must be "Tcp". |
+| `serviceHost` | string | Yes | Target service hostname |
+| `servicePort` | int | Yes | Target service port endpoint |
+| `format` | "text", "json", "json-lines", "xml" | No | Defines the message format (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items and "json-lines" one line per json object (multiple objects) |
+
+#### Udp
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.UdpOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.UdpOutput/)
+
+This output writes data to a UDP socket using diffent encoding methods (plain text and json, eg. for logstash). Here is an example showing all possible settings:
+```json
+{
+    "type": "Udp",
+    "serviceHost": "example.com",
+    "servicePort": 8000,
+    "format": "json"
+}
+```
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "Udp" | Yes | Specifies the output type. For this output, it must be "Udp". |
+| `serviceHost` | string | Yes | Target service hostname |
+| `servicePort` | int | Yes | Target service port endpoint |
+| `format` | "text", "json", "json-lines", "xml" | No | Defines the message format . "text" is plain text lines, "json" a json object with multiple array items and "json-lines" one line per json object (multiple objects) |
 
 #### Event Hub
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)

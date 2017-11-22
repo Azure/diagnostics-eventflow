@@ -331,6 +331,8 @@ namespace Microsoft.Diagnostics.EventFlow
             outputFactories["ElasticSearch"] = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearchOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             outputFactories["OmsOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.OmsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.Oms, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             outputFactories["Http"] = "Microsoft.Diagnostics.EventFlow.Outputs.HttpOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            outputFactories["Tcp"] = "Microsoft.Diagnostics.EventFlow.Outputs.TcpOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.TcpOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            outputFactories["Udp"] = "Microsoft.Diagnostics.EventFlow.Outputs.UdpOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.UdpOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
