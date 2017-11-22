@@ -535,14 +535,14 @@ This output writes data to the console window. Here is an example showing all po
 | `type` | "StdOutput" | Yes | Specifies the output type. For this output, it must be "StdOutput". |
 
 #### Http
-*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.Http**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.Http/)
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput/)
 
 This output writes data to a webserver using diffent encoding methods (plain text and json). Here is an example showing all possible settings:
 ```json
 {
     "type": "Http",
     "serviceUri": "https://example.com/",
-    "contentType": "json",
+    "format": "json",
     "httpContentType": "application/x-custom-type",
     "basicAuthenticationUserName": "httpUser1",
     "basicAuthenticationUserPassword": "<MyPassword>"
@@ -552,7 +552,7 @@ This output writes data to a webserver using diffent encoding methods (plain tex
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Http" | Yes | Specifies the output type. For this output, it must be "Http". |
 | `serviceUri` | string | Yes | Target service URL endpoint (can be HTTP and HTTPS) |
-| `contentType` | "text", "json", "json-lines", "xml" | No | Defines the content type (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items, "json-lines" one line per json object (multiple objects) and "xml" will encode all events as xml document |
+| `format` | "text", "json", "json-lines", "xml" | No | Defines the message format (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items, "json-lines" one line per json object (multiple objects) and "xml" will encode all events as xml document |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with webserver. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with webserver. This field should be used only if basicAuthenticationUserName is specified. |
 | `httpContentType` | string | No | Defines the HTTP Content-Type header |

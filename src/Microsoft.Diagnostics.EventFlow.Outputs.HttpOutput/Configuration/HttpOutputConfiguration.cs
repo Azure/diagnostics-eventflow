@@ -9,17 +9,17 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     // If you make any changes here, please update the README.md file to reflect the new configuration
     public class HttpOutputConfiguration: ItemConfiguration
     {
-        public static readonly string DefaultContentType = "json";
+        public static readonly string DefaultFormat = "json";
 
         public string ServiceUri { get; set; }
-        public string ContentType { get; set; }
+        public string Format { get; set; }
         public string HttpContentType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
         public string BasicAuthenticationUserPassword { get; set; }
 
         public HttpOutputConfiguration()
         {
-            ContentType = DefaultContentType;
+            Format = DefaultFormat;
         }
 
         public HttpOutputConfiguration DeepClone()
@@ -27,7 +27,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
             var other = new HttpOutputConfiguration()
             {
                 ServiceUri = this.ServiceUri,
-                ContentType = this.ContentType,
+                Format = this.Format,
                 HttpContentType = this.HttpContentType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
                 BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword

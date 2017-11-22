@@ -8,14 +8,14 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
-    public class HttpFactory : IPipelineItemFactory<Http>
+    public class HttpOutputFactory : IPipelineItemFactory<HttpOutput>
     {
-        public Http CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        public HttpOutput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            return new Http(configuration, healthReporter);
+            return new HttpOutput(configuration, healthReporter);
         }
     }
 }

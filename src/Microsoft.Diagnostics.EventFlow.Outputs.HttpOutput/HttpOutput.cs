@@ -22,15 +22,16 @@ using ExtendedXmlSerializer.ExtensionModel.Xml;
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
 
-    public class Http : IOutput
+    public class HttpOutput : IOutput
     {
         private HttpClient httpClient;
-        public static readonly string TraceTag = nameof(Http);
+        private IExtendedXmlSerializer xmlSerializer;
+        public static readonly string TraceTag = nameof(HttpOutput);
 
         private readonly IHealthReporter healthReporter;
         private HttpOutputConfiguration configuration;
 
-        public Http(IConfiguration configuration, IHealthReporter healthReporter)
+        public HttpOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -44,7 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch
             {
-                healthReporter.ReportProblem($"Invalid {nameof(Http)} configuration encountered: '{configuration.ToString()}'",
+                healthReporter.ReportProblem($"Invalid {nameof(HttpOutput)} configuration encountered: '{configuration.ToString()}'",
                     EventFlowContextIdentifiers.Configuration);
                 throw;
             }
@@ -52,7 +53,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Initialize(httpOutputConfiguration);
         }
 
-        public Http(HttpOutputConfiguration configuration, IHealthReporter healthReporter)
+        public HttpOutput(HttpOutputConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -65,13 +66,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private void Initialize(HttpOutputConfiguration configuration)
         {
+            string errorMessage;
+
             Debug.Assert(configuration != null);
             Debug.Assert(this.healthReporter != null);
 
             this.httpClient = new HttpClient();
             this.configuration = configuration;
 
-            string errorMessage;
             string userName = configuration.BasicAuthenticationUserName;
             string password = configuration.BasicAuthenticationUserPassword;
             bool credentialsIncomplete = string.IsNullOrWhiteSpace(userName) ^ string.IsNullOrWhiteSpace(password);
@@ -88,7 +90,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 this.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", httpAuthValue);
             }
 
-            switch (this.configuration.ContentType) 
+            switch (this.configuration.Format) 
             {
                 case "text":
                     if (string.IsNullOrWhiteSpace(this.configuration.HttpContentType))
@@ -110,59 +112,59 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     {
                         this.configuration.HttpContentType = "text/xml";
                     }
+                    this.xmlSerializer = new ConfigurationContainer().Create();
                     break;
 
                 default:
-                    errorMessage = $"{nameof(configuration)}: unknown ContentType \"{nameof(this.configuration.ContentType)}\" specified";
+                    errorMessage = $"{nameof(configuration)}: unknown Format \"{nameof(this.configuration.Format)}\" specified";
                     healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
                     break;
             }
         }
 
-        public Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
+        public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
+            if (events == null || events.Count == 0)
+            {
+                return;
+            }
+
             try
             {
-                string payload = "";
+                var payload = new StringBuilder("");
 
-                switch (configuration.ContentType) 
+                switch (configuration.Format) 
                 {
                     case "text":
                         foreach (EventData evt in events)
                         {
-                            payload += evt.ToString() + "\n";
+                            payload.AppendLine(evt.ToString());
                         }
                         break;
 
                     case "json":
-                        payload = JsonConvert.SerializeObject(events);
+                        payload.Append(JsonConvert.SerializeObject(events));
                         break;
 
                     case "json-lines":
                         foreach (EventData evt in events)
                         {
-                            payload += JsonConvert.SerializeObject(evt) + "\n";
+                            payload.AppendLine(JsonConvert.SerializeObject(evt));
                         }
                         break;
 
                     case "xml":
-                        var serializer = new ConfigurationContainer().Create();
-                        payload = serializer.Serialize(new XmlWriterSettings { Indent = false }, events);
-                        break;
-
-                    default:
+                        payload.Append(xmlSerializer.Serialize(new XmlWriterSettings { Indent = false }, events));
                         break;
                 }
 
-                HttpContent contentPost = new StringContent(payload, Encoding.UTF8, configuration.HttpContentType);
+                HttpContent contentPost = new StringContent(payload.ToString(), Encoding.UTF8, configuration.HttpContentType);
 
-                var result = httpClient.PostAsync(new Uri(configuration.ServiceUri), contentPost).Result;
-
-                return Task.FromResult(true);
+                HttpResponseMessage response = await httpClient.PostAsync(new Uri(configuration.ServiceUri), contentPost);
+                response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fail to send events in batch. Error details: {ex.ToString()}");
                 this.healthReporter.ReportProblem($"Fail to send events in batch. Error details: {ex.ToString()}");
                 throw;
             }
