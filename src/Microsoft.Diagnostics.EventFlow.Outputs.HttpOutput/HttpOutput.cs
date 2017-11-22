@@ -107,14 +107,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     }
                     break;
 
-                case "xml":
-                    if (string.IsNullOrWhiteSpace(this.configuration.HttpContentType))
-                    {
-                        this.configuration.HttpContentType = "text/xml";
-                    }
-                    this.xmlSerializer = new ConfigurationContainer().Create();
-                    break;
-
                 default:
                     errorMessage = $"{nameof(configuration)}: unknown Format \"{nameof(this.configuration.Format)}\" specified";
                     healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
@@ -151,10 +143,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                         {
                             payload.AppendLine(JsonConvert.SerializeObject(evt));
                         }
-                        break;
-
-                    case "xml":
-                        payload.Append(xmlSerializer.Serialize(new XmlWriterSettings { Indent = false }, events));
                         break;
                 }
 
