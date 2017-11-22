@@ -84,14 +84,15 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     break;
             }
 
-            Connect();
+            var task = Connect();
+            task.Wait();
         }
 
-        void Connect()
+        async Task Connect()
         {
             this.tcpClient = new TcpClient(AddressFamily.InterNetwork);
-            IPAddress[] IPAddresses = Dns.GetHostAddresses(configuration.ServiceHost);
-            tcpClient.Client.Connect(IPAddresses, configuration.ServicePort);
+            var dnsResult = await Dns.GetHostEntryAsync(configuration.ServiceHost);
+            tcpClient.Client.Connect(dnsResult.AddressList, configuration.ServicePort);
         }
 
         public Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
@@ -129,7 +130,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 if (tcpClient == null || !tcpClient.Connected)
                 {
                     // try reconnection
-                    Connect();
+                    var task = Connect();
+                    task.Wait();
                 }
 
                 lock (tcpClient)
