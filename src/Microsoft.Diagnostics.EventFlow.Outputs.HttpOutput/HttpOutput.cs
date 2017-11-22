@@ -11,13 +11,10 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Xml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Newtonsoft.Json;
 using Validation;
-using ExtendedXmlSerializer.Configuration;
-using ExtendedXmlSerializer.ExtensionModel.Xml;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -25,7 +22,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
     public class HttpOutput : IOutput
     {
         private HttpClient httpClient;
-        private IExtendedXmlSerializer xmlSerializer;
         public static readonly string TraceTag = nameof(HttpOutput);
 
         private readonly IHealthReporter healthReporter;
