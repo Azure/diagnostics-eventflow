@@ -70,6 +70,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             this.httpClient = new HttpClient();
             this.configuration = configuration;
 
+            if (string.IsNullOrWhiteSpace(this.configuration.ServiceUri)) {
+                var errMsg = $"{nameof(HttpOutput)}: no ServiceUri configured";
+                healthReporter.ReportProblem(errMsg);
+                throw new Exception(errMsg);
+            }
+
             string userName = configuration.BasicAuthenticationUserName;
             string password = configuration.BasicAuthenticationUserPassword;
             bool credentialsIncomplete = string.IsNullOrWhiteSpace(userName) ^ string.IsNullOrWhiteSpace(password);
