@@ -111,10 +111,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelpers", "test\TestHel
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput", "src\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.csproj", "{B71FB566-9E87-4BE0-8E9D-12B59FB10341}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Outputs.TcpOutput", "src\Microsoft.Diagnostics.EventFlow.Outputs.TcpOutput\Microsoft.Diagnostics.EventFlow.Outputs.TcpOutput.csproj", "{CF9C8DD7-E627-46AC-A19D-BF9328BB3452}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Outputs.UdpOutput", "src\Microsoft.Diagnostics.EventFlow.Outputs.UdpOutput\Microsoft.Diagnostics.EventFlow.Outputs.UdpOutput.csproj", "{788653DF-CD08-4180-95EA-5349E26384CE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
