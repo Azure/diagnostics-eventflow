@@ -9,10 +9,10 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     // If you make any changes here, please update the README.md file to reflect the new configuration
     public class HttpOutputConfiguration: ItemConfiguration
     {
-        public static readonly string DefaultFormat = "json";
+        public static readonly HttpOutputFormat DefaultFormat = HttpOutputFormat.Json;
 
         public string ServiceUri { get; set; }
-        public string Format { get; set; }
+        public HttpOutputFormat Format { get; set; }
         public string HttpContentType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
         public string BasicAuthenticationUserPassword { get; set; }

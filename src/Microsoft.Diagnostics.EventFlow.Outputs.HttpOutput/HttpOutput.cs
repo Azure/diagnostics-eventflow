@@ -94,24 +94,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             switch (this.configuration.Format) 
             {
-                case "text":
-                    if (string.IsNullOrWhiteSpace(this.configuration.HttpContentType))
-                    {
-                        this.configuration.HttpContentType = "text/plain";
-                    }
-                    break;
-
-                case "json":
-                case "json-lines":
+                case HttpOutputFormat.Json:
+                case HttpOutputFormat.JsonLines:
                     if (string.IsNullOrWhiteSpace(this.configuration.HttpContentType))
                     {
                         this.configuration.HttpContentType = "application/json";
                     }
-                    break;
-
-                default:
-                    errorMessage = $"{nameof(configuration)}: unknown Format \"{nameof(this.configuration.Format)}\" specified";
-                    healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
                     break;
             }
         }
@@ -129,18 +117,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 switch (configuration.Format) 
                 {
-                    case "text":
-                        foreach (EventData evt in events)
-                        {
-                            payload.AppendLine(evt.ToString());
-                        }
-                        break;
-
-                    case "json":
+                    case HttpOutputFormat.Json:
                         payload.Append(JsonConvert.SerializeObject(events));
                         break;
 
-                    case "json-lines":
+                    case HttpOutputFormat.JsonLines:
                         foreach (EventData evt in events)
                         {
                             payload.AppendLine(JsonConvert.SerializeObject(evt));
@@ -155,8 +136,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch (Exception ex)
             {
-                this.healthReporter.ReportProblem($"Fail to send events in batch. Error details: {ex.ToString()}");
-                throw;
+                this.healthReporter.ReportProblem($"{nameof(configuration)}: Fail to send events in batch. Error details: {ex.ToString()}");
             }
         }
     }
