@@ -542,7 +542,7 @@ This output writes data to a webserver using diffent encoding methods (plain tex
 {
     "type": "Http",
     "serviceUri": "https://example.com/",
-    "format": "json",
+    "format": "Json",
     "httpContentType": "application/x-custom-type",
     "basicAuthenticationUserName": "httpUser1",
     "basicAuthenticationUserPassword": "<MyPassword>"
@@ -552,7 +552,7 @@ This output writes data to a webserver using diffent encoding methods (plain tex
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Http" | Yes | Specifies the output type. For this output, it must be "Http". |
 | `serviceUri` | string | Yes | Target service URL endpoint (can be HTTP and HTTPS) |
-| `format` | "text", "json", "json-lines" | No | Defines the message format (and the default HTTP Content-Type header). "text" is plain text lines, "json" a json object with multiple array items and "json-lines" one line per json object (multiple objects) |
+| `format` | "Json", "JsonLines" | No | Defines the message format (and the default HTTP Content-Type header). "Json" a json object with multiple array items and "JsonLines" one line per json object (multiple objects) |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with webserver. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with webserver. This field should be used only if basicAuthenticationUserName is specified. |
 | `httpContentType` | string | No | Defines the HTTP Content-Type header |
