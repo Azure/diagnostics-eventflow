@@ -20,7 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                     new Dictionary<string, object>
                     {
                         ["type"] = "Http",
-                        ["format"] = "json-lines",
+                        ["format"] = "JsonLines",
                         ["ServiceUri"] = "http://localhost:1000",
                         ["basicAuthenticationUserName"] = "mywebuser",
                         ["basicAuthenticationUserPassword"] = "mywebpass",
@@ -44,7 +44,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 configFragments[0].Bind(httpOutputConfiguration);
 
                 Assert.Equal(httpOutputConfiguration.ServiceUri, "http://localhost:1000");
-                Assert.Equal(httpOutputConfiguration.Format, "json-lines");
+                Assert.Equal(httpOutputConfiguration.Format, HttpOutputFormat.JsonLines);
                 Assert.Equal(httpOutputConfiguration.BasicAuthenticationUserName, "mywebuser");
                 Assert.Equal(httpOutputConfiguration.BasicAuthenticationUserPassword, "mywebpass");
                 Assert.Equal(httpOutputConfiguration.HttpContentType, "application/x-custom");
