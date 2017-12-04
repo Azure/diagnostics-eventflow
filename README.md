@@ -15,7 +15,7 @@ It runs in the same process as the application, so communication overhead is min
  
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
-- [HTTP (json/plain via http)](#http)
+- [HTTP (json via http)](#http)
 - [Application Insights](#application-insights)
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
