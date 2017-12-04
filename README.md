@@ -537,7 +537,7 @@ This output writes data to the console window. Here is an example showing all po
 #### Http
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput/)
 
-This output writes data to a webserver using diffent encoding methods (plain text and json, eg. for logstash). Here is an example showing all possible settings:
+This output writes data to a webserver using diffent encoding methods (Json or JsonLines, eg. for logstash). Here is an example showing all possible settings:
 ```json
 {
     "type": "Http",
