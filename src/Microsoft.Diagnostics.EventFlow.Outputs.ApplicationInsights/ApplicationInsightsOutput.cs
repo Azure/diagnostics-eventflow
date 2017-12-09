@@ -25,6 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class ApplicationInsightsOutput : IOutput
     {
+        private const string Iso8601 = "O";
         private static readonly Task CompletedTask = Task.FromResult<object>(null);
         private static readonly SeverityLevel[] ToSeverityLevel = new SeverityLevel[]
         {
@@ -308,7 +309,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             return tracked;
         }
 
-        private void AddProperties(ISupportProperties item, EventData e, bool setTimestampFromEventData = true)
+        internal void AddProperties(ISupportProperties item, EventData e, bool setTimestampFromEventData = true)
         {
             ITelemetry telemetry = item as ITelemetry;
             if (telemetry != null && setTimestampFromEventData)
@@ -322,7 +323,29 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             foreach (var payloadItem in e.Payload)
             {
-                AddProperty(item, payloadItem.Key, payloadItem.Value?.ToString());
+                object value = payloadItem.Value;
+
+                if (value == null)
+                {
+                    continue;
+                }
+
+                string serializedValue;
+
+                if (value is DateTime)
+                {
+                    serializedValue = ((DateTime) value).ToString(Iso8601);
+                }
+                else if (value is DateTimeOffset)
+                {
+                    serializedValue = ((DateTimeOffset)value).ToString(Iso8601);
+                }
+                else
+                {
+                    serializedValue = value.ToString();
+                }
+
+                AddProperty(item, payloadItem.Key, serializedValue);
             }
         }
 
