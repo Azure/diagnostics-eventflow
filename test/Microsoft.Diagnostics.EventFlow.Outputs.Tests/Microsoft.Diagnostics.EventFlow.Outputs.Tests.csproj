@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Trace\Microsoft.Diagnostics.EventFlow.Inputs.Trace.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">    
