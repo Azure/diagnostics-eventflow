@@ -20,6 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public HttpOutputConfiguration()
         {
             Format = DefaultFormat;
+            HttpContentType = "application/json";
         }
 
         public HttpOutputConfiguration DeepClone()
