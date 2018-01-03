@@ -21,13 +21,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
     public class HttpOutput : IOutput
     {
-        private HttpClient httpClient;
+        private Implementation.IHttpClient httpClient;
         public static readonly string TraceTag = nameof(HttpOutput);
 
         private readonly IHealthReporter healthReporter;
         private HttpOutputConfiguration configuration;
 
-        public HttpOutput(IConfiguration configuration, IHealthReporter healthReporter)
+        public HttpOutput(IConfiguration configuration, IHealthReporter healthReporter, Implementation.IHttpClient httpClient = null)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -46,10 +46,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 throw;
             }
 
-            Initialize(httpOutputConfiguration);
+            Initialize(httpOutputConfiguration, httpClient);
         }
 
-        public HttpOutput(HttpOutputConfiguration configuration, IHealthReporter healthReporter)
+        public HttpOutput(HttpOutputConfiguration configuration, IHealthReporter healthReporter, Implementation.IHttpClient httpClient = null)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -57,17 +57,17 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             this.healthReporter = healthReporter;
 
             // Clone the configuration instance since we are going to hold onto it (via this.connectionData)
-            Initialize(configuration.DeepClone());
+            Initialize(configuration.DeepClone(), httpClient);
         }
 
-        private void Initialize(HttpOutputConfiguration configuration)
+        private void Initialize(HttpOutputConfiguration configuration, Implementation.IHttpClient httpClient)
         {
             string errorMessage;
 
             Debug.Assert(configuration != null);
             Debug.Assert(this.healthReporter != null);
 
-            this.httpClient = new HttpClient();
+            this.httpClient = httpClient ?? new StandardHttpClient();
             this.configuration = configuration;
 
             if (string.IsNullOrWhiteSpace(this.configuration.ServiceUri)) {
@@ -137,6 +137,18 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             catch (Exception ex)
             {
                 this.healthReporter.ReportProblem($"{nameof(configuration)}: Fail to send events in batch. Error details: {ex.ToString()}");
+            }
+        }
+
+        private class StandardHttpClient : Implementation.IHttpClient
+        {
+            private HttpClient httpClient = new HttpClient();
+
+            public HttpRequestHeaders DefaultRequestHeaders => this.httpClient.DefaultRequestHeaders;
+
+            public Task<HttpResponseMessage> PostAsync(Uri requestUri, HttpContent content)
+            {
+                return this.httpClient.PostAsync(requestUri, content);
             }
         }
     }

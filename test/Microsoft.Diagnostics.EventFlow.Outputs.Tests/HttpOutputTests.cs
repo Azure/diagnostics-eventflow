@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -49,6 +54,73 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 Assert.Equal(httpOutputConfiguration.BasicAuthenticationUserPassword, "mywebpass");
                 Assert.Equal(httpOutputConfiguration.HttpContentType, "application/x-custom");
             }
+        }
+
+        [Fact]
+        public async Task ProducesJsonByDefault()
+        {
+            var config = new HttpOutputConfiguration();
+            config.ServiceUri = "http://logcollector:1234";
+
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var httpClientMock = new Mock<Implementation.IHttpClient>();
+            httpClientMock.Setup(client => client.PostAsync(It.IsAny<Uri>(), It.IsAny<HttpContent>()))
+                .Returns<Task<HttpRequestMessage>>(req => Task.FromResult(
+                    new HttpResponseMessage(System.Net.HttpStatusCode.NoContent)));
+
+            var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
+
+            var events = new List<EventData>(2);
+
+            var e = new EventData();
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 12, 0, TimeSpan.Zero);
+            e.ProviderName = nameof(HttpOutputTests);
+            e.Level = LogLevel.Informational;
+            e.AddPayloadProperty("Message", "Hey!", healthReporterMock.Object, "tests");
+            events.Add(e);
+
+            e = new EventData();
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 14, 20, TimeSpan.Zero);
+            e.ProviderName = nameof(HttpOutputTests);
+            e.Level = LogLevel.Warning;
+            e.AddPayloadProperty("Message", "Hey!", healthReporterMock.Object, "tests");
+            events.Add(e);
+
+            string expectedContent = @"
+                [
+                    {
+                        ""Timestamp"":""2018-01-02T14:12:00+00:00"",
+                        ""ProviderName"":""HttpOutputTests"",
+                        ""Level"":4,
+                        ""Keywords"":0,
+                        ""Payload"":{""Message"":""Hey!""}
+                    },
+                    {
+                        ""Timestamp"":""2018-01-02T14:14:20+00:00"",
+                        ""ProviderName"":""HttpOutputTests"",
+                        ""Level"":3,
+                        ""Keywords"":0,
+                        ""Payload"":{""Message"":""Hey!""}
+                    }]";
+            expectedContent = RemoveWhitespace(expectedContent);
+            
+            await output.SendEventsAsync(events, 78, CancellationToken.None);
+            httpClientMock.Verify(client => client.PostAsync(
+                new Uri("http://logcollector:1234"), 
+                It.Is<HttpContent>(content => content.ReadAsStringAsync().GetAwaiter().GetResult() == expectedContent)
+            ), Times.Once());
+
+        }
+
+        [Fact]
+        public void ProducesJsonLinesIfRequested()
+        {
+
+        }
+
+        private string RemoveWhitespace(string input)
+        {
+            return new string(input.Where(c => !Char.IsWhiteSpace(c)).ToArray());
         }
     }
 }
