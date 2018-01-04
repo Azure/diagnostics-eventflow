@@ -70,21 +70,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 
             var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
 
-            var events = new List<EventData>(2);
-
-            var e = new EventData();
-            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 12, 0, TimeSpan.Zero);
-            e.ProviderName = nameof(HttpOutputTests);
-            e.Level = LogLevel.Informational;
-            e.AddPayloadProperty("Message", "Hey!", healthReporterMock.Object, "tests");
-            events.Add(e);
-
-            e = new EventData();
-            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 14, 20, TimeSpan.Zero);
-            e.ProviderName = nameof(HttpOutputTests);
-            e.Level = LogLevel.Warning;
-            e.AddPayloadProperty("Message", "Hey!", healthReporterMock.Object, "tests");
-            events.Add(e);
+            var events = GetTestBatch(healthReporterMock.Object);
 
             string expectedContent = @"
                 [
@@ -113,9 +99,79 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         }
 
         [Fact]
-        public void ProducesJsonLinesIfRequested()
+        public async Task ProducesJsonLinesIfRequested()
         {
+            var config = new HttpOutputConfiguration();
+            config.ServiceUri = "http://logcollector:1234";
+            config.Format = HttpOutputFormat.JsonLines;
 
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var httpClientMock = new Mock<Implementation.IHttpClient>();
+            httpClientMock.Setup(client => client.PostAsync(It.IsAny<Uri>(), It.IsAny<HttpContent>()))
+                .Returns<Task<HttpRequestMessage>>(req => Task.FromResult(
+                    new HttpResponseMessage(System.Net.HttpStatusCode.NoContent)));
+
+            var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
+
+            var events = new List<EventData>(2);
+
+            var e = new EventData();
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 12, 0, TimeSpan.Zero);
+            e.ProviderName = nameof(HttpOutputTests);
+            e.Level = LogLevel.Informational;
+            e.AddPayloadProperty("Message", "Hey!", healthReporterMock.Object, "tests");
+            events.Add(e);
+
+            e = new EventData();
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 14, 20, TimeSpan.Zero);
+            e.ProviderName = nameof(HttpOutputTests);
+            e.Level = LogLevel.Warning;
+            e.AddPayloadProperty("Message", "Hey!", healthReporterMock.Object, "tests");
+            events.Add(e);
+
+            string expectedContent = @"
+                {
+                    ""Timestamp"":""2018-01-02T14:12:00+00:00"",
+                    ""ProviderName"":""HttpOutputTests"",
+                    ""Level"":4,
+                    ""Keywords"":0,
+                    ""Payload"":{""Message"":""Hey!""}
+                }
+                {
+                    ""Timestamp"":""2018-01-02T14:14:20+00:00"",
+                    ""ProviderName"":""HttpOutputTests"",
+                    ""Level"":3,
+                    ""Keywords"":0,
+                    ""Payload"":{""Message"":""Hey!""}
+                }";
+            expectedContent = RemoveWhitespace(expectedContent);
+
+            await output.SendEventsAsync(events, 78, CancellationToken.None);
+            httpClientMock.Verify(client => client.PostAsync(
+                new Uri("http://logcollector:1234"),
+                It.Is<HttpContent>(content => RemoveWhitespace(content.ReadAsStringAsync().GetAwaiter().GetResult()) == expectedContent)
+            ), Times.Once());
+        }
+
+        private List<EventData> GetTestBatch(IHealthReporter healthReporter)
+        {
+            var events = new List<EventData>(2);
+
+            var e = new EventData();
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 12, 0, TimeSpan.Zero);
+            e.ProviderName = nameof(HttpOutputTests);
+            e.Level = LogLevel.Informational;
+            e.AddPayloadProperty("Message", "Hey!", healthReporter, "tests");
+            events.Add(e);
+
+            e = new EventData();
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 14, 20, TimeSpan.Zero);
+            e.ProviderName = nameof(HttpOutputTests);
+            e.Level = LogLevel.Warning;
+            e.AddPayloadProperty("Message", "Hey!", healthReporter, "tests");
+            events.Add(e);
+
+            return events;
         }
 
         private string RemoveWhitespace(string input)
