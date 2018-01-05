@@ -65,8 +65,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var healthReporterMock = new Mock<IHealthReporter>();
             var httpClientMock = new Mock<Implementation.IHttpClient>();
             httpClientMock.Setup(client => client.PostAsync(It.IsAny<Uri>(), It.IsAny<HttpContent>()))
-                .Returns<Task<HttpRequestMessage>>(req => Task.FromResult(
-                    new HttpResponseMessage(System.Net.HttpStatusCode.NoContent)));
+                .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.NoContent));
 
             var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
 
@@ -108,8 +107,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var healthReporterMock = new Mock<IHealthReporter>();
             var httpClientMock = new Mock<Implementation.IHttpClient>();
             httpClientMock.Setup(client => client.PostAsync(It.IsAny<Uri>(), It.IsAny<HttpContent>()))
-                .Returns<Task<HttpRequestMessage>>(req => Task.FromResult(
-                    new HttpResponseMessage(System.Net.HttpStatusCode.NoContent)));
+                .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.NoContent));
 
             var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
 
