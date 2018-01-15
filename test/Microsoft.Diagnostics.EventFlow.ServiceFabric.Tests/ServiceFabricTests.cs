@@ -78,6 +78,42 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
             Assert.True(isOK, verificationError);
         }
 
+        [Theory]
+        [InlineData("charlie.delta")]
+        [InlineData("charlie-delta")]
+        [InlineData("charlie_delta")]
+        [InlineData("charlie:delta")]
+        [InlineData("charlie\\delta")]
+        [InlineData("charlie/delta")]
+        [InlineData("charlie?delta")]
+        [InlineData("charlie!delta")]
+        [InlineData("charlie$delta")]
+        [InlineData("charlie#delta")]
+        [InlineData("charlie@delta")]
+        public void ReferencedKeyCanContainComplexKey(string complexKey)
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var configurationSource = new Dictionary<string, string>()
+            {
+                ["alpha"] = "Alpha",
+                [$"bravo:{complexKey}"] = "Delta",
+                ["delta"] = $"servicefabric:/bravo/{complexKey}"
+            };
+
+            IConfigurationRoot configuration = (new ConfigurationBuilder()).AddInMemoryCollection(configurationSource).Build();
+            ServiceFabricDiagnosticPipelineFactory.ApplyFabricConfigurationOverrides(configuration, "unused-configuration-package-path", healthReporterMock.Object);
+            healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+
+            string verificationError;
+            bool isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.False(isOK, verificationError);
+
+            configurationSource["delta"] = "Delta";
+            isOK = VerifyConfguration(configuration.AsEnumerable(), configurationSource, out verificationError);
+            Assert.True(isOK, verificationError);
+        }
+
         [Fact]
         public void ReferencedValueCanBeEmpty()
         {

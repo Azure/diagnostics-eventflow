@@ -18,12 +18,12 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 {
     public static class ServiceFabricDiagnosticPipelineFactory
     {
-        public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>\w+)";
+        public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>.+)";
         public static readonly string FabricConfigurationFileReference = @"servicefabricfile:/(?<filename>.+)";
         public const string DefaultConfigurationFileName = "eventFlowConfig.json";
 
         public static DiagnosticPipeline CreatePipeline(
-            string healthEntityName, 
+            string healthEntityName,
             string configurationFileName = DefaultConfigurationFileName,
             string configurationPackageName = ServiceFabricConfigurationProvider.DefaultConfigurationPackageName)
         {
@@ -65,7 +65,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
         }
 
         internal static IConfigurationRoot ApplyFabricConfigurationOverrides(
-            this IConfigurationRoot configurationRoot, 
+            this IConfigurationRoot configurationRoot,
             string configPackagePath,
             IHealthReporter healthReporter)
         {
@@ -94,7 +94,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
                         if (newValue == null)
                         {
                             healthReporter.ReportWarning(
-                                $"Configuration value reference '{kvp.Value}' was encountered but no corresponding configuration value was found using path '{valueReferencePath}'", 
+                                $"Configuration value reference '{kvp.Value}' was encountered but no corresponding configuration value was found using path '{valueReferencePath}'",
                                 EventFlowContextIdentifiers.Configuration);
                         }
                         else
