@@ -83,13 +83,8 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric.Tests
         [InlineData("charlie-delta")]
         [InlineData("charlie_delta")]
         [InlineData("charlie:delta")]
-        [InlineData("charlie\\delta")]
         [InlineData("charlie/delta")]
-        [InlineData("charlie?delta")]
-        [InlineData("charlie!delta")]
-        [InlineData("charlie$delta")]
         [InlineData("charlie#delta")]
-        [InlineData("charlie@delta")]
         public void ReferencedKeyCanContainComplexKey(string complexKey)
         {
             var healthReporterMock = new Mock<IHealthReporter>();
