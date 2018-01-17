@@ -18,8 +18,8 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 {
     public static class ServiceFabricDiagnosticPipelineFactory
     {
-        // The "name" capture group will math any combinatione of one or more "words" '\w',
-        // and separators as dot '.', underscore '_' (captured by \w). dash '-', colon ':', slash '/', and hash '#'
+        // The "<name>" capture group will match any combination of, one or more, words '\w'
+        // and separators as: dot '.', underscore '_' (captured by \w), dash '\-', colon ':', slash '/', and hash '#'.
         public static readonly string FabricConfigurationValueReference = @"servicefabric:/(?<section>\w+)/(?<name>[\w.\-:/#]+)";
         public static readonly string FabricConfigurationFileReference = @"servicefabricfile:/(?<filename>.+)";
         public const string DefaultConfigurationFileName = "eventFlowConfig.json";
