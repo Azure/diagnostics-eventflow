@@ -14,6 +14,8 @@ using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Table;
 using Validation;
 
+using Microsoft.Diagnostics.EventFlow.Utilities;
+
 namespace Microsoft.Diagnostics.EventFlow
 {
     public class TableStorageSender : IOutput
@@ -80,8 +82,11 @@ namespace Microsoft.Diagnostics.EventFlow
             }
             catch (Exception e)
             {
-                string errorMessage = nameof(TableStorageSender) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
-                this.healthReporter.ReportProblem(errorMessage);
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () => 
+                {
+                    string errorMessage = nameof(TableStorageSender) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                    this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
+                });
             }
         }
 

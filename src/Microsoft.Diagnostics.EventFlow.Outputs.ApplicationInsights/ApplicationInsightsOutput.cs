@@ -19,6 +19,7 @@ using Validation;
 
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
@@ -129,7 +130,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch (Exception e)
             {
-                this.healthReporter.ReportProblem("Diagnostics data upload has failed." + Environment.NewLine + e.ToString());
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () => 
+                {
+                    string errorMessage = nameof(ApplicationInsightsOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                    this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
+                });                
             }
 
             return CompletedTask;

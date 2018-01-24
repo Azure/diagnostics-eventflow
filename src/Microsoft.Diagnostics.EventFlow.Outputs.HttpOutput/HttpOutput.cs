@@ -13,6 +13,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Utilities;
 using Newtonsoft.Json;
 using Validation;
 
@@ -134,9 +135,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 HttpResponseMessage response = await httpClient.PostAsync(new Uri(configuration.ServiceUri), contentPost);
                 response.EnsureSuccessStatusCode();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                this.healthReporter.ReportProblem($"{nameof(configuration)}: Fail to send events in batch. Error details: {ex.ToString()}");
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () =>
+                {
+                    string errorMessage = nameof(HttpOutput) + ": diagnostic data upload failed: " + Environment.NewLine + e.ToString();
+                    this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
+                });
             }
         }
 

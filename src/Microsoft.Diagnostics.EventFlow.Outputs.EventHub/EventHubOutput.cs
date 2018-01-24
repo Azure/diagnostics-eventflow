@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Validation;
 using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
@@ -119,8 +120,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch (Exception e)
             {
-                string errorMessage = nameof(EventHubOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
-                this.healthReporter.ReportProblem(errorMessage);
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () => 
+                {
+                    string errorMessage = nameof(EventHubOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                    this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
+                });
             }
         }
 
