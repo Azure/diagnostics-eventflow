@@ -442,6 +442,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
         private async Task BlockKeepsPostponedMessages(Func<ISourceBlock<int>> BlockFactory)
         {
+            // This test requires longer timeout than most of the other tests in this suite, otherwise it occasionally fails on slower machines
+            // If it fails nevertheless, switch to custom TaskScheduler.
+            TimeSpan longArrivalTimeout = TimeSpan.FromMilliseconds(MessageArrivalTimeout.TotalMilliseconds * 10.0);
+
             ISourceBlock<int> block = BlockFactory();
             ITargetBlock<int> blockT = (ITargetBlock<int>)block;
 
@@ -458,21 +462,19 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             // Out of capacity
             Assert.False(blockT.Post(4));
 
-            // However SendAsync() will allow postponing the message, sot the message will be eventually delivered
+            // However SendAsync() will allow postponing the message, so the message will be eventually delivered
             blockT.SendAsync(5).Forget();
 
             // Wait till the block offers a message
             // Assumption: only one message will be offered, the block will not offer more messages if the target postpones
-            bool messageOffered = await TaskUtils.PollWaitAsync(() => testTarget.MessagesPostponed.Count == 1, MessageArrivalTimeout);
+            bool messageOffered = await TaskUtils.PollWaitAsync(() => testTarget.MessagesPostponed.Count == 1, longArrivalTimeout);
             Assert.True(messageOffered);
 
             // Assumption: once the block target stops postponing, the block will keep pushing data to target 
             // until it runs out of buffered messages.
             testTarget.ConsumptionMode = DataflowMessageStatus.Accepted;
             testTarget.ConsumePostponedMessages();
-            // Use 10 times the normal message arrival timeout for extra padding--the test tended to be a bit flakey at this point.
-            // If this happens again, switch to custom TaskScheduler.
-            bool gotAllMessages = await TaskUtils.PollWaitAsync(() => testTarget.MessagesConsumed.Count == 4, TimeSpan.FromMilliseconds(MessageArrivalTimeout.TotalMilliseconds * 10));
+            bool gotAllMessages = await TaskUtils.PollWaitAsync(() => testTarget.MessagesConsumed.Count == 4, longArrivalTimeout);
             Assert.True(gotAllMessages, "We should have gotten 4 messages");
             Assert.Equal(testTarget.MessagesConsumed.OrderBy((i) => i), new int[] { 1, 2, 3, 5 });
         }

@@ -10,7 +10,7 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 {
     public static class TaskUtils
     {
-        private static readonly TimeSpan JustABit = TimeSpan.FromMilliseconds(20);
+        private static readonly TimeSpan JustABit = TimeSpan.FromMilliseconds(50);
 
         public static async Task<bool> PollWaitAsync(Func<bool> condition, TimeSpan timeout)
         {
