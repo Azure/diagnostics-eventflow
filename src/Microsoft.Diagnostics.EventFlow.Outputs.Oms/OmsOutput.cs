@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -16,7 +17,7 @@ using Newtonsoft.Json;
 using Validation;
 
 using Microsoft.Diagnostics.EventFlow.Configuration;
-using System.Diagnostics;
+using Microsoft.Diagnostics.EventFlow.Utilities;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -137,7 +138,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch (Exception e)
             {
-                this.healthReporter.ReportProblem("An error occurred while sending data to OMS: " + e.ToString());
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () => 
+                {
+                    string errorMessage = nameof(OmsOutput) + ": an error occurred while sending data to OMS: " + Environment.NewLine + e.ToString();
+                    this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
+                });
             }
         }
 

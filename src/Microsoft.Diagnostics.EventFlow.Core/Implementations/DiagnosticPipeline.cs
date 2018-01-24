@@ -13,7 +13,7 @@ using System.Threading.Tasks.Dataflow;
 using Validation;
 
 using Microsoft.Diagnostics.EventFlow.Configuration;
-using System.Diagnostics;
+using Microsoft.Diagnostics.EventFlow.Utilities;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
@@ -358,9 +358,13 @@ namespace Microsoft.Diagnostics.EventFlow
                     }
                     catch (Exception e)
                     {
-                        this.healthReporter.ReportWarning(
-                            nameof(DiagnosticPipeline) + ": an output has thrown an exception while sending data" + Environment.NewLine + e.ToString(),
-                            EventFlowContextIdentifiers.Output);
+                        ErrorHandlingPolicies.HandleOutputTaskError(e, () =>
+                        {
+                            this.healthReporter.ReportWarning(
+                                nameof(DiagnosticPipeline) + ": an output has thrown an exception while sending data" + Environment.NewLine + e.ToString(),
+                                EventFlowContextIdentifiers.Output);
+                        });
+                        
                     }
                 }
             }

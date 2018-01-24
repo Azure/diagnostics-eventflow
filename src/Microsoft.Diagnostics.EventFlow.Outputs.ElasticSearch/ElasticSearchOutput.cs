@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Nest;
 using Validation;
@@ -107,8 +108,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             catch (Exception e)
             {
-                string errorMessage = nameof(ElasticSearchOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
-                this.healthReporter.ReportProblem(errorMessage);
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () => 
+                {
+                    string errorMessage = nameof(ElasticSearchOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
+                    this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
+                });
             }
         }
 
@@ -439,7 +443,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 errorMessage += "No further error information is available";
             }
 
-            this.healthReporter.ReportProblem(errorMessage);
+            this.healthReporter.ReportWarning(errorMessage);
         }
 
         private class ElasticSearchConnectionData
