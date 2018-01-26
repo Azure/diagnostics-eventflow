@@ -12,5 +12,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public string WorkspaceId { get; set; }
         public string WorkspaceKey { get; set; }
         public string LogTypeName { get; set; }
+        public bool UseAzureGov { get; set; }
     }
 }

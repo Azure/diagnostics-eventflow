@@ -1,4 +1,4 @@
-# Microsoft.Diagnostics.EventFlow
+﻿# Microsoft.Diagnostics.EventFlow
 
 ## Introduction
 The EventFlow library suite allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces.
@@ -668,7 +668,8 @@ The OMS output writes data to [Operations Management Suite](https://www.microsof
 {
   "type": "OmsOutput",
   "workspaceId": "<workspace-GUID>",
-  "workspaceKey": "<base-64-encoded workspace key>"
+  "workspaceKey": "<base-64-encoded workspace key>",
+  "useAzureGov" : "<optional-boolean>"
 }
 ```
 
@@ -679,7 +680,9 @@ Supported configuration settings are:
 | `type` | "OmsOutput" | Yes | Specifies the output type. For this output, it must be "OmsOutput". |
 | `workspaceId` | string (GUID) | Yes | Specifies the workspace identifier. |
 | `workspaceKey` | string (base-64) | Yes | Specifies the workspace authentication key. |
-| `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS ingestion service). |
+| `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS 
+ingestion service). |
+| `useAzureGov` | bool | No | Used to send entries to an OMS workspace located in the Azure Gov Cloud |
 
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.

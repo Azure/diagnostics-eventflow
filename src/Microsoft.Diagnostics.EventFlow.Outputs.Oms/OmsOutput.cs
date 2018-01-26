@@ -83,7 +83,15 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             var retryHandler = new HttpExponentialRetryMessageHandler();
             var httpClient = new HttpClient(retryHandler);
-            httpClient.BaseAddress = new Uri($"https://{workspaceId}.ods.opinsights.azure.com", UriKind.Absolute);
+
+            if (configuration.UseAzureGov)
+            {
+                httpClient.BaseAddress = new Uri($"https://{workspaceId}.ods.opinsights.azure.us", UriKind.Absolute);
+            }
+            else
+            {
+                httpClient.BaseAddress = new Uri($"https://{workspaceId}.ods.opinsights.azure.com", UriKind.Absolute);
+            }            
 
             string logTypeName = configuration.LogTypeName;
             if (string.IsNullOrWhiteSpace(logTypeName))
