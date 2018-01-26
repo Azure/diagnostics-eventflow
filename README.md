@@ -669,7 +669,7 @@ The OMS output writes data to [Operations Management Suite](https://www.microsof
   "type": "OmsOutput",
   "workspaceId": "<workspace-GUID>",
   "workspaceKey": "<base-64-encoded workspace key>",
-  "useAzureGov" : "<optional-boolean>"
+  "serviceDomain" : "<optional domain for OMS>"
 }
 ```
 
@@ -682,7 +682,7 @@ Supported configuration settings are:
 | `workspaceKey` | string (base-64) | Yes | Specifies the workspace authentication key. |
 | `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS 
 ingestion service). |
-| `useAzureGov` | bool | No | Used to send entries to an OMS workspace located in the Azure Gov Cloud |
+| `serviceDomain` | string | No | Specifies the domain for your OMS workspace. Default value is "ods.opinsights.azure.com", for Azure Commercial.
 
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
