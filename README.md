@@ -812,12 +812,14 @@ Metrics are named time series of floating-point values. Metric metadata defines 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `metadata` | "metric" | Yes | Indicates metric metadata definition; must be "metric". |
-| `metricName` | string | Yes | The name of the metric. |
+| `metricName` | string | (see Remarks) | The name of the metric. |
+| `metricNameProperty` | string | (see Remarks) | The name of the event property that holds metric name. |
 | `metricValue` | double | (see Remarks) | The value of the metric. This is useful for "counter" type of metric when each occurrence of a particular event should result in an increment of the counter. |
 | `metricValueProperty` | string | (see Remarks) | The name of the event property that holds the metric value. | 
 
 Remarks: 
-1. Either `metricValue` or `metricValueProperty` must be specified.
+1. Either `metricName` or `metricNameProperty` must be specified.
+2. Either `metricValue` or `metricValueProperty` must be specified.
 
 **Request metadata type**
 
