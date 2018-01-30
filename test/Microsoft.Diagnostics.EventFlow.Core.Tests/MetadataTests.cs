@@ -42,6 +42,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             result = MetricData.TryGetData(eventData, metricMetadata, out md);
             Assert.Equal(DataRetrievalStatus.Success, result.Status);
             Assert.Equal(3.14, md.Value, DoublePrecisionTolerance);
+
+            //metric name value property            
+            eventData.Payload.Add("metricName", "customMetricName");
+            metricMetadata.Properties.Remove(MetricData.MetricNameMoniker);
+            metricMetadata.Properties.Add(MetricData.MetricNamePropertyMoniker, "metricName");
+
+            result = MetricData.TryGetData(eventData, metricMetadata, out md);
+            Assert.Equal(DataRetrievalStatus.Success, result.Status);
+            Assert.Equal(3.14, md.Value, DoublePrecisionTolerance);
+            Assert.Equal("customMetricName", md.MetricName);
         }
 
         [Fact]
@@ -55,13 +65,19 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             var result = MetricData.TryGetData(eventData, metricMetadata, out MetricData md);
             Assert.Equal(DataRetrievalStatus.InvalidMetadataType, result.Status);
 
-            // Missing metric name property
+            // No metricName or metricNameProperty on the metadata
             metricMetadata = new EventMetadata(MetricData.MetricMetadataKind);
             result = MetricData.TryGetData(eventData, metricMetadata, out md);
             Assert.Equal(DataRetrievalStatus.MetadataPropertyMissing, result.Status);
             Assert.Contains("Expected property 'metricName'", result.Message);
 
+            // metricNameProperty points to a property that does not exist
+            metricMetadata.Properties.Add(MetricData.MetricNamePropertyMoniker, "customMetricName");
+            result = MetricData.TryGetData(eventData, metricMetadata, out md);
+            Assert.Equal(DataRetrievalStatus.DataMissingOrInvalid, result.Status);
+
             // No metricValue or metricValueProperty on the metadata
+            metricMetadata.Properties.Remove(MetricData.MetricNamePropertyMoniker);
             metricMetadata.Properties.Add(MetricData.MetricNameMoniker, "SomeMetric");
             result = MetricData.TryGetData(eventData, metricMetadata, out md);
             Assert.Equal(DataRetrievalStatus.MetadataPropertyMissing, result.Status);
