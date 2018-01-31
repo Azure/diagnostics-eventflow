@@ -11,6 +11,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
     {
         public static readonly string MetricMetadataKind = "metric";
         public static readonly string MetricNameMoniker = "metricName";
+        public static readonly string MetricNamePropertyMoniker = "metricNameProperty";
         public static readonly string MetricValueMoniker = "metricValue";
         public static readonly string MetricValuePropertyMoniker = "metricValueProperty";
 
@@ -31,10 +32,23 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
                 return DataRetrievalResult.InvalidMetadataType(metricMetadata.MetadataType, MetricMetadataKind);
             }
 
-            string metricName = metricMetadata[MetricNameMoniker];
-            if (string.IsNullOrEmpty(metricName))
+            string metricName = string.Empty;
+
+            string metricNameProperty = metricMetadata[MetricNamePropertyMoniker];
+            if (string.IsNullOrEmpty(metricNameProperty))
             {
-                return DataRetrievalResult.MissingMetadataProperty(MetricNameMoniker);
+                metricName = metricMetadata[MetricNameMoniker];
+                if (string.IsNullOrEmpty(metricName))
+                {
+                    return DataRetrievalResult.MissingMetadataProperty(MetricNameMoniker);
+                }
+            }
+            else
+            {
+                if (!eventData.GetValueFromPayload<string>(metricNameProperty, (v) => metricName = v))
+                {
+                    return DataRetrievalResult.DataMissingOrInvalid(metricNameProperty);
+                }
             }
 
             double value = 0.0;
