@@ -91,7 +91,8 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
     </ItemGroup>
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
     <Move SourceFiles="@(CoreAssemblies)" DestinationFolder="$(OutputPath)\core" />
@@ -125,7 +126,8 @@
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;">
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;">
       <Authenticode>Microsoft</Authenticode>
       <StrongName>StrongName</StrongName>
     </FilesToSign>
@@ -161,6 +163,7 @@
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0"/>
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
