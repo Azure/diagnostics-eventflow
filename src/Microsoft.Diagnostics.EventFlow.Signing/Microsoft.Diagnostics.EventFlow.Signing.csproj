@@ -126,7 +126,7 @@
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll
+                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                           $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;">
       <Authenticode>Microsoft</Authenticode>
       <StrongName>StrongName</StrongName>
