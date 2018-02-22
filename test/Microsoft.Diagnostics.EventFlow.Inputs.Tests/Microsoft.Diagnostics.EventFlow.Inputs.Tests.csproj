@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-     <TargetFrameworks>netcoreapp1.0;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;netcoreapp2.0;net46</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Tests</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
