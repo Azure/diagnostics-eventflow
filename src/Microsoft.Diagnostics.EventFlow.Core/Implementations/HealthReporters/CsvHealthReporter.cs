@@ -506,6 +506,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 #elif NETSTANDARD1_6
             basePath = Path.GetDirectoryName(this.GetType().GetTypeInfo().Assembly.Location);
+#elif NETSTANDARD2_0
+            basePath = Path.GetDirectoryName(this.GetType().Assembly.Location);
 #endif
             this.Configuration.LogFileFolder = Path.Combine(basePath, this.Configuration.LogFileFolder);
         }
