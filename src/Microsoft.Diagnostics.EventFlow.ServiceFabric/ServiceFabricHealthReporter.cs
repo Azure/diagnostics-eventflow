@@ -11,10 +11,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 {
     public class ServiceFabricHealthReporter : IHealthReporter
     {
-        private FabricClient fabricClient;
-        private Uri applicatioName;
-        private string serviceManifestName;
-        private string nodeName;
+        private CodePackageActivationContext activationContext;
         private string entityIdentifier;
 
         public ServiceFabricHealthReporter(string entityIdentifier)
@@ -25,18 +22,7 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
             }
             this.entityIdentifier = entityIdentifier;
 
-            this.fabricClient = new FabricClient(
-                new FabricClientSettings()
-                {
-                    HealthReportSendInterval = TimeSpan.FromSeconds(5)
-                }
-                );
-
-            CodePackageActivationContext activationContext = FabricRuntime.GetActivationContext();
-            this.applicatioName = new Uri(activationContext.ApplicationName);
-            this.serviceManifestName = activationContext.GetServiceManifestName();
-            NodeContext nodeContext = FabricRuntime.GetNodeContext();
-            this.nodeName = nodeContext.NodeName;
+            this.activationContext = FabricRuntime.GetActivationContext();
         }
 
         public void ReportHealthy(string description = "Healthy", string context = null)
@@ -59,15 +45,9 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
             HealthInformation healthInformation = new HealthInformation(this.entityIdentifier, "Connectivity", healthState);
             healthInformation.Description = description;
 
-            DeployedServicePackageHealthReport healthReport = new DeployedServicePackageHealthReport(
-                this.applicatioName,
-                this.serviceManifestName,
-                this.nodeName,
-                healthInformation);
-
             try
             {
-                this.fabricClient.HealthManager.ReportHealth(healthReport);
+                this.activationContext.ReportDeployedServicePackageHealth(healthInformation);
             }
             catch (FabricException e)
             {
