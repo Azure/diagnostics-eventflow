@@ -46,14 +46,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 var esOutputConfiguration = new ElasticSearchOutputConfiguration();
                 configFragments[0].Bind(esOutputConfiguration);
 
-                Assert.Equal(esOutputConfiguration.IndexNamePrefix, "myprefix");
-                Assert.Equal(esOutputConfiguration.EventDocumentTypeName, "mytype");
-                Assert.Equal(esOutputConfiguration.ServiceUri, "http://localhost:1000");
-                Assert.Equal(esOutputConfiguration.BasicAuthenticationUserName, "myesuser");
-                Assert.Equal(esOutputConfiguration.BasicAuthenticationUserPassword, "myespass");
-                Assert.Equal(esOutputConfiguration.NumberOfShards, 10);
-                Assert.Equal(esOutputConfiguration.NumberOfReplicas, 20);
-                Assert.Equal(esOutputConfiguration.RefreshInterval, "60s");
+                Assert.Equal("myprefix", esOutputConfiguration.IndexNamePrefix);
+                Assert.Equal("mytype", esOutputConfiguration.EventDocumentTypeName);
+                Assert.Equal("http://localhost:1000", esOutputConfiguration.ServiceUri);
+                Assert.Equal("myesuser", esOutputConfiguration.BasicAuthenticationUserName);
+                Assert.Equal("myespass", esOutputConfiguration.BasicAuthenticationUserPassword);
+                Assert.Equal(10, esOutputConfiguration.NumberOfShards);
+                Assert.Equal(20, esOutputConfiguration.NumberOfReplicas);
+                Assert.Equal("60s", esOutputConfiguration.RefreshInterval);
             }
         }
     }
