@@ -344,7 +344,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         private void assertContainsDuplicate(IDictionary<string, object> payload, string keyPrefix, object expectedValue)
         {
             var duplicates = payload.Keys.Where(k => k.StartsWith(keyPrefix) && k != keyPrefix).ToArray();
-            Assert.Equal(1, duplicates.Length);
+            Assert.Single(duplicates);
             Assert.Equal(expectedValue, payload[duplicates.First()]);
         }
 

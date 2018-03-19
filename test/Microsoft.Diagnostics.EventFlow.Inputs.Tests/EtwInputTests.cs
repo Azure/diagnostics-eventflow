@@ -191,7 +191,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 catch (Exception)  {  }
 
                 EventData exceptionEvent = null;
-                bool exceptionEventRaised = await TaskUtils.PollWaitAsync(() => observer.Data.TryDequeue(out exceptionEvent), TraceSessionActivationTimeout);
+                bool exceptionEventRaised = await TaskUtils.PollWaitAsync(() => {
+                    var fetched = observer.Data.TryDequeue(out exceptionEvent);
+                    if (!fetched)
+                    {
+                        return false;
+                    }
+
+                    return exceptionEvent.Payload.Keys.Contains("ExceptionMessage");
+                }, TraceSessionActivationTimeout);
                 Assert.True(exceptionEventRaised);
                 Assert.Equal("We seek perfection", exceptionEvent.Payload["ExceptionMessage"]);
 

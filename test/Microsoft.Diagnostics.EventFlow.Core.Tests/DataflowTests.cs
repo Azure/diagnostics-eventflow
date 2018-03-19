@@ -332,7 +332,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             target.ConsumePostponedMessages();
             // Assumption: only one message (the last one) will be successfully consumed. The previous message was overwritten, 
             // so when the target inquires about it, it is gone.
-            Assert.Equal(1, target.MessagesConsumed.Count);
+            Assert.Single(target.MessagesConsumed);
         }
 
         [Fact]
