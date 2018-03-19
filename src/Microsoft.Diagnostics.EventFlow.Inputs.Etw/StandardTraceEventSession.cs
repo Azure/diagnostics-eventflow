@@ -19,7 +19,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private TraceEventSession inner;
         private bool isProcessing;
         private IHealthReporter healthReporter;
-        private Action<EventData> onEvent;
 
         public StandardTraceEventSession(IHealthReporter healthReporter)
         {
@@ -75,22 +74,16 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             if (!isProcessing)
             {
                 isProcessing = true;
-                this.onEvent = onEvent;
-
-                this.inner.Source.Dynamic.All += TrackEvent;
-                this.inner.Source.Clr.All += TrackEvent;
-
+                this.inner.Source.Dynamic.All += (traceEvent) => 
+                {
+                    // Suppress events from TplEventSource--they are mostly interesting for debugging task processing and interaction,
+                    // and not that useful for production tracing. However, TPL EventSource must be enabled to get hierarchical activity IDs.
+                    if (!TplActivities.TplEventSourceGuid.Equals(traceEvent.ProviderGuid))
+                    {
+                        onEvent(traceEvent.ToEventData(this.healthReporter));
+                    }
+                };
                 this.inner.Source.Process();
-            }
-        }
-
-        private void TrackEvent(TraceEvent traceEvent)
-        {
-            // Suppress events from TplEventSource--they are mostly interesting for debugging task processing and interaction,
-            // and not that useful for production tracing. However, TPL EventSource must be enabled to get hierarchical activity IDs.
-            if (!TplActivities.TplEventSourceGuid.Equals(traceEvent.ProviderGuid))
-            {
-                this.onEvent(traceEvent.ToEventData(this.healthReporter));
             }
         }
     }
