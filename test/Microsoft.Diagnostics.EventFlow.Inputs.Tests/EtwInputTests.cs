@@ -198,10 +198,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                         return false;
                     }
 
-                    return exceptionEvent.Payload.Keys.Contains("ExceptionMessage");
-                }, TraceSessionActivationTimeout);
+                    return exceptionEvent.Payload.Keys.Contains("ExceptionMessage") 
+                        && string.Equals("We seek perfection", exceptionEvent.Payload["ExceptionMessage"]);
+                }, TimeSpan.FromSeconds(5));
                 Assert.True(exceptionEventRaised);
-                Assert.Equal("We seek perfection", exceptionEvent.Payload["ExceptionMessage"]);
 
                 VerifyNoErrorsOrWarnings(healthReporterMock);
             }
