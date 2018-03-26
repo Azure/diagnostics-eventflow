@@ -6,10 +6,7 @@
     <VersionPrefix>1.2.0</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.EventSource</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.EventSource</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;EventSource</PackageTags>

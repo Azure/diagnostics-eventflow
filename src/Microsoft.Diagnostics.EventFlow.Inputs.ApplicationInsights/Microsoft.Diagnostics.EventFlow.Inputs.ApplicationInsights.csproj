@@ -7,10 +7,7 @@
     <VersionPrefix>1.1.1</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
-    <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;Application Insights;Telemetry processor</PackageTags>

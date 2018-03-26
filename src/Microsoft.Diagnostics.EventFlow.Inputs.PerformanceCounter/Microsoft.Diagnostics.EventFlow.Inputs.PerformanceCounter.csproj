@@ -6,10 +6,7 @@
     <VersionPrefix>1.1.0</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFramework>net451</TargetFramework>
-    <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;Performance Counter</PackageTags>

@@ -5,10 +5,7 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
-    <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.StdOutput</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <VersionPrefix>1.1.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.StdOutput</PackageId>
