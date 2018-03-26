@@ -7,11 +7,8 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DelaySign>true</DelaySign>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Serilog</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.Serilog</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;Serilog</PackageTags>

@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
-    <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.TestHelpers</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <NoWarn>$(NoWarn);NU1603</NoWarn>
   </PropertyGroup>

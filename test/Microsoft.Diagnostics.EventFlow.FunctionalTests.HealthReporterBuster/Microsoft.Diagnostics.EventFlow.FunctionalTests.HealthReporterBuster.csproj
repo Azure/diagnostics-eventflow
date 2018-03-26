@@ -34,15 +34,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <DelaySign>true</DelaySign>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\PublicKey.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Core.dll">
       <Name>Microsoft.Diagnostics.EventFlow.Core</Name>

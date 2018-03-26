@@ -6,10 +6,7 @@
     <VersionPrefix>1.2.2</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
-    <DelaySign>true</DelaySign>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</AssemblyName>
-    <AssemblyOriginatorKeyFile>../../PublicKey.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Application Insights</PackageTags>

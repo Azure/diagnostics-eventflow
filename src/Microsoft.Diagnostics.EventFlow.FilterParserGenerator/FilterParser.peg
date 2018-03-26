@@ -1,6 +1,6 @@
 ﻿@namespace Microsoft.Diagnostics.EventFlow
 @classname FilterParser
-@accessibility internal
+@accessibility public
 
 @using System.Linq
 @using Microsoft.Diagnostics.EventFlow.FilterEvaluators
