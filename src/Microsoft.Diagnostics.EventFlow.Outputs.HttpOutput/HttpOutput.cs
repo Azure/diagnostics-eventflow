@@ -103,6 +103,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     }
                     break;
             }
+
+            foreach (KeyValuePair<string, string> header in configuration.Headers)
+            {
+                this.httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
         }
 
         public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
