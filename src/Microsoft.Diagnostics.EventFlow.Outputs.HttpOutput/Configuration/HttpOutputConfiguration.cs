@@ -36,7 +36,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 HttpContentType = this.HttpContentType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
                 BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword,
-                Headers = this.Headers
+                Headers = new Dictionary<string, string>(this.Headers)
             };
 
             return other;
