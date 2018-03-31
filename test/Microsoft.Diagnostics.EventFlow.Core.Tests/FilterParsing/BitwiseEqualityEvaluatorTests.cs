@@ -51,6 +51,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             FilteringTestData.ManyPropertiesEvent.Payload.Remove(tempPropertyName);
         }
 
+        [Fact]
         public void BitwiseInequalityByNegation()
         {
             var tempPropertyName = Guid.NewGuid().ToString();

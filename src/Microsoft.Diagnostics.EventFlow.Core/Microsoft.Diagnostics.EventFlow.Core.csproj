@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Defines core interfaces and types that comprise Microsoft.Diagnostics.EventFlow library.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.1.11</VersionPrefix>
+    <VersionPrefix>1.1.12</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451</TargetFrameworks>
     <DelaySign>true</DelaySign>
@@ -40,11 +40,11 @@
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     <PackageReference Include="System.Threading.Timer" Version="4.3.0" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.2.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <PackageReference Include="System.Collections.Immutable" Version="1.2.0" />
+    <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
     <Reference Include="System.Web" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />

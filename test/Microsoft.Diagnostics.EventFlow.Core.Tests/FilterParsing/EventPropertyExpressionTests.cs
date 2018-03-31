@@ -146,7 +146,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
             result = parser.Parse("!(Keywords &== 0xFF)");
             Assert.Equal("(NOT(__BitwiseEqualityEvaluator:Keywords&==0xFF))", result.SemanticsString);
 
-            Assert.Throws(typeof(ArgumentException), () => parser.Parse("Keywords &== abc"));
+            Assert.Throws<ArgumentException>(() => parser.Parse("Keywords &== abc"));
         }
 
         [Fact]

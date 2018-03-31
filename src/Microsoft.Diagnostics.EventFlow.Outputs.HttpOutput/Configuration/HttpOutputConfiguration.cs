@@ -3,6 +3,8 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
     // !!ACTION!!
@@ -16,11 +18,13 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public string HttpContentType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
         public string BasicAuthenticationUserPassword { get; set; }
+        public Dictionary<string, string> Headers { get; set; }
 
         public HttpOutputConfiguration()
         {
             Format = DefaultFormat;
             HttpContentType = "application/json";
+            Headers = new Dictionary<string, string>();
         }
 
         public HttpOutputConfiguration DeepClone()
@@ -31,7 +35,8 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 Format = this.Format,
                 HttpContentType = this.HttpContentType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
-                BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword
+                BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword,
+                Headers = new Dictionary<string, string>(this.Headers)
             };
 
             return other;

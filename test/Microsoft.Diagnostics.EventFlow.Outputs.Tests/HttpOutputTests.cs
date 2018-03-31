@@ -30,6 +30,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                         ["basicAuthenticationUserName"] = "mywebuser",
                         ["basicAuthenticationUserPassword"] = "mywebpass",
                         ["httpContentType"] = "application/x-custom",
+                        ["headers"] = new Dictionary<string, string>
+                        {
+                            ["X-Foo"] = "example"
+                        }
                     }
                 }
             };
@@ -48,11 +52,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 var httpOutputConfiguration = new HttpOutputConfiguration();
                 configFragments[0].Bind(httpOutputConfiguration);
 
-                Assert.Equal(httpOutputConfiguration.ServiceUri, "http://localhost:1000");
-                Assert.Equal(httpOutputConfiguration.Format, HttpOutputFormat.JsonLines);
-                Assert.Equal(httpOutputConfiguration.BasicAuthenticationUserName, "mywebuser");
-                Assert.Equal(httpOutputConfiguration.BasicAuthenticationUserPassword, "mywebpass");
-                Assert.Equal(httpOutputConfiguration.HttpContentType, "application/x-custom");
+                Assert.Equal("http://localhost:1000", httpOutputConfiguration.ServiceUri);
+                Assert.Equal(HttpOutputFormat.JsonLines, httpOutputConfiguration.Format);
+                Assert.Equal("mywebuser", httpOutputConfiguration.BasicAuthenticationUserName);
+                Assert.Equal("mywebpass", httpOutputConfiguration.BasicAuthenticationUserPassword);
+                Assert.Equal("application/x-custom", httpOutputConfiguration.HttpContentType);
+                Assert.Equal("example", httpOutputConfiguration.Headers["X-Foo"]);
             }
         }
 

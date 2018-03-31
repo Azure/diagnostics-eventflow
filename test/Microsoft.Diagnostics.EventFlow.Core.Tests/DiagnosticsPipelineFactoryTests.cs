@@ -182,7 +182,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     {
                         Assert.NotNull(pipeline);
 
-                        Assert.Equal(pipeline.Inputs.Count, 1);
+                        Assert.Single(pipeline.Inputs);
                         var eventSourceInput = pipeline.Inputs.First() as EventSourceInput;
                         Assert.NotNull(eventSourceInput);
 
@@ -198,7 +198,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         Assert.True(pipeline.GlobalFilters.Count == 1);
                         Assert.True(pipeline.GlobalFilters.First().Equals(metadataFilter));
 
-                        Assert.Equal(pipeline.Sinks.Count, 1);
+                        Assert.Single(pipeline.Sinks);
                         EventSink sink = pipeline.Sinks.First();
 
                         var stdSender = sink.Output as StdOutput;
@@ -295,11 +295,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         Assert.NotNull(pipeline);
                         Assert.True(pipeline.HealthReporter is CustomHealthReporter);
                         Assert.Single(pipeline.Inputs);
-                        Assert.IsType(typeof(UnitTestInput), pipeline.Inputs.First());
+                        Assert.IsType<UnitTestInput>(pipeline.Inputs.First());
                         Assert.Single(pipeline.Sinks);
-                        Assert.IsType(typeof(UnitTestOutput), pipeline.Sinks.First().Output);
+                        Assert.IsType<UnitTestOutput>(pipeline.Sinks.First().Output);
                         Assert.Single(pipeline.GlobalFilters);
-                        Assert.IsType(typeof(UnitTestFilter), pipeline.GlobalFilters.First());
+                        Assert.IsType<UnitTestFilter>(pipeline.GlobalFilters.First());
                     }
                 }
             }
@@ -429,23 +429,23 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         Assert.NotNull(pipeline);
                                                 
                         Assert.Collection(pipeline.Inputs, 
-                            i => Assert.IsType(typeof(EventSourceInput), i),
-                            i => Assert.IsType(typeof(LoggerInput), i),
-                            i => Assert.IsType(typeof(TraceInput), i),
-                            i => Assert.IsType(typeof(SerilogInput), i)
+                            i => Assert.IsType<EventSourceInput>(i),
+                            i => Assert.IsType<LoggerInput>(i),
+                            i => Assert.IsType<TraceInput>(i),
+                            i => Assert.IsType<SerilogInput>(i)
 #if NET46
-                            , i => Assert.IsType(typeof(PerformanceCounterInput), i)
-                            , i => Assert.IsType(typeof(EtwInput), i)
+                            , i => Assert.IsType<PerformanceCounterInput>(i)
+                            , i => Assert.IsType<EtwInput>(i)
 #endif
                         );
 
                         Assert.Collection(pipeline.Sinks,
-                            s => Assert.IsType(typeof(StdOutput), s.Output),
-                            s => Assert.IsType(typeof(ElasticSearchOutput), s.Output),
-                            s => Assert.IsType(typeof(OmsOutput), s.Output)
+                            s => Assert.IsType<StdOutput>(s.Output),
+                            s => Assert.IsType<ElasticSearchOutput>(s.Output),
+                            s => Assert.IsType<OmsOutput>(s.Output)
 #if NET46
-                            , s => Assert.IsType(typeof(EventHubOutput), s.Output)
-                            , s => Assert.IsType(typeof(ApplicationInsightsOutput), s.Output)
+                            , s => Assert.IsType<EventHubOutput>(s.Output)
+                            , s => Assert.IsType<ApplicationInsightsOutput>(s.Output)
 #endif
                         );
                     }
