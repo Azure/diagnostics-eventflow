@@ -19,8 +19,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
     public class DataflowTests
     {
         private static readonly DataflowLinkOptions PropagateCompletion = new DataflowLinkOptions() { PropagateCompletion = true };
-        private static readonly TimeSpan MessageArrivalTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan CompletionTimeout = TimeSpan.FromMilliseconds(1000);
+        private static readonly TimeSpan MessageArrivalTimeout = TimeSpan.FromMilliseconds(2000);
+        private static readonly TimeSpan CompletionTimeout = TimeSpan.FromMilliseconds(5000);
 
         [Fact]
         public Task BufferBlockKeepsPostponedMessages()
