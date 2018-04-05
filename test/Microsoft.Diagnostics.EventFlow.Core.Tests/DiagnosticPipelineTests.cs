@@ -394,7 +394,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     }
 
                     // Give the pipeline some time to process events--the fast output will keep up, the slow one, certainly not
-                    bool eventsReceived = await TaskUtils.PollWaitAsync(() => fastOutput.EventCount == (burst+1) * InputBufferSize, TimeSpan.FromSeconds(2));
+                    bool eventsReceived = await TaskUtils.PollWaitAsync(() => fastOutput.EventCount == (burst+1) * InputBufferSize, TimeSpan.FromSeconds(5));
                     Assert.True(eventsReceived);
                 }
 
