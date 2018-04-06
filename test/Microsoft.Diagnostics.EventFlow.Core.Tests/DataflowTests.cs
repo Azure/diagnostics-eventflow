@@ -419,8 +419,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.True(testTarget.MessagesConsumed.Count == 0);
             Assert.True(testTarget.MessagesPostponed.Count == 0);
 
-            // The messages are buffered
-            Assert.Equal(3, OutputCount(block));
+            // Use poll waiting because the item count is not always immediately updated by the block
+            bool threeMessagesBuffered = await TaskUtils.PollWaitAsync(() => OutputCount(block) == 3, MessageArrivalTimeout);
+            Assert.True(threeMessagesBuffered);
 
             // Assumption: the block will try NOT to deliver declined messages again when asked to complete.
             testTarget.ConsumptionMode = DataflowMessageStatus.Accepted;
