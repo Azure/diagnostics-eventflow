@@ -21,6 +21,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private static readonly DataflowLinkOptions PropagateCompletion = new DataflowLinkOptions() { PropagateCompletion = true };
         private static readonly TimeSpan MessageArrivalTimeout = TimeSpan.FromMilliseconds(2000);
         private static readonly TimeSpan CompletionTimeout = TimeSpan.FromMilliseconds(5000);
+        private static readonly TimeSpan BurstTimeout = TimeSpan.FromSeconds(10);
 
         [Fact]
         public Task BufferBlockKeepsPostponedMessages()
@@ -155,8 +156,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             bb.LinkTo(testTarget, PropagateCompletion);
 
             // Rapidly send 50 messages
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(10);
-            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), BurstTimeout);
 
             bb.Complete();
 
@@ -290,8 +290,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             bb.LinkTo(t3, PropagateCompletion);
 
             // Rapidly send 50 messages
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), BurstTimeout);
 
             // Assumption: all 50 messages will go through, even though t2 is declining them and t3 is postponing.
             bool target1ConsumedAllMessages = await TaskUtils.PollWaitAsync(() => t1.MessagesConsumed.Count == 50, MessageArrivalTimeout);
@@ -356,8 +355,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 });
 
             // Send 10 messages as fast as possible
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), BurstTimeout);
 
             // Assumption: all will be eventually processed. 
             bool allProcessed = await TaskUtils.PollWaitAsync(() => processedMessageCount == 10, ProcessingTimeTimesTen + MessageArrivalTimeout);
@@ -385,8 +383,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 });
 
             // Send 10 messages as fast as possible
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), BurstTimeout);
 
             // Wait for completion and ensure that it does not time out and that all messages were processed before completion.
             ab.Complete();
@@ -488,8 +485,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             block.LinkTo(testTarget, PropagateCompletion);
 
             // Rapidly send 50 messages
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => ((ITargetBlock<int>)block).SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => ((ITargetBlock<int>)block).SendAsync(i)).ToArray(), BurstTimeout);
 
             block.Complete();
 
