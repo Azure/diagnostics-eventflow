@@ -31,55 +31,32 @@ The EventFlow suite supports .NET applications and .NET Core applications. It al
 The core of the library, as well as inputs and outputs listed above [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
 
 ## Getting Started
-1. To quickly get started, you can create a simple console application in VisualStudio and install the Nuget package Microsoft.Diagnostics.EventFlow. 
-2. After the nuget package is installed, there should be a eventFlowConfig.json file added to the project. This file contains default configuration for the EventFlow pipeline. A few sections with optional configuration elements are commented outs. These sections can be enabled as desired. Here is what the file looks like
+1. To quickly get started, you can create a simple console application in VisualStudio and install the following Nuget packages:
+    * Microsoft.Diagnostics.EventFlow.Inputs.Trace
+    * Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights
+    * Microsoft.Diagnostics.EventFlow.Outputs.StdOutput
+
+2. Add a JSON file named "eventFlowConfig.json" to your project and set the Build Action property of the file to "Copy if Newer". Set the content of the file to the following:
 ```js
 {
     "inputs": [
-        // {
-        //   "type": "EventSource",
-        //   "sources": [
-        //     { "providerName": "Microsoft-Windows-ASPNET" }
-        //   ]
-        // },
-        {
-            "type": "Trace",
-            "traceLevel": "Warning"
-        }
-    ],
-    "filters": [
-        {
-            "type": "drop",
-            "include": "Level == Verbose"
-        }
-    ],
-    "outputs": [
-        // Please update the instrumentationKey.
-        {
-            "type": "ApplicationInsights",
-            "instrumentationKey": "00000000-0000-0000-0000-000000000000"
-        }
-    ],
-    "schemaVersion": "2016-08-11",
-    // "healthReporter": {
-    //   "type": "CsvHealthReporter",
-    //   "logFileFolder": ".",
-    //   "logFilePrefix": "HealthReport",
-    //   "minReportLevel": "Warning",
-    //   "throttlingPeriodMsec": "1000"
-    // },
-    // "settings": {
-    //    "pipelineBufferSize": "1000",
-    //    "maxEventBatchSize": "100",
-    //    "maxBatchDelayMsec": "500",
-    //    "maxConcurrency": "8",
-    //    "pipelineCompletionTimeoutMsec": "30000"
-    // },
-    "extensions": []
+    {
+      "type": "Trace",
+      "traceLevel": "Warning"
+    }
+  ],
+  "outputs": [
+    // Please update the instrumentationKey.
+    {
+      "type": "ApplicationInsights",
+      "instrumentationKey": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "schemaVersion": "2016-08-11"
 }
 ```
-   
-Note: if your project file has VisualStudio 2017 format (with [PackageReference](https://blog.nuget.org/20170316/NuGet-now-fully-integrated-into-MSBuild.html)) the eventFlowConfig.json file will not be automatically added. To fix this you can just copy the example listed above and save it under the name "eventFlowConfig.json" in your project folder. Then, open your project file (this assumes you are using Visual Studio 2017/MSBuild 15 csproj-based project system) and add the following snippet to your project:
+
+Note: if you are using VisualStudio for Mac, you might need to edit the project file directly. Make the following snippet for `eventFlowConfig.json` file is included in the project definition:
    ```xml
    <ItemGroup>
     <None Include="eventFlowConfig.json">
@@ -88,21 +65,25 @@ Note: if your project file has VisualStudio 2017 format (with [PackageReference]
   </ItemGroup>
    ```
    
-3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the Application Insights section.
-4. To add a StdOutput output, install the Microsoft.Diagnostics.EventFlow.Outputs.StdOutput nuget package. Then add the following in the outputs array in eventFlowConfig.json:
+3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, you can send traces to console output instead by replacing the Application Insights output with the standard output. The `outputs` property in the configuration should then look like this: 
 ```json
+    "outputs": [
     {
-        "type": "StdOutput"
+      "type": "StdOutput"
     }
+  ],
 ```
-5. Create an EventFlow pipeline in your application code using the code below. Make sure there is at least one output defined in the configuration file. Run your application and see your traces in console output or Application Insights.
+
+4. Create an EventFlow pipeline in your application code using the code below. Make sure there is at least one output defined in the configuration file. Run your application and see your traces in console output or in Application Insights.
 ```csharp
     using (var pipeline = DiagnosticPipelineFactory.CreatePipeline("eventFlowConfig.json"))
     {
         System.Diagnostics.Trace.TraceWarning("EventFlow is working!");
-        Console.ReadLine();
+        Console.WriteLine("Trace sent to Application Insights. Press any key to exit...");
+        Console.ReadKey(intercept: true);
     }
 ```
+It usually takes a couple of minutes for the traces to show in Application Insights Azure portal.
 
 ## Configuration Details
 The EventFlow pipeline is built around three core concepts: [inputs](#inputs), [outputs](#outputs), and [filters](#filters). The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
