@@ -27,7 +27,6 @@ try
         {
             &"dotnet" pack "$projectFile" --no-build -c "$Configuration" -o "$destination"
         }
-        &$nugetCmd pack "$repoRoot\nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec" -OutputDirectory "$destination"
     }
     else
     {
@@ -35,7 +34,6 @@ try
         {
             &"dotnet" pack "$projectFile" --no-build -c "$Configuration" -o "$destination" --version-suffix $Suffix
         }
-        &$nugetCmd pack "$repoRoot\nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec" -OutputDirectory "$destination" -Suffix $Suffix
     }    
 }
 finally 
