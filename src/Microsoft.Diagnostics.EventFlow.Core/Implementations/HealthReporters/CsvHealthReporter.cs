@@ -17,8 +17,7 @@ using Validation;
 
 #if NET451
 using System.Web;
-#endif
-#if NETSTANDARD1_6
+#else
 using System.Reflection;
 #endif
 
@@ -504,10 +503,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             {
                 basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(this.GetType()).Location);
             }
-#elif NETSTANDARD1_6
+#else
             basePath = Path.GetDirectoryName(this.GetType().GetTypeInfo().Assembly.Location);
-#elif NETSTANDARD2_0
-            basePath = Path.GetDirectoryName(this.GetType().Assembly.Location);
 #endif
             this.Configuration.LogFileFolder = Path.Combine(basePath, this.Configuration.LogFileFolder);
         }
