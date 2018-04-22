@@ -612,7 +612,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
 | `indexNamePrefix` | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
-| `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. Single URL accepted or Semicolon seperated URL for connection pool |
+| `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. Single URL accepted or Semicolon seperated URLs for connection pool |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
 | `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
