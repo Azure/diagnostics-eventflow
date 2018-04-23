@@ -5,8 +5,12 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using Microsoft.Azure.EventHubs;
+using Moq;
 using Xunit;
+using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 {
@@ -28,5 +32,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var dateTimeOffsetRegex = new Regex(@"""DateTimeOffsetProperty"" \s* : \s* ""2017-04-19T10:16:07\+00:00""", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromMilliseconds(100));
             Assert.Matches(dateTimeOffsetRegex, messageBody);
         }
+
+        [Fact]
+        public async Task SendsDataToEventHub()
+        {
+            throw new NotImplementedException();
+        }
     }
+
+    
 }
