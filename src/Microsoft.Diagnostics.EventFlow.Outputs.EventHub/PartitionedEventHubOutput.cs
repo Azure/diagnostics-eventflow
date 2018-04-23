@@ -119,7 +119,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                     foreach (List<MessagingEventData> batch in batches)
                     {
-                        tasks.Add(hubClient.SendAsync(batch, partitionedEventData.Key));
+                        if (string.IsNullOrEmpty(partitionedEventData.Key))
+                        {
+                            tasks.Add(hubClient.SendAsync(batch));
+                        }
+                        else
+                        {
+                            tasks.Add(hubClient.SendAsync(batch, partitionedEventData.Key));
+                        }
                     }
 
                 }
