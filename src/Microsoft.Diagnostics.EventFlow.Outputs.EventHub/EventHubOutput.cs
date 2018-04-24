@@ -188,7 +188,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             IEventHubClient[] oldClients = Interlocked.Exchange<IEventHubClient[]>(ref this.clients, null);
 
             List<Task> tasks = new List<Task>();
-            foreach (EventHubClient client in oldClients)
+            foreach (IEventHubClient client in oldClients)
             {
                 tasks.Add(client.CloseAsync());
             }
