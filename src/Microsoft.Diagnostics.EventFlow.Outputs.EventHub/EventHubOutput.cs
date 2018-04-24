@@ -42,7 +42,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            _configuration = configuration;
             this.healthReporter = healthReporter;
             this.eventHubClientFactory = this.CreateEventHubClient;
             this.outputConfiguration = new EventHubOutputConfiguration();
@@ -61,8 +60,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         }
 
         public EventHubOutput(
-            EventHubOutputConfiguration eventHubOutputConfiguration, 
-            IHealthReporter healthReporter, 
+            EventHubOutputConfiguration eventHubOutputConfiguration,
+            IHealthReporter healthReporter,
             Func<string, IEventHubClient> eventHubClientFactory = null)
         {
             Requires.NotNull(eventHubOutputConfiguration, nameof(eventHubOutputConfiguration));
@@ -87,8 +86,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             try
             {
-                string partitioKeyProperty = _configuration[PartitionKeyData.PartitionKeyPropertyMoniker];
-                var groupedEventData = events.GroupBy(e => string.IsNullOrEmpty(partitioKeyProperty) == false && Equals(PartitionKeyData.TryGetData(e, new EventMetadata(PartitionKeyData.EventMetadataKind), out var partionKeyData), DataRetrievalResult.Success) ? partionKeyData.PartitionKey : string.Empty, e => e);
+                var groupedEventData = events.GroupBy(e => string.IsNullOrEmpty(outputConfiguration.PartitionKeyProperty) == false && Equals(PartitionKeyData.TryGetData(e, new EventMetadata(PartitionKeyData.EventMetadataKind), out var partionKeyData), DataRetrievalResult.Success) ? partionKeyData.PartitionKey : string.Empty, e => e);
 
                 List<Task> tasks = new List<Task>();
 
@@ -125,7 +123,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                         return;
                     }
 
-                IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
+                    IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
 
                     foreach (List<MessagingEventData> batch in batches)
                     {
@@ -211,6 +209,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
+
             connStringBuilder.EntityPath = this.eventHubName;
 
             return new EventHubClientImpl(EventHubClient.CreateFromConnectionString(connStringBuilder.ToString()));
