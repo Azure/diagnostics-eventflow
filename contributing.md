@@ -8,11 +8,13 @@
         tools\scorch.cmd
         tools\restore.cmd
     
+    *You must run `tools\restore.cmd` at least once before attempting to build or run tests*, otherwise you will encouter errors such as "missing FileParser.peg.cs file".
+    
     Run the following command to build a release build:
 
         tools\buildRelease.cmd
 
-    You can also build from Visual Studio, but _you must run `tools\restore.cmd` at least once_ before building from VS is attempted, otherwise you will encounter errors.
+    You can also build from Visual Studio (after running `tools\restore.cmd`) by opening Warsaw.sln solution file in the root of the repo.
     
 * Test
 
