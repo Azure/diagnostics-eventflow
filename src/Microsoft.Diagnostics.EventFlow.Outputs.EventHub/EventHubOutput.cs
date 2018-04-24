@@ -11,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.EventHubs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.Metadata;
-using Microsoft.Diagnostics.EventFlow.Outputs.EventHub;
 using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Validation;
@@ -86,7 +84,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             try
             {
-                var groupedEventData = events.GroupBy(e => string.IsNullOrEmpty(outputConfiguration.PartitionKeyProperty) == false && Equals(PartitionKeyData.TryGetData(e, new EventMetadata(PartitionKeyData.EventMetadataKind), out var partionKeyData), DataRetrievalResult.Success) ? partionKeyData.PartitionKey : string.Empty, e => e);
+                var groupedEventData = events.GroupBy(e => string.IsNullOrEmpty(outputConfiguration.PartitionKeyProperty) == false && e.TryGetPropertyValue(outputConfiguration.PartitionKeyProperty, out var partionKeyData) ? partionKeyData.ToString() : string.Empty, e => e);
 
                 List<Task> tasks = new List<Task>();
 
