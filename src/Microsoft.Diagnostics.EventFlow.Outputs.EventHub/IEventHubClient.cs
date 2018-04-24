@@ -12,5 +12,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
     public interface IEventHubClient
     {
         Task SendAsync(IEnumerable<MessagingEventData> batch);
+        Task CloseAsync();
     }
 }
