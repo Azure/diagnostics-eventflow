@@ -4,13 +4,18 @@
 // ------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using Microsoft.Azure.EventHubs;
 using Moq;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
+
+using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 {
@@ -36,7 +41,38 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         [Fact]
         public async Task SendsDataToEventHub()
         {
-            throw new NotImplementedException();
+            var client = new Mock<IEventHubClient>();
+            var healthReporter = new Mock<IHealthReporter>();
+            var configuration = new EventHubOutputConfiguration();
+            configuration.ConnectionString = "Connection string";
+            configuration.EventHubName = "foo";
+
+            EventData e = new EventData();
+            e.ProviderName = "TestProvider";
+            e.Timestamp = DateTimeOffset.UtcNow;
+            e.Level = LogLevel.Warning;
+            e.Payload.Add("IntProperty", 42);
+            e.Payload.Add("StringProperty", "perfection");
+
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+            await eho.SendEventsAsync(new EventData[] { e }, 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch => {
+                if (batch.Count() != 1) return false;
+
+                var data = batch.First();
+                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var recordSet = JObject.Parse(bodyString);
+                var message = recordSet["records"][0];
+                return (string) message["level"] == "Warning"
+                    && (string) message["properties"]["ProviderName"] == "TestProvider"
+                    && (int) message["properties"]["IntProperty"] == 42
+                    && (string) message["properties"]["StringProperty"] == "perfection";
+            };
+
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 
