@@ -46,6 +46,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var configuration = new EventHubOutputConfiguration();
             configuration.ConnectionString = "Connection string";
             configuration.EventHubName = "foo";
+            configuration.PartitionKeyProperty = "PartitionByProperty";
 
             EventData e = new EventData();
             e.ProviderName = "TestProvider";
@@ -54,27 +55,48 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             e.Payload.Add("IntProperty", 42);
             e.Payload.Add("StringProperty", "perfection");
 
-            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
-            await eho.SendEventsAsync(new EventData[] { e }, 17, CancellationToken.None);
+            EventData ep = new EventData();
+            ep.ProviderName = "TestProvider";
+            ep.Timestamp = DateTimeOffset.UtcNow;
+            ep.Level = LogLevel.Warning;
+            ep.Payload.Add("IntProperty", 23);
+            ep.Payload.Add("StringProperty", "partition-perfection");
+            ep.Payload.Add("PartitionByProperty", "partition1");
 
-            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch => {
-                if (batch.Count() != 1) return false;
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+            await eho.SendEventsAsync(new EventData[] {e, ep}, 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
+                if (batch.Count() != 2) return false;
 
                 var data = batch.First();
                 var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
                 var recordSet = JObject.Parse(bodyString);
                 var message = recordSet["records"][0];
+
+                var dataP = batch.Last();
+                var bodyStringP = Encoding.UTF8.GetString(dataP.Body.Array, dataP.Body.Offset, dataP.Body.Count);
+                var recordSetP = JObject.Parse(bodyStringP);
+                var messageP = recordSetP["records"][0];
+
+
                 return (string) message["level"] == "Warning"
-                    && (string) message["properties"]["ProviderName"] == "TestProvider"
-                    && (int) message["properties"]["IntProperty"] == 42
-                    && (string) message["properties"]["StringProperty"] == "perfection";
+                       && (string) message["properties"]["ProviderName"] == "TestProvider"
+                       && (int) message["properties"]["IntProperty"] == 42
+                       && (string) message["properties"]["StringProperty"] == "perfection"
+
+                       && (string) messageP["level"] == "Warning"
+                       && (string) messageP["properties"]["ProviderName"] == "TestProvider"
+                       && (int) messageP["properties"]["IntProperty"] == 23
+                       && (string) messageP["properties"]["StringProperty"] == "partition-perfection"
+                       && (string) messageP["properties"]["PartitionByProperty"] == "partition1";
             };
 
             client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition1"), Times.Once);
             healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
-
-    
 }
