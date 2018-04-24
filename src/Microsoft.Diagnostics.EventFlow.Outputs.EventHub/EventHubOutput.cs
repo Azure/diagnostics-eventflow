@@ -31,6 +31,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         // before accessing to guarantee your function won't be affected by another thread.
         private IEventHubClient[] clients;
         private Func<string, IEventHubClient> eventHubClientFactory;
+        private EventHubOutputConfiguration outputConfiguration;
         private readonly IHealthReporter healthReporter;
 
         public EventHubOutput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -40,10 +41,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             this.healthReporter = healthReporter;
             this.eventHubClientFactory = this.CreateEventHubClient;
-            var eventHubOutputConfiguration = new EventHubOutputConfiguration();
+            this.outputConfiguration = new EventHubOutputConfiguration();
             try
             {
-                configuration.Bind(eventHubOutputConfiguration);
+                configuration.Bind(this.outputConfiguration);
             }
             catch
             {
@@ -52,7 +53,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 throw;
             }
 
-            Initialize(eventHubOutputConfiguration);
+            Initialize();
         }
 
         public EventHubOutput(
@@ -65,7 +66,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             this.healthReporter = healthReporter;
             this.eventHubClientFactory = eventHubClientFactory ?? this.CreateEventHubClient;
-            Initialize(eventHubOutputConfiguration);
+            this.outputConfiguration = eventHubOutputConfiguration;
+            Initialize();
         }
 
         public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
@@ -136,34 +138,21 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         // The Initialize method is not thread-safe. Please only call this on one thread and do so before the pipeline starts sending
         // data to this output
-        private void Initialize(EventHubOutputConfiguration configuration)
+        private void Initialize()
         {
-            Debug.Assert(configuration != null);
             Debug.Assert(this.healthReporter != null);
 
-            if (string.IsNullOrWhiteSpace(configuration.ConnectionString))
+            if (string.IsNullOrWhiteSpace(this.outputConfiguration.ConnectionString))
             {
                 var errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must be set to a valid connection string";
                 healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
 
-            EventHubsConnectionStringBuilder connStringBuilder = new EventHubsConnectionStringBuilder(configuration.ConnectionString);
-
-            this.eventHubName = connStringBuilder.EntityPath ?? configuration.EventHubName;
-            if (string.IsNullOrWhiteSpace(this.eventHubName))
-            {
-                var errorMessage = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
-
-                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
-            connStringBuilder.EntityPath = this.eventHubName;
-
             this.clients = new IEventHubClient[ConcurrentConnections];
             for (uint i = 0; i < this.clients.Length; i++)
             {
-                this.clients[i] = this.eventHubClientFactory(connStringBuilder.ToString());
+                this.clients[i] = this.eventHubClientFactory(this.outputConfiguration.ConnectionString);
             }
         }
 
@@ -188,8 +177,20 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private IEventHubClient CreateEventHubClient(string connectionString)
         {
-            Debug.Assert(connectionString != null);
-            return new EventHubClientImpl(EventHubClient.CreateFromConnectionString(connectionString));
+            Debug.Assert(this.outputConfiguration.ConnectionString != null);
+            EventHubsConnectionStringBuilder connStringBuilder = new EventHubsConnectionStringBuilder(this.outputConfiguration.ConnectionString);
+
+            this.eventHubName = connStringBuilder.EntityPath ?? this.outputConfiguration.EventHubName;
+            if (string.IsNullOrWhiteSpace(this.eventHubName))
+            {
+                var errorMessage = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
+
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+            connStringBuilder.EntityPath = this.eventHubName;
+
+            return new EventHubClientImpl(EventHubClient.CreateFromConnectionString(connStringBuilder.ToString()));
         }
     }
 }
