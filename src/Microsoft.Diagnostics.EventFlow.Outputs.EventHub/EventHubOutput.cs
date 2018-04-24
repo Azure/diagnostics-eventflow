@@ -32,8 +32,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         // Clients field will be used by multi-threads. Throughout this class, try to use Interlocked methods to load the field first,
         // before accessing to guarantee your function won't be affected by another thread.
-        private EventHubClient[] clients;
-        private readonly IConfiguration _configuration;
+        private IEventHubClient[] clients;
+        private Func<string, IEventHubClient> eventHubClientFactory;
+        private EventHubOutputConfiguration outputConfiguration;
         private readonly IHealthReporter healthReporter;
 
         public EventHubOutput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -43,10 +44,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             _configuration = configuration;
             this.healthReporter = healthReporter;
-            var eventHubOutputConfiguration = new EventHubOutputConfiguration();
+            this.eventHubClientFactory = this.CreateEventHubClient;
+            this.outputConfiguration = new EventHubOutputConfiguration();
             try
             {
-                configuration.Bind(eventHubOutputConfiguration);
+                configuration.Bind(this.outputConfiguration);
             }
             catch
             {
@@ -55,23 +57,28 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 throw;
             }
 
-            Initialize(eventHubOutputConfiguration);
+            Initialize();
         }
 
-        public EventHubOutput(EventHubOutputConfiguration eventHubOutputConfiguration, IHealthReporter healthReporter)
+        public EventHubOutput(
+            EventHubOutputConfiguration eventHubOutputConfiguration, 
+            IHealthReporter healthReporter, 
+            Func<string, IEventHubClient> eventHubClientFactory = null)
         {
             Requires.NotNull(eventHubOutputConfiguration, nameof(eventHubOutputConfiguration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
-            Initialize(eventHubOutputConfiguration);
+            this.eventHubClientFactory = eventHubClientFactory ?? this.CreateEventHubClient;
+            this.outputConfiguration = eventHubOutputConfiguration;
+            Initialize();
         }
 
         public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             // Get a reference to the current connections array first, just in case there is another thread wanting to clean
             // up the connections with CleanUpAsync(), we won't get a null reference exception here.
-            EventHubClient[] currentClients = Interlocked.CompareExchange<EventHubClient[]>(ref this.clients, this.clients, this.clients);
+            IEventHubClient[] currentClients = Interlocked.CompareExchange<IEventHubClient[]>(ref this.clients, this.clients, this.clients);
 
             if (currentClients == null || events == null || events.Count == 0)
             {
@@ -118,7 +125,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                         return;
                     }
 
-                    EventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
+                IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
 
                     foreach (List<MessagingEventData> batch in batches)
                     {
@@ -151,35 +158,21 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         // The Initialize method is not thread-safe. Please only call this on one thread and do so before the pipeline starts sending
         // data to this output
-        private void Initialize(EventHubOutputConfiguration configuration)
+        private void Initialize()
         {
-            Debug.Assert(configuration != null);
             Debug.Assert(this.healthReporter != null);
 
-            if (string.IsNullOrWhiteSpace(configuration.ConnectionString))
+            if (string.IsNullOrWhiteSpace(this.outputConfiguration.ConnectionString))
             {
                 var errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must be set to a valid connection string";
                 healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
 
-            EventHubsConnectionStringBuilder connStringBuilder = new EventHubsConnectionStringBuilder(configuration.ConnectionString);
-
-            this.eventHubName = connStringBuilder.EntityPath ?? configuration.EventHubName;
-            if (string.IsNullOrWhiteSpace(this.eventHubName))
-            {
-                var errorMessage = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
-
-                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
-
-            connStringBuilder.EntityPath = this.eventHubName;
-
-            this.clients = new EventHubClient[ConcurrentConnections];
+            this.clients = new IEventHubClient[ConcurrentConnections];
             for (uint i = 0; i < this.clients.Length; i++)
             {
-                this.clients[i] = EventHubClient.CreateFromConnectionString(connStringBuilder.ToString());
+                this.clients[i] = this.eventHubClientFactory(this.outputConfiguration.ConnectionString);
             }
 
 
@@ -194,7 +187,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private async void CleanUpAsync()
         {
             // Swap out the clients first, so all other callers will see this as uninitialized
-            EventHubClient[] oldClients = Interlocked.Exchange<EventHubClient[]>(ref this.clients, null);
+            IEventHubClient[] oldClients = Interlocked.Exchange<IEventHubClient[]>(ref this.clients, null);
 
             List<Task> tasks = new List<Task>();
             foreach (EventHubClient client in oldClients)
@@ -203,6 +196,24 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        private IEventHubClient CreateEventHubClient(string connectionString)
+        {
+            Debug.Assert(this.outputConfiguration.ConnectionString != null);
+            EventHubsConnectionStringBuilder connStringBuilder = new EventHubsConnectionStringBuilder(this.outputConfiguration.ConnectionString);
+
+            this.eventHubName = connStringBuilder.EntityPath ?? this.outputConfiguration.EventHubName;
+            if (string.IsNullOrWhiteSpace(this.eventHubName))
+            {
+                var errorMessage = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
+
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+            connStringBuilder.EntityPath = this.eventHubName;
+
+            return new EventHubClientImpl(EventHubClient.CreateFromConnectionString(connStringBuilder.ToString()));
         }
     }
 }
