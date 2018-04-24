@@ -32,5 +32,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             return this.inner.SendAsync(batch, partitionKey);
         }
+
+        public Task CloseAsync()
+        {
+            return this.inner.CloseAsync();
+        }
     }
 }

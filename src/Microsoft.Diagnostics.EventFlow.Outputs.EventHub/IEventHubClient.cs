@@ -13,5 +13,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
     {
         Task SendAsync(IEnumerable<MessagingEventData> batch);
         Task SendAsync(IEnumerable<MessagingEventData> batch, string partitionKey);
+        Task CloseAsync();
     }
 }
