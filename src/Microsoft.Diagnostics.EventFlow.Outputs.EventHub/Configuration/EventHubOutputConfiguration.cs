@@ -11,5 +11,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     {
         public string ConnectionString { get; set; }
         public string EventHubName { get; set; }
+        public string PartitionKeyProperty { get; set; }
     }
 }
