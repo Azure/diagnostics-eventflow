@@ -27,5 +27,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             return this.inner.SendAsync(batch);
         }
+
+        public Task CloseAsync()
+        {
+            return this.inner.CloseAsync();
+        }
     }
 }
