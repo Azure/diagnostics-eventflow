@@ -90,14 +90,19 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 foreach (var partitionedEventData in groupedEventData)
                 {
-                    SendBatch(partitionedEventData.Select(e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(out var messageSize), messageSize)).ToList());
+                    //assemble the full list of MessagingEventData items plus their messageSize 
+                    List<(MessagingEventData message, int messageSize)> batchRecords = partitionedEventData.Select(e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(out var messageSize), messageSize).ToValueTuple()).ToList();
 
-                    void SendBatch(List<Tuple<MessagingEventData, int>> batch)
+                    SendBatch(batchRecords);
+
+                    void SendBatch(IReadOnlyCollection<(MessagingEventData message, int messageSize)> batch)
                     {
                         // Since event hub limits each message/batch to be a certain size, we need to
                         // keep checking the size in bytes of the batch and recursively keep splitting into two batches as needed
-                        if (batch.Count >= 2 && batch.Sum(b => b.Item2) > EventHubMessageSizeLimit)
+                        if (batch.Count >= 2 && batch.Sum(b => b.messageSize) > EventHubMessageSizeLimit)
                         {
+                            //the batch total message size is too big to send to EventHub, but it still contains at least two items,
+                            //so we split the batch up in half and recusively call the inline SendBatch() method with the two new smaller batches
                             var indexMiddle = batch.Count / 2;
                             SendBatch(batch.Take(indexMiddle).ToList());
                             SendBatch(batch.Skip(indexMiddle).ToList());
@@ -107,11 +112,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                         IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
                         if (string.IsNullOrEmpty(partitionedEventData.Key))
                         {
-                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.Item1)));
+                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.message)));
                         }
                         else
                         {
-                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.Item1), partitionedEventData.Key));
+                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.message), partitionedEventData.Key));
                         }
                     }
 
