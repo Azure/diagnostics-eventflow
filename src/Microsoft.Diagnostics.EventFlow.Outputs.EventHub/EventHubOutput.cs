@@ -90,51 +90,35 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 foreach (var partitionedEventData in groupedEventData)
                 {
-                    // Since event hub limits each message/batch to be a certain size, we need to
-                    // keep checking the size for exceeds and split into a new batch as needed
+                    SendBatch(partitionedEventData.Select(e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(out var messageSize), messageSize)).ToList());
 
-                    List<List<MessagingEventData>> batches = new List<List<MessagingEventData>>();
-                    int batchByteSize = 0;
-
-                    foreach (EventData eventData in partitionedEventData)
+                    void SendBatch(List<Tuple<MessagingEventData, int>> batch)
                     {
-                        int messageSize;
-                        MessagingEventData messagingEventData = eventData.ToMessagingEventData(out messageSize);
-
-                        // If we don't have a batch yet, or the addition of this message will exceed the limit for this batch, then
-                        // start a new batch.
-                        if (batches.Count == 0 ||
-                            batchByteSize + messageSize > EventHubMessageSizeLimit)
+                        // Since event hub limits each message/batch to be a certain size, we need to
+                        // keep checking the size in bytes of the batch and recursively keep splitting into two batches as needed
+                        if (batch.Count >= 2 && batch.Sum(b => b.Item2) > EventHubMessageSizeLimit)
                         {
-                            batches.Add(new List<MessagingEventData>());
-                            batchByteSize = 0;
+                            var indexMiddle = batch.Count / 2;
+                            SendBatch(batch.Take(indexMiddle).ToList());
+                            SendBatch(batch.Skip(indexMiddle).ToList());
+                            return;
                         }
 
-                        batchByteSize += messageSize;
-
-                        List<MessagingEventData> currentBatch = batches[batches.Count - 1];
-                        currentBatch.Add(messagingEventData);
+                        IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
+                        if (string.IsNullOrEmpty(partitionedEventData.Key))
+                        {
+                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.Item1)));
+                        }
+                        else
+                        {
+                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.Item1), partitionedEventData.Key));
+                        }
                     }
 
                     if (cancellationToken.IsCancellationRequested)
                     {
                         return;
                     }
-
-                    IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
-
-                    foreach (List<MessagingEventData> batch in batches)
-                    {
-                        if (string.IsNullOrEmpty(partitionedEventData.Key))
-                        {
-                            tasks.Add(hubClient.SendAsync(batch));
-                        }
-                        else
-                        {
-                            tasks.Add(hubClient.SendAsync(batch, partitionedEventData.Key));
-                        }
-                    }
-
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
