@@ -172,7 +172,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 
             EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
 
-            //send 512 EventData items with payload of 55Kb+ each and targeting PartitionKey "partition3"
+            //send `itemCount` EventData items with payload of 55Kb+ each and targeting PartitionKey "partition3"
             await eho.SendEventsAsync(Enumerable.Range(0, itemCount)
                 .Select(r =>
                 {
@@ -197,7 +197,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             };
 
             //the individual messages are 55Kb in size each, so a maximum of 4 messages total byte size fits within EventHubMessageSizeLimit limits.
-            //so we expect 512 / 4 = 128 batches executed against EventHubClient.SendAsync()
+            //so we expect `itemCount` / 4 batches executed against EventHubClient.SendAsync()
             client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition3"), Times.Exactly(itemCount / 4));
             healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
