@@ -141,5 +141,66 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
+
+        [Fact]
+        public Task Sends512ItemsToPartitionedEventHub()
+        {
+            return SendsManyItemsToPartitionedEventHub(512);
+        }
+
+        [Fact]
+        public Task Sends8192ItemsToPartitionedEventHub()
+        {
+            return SendsManyItemsToPartitionedEventHub(8192);
+        }
+
+        //TODO: This test failes, most likely due to this: https://github.com/Azure/diagnostics-eventflow/blob/ba71dd489a79e37736ffe735ee50b18f827dad67/src/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/EventDataExtensions.cs#L55
+        //[Fact]
+        //public Task Sends65536ItemsToPartitionedEventHub()
+        //{
+        //    return SendsManyItemsToPartitionedEventHub(65536);
+        //}
+
+        private async Task SendsManyItemsToPartitionedEventHub(int itemCount)
+        {
+            var client = new Mock<IEventHubClient>();
+            var healthReporter = new Mock<IHealthReporter>();
+            var configuration = new EventHubOutputConfiguration();
+            configuration.ConnectionString = "Connection string";
+            configuration.EventHubName = "foo";
+            configuration.PartitionKeyProperty = "PartitionByProperty";
+
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+
+            //send 512 EventData items with payload of 55Kb+ each and targeting PartitionKey "partition3"
+            await eho.SendEventsAsync(Enumerable.Range(0, itemCount)
+                .Select(r =>
+                {
+                    var eventData = new EventData();
+                    eventData.ProviderName = "TestProvider";
+                    eventData.Timestamp = DateTimeOffset.UtcNow;
+                    eventData.Level = LogLevel.Warning;
+                    eventData.Payload.Add("IntProperty", r);
+                    eventData.Payload.Add("StringProperty", new string('a', 55000));
+                    eventData.Payload.Add("PartitionByProperty", "partition3");
+                    return eventData;
+                })
+                .ToList(), 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
+                if (batch.Count() != 4)
+                {
+                    return false;
+                }
+                return true;
+            };
+
+            //the individual messages are 55Kb in size each, so a maximum of 4 messages total byte size fits within EventHubMessageSizeLimit limits.
+            //so we expect 512 / 4 = 128 batches executed against EventHubClient.SendAsync()
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition3"), Times.Exactly(itemCount / 4));
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
     }
 }
