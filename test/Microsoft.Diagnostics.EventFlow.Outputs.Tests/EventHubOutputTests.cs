@@ -154,13 +154,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             return SendsManyItemsToPartitionedEventHub(8192);
         }
 
-        //TODO: This test failes, most likely due to this: https://github.com/Azure/diagnostics-eventflow/blob/ba71dd489a79e37736ffe735ee50b18f827dad67/src/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/EventDataExtensions.cs#L55
-        //[Fact]
-        //public Task Sends65536ItemsToPartitionedEventHub()
-        //{
-        //    return SendsManyItemsToPartitionedEventHub(65536);
-        //}
-
         private async Task SendsManyItemsToPartitionedEventHub(int itemCount)
         {
             var client = new Mock<IEventHubClient>();
