@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.EventHubs;
@@ -57,8 +58,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         }
 
         public EventHubOutput(
-            EventHubOutputConfiguration eventHubOutputConfiguration, 
-            IHealthReporter healthReporter, 
+            EventHubOutputConfiguration eventHubOutputConfiguration,
+            IHealthReporter healthReporter,
             Func<string, IEventHubClient> eventHubClientFactory = null)
         {
             Requires.NotNull(eventHubOutputConfiguration, nameof(eventHubOutputConfiguration));
@@ -83,52 +84,56 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             try
             {
-                // Since event hub limits each message/batch to be a certain size, we need to
-                // keep checking the size for exceeds and split into a new batch as needed
-
-                List<List<MessagingEventData>> batches = new List<List<MessagingEventData>>();
-                int batchByteSize = 0;
-
-                foreach (EventData eventData in events)
-                {
-                    int messageSize;
-                    MessagingEventData messagingEventData = eventData.ToMessagingEventData(out messageSize);
-
-                    // If we don't have a batch yet, or the addition of this message will exceed the limit for this batch, then
-                    // start a new batch.
-                    if (batches.Count == 0 ||
-                        batchByteSize + messageSize > EventHubMessageSizeLimit)
-                    {
-                        batches.Add(new List<MessagingEventData>());
-                        batchByteSize = 0;
-                    }
-
-                    batchByteSize += messageSize;
-
-                    List<MessagingEventData> currentBatch = batches[batches.Count - 1];
-                    currentBatch.Add(messagingEventData);
-                }
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
+                var groupedEventData = events.GroupBy(e => string.IsNullOrEmpty(outputConfiguration.PartitionKeyProperty) == false && e.TryGetPropertyValue(outputConfiguration.PartitionKeyProperty, out var partionKeyData) ? partionKeyData.ToString() : string.Empty, e => e);
 
                 List<Task> tasks = new List<Task>();
-                foreach (List<MessagingEventData> batch in batches)
+
+                foreach (var partitionedEventData in groupedEventData)
                 {
-                    tasks.Add(hubClient.SendAsync(batch));
+                    //assemble the full list of MessagingEventData items plus their messageSize 
+                    List<(MessagingEventData message, int messageSize)> batchRecords = partitionedEventData.Select(e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(out var messageSize), messageSize).ToValueTuple()).ToList();
+
+                    SendBatch(batchRecords);
+
+                    void SendBatch(IReadOnlyCollection<(MessagingEventData message, int messageSize)> batch)
+                    {
+                        // Since event hub limits each message/batch to be a certain size, we need to
+                        // keep checking the size in bytes of the batch and recursively keep splitting into two batches as needed
+                        if (batch.Count >= 2 && batch.Sum(b => b.messageSize) > EventHubMessageSizeLimit)
+                        {
+                            //the batch total message size is too big to send to EventHub, but it still contains at least two items,
+                            //so we split the batch up in half and recusively call the inline SendBatch() method with the two new smaller batches
+                            var indexMiddle = batch.Count / 2;
+                            SendBatch(batch.Take(indexMiddle).ToList());
+                            SendBatch(batch.Skip(indexMiddle).ToList());
+                            return;
+                        }
+
+                        IEventHubClient hubClient = currentClients[transmissionSequenceNumber % ConcurrentConnections];
+                        if (string.IsNullOrEmpty(partitionedEventData.Key))
+                        {
+                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.message)));
+                        }
+                        else
+                        {
+                            tasks.Add(hubClient.SendAsync(batch.Select(b => b.message), partitionedEventData.Key));
+                        }
+                    }
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 this.healthReporter.ReportHealthy();
+
             }
             catch (Exception e)
             {
-                ErrorHandlingPolicies.HandleOutputTaskError(e, () => 
+                ErrorHandlingPolicies.HandleOutputTaskError(e, () =>
                 {
                     string errorMessage = nameof(EventHubOutput) + ": diagnostics data upload has failed." + Environment.NewLine + e.ToString();
                     this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
@@ -154,6 +159,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 this.clients[i] = this.eventHubClientFactory(this.outputConfiguration.ConnectionString);
             }
+
+
         }
 
         void IDisposable.Dispose()
@@ -172,6 +179,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 tasks.Add(client.CloseAsync());
             }
+
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
@@ -188,6 +196,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
+
             connStringBuilder.EntityPath = this.eventHubName;
 
             return new EventHubClientImpl(EventHubClient.CreateFromConnectionString(connStringBuilder.ToString()));

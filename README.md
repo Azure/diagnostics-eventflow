@@ -554,6 +554,7 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 | `type` | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
 | `eventHubName` | event hub name | No | Specifies the name of the event hub. |
 | `connectionString` | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
+| `partitionKeyProperty` | string | No | The name of the event property that will be used as the PartitionKey for the Event Hub events. |
 
 #### Application Insights
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights/)

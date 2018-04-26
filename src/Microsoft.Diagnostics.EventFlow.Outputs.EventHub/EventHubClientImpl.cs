@@ -28,6 +28,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             return this.inner.SendAsync(batch);
         }
 
+        public Task SendAsync(IEnumerable<Azure.EventHubs.EventData> batch, string partitionKey)
+        {
+            return this.inner.SendAsync(batch, partitionKey);
+        }
+
         public Task CloseAsync()
         {
             return this.inner.CloseAsync();

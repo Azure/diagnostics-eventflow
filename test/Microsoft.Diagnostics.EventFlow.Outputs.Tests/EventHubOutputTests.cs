@@ -55,26 +55,145 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             e.Payload.Add("StringProperty", "perfection");
 
             EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
-            await eho.SendEventsAsync(new EventData[] { e }, 17, CancellationToken.None);
+            await eho.SendEventsAsync(new EventData[] {e,}, 17, CancellationToken.None);
 
-            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch => {
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
                 if (batch.Count() != 1) return false;
 
                 var data = batch.First();
                 var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
                 var recordSet = JObject.Parse(bodyString);
                 var message = recordSet["records"][0];
+
                 return (string) message["level"] == "Warning"
-                    && (string) message["properties"]["ProviderName"] == "TestProvider"
-                    && (int) message["properties"]["IntProperty"] == 42
-                    && (string) message["properties"]["StringProperty"] == "perfection";
+                       && (string) message["properties"]["ProviderName"] == "TestProvider"
+                       && (int) message["properties"]["IntProperty"] == 42
+                       && (string) message["properties"]["StringProperty"] == "perfection";
             };
 
             client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
             healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
-    }
 
-    
+        [Fact]
+        public async Task SendsDataToPartitionedEventHub()
+        {
+            var client = new Mock<IEventHubClient>();
+            var healthReporter = new Mock<IHealthReporter>();
+            var configuration = new EventHubOutputConfiguration();
+            configuration.ConnectionString = "Connection string";
+            configuration.EventHubName = "foo";
+            configuration.PartitionKeyProperty = "PartitionByProperty";
+
+            EventData e1 = new EventData();
+            e1.ProviderName = "TestProvider";
+            e1.Timestamp = DateTimeOffset.UtcNow;
+            e1.Level = LogLevel.Warning;
+            e1.Payload.Add("IntProperty", 23);
+            e1.Payload.Add("StringProperty", "partition-perfection");
+            e1.Payload.Add("PartitionByProperty", "partition1");
+
+            EventData e2 = new EventData();
+            e2.ProviderName = "TestProvider";
+            e2.Timestamp = DateTimeOffset.UtcNow;
+            e2.Level = LogLevel.Warning;
+            e2.Payload.Add("IntProperty", 23);
+            e2.Payload.Add("StringProperty", "partition-perfection");
+
+            EventData e3 = new EventData();
+            e3.ProviderName = "TestProvider";
+            e3.Timestamp = DateTimeOffset.UtcNow;
+            e3.Level = LogLevel.Warning;
+            e3.Payload.Add("IntProperty", 23);
+            e3.Payload.Add("StringProperty", new string('a', 150000));
+            e3.Payload.Add("PartitionByProperty", "partition2");
+
+            EventData e4 = new EventData();
+            e4.ProviderName = "TestProvider";
+            e4.Timestamp = DateTimeOffset.UtcNow;
+            e4.Level = LogLevel.Warning;
+            e4.Payload.Add("IntProperty", 23);
+            e4.Payload.Add("StringProperty", new string('b', 150000));
+            e4.Payload.Add("PartitionByProperty", "partition2");
+
+            EventData e5 = new EventData();
+            e5.ProviderName = "TestProvider";
+            e5.Timestamp = DateTimeOffset.UtcNow;
+            e5.Level = LogLevel.Warning;
+            e5.Payload.Add("IntProperty", 23);
+            e5.Payload.Add("StringProperty", new string('c', 150000));
+            e5.Payload.Add("PartitionByProperty", "partition2");
+
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+            await eho.SendEventsAsync(new[] {e1, e2, e3, e4, e5}, 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
+                if (batch.Count() != 1) return false;
+                return true;
+            };
+
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition1"), Times.Once);
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition2"), Times.Exactly(3));
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public Task Sends512ItemsToPartitionedEventHub()
+        {
+            return SendsManyItemsToPartitionedEventHub(512);
+        }
+
+        [Fact]
+        public Task Sends8192ItemsToPartitionedEventHub()
+        {
+            return SendsManyItemsToPartitionedEventHub(8192);
+        }
+
+        private async Task SendsManyItemsToPartitionedEventHub(int itemCount)
+        {
+            var client = new Mock<IEventHubClient>();
+            var healthReporter = new Mock<IHealthReporter>();
+            var configuration = new EventHubOutputConfiguration();
+            configuration.ConnectionString = "Connection string";
+            configuration.EventHubName = "foo";
+            configuration.PartitionKeyProperty = "PartitionByProperty";
+
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+
+            //send `itemCount` EventData items with payload of 55Kb+ each and targeting PartitionKey "partition3"
+            await eho.SendEventsAsync(Enumerable.Range(0, itemCount)
+                .Select(r =>
+                {
+                    var eventData = new EventData();
+                    eventData.ProviderName = "TestProvider";
+                    eventData.Timestamp = DateTimeOffset.UtcNow;
+                    eventData.Level = LogLevel.Warning;
+                    eventData.Payload.Add("IntProperty", r);
+                    eventData.Payload.Add("StringProperty", new string('a', 55000));
+                    eventData.Payload.Add("PartitionByProperty", "partition3");
+                    return eventData;
+                })
+                .ToList(), 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
+                if (batch.Count() != 4)
+                {
+                    return false;
+                }
+                return true;
+            };
+
+            //the individual messages are 55Kb in size each, so a maximum of 4 messages total byte size fits within EventHubMessageSizeLimit limits.
+            //so we expect `itemCount` / 4 batches executed against EventHubClient.SendAsync()
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition3"), Times.Exactly(itemCount / 4));
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+    }
 }
