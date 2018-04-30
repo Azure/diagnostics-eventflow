@@ -27,12 +27,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Incubation", "Incubation", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalTests", "FunctionalTests", "{05441E68-B217-475A-8E81-DB36614D1823}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuspecs", "Nuspecs", "{3B5ED5A8-29C6-4DF3-B8E8-C422453415C5}"
-	ProjectSection(SolutionItems) = preProject
-		nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec = nuspecs\ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.nuspec
-		nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec = nuspecs\Suite\Microsoft.Diagnostics.EventFlow.Suite.nuspec
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{C0F892AE-D5F5-42FD-943C-6428CA252650}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Core", "src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
