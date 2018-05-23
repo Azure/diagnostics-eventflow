@@ -46,13 +46,16 @@
     <ItemGroup>
       <NugetPackages Include="..\..\nugets\*.nupkg" />
     </ItemGroup>
+    
     <Move SourceFiles="@(NugetPackages)" DestinationFolder="$(OutputPath)\nugets" />
+    
+    <ItemGroup>
+      <FilesToSign Include="$(OutputPath)\nugets\*.nupkg">
+        <Authenticode>NuGet</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
   </Target>
-  <ItemGroup>
-    <FilesToSign Include="$(OutputPath)\nugets\*.nupkg">
-      <Authenticode>NuGet</Authenticode>
-    </FilesToSign>
-  </ItemGroup>
+  
   <Target Name="MovePackagesAfterSigning" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
     <ItemGroup>
       <SignedNugetPackages Include="$(OutputPath)\nugets\*.nupkg" />
