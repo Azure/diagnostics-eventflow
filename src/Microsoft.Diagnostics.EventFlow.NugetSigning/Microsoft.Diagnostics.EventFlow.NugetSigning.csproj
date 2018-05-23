@@ -17,16 +17,19 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">    
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
+  
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Dummy.cs" />
+  </ItemGroup>
+  
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
@@ -35,7 +38,7 @@
     <Error Condition="!Exists('..\..\packages\MicroBuild.Core.0.3.0\build\MicroBuild.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MicroBuild.Core.0.3.0\build\MicroBuild.Core.targets'))" />
   </Target>
   <Import Project="..\..\packages\MicroBuild.Core.0.3.0\build\MicroBuild.Core.targets" Condition="Exists('..\..\packages\MicroBuild.Core.0.3.0\build\MicroBuild.Core.targets')" />
-
+  
   <!--
     The signing task expect the packages to sign to be located under some certain folder. So before signing, we move the packages to the expected folder, and after signing, we move the signed packages back to their original place.
   -->
@@ -45,18 +48,15 @@
     </ItemGroup>
     <Move SourceFiles="@(NugetPackages)" DestinationFolder="$(OutputPath)\nugets" />
   </Target>
-
   <ItemGroup>
-    <FilesToSign Include="$(OutputPath)\nugets\*.nupkg" >
+    <FilesToSign Include="$(OutputPath)\nugets\*.nupkg">
       <Authenticode>Nuget</Authenticode>
     </FilesToSign>
   </ItemGroup>
-
   <Target Name="MovePackagesAfterSigning" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
     <ItemGroup>
       <SignedNugetPackages Include="$(OutputPath)\nugets\*.nupkg" />
     </ItemGroup>
     <Move SourceFiles="@(SignedNugetPackages)" DestinationFolder="..\..\nugets" />
   </Target>
-  
 </Project>
