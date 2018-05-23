@@ -19,8 +19,6 @@ try
 
     $nugetProjects = &'findstr.exe' /sm PackageId *.csproj
 
-    $nugetCmd = Join-Path $PSScriptRoot nuget.exe
-
     if ([string]::IsNullOrEmpty($Suffix))
     {
         foreach($projectFile in $nugetProjects)
