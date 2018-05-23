@@ -109,59 +109,18 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
     </ItemGroup>
+    
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
     <Move SourceFiles="@(CoreAssemblies)" DestinationFolder="$(OutputPath)\core" />
     <Move SourceFiles="@(Core20Assemblies)" DestinationFolder="$(OutputPath)\core20" />
+    
+    <ItemGroup>
+      <FilesToSign Include="$(OutputPath)\full\*.dll;$(OutputPath)\core\*.dll;$(OutputPath)\core20\*.dll">
+        <Authenticode>Microsoft</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
   </Target>
-  <ItemGroup>
-    <!--We can't use wildcard here since it's expanded before build, which is empty.-->
-    <FilesToSign Include="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
-                          $(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                          $(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Core.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
-                          $(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;">
-      <Authenticode>Microsoft</Authenticode>
-    </FilesToSign>
-  </ItemGroup>
+  
   <Target Name="CopySignedAssembliesBack" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
     <!--Full framework assemblies-->
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net451"/>
@@ -211,11 +170,5 @@
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0"/>
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  
 </Project>
