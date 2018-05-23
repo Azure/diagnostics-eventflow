@@ -50,7 +50,7 @@
   </Target>
   <ItemGroup>
     <FilesToSign Include="$(OutputPath)\nugets\*.nupkg">
-      <Authenticode>Nuget</Authenticode>
+      <Authenticode>NuGet</Authenticode>
     </FilesToSign>
   </ItemGroup>
   <Target Name="MovePackagesAfterSigning" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
