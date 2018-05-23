@@ -33,10 +33,21 @@
   </Target>
   <Import Project="..\..\packages\MicroBuild.Core.0.3.0\build\MicroBuild.Core.targets" Condition="Exists('..\..\packages\MicroBuild.Core.0.3.0\build\MicroBuild.Core.targets')" />
 
+  <!--
+    The signing task expect the packages to sign to be located under some certain folder. So before signing, we move the packages to the expected folder, and after signing, we move the signed packages back to their original place.
+  -->
+  <Target Name="MovePackagesBeforeSigning" Condition="'$(SignType)'!=''" BeforeTargets="SignFiles">
+    <Move SourceFiles="..\..\nugets\*.nupkg" DestinationFolder="$(OutputPath)\nugets" />
+  </Target>
+
   <ItemGroup>
-    <FilesToSign Include="..\..\nugets\*.nupkg" >
+    <FilesToSign Include="$(OutputPath)\nugets\*.nupkg" >
       <Authenticode>Nuget</Authenticode>
     </FilesToSign>
   </ItemGroup>
+
+  <Target Name="MovePackagesAfterSigning" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
+    <Move SourceFiles="$(OutputPath)\nugets\*.nupkg" DestinationFolder="..\..\nugets" />
+  </Target>
   
 </Project>
