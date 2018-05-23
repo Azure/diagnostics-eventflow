@@ -37,7 +37,10 @@
     The signing task expect the packages to sign to be located under some certain folder. So before signing, we move the packages to the expected folder, and after signing, we move the signed packages back to their original place.
   -->
   <Target Name="MovePackagesBeforeSigning" Condition="'$(SignType)'!=''" BeforeTargets="SignFiles">
-    <Move SourceFiles="..\..\nugets\*.nupkg" DestinationFolder="$(OutputPath)\nugets" />
+    <ItemGroup>
+      <NugetPackages Include="..\..\nugets\*.nupkg" />
+    </ItemGroup>
+    <Move SourceFiles="@(NugetPackages)" DestinationFolder="$(OutputPath)\nugets" />
   </Target>
 
   <ItemGroup>
@@ -47,7 +50,10 @@
   </ItemGroup>
 
   <Target Name="MovePackagesAfterSigning" Condition="'$(SignType)'!=''" AfterTargets="SignFiles">
-    <Move SourceFiles="$(OutputPath)\nugets\*.nupkg" DestinationFolder="..\..\nugets" />
+    <ItemGroup>
+      <SignedNugetPackages Include="$(OutputPath)\nugets\*.nupkg" />
+    </ItemGroup>
+    <Move SourceFiles="@(SignedNugetPackages)" DestinationFolder="..\..\nugets" />
   </Target>
   
 </Project>
