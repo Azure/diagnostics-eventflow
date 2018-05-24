@@ -28,6 +28,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                         ["numberOfShards"] = 10,
                         ["numberOfReplicas"] = 20,
                         ["refreshInterval"] = "60s",
+                        ["useSniffingConnectionPooling"] = "true",
                     }
                 }
             };
@@ -54,7 +55,15 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 Assert.Equal(10, esOutputConfiguration.NumberOfShards);
                 Assert.Equal(20, esOutputConfiguration.NumberOfReplicas);
                 Assert.Equal("60s", esOutputConfiguration.RefreshInterval);
+                Assert.True(esOutputConfiguration.UseSniffingConnectionPooling);
             }
+        }
+
+        [Fact]
+        public void SniffingConnectionPoolingIsDisabledByDefault()
+        {
+            var esOutputConfiguration = new ElasticSearchOutputConfiguration();
+            Assert.False(esOutputConfiguration.UseSniffingConnectionPooling);
         }
     }
 }
