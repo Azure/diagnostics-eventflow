@@ -620,6 +620,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `numberOfShards` | int | No | Specifies how many shards to create the index with. If not specified, it defaults to 1.|
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
+| `useSniffingConnectionPooling` | true/false | No | Determines whether the output tries to adapt to Elasticsearch cluster changes via topology sniffing. This may not work in an environment when cluster node IP addresses are not routable from clients. Default false. |
 
 *Standard metadata support*
 

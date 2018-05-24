@@ -324,7 +324,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 Configuration = esOutputConfiguration
             };
 
-            var esServiceUri = esOutputConfiguration.ServiceUri
+            var esServiceUris = esOutputConfiguration.ServiceUri
                 .Split(';')
                 .Where(x => Uri.IsWellFormedUriString(x, UriKind.Absolute))
                 .Select(x => new Uri(x))
@@ -332,7 +332,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             string errorMessage;
 
-            if (!esServiceUri.Any())
+            if (!esServiceUris.Any())
             {
                 errorMessage =
                     $"{nameof(ElasticSearchOutput)}:  required 'serviceUri' configuration parameter is invalid";
@@ -350,7 +350,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 userName = password = null;
             }
 
-            var pool = new SniffingConnectionPool(esServiceUri);
+            IConnectionPool pool = esOutputConfiguration.UseSniffingConnectionPooling? new SniffingConnectionPool(esServiceUris) : new StaticConnectionPool(esServiceUris);
             ConnectionSettings connectionSettings = new ConnectionSettings(pool);
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
             {

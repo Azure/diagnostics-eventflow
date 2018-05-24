@@ -23,12 +23,15 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public int NumberOfReplicas { get; set; }
         public string RefreshInterval { get; set; }
 
+        public bool UseSniffingConnectionPooling { get; set; }
+
         public ElasticSearchOutputConfiguration()
         {
             EventDocumentTypeName = DefaultEventDocumentTypeName;
             NumberOfShards = DefaultNumberOfShards;
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
+            UseSniffingConnectionPooling = false;
         }
 
         public ElasticSearchOutputConfiguration DeepClone()
