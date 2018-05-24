@@ -21,6 +21,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private static readonly DataflowLinkOptions PropagateCompletion = new DataflowLinkOptions() { PropagateCompletion = true };
         private static readonly TimeSpan MessageArrivalTimeout = TimeSpan.FromMilliseconds(2000);
         private static readonly TimeSpan CompletionTimeout = TimeSpan.FromMilliseconds(5000);
+        private static readonly TimeSpan CompletionInProgressVerificationTimeout = TimeSpan.FromMilliseconds(2000);
         private static readonly TimeSpan BurstTimeout = TimeSpan.FromSeconds(10);
 
         [Fact]
@@ -192,18 +193,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             bb.Complete();
 
             // Completion task should still be running
-            await Task.WhenAny(bb.Completion, Task.Delay(CompletionTimeout));
-            Assert.False(bb.Completion.IsCompleted);
-
             // Assumption: BatchBlock will not start target's completion until it itself completes
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
+            await Task.WhenAny(bb.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
+            Assert.False(bb.Completion.IsCompleted);
             Assert.True(testTarget.Completion.IsNotStarted());
 
             // Assumption: cancellation does not affect the completion of the block (unfortunately!)
             cts.Cancel();
-            await Task.WhenAny(bb.Completion, Task.Delay(CompletionTimeout));
+            await Task.WhenAny(bb.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(bb.Completion.IsCompleted);
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
             
             // The block still has 2 batches: one full, one undersize
@@ -430,11 +428,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.False(someMessagesDelivered);
 
             // Completion task should still be running
-            await Task.WhenAny(block.Completion, Task.Delay(CompletionTimeout));
+            // And the block should not start target's completion until it itself completes
+            await Task.WhenAny(block.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(block.Completion.IsCompleted);
-
-            // Assumption: block will not start target's completion until it itself completes
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
         }
 
@@ -520,18 +516,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             block.Complete();
 
             // Completion task should still be running
-            await Task.WhenAny(block.Completion, Task.Delay(CompletionTimeout));
+            // Also, we assume that BufferBlock will not start target's completion until it itself completes
+            await Task.WhenAny(block.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(block.Completion.IsCompleted);
-
-            // Assumption: BufferBlock will not start target's completion until it itself completes
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
 
             // Assumption: cancellation does not affect the completion of the block (unfortunately!)
             cts.Cancel();
-            await Task.WhenAny(block.Completion, Task.Delay(CompletionTimeout));
+            await Task.WhenAny(block.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(block.Completion.IsCompleted);
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
             Assert.Equal(2, OutputCount(block));
         }
