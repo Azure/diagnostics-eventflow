@@ -148,12 +148,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             return SendsManyItemsToPartitionedEventHub(512);
         }
 
-        [Fact]
-        public Task Sends8192ItemsToPartitionedEventHub()
-        {
-            return SendsManyItemsToPartitionedEventHub(8192);
-        }
-
         private async Task SendsManyItemsToPartitionedEventHub(int itemCount)
         {
             var client = new Mock<IEventHubClient>();
@@ -166,6 +160,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
 
             //send `itemCount` EventData items with payload of 55Kb+ each and targeting PartitionKey "partition3"
+            string payload = new string('a', 55000);
             await eho.SendEventsAsync(Enumerable.Range(0, itemCount)
                 .Select(r =>
                 {
@@ -174,7 +169,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                     eventData.Timestamp = DateTimeOffset.UtcNow;
                     eventData.Level = LogLevel.Warning;
                     eventData.Payload.Add("IntProperty", r);
-                    eventData.Payload.Add("StringProperty", new string('a', 55000));
+                    eventData.Payload.Add("StringProperty", payload);
                     eventData.Payload.Add("PartitionByProperty", "partition3");
                     return eventData;
                 })
