@@ -58,6 +58,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         private DateTime flushTime;
         private int flushPeriodMsec = 5000;
+        private Func<DateTime> getCurrentTime = () => DateTime.Now;
         private FileStream fileStream;
         internal StreamWriter StreamWriter;
         internal bool EnsureOutputCanBeSaved { get; private set; }
@@ -105,9 +106,14 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         internal CsvHealthReporter(
             CsvHealthReporterConfiguration configuration,
             INewReportFileTrigger newReportTrigger = null,
-            int flushPeriodMsec = 5000)
+            int flushPeriodMsec = 5000,
+            Func<DateTime> currentTimeProvider = null)
         {
             this.flushPeriodMsec = flushPeriodMsec;
+            if (currentTimeProvider != null)
+            {
+                this.getCurrentTime = currentTimeProvider;
+            }
             Initialize(configuration, newReportTrigger);
         }
         #endregion
@@ -137,7 +143,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     }
                     activated = false;
                 }
-                this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
+                this.flushTime = this.getCurrentTime().AddMilliseconds(this.flushPeriodMsec);
 
                 // Start the consumer of the report items in the collection.
                 this.writingTask = Task.Run(() => ConsumeCollectedData());
@@ -187,7 +193,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 }
                 this.StreamWriter.WriteLine(text);
 
-                if (DateTime.Now >= this.flushTime)
+                if (this.getCurrentTime() >= this.flushTime)
                 {
 
                     this.StreamWriter.Flush();
@@ -198,7 +204,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                         this.newStreamRequested = true;
                     }
 
-                    this.flushTime = DateTime.Now.AddMilliseconds(this.flushPeriodMsec);
+                    this.flushTime = this.getCurrentTime().AddMilliseconds(this.flushPeriodMsec);
                 }
             }
 

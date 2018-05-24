@@ -29,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
         private const string LogRetentionInDaysKey = "LogRetentionInDays";
         private const string EnsureOutputCanBeSavedKey = "EnsureOutputCanBeSaved";
-        private const int DefaultDelayMsec = 100;
+        private const int StreamOperationTimeoutMsec = 500;
 
         [Fact]
         public void ConstructorShouldRequireConfigFile()
@@ -43,7 +43,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ConstructorShouldHandleWrongFilterLevel()
+        public void ConstructorShouldHandleWrongFilterLevel()
         {
             // Setup
             var configuration = BuildTestConfigration();
@@ -53,7 +53,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             using (CustomHealthReporter target = new CustomHealthReporter(configuration))
             {
                 target.Activate();
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 // Verify
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
@@ -63,7 +63,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ReportHealthyShouldWriteMessage()
+        public void ReportHealthyShouldWriteMessage()
         {
             // Setup
             var configuration = BuildTestConfigration();
@@ -74,7 +74,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportHealthy("Healthy message.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Message,Healthy message."))),
@@ -83,7 +83,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ReportWarningShouldWriteWarning()
+        public void ReportWarningShouldWriteWarning()
         {
             // Setup
             var configuration = BuildTestConfigration();
@@ -94,7 +94,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportWarning("Warning message.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Warning,Warning message."))),
@@ -103,7 +103,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ReportProblemShouldWriteError()
+        public void ReportProblemShouldWriteError()
         {
             var configuration = BuildTestConfigration();
 
@@ -112,7 +112,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             {
                 target.Activate();
                 target.ReportProblem("Error message.", "UnitTest");
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 // Verify
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
@@ -122,7 +122,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ReporterShouldFilterOutMessage()
+        public void ReporterShouldFilterOutMessage()
         {
             // Setup
             var configuration = BuildTestConfigration();
@@ -134,7 +134,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportHealthy("Supposed to be filtered.", "UnitTest");
                 // Verify that message is filtered out.
-                await Task.Delay(DefaultDelayMsec);
+                Assert.False(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.IsAny<string>()),
@@ -142,7 +142,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                 // Verify that warning is not filtered out.
                 target.ReportWarning("Warning message", "UnitTests");
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.IsAny<string>()),
@@ -150,7 +150,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                 // Verify that error is not filtered out.
                 target.ReportWarning("Error message", "UnitTests");
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.IsAny<string>()),
@@ -194,26 +194,26 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ShouldFlushOnceAWhile()
+        public void ShouldFlushOnceAWhile()
         {
             // Setup
             var configuration = BuildTestConfigration();
-            int flushPeriodPlusMsec = 500;
+            DateTime now = DateTime.Now;
 
             // Exercise
-            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 200))
+            using (CustomHealthReporter target = new CustomHealthReporter(configuration, 200, customCreateFileStream: null, setNewStreamWriter: null, currentTimeProvider: () => now))
             {
                 target.Activate();
                 target.ReportProblem("Error message, with comma.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelayMsec);
+                Assert.False(target.FlushOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.Flush(),
                     Times.Never());
 
-                await Task.Delay(flushPeriodPlusMsec);
+                now += TimeSpan.FromMilliseconds(500);
                 target.ReportProblem("Error message, with comma.", "UnitTest");
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.FlushOperation.WaitOne(StreamOperationTimeoutMsec));
 
                 target.StreamWriterMock.Verify(
                     s => s.Flush(),
@@ -249,7 +249,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ShouldEscapeCommaInMessage()
+        public void ShouldEscapeCommaInMessage()
         {
             // Setup
             var configuration = BuildTestConfigration();
@@ -260,7 +260,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportProblem("Error message, with comma.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error message, with comma.\""))),
@@ -282,7 +282,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
 
         [Fact]
-        public async void ShouldEscapeQuotesWhenThereIsCommaInMessage()
+        public void ShouldEscapeQuotesWhenThereIsCommaInMessage()
         {
             // Setup
             var configuration = BuildTestConfigration();
@@ -293,7 +293,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 target.Activate();
                 target.ReportProblem("Error \"message\", with comma and quotes.", "UnitTest");
                 // Verify
-                await Task.Delay(DefaultDelayMsec);
+                Assert.True(target.WriteOperation.WaitOne(StreamOperationTimeoutMsec));
                 target.StreamWriterMock.Verify(
                     s => s.WriteLine(
                         It.Is<string>(msg => msg.Contains("UnitTest,Error,\"Error \"\"message\"\", with comma and quotes.\""))),
