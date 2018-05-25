@@ -214,6 +214,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     eventPayload["RelatedActivityID"] = relatedActivityId;
                 }
 
+#if !NETSTANDARD1_6
+                Guid activityID = Trace.CorrelationManager.ActivityId;
+                if (activityID != Guid.Empty)
+                {
+                    eventPayload["ActivityID"] = activityID;
+                }
+#endif
+
                 this.subject.OnNext(eventEntry);
             }
             catch (Exception ex)
