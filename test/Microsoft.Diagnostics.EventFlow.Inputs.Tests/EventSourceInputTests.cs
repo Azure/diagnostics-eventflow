@@ -11,7 +11,7 @@ using System.Linq;
 using Moq;
 using Xunit;
 
-#if !NETSTANDARD1_6
+#if !NETCOREAPP1_0
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 #endif
@@ -21,8 +21,6 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
-#if !NET451
-
     public class EventSourceInputTests
     {
         [Fact]
@@ -125,7 +123,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         // High-precision event timestamping is availabe on .NET 4.6+ and .NET Core 2.0+
-#if NET46
+#if !NETCOREAPP1_0
         [Fact]
         public void MeasuresEventTimeWithHighResolution()
         {
@@ -136,21 +134,22 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             List<DateTimeOffset> eventTimes = new List<DateTimeOffset>();
             Action<EventWrittenEventArgs> eventHandler = e => eventTimes.Add(EventDataExtensions.ToEventData(e, healthReporterMock.Object, "context-unused").Timestamp);
-            var hundredMicroseconds = Math.Round(Stopwatch.Frequency / 10000.0);
+            var twoMilliseconds = Math.Round(Stopwatch.Frequency / 500.0);
             using (var listener = new EventSourceInputTestListener(eventHandler))
             {
                 for (int i=0; i < 8; i++)
                 {
                     EventSourceInputTestSource.Log.Message(i.ToString());
                     var sw = Stopwatch.StartNew();
-                    while (sw.ElapsedTicks < hundredMicroseconds)
+                    while (sw.ElapsedTicks < twoMilliseconds)
                     {
                         // Spin wait
                     }
                 }
             }
 
-            Assert.True(eventTimes.Distinct().Count() == 8, "Event timestamps should have less than 1 ms resolution and thus should all be different");
+            // Event timestamps should have less than 1 ms resolution and thus should all be different
+            Assert.Equal(8, eventTimes.Distinct().Count());
         }
 #endif
 
@@ -300,7 +299,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
         // Enabling events with different levels and keywords does not work on .NET Core 1.1. and 2.0
         // (following up with .NET team to see if there is something we can do about it)
-#if NET46
+#if !NETCOREAPP1_0
         [Fact]
         public void CanEnableSameSourceWithDifferentLevelsAndKeywords()
         {
@@ -404,6 +403,4 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
     }
-
-#endif
-    }
+}
