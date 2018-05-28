@@ -16,6 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 
         public string IndexNamePrefix { get; set; }
         public string ServiceUri { get; set; }
+        public string ConnectionPoolType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
         public string BasicAuthenticationUserPassword { get; set; }
         public string EventDocumentTypeName { get; set; }
@@ -23,15 +24,12 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public int NumberOfReplicas { get; set; }
         public string RefreshInterval { get; set; }
 
-        public bool UseSniffingConnectionPooling { get; set; }
-
         public ElasticSearchOutputConfiguration()
         {
             EventDocumentTypeName = DefaultEventDocumentTypeName;
             NumberOfShards = DefaultNumberOfShards;
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
-            UseSniffingConnectionPooling = false;
         }
 
         public ElasticSearchOutputConfiguration DeepClone()
@@ -40,6 +38,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
             {
                 IndexNamePrefix = this.IndexNamePrefix,
                 ServiceUri = this.ServiceUri,
+                ConnectionPoolType = this.ConnectionPoolType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
                 BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword,
                 EventDocumentTypeName = this.EventDocumentTypeName,

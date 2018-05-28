@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Elasticsearch.Net;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch;
 using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -55,15 +59,60 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 Assert.Equal(10, esOutputConfiguration.NumberOfShards);
                 Assert.Equal(20, esOutputConfiguration.NumberOfReplicas);
                 Assert.Equal("60s", esOutputConfiguration.RefreshInterval);
-                Assert.True(esOutputConfiguration.UseSniffingConnectionPooling);
             }
         }
 
-        [Fact]
-        public void SniffingConnectionPoolingIsDisabledByDefault()
+        [Theory]
+        [InlineData("SingleNode", typeof(SingleNodeConnectionPool))]
+        [InlineData("Static", typeof(StaticConnectionPool))]
+        [InlineData("Sniffing", typeof(SniffingConnectionPool))]
+        [InlineData("Sticky", typeof(StickyConnectionPool))]
+        public void VerifyValidConfigCreatesConnectionPool(string connectionType, Type expectedConnectionPool)
         {
-            var esOutputConfiguration = new ElasticSearchOutputConfiguration();
-            Assert.False(esOutputConfiguration.UseSniffingConnectionPooling);
+            var testUriString = "http://localhost:8080";
+            var elasticConfig = new ElasticSearchOutputConfiguration
+            {
+                ServiceUri = testUriString,
+                ConnectionPoolType = connectionType
+            };
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var result = elasticConfig.GetConnectionPool(healthReporterMock.Object);
+
+            Assert.IsType(expectedConnectionPool, result);
+        }
+
+        [Fact]
+        public void VerifyUriListParsedFromString()
+        {
+            //Test single node
+            var singleUri = "http://localhost:8080";
+            var elasticConfigSingleNode = new ElasticSearchOutputConfiguration
+            {
+                ServiceUri = singleUri,
+                ConnectionPoolType = "SingleNode"
+            };
+            var singleExpected = new List<Node> { new Node(new Uri(singleUri)) };
+
+            //Test many nodes
+            var manyUri = "http://localhost:8080;http://localhost:8081";
+            var elasticConfigManyNode = new ElasticSearchOutputConfiguration
+            {
+                ServiceUri = manyUri,
+                ConnectionPoolType = "Static"
+            };
+            var manyExpected = new List<Node>
+            {
+                new Node(new Uri("http://localhost:8080")),
+                new Node(new Uri("http://localhost:8081"))
+            };
+
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var singleResult = elasticConfigSingleNode.GetConnectionPool(healthReporterMock.Object);
+            var manyResult = elasticConfigManyNode.GetConnectionPool(healthReporterMock.Object);
+
+            Assert.Equal(singleExpected, singleResult.Nodes);
+            Assert.Equal(manyExpected, manyResult.Nodes);
         }
     }
 }

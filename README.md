@@ -601,6 +601,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
     "type": "ElasticSearch",
     "indexNamePrefix": "app1",
     "serviceUri": "https://myElasticSearchCluster:9200;https://myElasticSearchCluster:9201;https://myElasticSearchCluster:9202",
+    "connectionPoolType": "Sniffing",
     "basicAuthenticationUserName": "esUser1",
     "basicAuthenticationUserPassword": "<MyPassword>",
     "eventDocumentTypeName": "diagData",
@@ -614,13 +615,14 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `type` | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
 | `indexNamePrefix` | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
 | `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. Single URL or semicolon-separated URLs for connection pooling are accepted |
+| `connectionPoolType` | "SingleNode", "Static", "Sniffing", or "Sticky" | Yes | Specifies the Connection Pool that takes care of registering what nodes there are in the cluster. |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
 | `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
 | `numberOfShards` | int | No | Specifies how many shards to create the index with. If not specified, it defaults to 1.|
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
-| `useSniffingConnectionPooling` | true/false | No | Determines whether the output tries to adapt to Elasticsearch cluster changes via topology sniffing. This may not work in an environment when cluster node IP addresses are not routable from clients. Default false. |
+
 
 *Standard metadata support*
 

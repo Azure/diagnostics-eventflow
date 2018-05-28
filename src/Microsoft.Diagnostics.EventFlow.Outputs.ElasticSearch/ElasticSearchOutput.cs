@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch;
 using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Nest;
@@ -324,33 +325,17 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 Configuration = esOutputConfiguration
             };
 
-            var esServiceUris = esOutputConfiguration.ServiceUri
-                .Split(';')
-                .Where(x => Uri.IsWellFormedUriString(x, UriKind.Absolute))
-                .Select(x => new Uri(x))
-                .ToList();
-
-            string errorMessage;
-
-            if (!esServiceUris.Any())
-            {
-                errorMessage =
-                    $"{nameof(ElasticSearchOutput)}:  required 'serviceUri' configuration parameter is invalid";
-                this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
-
             string userName = esOutputConfiguration.BasicAuthenticationUserName;
             string password = esOutputConfiguration.BasicAuthenticationUserPassword;
             bool credentialsIncomplete = string.IsNullOrWhiteSpace(userName) ^ string.IsNullOrWhiteSpace(password);
             if (credentialsIncomplete)
             {
-                errorMessage = $"{nameof(ElasticSearchOutput)}: for basic authentication to work both user name and password must be specified";
+                var errorMessage = $"{nameof(ElasticSearchOutput)}: for basic authentication to work both user name and password must be specified";
                 healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
                 userName = password = null;
             }
 
-            IConnectionPool pool = esOutputConfiguration.UseSniffingConnectionPooling? new SniffingConnectionPool(esServiceUris) : new StaticConnectionPool(esServiceUris);
+            IConnectionPool pool = esOutputConfiguration.GetConnectionPool(healthReporter);
             ConnectionSettings connectionSettings = new ConnectionSettings(pool);
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
             {
