@@ -45,7 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 }
             }
 
-            if (EventCountersSamplingInterval <= 0)
+            if (EventCountersSamplingInterval < 0)
                 return false;
 
             return true;
