@@ -140,7 +140,8 @@ This input listens to EventSource traces. EventSource classes can be created in 
 | `providerNamePrefix` | EventSource name prefix | Yes(*) | Specifies the name prefix of EventSource(s) to track. For example, if the value is "Microsoft-ServiceFabric", all EventSources that have names starting with Microsoft-ServiceFabric (Microsoft-ServiceFabric-Services, Microsoft-ServiceFabric-Actors and so on) will be tracked. |
 | `disabledProviderNamePrefix` | provider name | Yes(*) | Specifies the name prefix of the EventSource(s) that must be ignored. No events from these sources will be captured(***). |
 | `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No(**) | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is LogAlways, which means "provider decides what events are raised", which usually results in all events being raised. |
-|`keywords` | An integer | No(**) | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+| `keywords` | An integer | No(**) | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+| `eventCountersSamplingInterval` | An integer | No | Specifies the sampling interval in seconds for collecting data from EventCounters. Default is 0 (Do not collect EventCounter data). |
 
 *Remarks*
 
