@@ -178,7 +178,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                             keywords &= (EventKeywords)~0x12;
                         }
 
-                        this.EnableEvents(eventSource, sourceConfiguration.Level, keywords);
+                        Dictionary<string, string> arguments = null;
+
+                        if (sourceConfiguration.EventCountersSamplingInterval > 0)
+                        {
+                            arguments = new Dictionary<string, string>
+                            {
+                                { "EventCounterIntervalSec", sourceConfiguration.EventCountersSamplingInterval.ToString() }
+                            };
+                        }
+
+                        this.EnableEvents(eventSource, sourceConfiguration.Level, keywords, arguments);
                     }
                 }
             }
