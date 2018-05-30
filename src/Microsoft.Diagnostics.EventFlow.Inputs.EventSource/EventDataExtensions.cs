@@ -91,7 +91,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
 
-            bool isEventCountersEvent = eventSourceEvent.EventName == "EventCounters" && eventSourceEvent.Payload.Count == 1 && eventSourceEvent.PayloadNames[0] == eventSourceEvent.EventName;
+            bool isEventCountersEvent = eventSourceEvent.EventName == "EventCounters" && eventSourceEvent.Payload.Count == 1 && eventSourceEvent.PayloadNames[0] == "Payload";
             if (isEventCountersEvent)
             {
                 ExtractEventCounterPayloadData(eventSourceEvent, eventData, healthReporter, context);
