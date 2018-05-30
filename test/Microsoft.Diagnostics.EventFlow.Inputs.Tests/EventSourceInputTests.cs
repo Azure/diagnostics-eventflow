@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -230,6 +231,51 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                 healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
+        [Fact]
+        public async Task AddsMetricDataToEventCounters()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderName = "EventSourceInput-TestEventSource",
+                EventCountersSamplingInterval = 1
+            });
+
+            var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object);
+            eventSourceInput.Activate();
+
+            var testTaskCompletionSource = new TaskCompletionSource<EventData>();
+
+            var observer = new Mock<IObserver<EventData>>();
+            observer.Setup(o => o.OnNext(It.IsAny<EventData>())).Callback<EventData>(eventData =>
+            {
+                testTaskCompletionSource.TrySetResult(eventData);
+            });
+
+            using (eventSourceInput.Subscribe(observer.Object))
+            {
+                EventSourceInputTestSource.Log.ReportTestMetric(5);
+                EventSourceInputTestSource.Log.ReportTestMetric(1);
+
+                var firstTaskToComplete = await Task.WhenAny(
+                    testTaskCompletionSource.Task,
+                    Task.Delay(TimeSpan.FromSeconds(1.5))
+                );
+
+                Assert.Equal(testTaskCompletionSource.Task, firstTaskToComplete);
+
+                var data = await testTaskCompletionSource.Task;
+
+                Assert.True(data.TryGetMetadata(MetricData.MetricMetadataKind, out var metadata));
+                foreach (EventMetadata eventMetadata in metadata)
+                {
+                    Assert.Equal(data.Payload[eventMetadata.Properties[MetricData.MetricNameMoniker]], data.Payload[eventMetadata.Properties[MetricData.MetricValuePropertyMoniker]]);
+                }
             }
         }
 
