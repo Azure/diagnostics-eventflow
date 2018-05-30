@@ -274,7 +274,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Assert.True(data.TryGetMetadata(MetricData.MetricMetadataKind, out var metadata));
                 foreach (EventMetadata eventMetadata in metadata)
                 {
-                    Assert.Equal(data.Payload[eventMetadata.Properties[MetricData.MetricNameMoniker]], data.Payload[eventMetadata.Properties[MetricData.MetricValuePropertyMoniker]]);
+                    Assert.Equal(data.Payload[eventMetadata.Properties[MetricData.MetricNamePropertyMoniker]], data.Payload[eventMetadata.Properties[MetricData.MetricValuePropertyMoniker]]);
                 }
             }
         }
