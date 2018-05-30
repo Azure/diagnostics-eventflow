@@ -10,6 +10,7 @@ using System.Linq;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 #if !NETSTANDARD1_6
 using System.Runtime.InteropServices;
 #endif
@@ -118,7 +119,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             foreach(var payload in (IDictionary<string, object>)eventSourceEvent.Payload[0])
             {
                 eventData.AddPayloadProperty(payload.Key, payload.Value, healthReporter, context);
+                eventData.SetMetadata(CreateMetricMetadata(payload.Key));
             }
+        }
+
+        private static EventMetadata CreateMetricMetadata(string property)
+        {
+            EventMetadata eventMetadata = new EventMetadata(MetricData.MetricMetadataKind);
+            eventMetadata.Properties.Add(MetricData.MetricNameMoniker, property);
+            eventMetadata.Properties.Add(MetricData.MetricValuePropertyMoniker, property);
+
+            return eventMetadata;
         }
     }
 }
