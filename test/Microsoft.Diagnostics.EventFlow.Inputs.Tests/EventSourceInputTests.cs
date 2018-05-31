@@ -215,12 +215,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 var firstTaskToComplete = await Task.WhenAny(
                     testTaskCompletionSource.Task,
-                    Task.Delay(TimeSpan.FromSeconds(1.5))
+                    Task.Delay(TimeSpan.FromSeconds(3))
                 );
 
                 Assert.Equal(testTaskCompletionSource.Task, firstTaskToComplete);
 
-                var data = await testTaskCompletionSource.Task;
+                var data = testTaskCompletionSource.Task.Result;
 
                 Assert.Equal(-1, data.Payload["EventId"]);
                 Assert.Equal("EventCounters", data.Payload["EventName"]);
@@ -264,12 +264,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 var firstTaskToComplete = await Task.WhenAny(
                     testTaskCompletionSource.Task,
-                    Task.Delay(TimeSpan.FromSeconds(1.5))
+                    Task.Delay(TimeSpan.FromSeconds(3))
                 );
 
                 Assert.Equal(testTaskCompletionSource.Task, firstTaskToComplete);
 
-                var data = await testTaskCompletionSource.Task;
+                var data = testTaskCompletionSource.Task.Result;
 
                 Assert.True(data.TryGetMetadata(MetricData.MetricMetadataKind, out var metadata));
                 foreach (EventMetadata eventMetadata in metadata)
