@@ -14,7 +14,6 @@ using Xunit;
 
 #if !NETCOREAPP1_0
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 #endif
 
 using Microsoft.Diagnostics.EventFlow.Inputs;
