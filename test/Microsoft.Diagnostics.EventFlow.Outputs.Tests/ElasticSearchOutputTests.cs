@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Elasticsearch.Net;
 using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch;
 using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -63,7 +62,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         }
 
         [Theory]
-        [InlineData("SingleNode", typeof(SingleNodeConnectionPool))]
+        [InlineData("", typeof(StaticConnectionPool))]
         [InlineData("Static", typeof(StaticConnectionPool))]
         [InlineData("Sniffing", typeof(SniffingConnectionPool))]
         [InlineData("Sticky", typeof(StickyConnectionPool))]
@@ -89,7 +88,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var elasticConfigSingleNode = new ElasticSearchOutputConfiguration
             {
                 ServiceUri = singleUri,
-                ConnectionPoolType = "SingleNode"
+                ConnectionPoolType = ""
             };
             var singleExpected = new List<Node> { new Node(new Uri(singleUri)) };
 
@@ -113,6 +112,25 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 
             Assert.Equal(singleExpected, singleResult.Nodes);
             Assert.Equal(manyExpected, manyResult.Nodes);
+            healthReporterMock.Verify(m => m.ReportHealthy("ElasticSearchOutput: Using default Static connection type.", EventFlowContextIdentifiers.Configuration));
+        }
+
+        [Fact]
+        public void InvalidServiceUriConfigThrows()
+        {
+            var invalidUri = "httpNotValidUri";
+            var elasticConfigSingleNode = new ElasticSearchOutputConfiguration
+            {
+                ServiceUri = invalidUri,
+                ConnectionPoolType = ""
+            };
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var expectedExceptionMessage = "ElasticSearchOutput:  required 'serviceUri' configuration parameter is invalid";
+
+            var exception = Assert.Throws<Exception>(() => elasticConfigSingleNode.GetConnectionPool(healthReporterMock.Object));
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+            healthReporterMock.Verify(m => m.ReportProblem(expectedExceptionMessage, EventFlowContextIdentifiers.Configuration), Times.Once);
         }
     }
 }

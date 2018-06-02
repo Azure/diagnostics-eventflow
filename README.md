@@ -593,7 +593,7 @@ All other events will be reported as Application Insights *traces* (telemetry of
 #### Elasticsearch
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
 
-**Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 5.x**
+**Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 6.x**
 
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
 ```json
@@ -615,7 +615,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `type` | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
 | `indexNamePrefix` | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
 | `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. Single URL or semicolon-separated URLs for connection pooling are accepted |
-| `connectionPoolType` | "SingleNode", "Static", "Sniffing", or "Sticky" | Yes | Specifies the Connection Pool that takes care of registering what nodes there are in the cluster. |
+| `connectionPoolType` | "Static", "Sniffing", or "Sticky" | No | Specifies the Connection Pool that takes care of registering what nodes there are in the cluster. |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
 | `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |

@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Elasticsearch.Net;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
-using Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch;
 using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Nest;
