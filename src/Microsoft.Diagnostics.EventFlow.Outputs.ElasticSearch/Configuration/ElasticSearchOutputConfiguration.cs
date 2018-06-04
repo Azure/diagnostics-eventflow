@@ -3,6 +3,12 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Elasticsearch.Net;
+using Microsoft.Diagnostics.EventFlow.Outputs;
+
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
     // !!ACTION!!
@@ -13,9 +19,11 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public static readonly int DefaultNumberOfShards = 1;
         public static readonly int DefaultNumberOfReplicas = 5;
         public static readonly string DefaultRefreshInterval = "15s";
+        public static readonly ElasticConnectionPoolType DefaultConnectionPoolType = ElasticConnectionPoolType.Static; 
 
         public string IndexNamePrefix { get; set; }
         public string ServiceUri { get; set; }
+        public string ConnectionPoolType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
         public string BasicAuthenticationUserPassword { get; set; }
         public string EventDocumentTypeName { get; set; }
@@ -23,15 +31,12 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public int NumberOfReplicas { get; set; }
         public string RefreshInterval { get; set; }
 
-        public bool UseSniffingConnectionPooling { get; set; }
-
         public ElasticSearchOutputConfiguration()
         {
             EventDocumentTypeName = DefaultEventDocumentTypeName;
             NumberOfShards = DefaultNumberOfShards;
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
-            UseSniffingConnectionPooling = false;
         }
 
         public ElasticSearchOutputConfiguration DeepClone()
@@ -40,6 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
             {
                 IndexNamePrefix = this.IndexNamePrefix,
                 ServiceUri = this.ServiceUri,
+                ConnectionPoolType = this.ConnectionPoolType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
                 BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword,
                 EventDocumentTypeName = this.EventDocumentTypeName,
@@ -49,6 +55,62 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
             };
 
             return other;
+        }
+
+        public IConnectionPool GetConnectionPool(IHealthReporter healthReporter)
+        {
+            var esServiceUris = GetEsServiceUriList(healthReporter);
+            var esConnectionPool = GetEsConnectionPoolType(healthReporter);
+
+            switch (esConnectionPool)
+            {
+                case ElasticConnectionPoolType.Static:
+                    return new StaticConnectionPool(esServiceUris);
+                case ElasticConnectionPoolType.Sniffing:
+                    return new SniffingConnectionPool(esServiceUris);
+                case ElasticConnectionPoolType.Sticky:
+                    return new StickyConnectionPool(esServiceUris);
+                default:
+                    throw new ArgumentOutOfRangeException($"Invalid ElasticConnectionPoolType: {esConnectionPool}");
+            }
+        }
+
+        public enum ElasticConnectionPoolType
+        {
+            Static,
+            Sniffing,
+            Sticky
+        }
+
+        private ElasticConnectionPoolType GetEsConnectionPoolType(IHealthReporter healthReporter)
+        {
+            if (ConnectionPoolType != default(string) &&
+                Enum.TryParse<ElasticConnectionPoolType>(ConnectionPoolType, out var elasticConnectionPool))
+            {
+                return elasticConnectionPool;
+            }
+
+            var infoMessage = $"{nameof(ElasticSearchOutput)}: Using default {DefaultConnectionPoolType} connection type.";
+            healthReporter.ReportHealthy(infoMessage, EventFlowContextIdentifiers.Configuration);
+            return DefaultConnectionPoolType;
+        }
+
+        private IEnumerable<Uri> GetEsServiceUriList(IHealthReporter healthReporter)
+        {
+            var esServiceUri = ServiceUri
+                .Split(';')
+                .Where(x => Uri.IsWellFormedUriString(x, UriKind.Absolute))
+                .Select(x => new Uri(x))
+                .ToList();
+
+            if (!esServiceUri.Any())
+            {
+                //Invalid config string report and throw
+                var errorMessage = $"{nameof(ElasticSearchOutput)}:  required 'serviceUri' configuration parameter is invalid";
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
+                throw new Exception(errorMessage);
+            }
+            return esServiceUri;
         }
     }
 }
