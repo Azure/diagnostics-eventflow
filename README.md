@@ -991,9 +991,13 @@ Version 1.1.2 added support for resolving paths to other configuration files tha
 At run time this value will be substituted with a full path to the configuration file with the given name. This is especially useful if an EventFlow pipeline element wraps an existing library that has its own configuration file format (as is the case with Application Insights, for example). 
 
 ## Logical Expressions
-The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && EventId == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
+The logical expression allows you to filter events based on the event properties. For example, you can have an expression like `ProviderName == MyEventProvider && EventId == 3`, where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
 
-Here are the supported operators:
+Standard and custom (payload) properties are treated equally; there is no need to prefix custom properties in any way. For example, expression `TenantId != Unknown && ProviderName == MyEventProvider` will evaluate to true for events that 
+  - were created by `MyEventProvider` provider (ProviderName is a standard property available for all events), and
+  - have a TenantId custom property, with value that is different from "Unknown" string.
+
+Operators supported by logical expressions are:
 
 Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
 
