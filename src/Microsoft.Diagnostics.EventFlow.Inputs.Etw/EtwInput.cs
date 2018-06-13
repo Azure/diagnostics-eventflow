@@ -24,11 +24,16 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private EventFlowSubject<EventData> subject;
         private ITraceEventSession session;
         private bool isDisposed;
+        private readonly string defaultSessionnamePrefix = $"EventFlow-{nameof(EtwInput)}";
 
         public EtwInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            string sessionNamePrefix = configuration.GetValue<string>("sessionNamePrefix", defaultSessionnamePrefix);
+            bool cleanupOldSessions = configuration.GetValue<bool>("cleanupOldSessions", false);
+            bool restartExisting = configuration.GetValue<bool>("restartExisting", false);
 
             IConfiguration providersConfiguration = configuration.GetSection(ProvidersSectionName);
             if (providersConfiguration == null)
@@ -47,7 +52,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
 
-            Initialize(providers, healthReporter);
+            Initialize(providers, sessionNamePrefix, cleanupOldSessions, restartExisting, healthReporter);
         }
 
         public EtwInput(IReadOnlyCollection<EtwProviderConfiguration> providers, IHealthReporter healthReporter)
@@ -55,7 +60,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Requires.NotNull(providers, nameof(providers));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            Initialize(providers, healthReporter);
+            Initialize(providers, defaultSessionnamePrefix, false, false, healthReporter);
         }
 
         public IEnumerable<EtwProviderConfiguration> Providers { get; private set; }
@@ -143,12 +148,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             return this.subject.Subscribe(observer);
         }
 
-        private void Initialize(IReadOnlyCollection<EtwProviderConfiguration> providers, IHealthReporter healthReporter)
+        private void Initialize(
+            IReadOnlyCollection<EtwProviderConfiguration> providers,
+            string sessionNamePrefix,
+            bool cleanupOldSessions,
+            bool restartExisting,
+            IHealthReporter healthReporter)
         {
             this.healthReporter = healthReporter;
             this.subject = new EventFlowSubject<EventData>();
             this.isDisposed = false;
-            this.SessionFactory = () => new StandardTraceEventSession(healthReporter);
+            this.SessionFactory = () => new StandardTraceEventSession(sessionNamePrefix, cleanupOldSessions, restartExisting, healthReporter);
 
             this.Providers = providers;
             // The session is not started until Activate() is called.

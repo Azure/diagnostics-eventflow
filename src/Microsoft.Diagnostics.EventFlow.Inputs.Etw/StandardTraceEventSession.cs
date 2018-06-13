@@ -20,13 +20,44 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private bool isProcessing;
         private IHealthReporter healthReporter;
 
-        public StandardTraceEventSession(IHealthReporter healthReporter)
+        public StandardTraceEventSession(string sessionNamePrefix, bool cleanupOldSessions, bool restartExisting, IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
+            Requires.NotNullOrWhiteSpace(sessionNamePrefix, nameof(sessionNamePrefix));
 
             this.healthReporter = healthReporter;
-            this.inner = new TraceEventSession($"EventFlow-{nameof(EtwInput)}-{Guid.NewGuid().ToString()}", TraceEventSessionOptions.Create);
+
+            string sessionName = null;
+            if (cleanupOldSessions)
+            {
+                sessionName = CleanupMatchingSessions(sessionNamePrefix, restartExisting);
+            }
+            if (sessionName == null)
+                sessionName = $"{sessionNamePrefix }-{Guid.NewGuid().ToString()}";
+
+            // even if the session already exists, we must restart it as we cannot enable providers on an attached session
+            this.inner = new TraceEventSession(sessionName, TraceEventSessionOptions.Create);
             this.isProcessing = false;
+        }
+
+        string CleanupMatchingSessions(string sessionNamePrefix, bool keepOne)
+        {
+            string result = null;
+
+            foreach (var sesName in TraceEventSession.GetActiveSessionNames())
+            {
+                if (!sesName.StartsWith(sessionNamePrefix, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var session = TraceEventSession.GetActiveSession(sesName);
+                if (session == null || !session.IsRealTime)
+                    continue;
+                if (result == null)
+                    result = session.SessionName;
+                else
+                    session.Dispose();
+            }
+
+            return result;
         }
 
         public void Dispose()
