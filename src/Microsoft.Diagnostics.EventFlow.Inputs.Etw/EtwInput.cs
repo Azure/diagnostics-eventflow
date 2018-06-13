@@ -19,21 +19,21 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     public class EtwInput : IObservable<EventData>, IDisposable, IRequireActivation
     {
         private const string ProvidersSectionName = "providers";
+        private static readonly string DefaultSessionnamePrefix = $"EventFlow-{nameof(EtwInput)}";
 
         private IHealthReporter healthReporter;
         private EventFlowSubject<EventData> subject;
         private ITraceEventSession session;
         private bool isDisposed;
-        private readonly string defaultSessionnamePrefix = $"EventFlow-{nameof(EtwInput)}";
 
         public EtwInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            string sessionNamePrefix = configuration.GetValue<string>("sessionNamePrefix", defaultSessionnamePrefix);
+            string sessionNamePrefix = configuration.GetValue<string>("sessionNamePrefix", DefaultSessionnamePrefix);
             bool cleanupOldSessions = configuration.GetValue<bool>("cleanupOldSessions", false);
-            bool restartExisting = configuration.GetValue<bool>("restartExisting", false);
+            bool reuseExistingSession = configuration.GetValue<bool>("reuseExistingSession", false);
 
             IConfiguration providersConfiguration = configuration.GetSection(ProvidersSectionName);
             if (providersConfiguration == null)
@@ -52,7 +52,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
 
-            Initialize(providers, sessionNamePrefix, cleanupOldSessions, restartExisting, healthReporter);
+            Initialize(providers, sessionNamePrefix, cleanupOldSessions, reuseExistingSession, healthReporter);
         }
 
         public EtwInput(IReadOnlyCollection<EtwProviderConfiguration> providers, IHealthReporter healthReporter)
@@ -60,7 +60,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Requires.NotNull(providers, nameof(providers));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            Initialize(providers, defaultSessionnamePrefix, false, false, healthReporter);
+            Initialize(providers, DefaultSessionnamePrefix, false, false, healthReporter);
         }
 
         public IEnumerable<EtwProviderConfiguration> Providers { get; private set; }

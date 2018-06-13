@@ -20,7 +20,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private bool isProcessing;
         private IHealthReporter healthReporter;
 
-        public StandardTraceEventSession(string sessionNamePrefix, bool cleanupOldSessions, bool restartExisting, IHealthReporter healthReporter)
+        public StandardTraceEventSession(string sessionNamePrefix, bool cleanupOldSessions, bool reuseExisting, IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNullOrWhiteSpace(sessionNamePrefix, nameof(sessionNamePrefix));
@@ -30,34 +30,16 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             string sessionName = null;
             if (cleanupOldSessions)
             {
-                sessionName = CleanupMatchingSessions(sessionNamePrefix, restartExisting);
+                sessionName = CleanupMatchingSessions(sessionNamePrefix, reuseExisting);
             }
             if (sessionName == null)
+            {
                 sessionName = $"{sessionNamePrefix }-{Guid.NewGuid().ToString()}";
+            }
 
             // even if the session already exists, we must restart it as we cannot enable providers on an attached session
             this.inner = new TraceEventSession(sessionName, TraceEventSessionOptions.Create);
             this.isProcessing = false;
-        }
-
-        string CleanupMatchingSessions(string sessionNamePrefix, bool keepOne)
-        {
-            string result = null;
-
-            foreach (var sesName in TraceEventSession.GetActiveSessionNames())
-            {
-                if (!sesName.StartsWith(sessionNamePrefix, StringComparison.OrdinalIgnoreCase))
-                    continue;
-                var session = TraceEventSession.GetActiveSession(sesName);
-                if (session == null || !session.IsRealTime)
-                    continue;
-                if (result == null)
-                    result = session.SessionName;
-                else
-                    session.Dispose();
-            }
-
-            return result;
         }
 
         public void Dispose()
@@ -116,6 +98,35 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 };
                 this.inner.Source.Process();
             }
+        }
+
+        private string CleanupMatchingSessions(string sessionNamePrefix, bool keepOne)
+        {
+            string result = null;
+
+            foreach (var sesName in TraceEventSession.GetActiveSessionNames())
+            {
+                if (!sesName.StartsWith(sessionNamePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                var session = TraceEventSession.GetActiveSession(sesName);
+                if (session == null || !session.IsRealTime)
+                {
+                    continue;
+                }
+
+                if (keepOne && result == null)
+                {
+                    result = session.SessionName;
+                }
+                else
+                {
+                    session.Dispose();
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -428,7 +428,7 @@ To capture data from EventSources running in the same process as EventFlow, the 
     "type": "ETW",
     "sessionNamePrefix": "MyCompany-MyApplication",
     "cleanupOldSessions": true,
-    "restartExisting": true,
+    "reuseExistingSession": true,
     "providers": [
         {
             "providerName": "Microsoft-ServiceFabric",
@@ -446,7 +446,7 @@ To capture data from EventSources running in the same process as EventFlow, the 
 | `type` | "ETW" | Yes | Specifies the input type. For this input, it must be "ETW". |
 | `sessionNamePrefix` | string | No | The ETW trace session will be created with this name prefix, which helps in differentiating  ETW input instances owned by multiple applications. If not set, a default prefix will be used. |
 | `cleanupOldSessions` | boolean | No | If set, existing ETW trace sessions matching the `sessionNamePrefix` will be closed. This helps to collect leftover session instances, as there is a limit on their number. |
-| `restartExisting` | boolean | No | If turned on, then an existing trace session matching the `sessionNamePrefix` will be re-used. If `cleanupOldSessions` is also turned on, then it will leave one session open for re-use. |
+| `reuseExistingSession` | boolean | No | If turned on, then an existing trace session matching the `sessionNamePrefix` will be re-used. If `cleanupOldSessions` is also turned on, then it will leave one session open for re-use. |
 | `providers` | JSON array | Yes | Specifies ETW providers to collect data from. |
 
 *Providers object*
