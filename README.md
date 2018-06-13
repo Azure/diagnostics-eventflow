@@ -12,7 +12,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Microsoft.Extensions.Logging](#microsoftextensionslogging)
 - [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
 - [Application Insights](#application-insights-input)
- 
+
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
 - [HTTP (json via http)](#http)
@@ -64,7 +64,7 @@ Note: if you are using VisualStudio for Mac, you might need to edit the project 
     </None>
   </ItemGroup>
    ```
-   
+
 3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, you can send traces to console output instead by replacing the Application Insights output with the standard output. The `outputs` property in the configuration should then look like this: 
 ```json
     "outputs": [
@@ -426,6 +426,9 @@ To capture data from EventSources running in the same process as EventFlow, the 
 ```json
 {
     "type": "ETW",
+    "sessionNamePrefix": "MyCompany-MyApplication",
+    "cleanupOldSessions": true,
+    "reuseExistingSession": true,
     "providers": [
         {
             "providerName": "Microsoft-ServiceFabric",
@@ -441,6 +444,9 @@ To capture data from EventSources running in the same process as EventFlow, the 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "ETW" | Yes | Specifies the input type. For this input, it must be "ETW". |
+| `sessionNamePrefix` | string | No | The ETW trace session will be created with this name prefix, which helps in differentiating  ETW input instances owned by multiple applications. If not set, a default prefix will be used. |
+| `cleanupOldSessions` | boolean | No | If set, existing ETW trace sessions matching the `sessionNamePrefix` will be closed. This helps to collect leftover session instances, as there is a limit on their number. |
+| `reuseExistingSession` | boolean | No | If turned on, then an existing trace session matching the `sessionNamePrefix` will be re-used. If `cleanupOldSessions` is also turned on, then it will leave one session open for re-use. |
 | `providers` | JSON array | Yes | Specifies ETW providers to collect data from. |
 
 *Providers object*
@@ -643,7 +649,7 @@ Fields injected byt the `request` metadata are:
 | `RequestName` | The name of the request, read the event property specified by `requestNameProperty`. |
 | `Duration` | Request duration, read from the event property specified by `durationProperty` (if available). |
 | `IsSuccess` | Success indicator,  read from the event property specified by `isSuccessProperty` (if available). |
-| `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). | 
+| `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). |
 
 #### OMS (Operations Management Suite)
 
@@ -801,7 +807,7 @@ Metrics are named time series of floating-point values. Metric metadata defines 
 | `metricName` | string | (see Remarks) | The name of the metric. |
 | `metricNameProperty` | string | (see Remarks) | The name of the event property that holds metric name. |
 | `metricValue` | double | (see Remarks) | The value of the metric. This is useful for "counter" type of metric when each occurrence of a particular event should result in an increment of the counter. |
-| `metricValueProperty` | string | (see Remarks) | The name of the event property that holds the metric value. | 
+| `metricValueProperty` | string | (see Remarks) | The name of the event property that holds the metric value. |
 
 Remarks: 
 1. Either `metricName` or `metricNameProperty` must be specified.
@@ -913,7 +919,7 @@ The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `
 | Parameter | Default Value | Description |
 | :-------- | :-------------- | :---------- |
 | `healthEntityName` | (none) | The name of the health entity that will be used to report EventFlow pipeline health to Service Fabric. Usually it is set to a value that helps you identify the service using the pipeline, for example "MyApplication-MyService-DiagnosticsPipeline". |
-| `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of a (Service Fabric) service configuration package.| 
+| `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of a (Service Fabric) service configuration package.|
 | `configurationPackageName` | "Config" | The name of the Service Fabric configuration package that contains the pipeline configuration file.|
 
 The recommended place to create the diagnostic pipeline is in the service `Main()` method:
