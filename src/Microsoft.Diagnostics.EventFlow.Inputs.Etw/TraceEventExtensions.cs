@@ -38,6 +38,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 payloadData.Add(nameof(traceEvent.RelatedActivityID), traceEvent.RelatedActivityID.ToString());
             }
+            payloadData.Add(nameof(traceEvent.ProcessID), traceEvent.ProcessID);
+            payloadData.Add(nameof(traceEvent.ProcessName), traceEvent.ProcessName);
 
             try
             {
