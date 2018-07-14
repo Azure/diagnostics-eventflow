@@ -19,6 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public EventKeywords Keywords { get; set; } = EventKeywords.All;
         public string DisabledProviderNamePrefix { get; set; }
         public string ProviderNamePrefix { get; set; }
+        public int EventCountersSamplingInterval { get; set; }
 
         public bool Validate()
         {
@@ -43,6 +44,9 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                     return false;
                 }
             }
+
+            if (EventCountersSamplingInterval < 0)
+                return false;
 
             return true;
         }
