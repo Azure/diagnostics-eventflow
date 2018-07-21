@@ -1,11 +1,12 @@
-﻿using Microsoft.Diagnostics.EventFlow;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using log4net.Core;
 using Validation;
 
-namespace Microsoft.Diagnostics.EventFlow.Inputs.Log4net
+namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class Log4NetFactory : IPipelineItemFactory<Log4NetInput>
     {
