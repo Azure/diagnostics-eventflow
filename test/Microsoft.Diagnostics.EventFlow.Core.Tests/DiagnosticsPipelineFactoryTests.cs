@@ -459,7 +459,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
         private static async void TryDeleteFile(string startWith, string extension = ".csv", int delayMilliseconds = 0)
         {
-            // Clean up
             await Task.Delay(delayMilliseconds);
             string[] targets = Directory.GetFiles(Directory.GetCurrentDirectory(), $"{startWith}*{extension}");
             foreach (string file in targets)
