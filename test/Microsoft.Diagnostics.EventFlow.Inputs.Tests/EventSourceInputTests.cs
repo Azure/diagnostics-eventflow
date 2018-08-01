@@ -19,6 +19,8 @@ using System.Collections.ObjectModel;
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -450,6 +452,35 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 #endif
+
+        [Fact]
+        public void CanReadKeywordsInHexFormat()
+        {
+            string inputConfiguration = @"
+                {
+                    ""type"": ""EventSource"",
+                    ""sources"": [
+                        { ""providerName"": ""EventSourceInput-TestEventSource"", ""keywords"": ""0x05"" }
+                    ]
+                }";
+
+            
+            using (var configFile = new TemporaryFile())
+            {
+                configFile.Write(inputConfiguration);
+                var cb = new ConfigurationBuilder();
+                cb.AddJsonFile(configFile.FilePath);
+                var configuration = cb.Build();
+
+                var healthReporterMock = new Mock<IHealthReporter>();
+                var input = new EventSourceInput(configuration, healthReporterMock.Object);
+
+                Assert.Equal((EventKeywords)0x5, input.EventSources.First().Keywords);
+
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
 
         [EventSource(Name = "EventSourceInput-TestEventSource")]
         private class EventSourceInputTestSource : EventSource

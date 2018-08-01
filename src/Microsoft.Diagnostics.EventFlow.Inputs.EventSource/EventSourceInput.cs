@@ -39,6 +39,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
             var eventSources = new List<EventSourceConfiguration>();
+            ConfigUtil.ConvertKeywordsToDecimal(sourcesConfiguration);
             try
             {
                 sourcesConfiguration.Bind(eventSources);
