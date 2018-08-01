@@ -163,11 +163,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             this.Providers = providers;
             // The session is not started until Activate() is called.
-
-            if (providers.Count == 0)
-            {
-                healthReporter.ReportWarning($"{nameof(EtwInput)}: no providers configured, the input will not produce any data", EventFlowContextIdentifiers.Configuration);
-            }
         }
     }
 }
