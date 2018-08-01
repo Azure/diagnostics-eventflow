@@ -43,7 +43,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         }
 
         public string CounterName { get; set; }
-        public int SamplingIntervalMsec { get; set; }
+        public int CollectionIntervalMsec { get; set; }
 
         // The following configuration options govern how the library finds the correct counter instance name for the current process
 
@@ -71,7 +71,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 
         public PerformanceCounterConfiguration()
         {
-            this.SamplingIntervalMsec = 30000;
+            this.CollectionIntervalMsec = 30000;
         }
 
         public virtual bool Validate()
