@@ -201,7 +201,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             if (eventSources.Count() == 0)
             {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", EventFlowContextIdentifiers.Configuration);
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured, the input will not produce any data", EventFlowContextIdentifiers.Configuration);
             }
 
             var invalidConfigurationItems = new List<EventSourceConfiguration>();
