@@ -186,9 +186,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         var eventSourceInput = pipeline.Inputs.First() as EventSourceInput;
                         Assert.NotNull(eventSourceInput);
 
-                        var expectedEventSources = new EventSourceConfiguration[2];
+                        var expectedEventSources = new EventSourceConfiguration[3];                        
                         expectedEventSources[0] = new EventSourceConfiguration { ProviderName = "Microsoft-ServiceFabric-Services" };
                         expectedEventSources[1] = new EventSourceConfiguration { ProviderName = "MyCompany-AirTrafficControlApplication-Frontend" };
+                        // Microsoft-ApplicationInsights-Data is disabled by default to work around https://github.com/dotnet/coreclr/issues/14434
+                        expectedEventSources[2] = new EventSourceConfiguration { DisabledProviderNamePrefix = "Microsoft-ApplicationInsights-Data" };
                         Assert.True(eventSourceInput.EventSources.SequenceEqual(expectedEventSources));
 
                         var metadata = new EventMetadata("importance");
