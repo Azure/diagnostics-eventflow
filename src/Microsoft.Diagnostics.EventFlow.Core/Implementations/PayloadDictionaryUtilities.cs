@@ -10,8 +10,6 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public static class PayloadDictionaryUtilities
     {
-        private static Lazy<Random> random = new Lazy<Random>();
-
         public static void AddPayloadProperty(IDictionary<string, object> payload, string key, object value, IHealthReporter healthReporter, string context)
         {
             Requires.NotNull(payload, nameof(payload));
@@ -24,11 +22,13 @@ namespace Microsoft.Diagnostics.EventFlow
                 return;
             }
 
-            string newKey = key + "_";
+            string newKey;
+            int i = 1;
             //update property key till there is no such key in dict
             do
             {
-                newKey += PayloadDictionaryUtilities.random.Value.Next(0, 10);
+                newKey = key + "_" + i.ToString("d");
+                i++;
             }
             while (payload.ContainsKey(newKey));
 
