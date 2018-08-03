@@ -38,8 +38,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 payloadData.Add(nameof(traceEvent.RelatedActivityID), traceEvent.RelatedActivityID.ToString());
             }
-            payloadData.Add(nameof(traceEvent.ProcessID), traceEvent.ProcessID);
-            payloadData.Add(nameof(traceEvent.ProcessName), traceEvent.ProcessName);
+            // ProcessID and ProcessName are somewhat common property names, so to minimize likelihood of conflicts we use a prefix
+            payloadData.Add("TraceEventProcessID", traceEvent.ProcessID);
+            payloadData.Add("TraceEventProcessName", traceEvent.ProcessName);
 
             try
             {
