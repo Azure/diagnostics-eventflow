@@ -3,12 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Diagnostics.EventFlow;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
