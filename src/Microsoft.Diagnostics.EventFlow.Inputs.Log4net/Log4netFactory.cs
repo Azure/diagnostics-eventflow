@@ -8,14 +8,14 @@ using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class Log4NetFactory : IPipelineItemFactory<Log4NetInput>
+    public class Log4netFactory : IPipelineItemFactory<Log4netInput>
     {
-        public Log4NetInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
+        public Log4netInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            return new Log4NetInput(configuration, healthReporter);
+            return new Log4netInput(configuration, healthReporter);
         }
     }
 }

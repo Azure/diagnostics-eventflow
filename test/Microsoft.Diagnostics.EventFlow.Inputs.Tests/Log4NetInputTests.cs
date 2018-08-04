@@ -50,7 +50,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 var l4nInputConfiguration = new Log4netConfiguration();
                 configFragments[0].Bind(l4nInputConfiguration);
 
-                Assert.Equal(LogLevel.Verbose, l4nInputConfiguration.LogLevel);
+                Assert.Equal("Verbose", l4nInputConfiguration.LogLevel);
             }
         }
 
@@ -58,10 +58,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         public void ValidConfigurationCanWrtieToInputPipleine()
         {
             var healthReportMock = new Mock<IHealthReporter>();
-            var configurationMock = new Log4netConfiguration { LogLevel = LogLevel.Informational };
+            var configurationMock = new Log4netConfiguration { LogLevel = "INFO" };
             var mockOutput = new Mock<IOutput>();
 
-            using (var log4NetInput = new Log4NetInput(configurationMock, healthReportMock.Object))
+            using (var log4NetInput = new Log4netInput(configurationMock, healthReportMock.Object))
             using (var pipeline = new DiagnosticPipeline(
                 healthReportMock.Object,
                 new[] { log4NetInput },
@@ -80,10 +80,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         public void LowerLevelDefinedDoesNotWriteToPipeline()
         {
             var healthReportMock = new Mock<IHealthReporter>();
-            var configurationMock = new Log4netConfiguration { LogLevel = LogLevel.Informational };
+            var configurationMock = new Log4netConfiguration { Log4netLevel = Level.Info };
             var mockOutput = new Mock<IOutput>();
 
-            using (var log4NetInput = new Log4NetInput(configurationMock, healthReportMock.Object))
+            using (var log4NetInput = new Log4netInput(configurationMock, healthReportMock.Object))
             using (var pipeline = new DiagnosticPipeline(
                 healthReportMock.Object,
                 new[] { log4NetInput },

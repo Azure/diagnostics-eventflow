@@ -4,18 +4,18 @@
 // ------------------------------------------------------------
 
 using log4net.Core;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using log4net;
 using log4net.Appender;
 using log4net.Repository.Hierarchy;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Extensions.Configuration;
 using Validation;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
-    public class Log4NetInput : AppenderSkeleton, IObservable<EventData>, IDisposable
+    public class Log4netInput : AppenderSkeleton, IObservable<EventData>, IDisposable
     {
         private static readonly IDictionary<Level, LogLevel> ToLogLevel =
             new Dictionary<Level, LogLevel>
@@ -34,7 +34,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private Log4netConfiguration _log4NetInputConfiguration;
         private Hierarchy eventFlowRepo;
 
-        public Log4NetInput(IConfiguration configuration, IHealthReporter healthReporter)
+        public Log4netInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             Requires.NotNull(configuration, nameof(configuration));
@@ -54,7 +54,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Initialize(log4NetInputConfiguration, healthReporter);
         }
 
-        public Log4NetInput(Log4netConfiguration log4NetConfigs, IHealthReporter healthReporter)
+        public Log4netInput(Log4netConfiguration log4NetConfigs, IHealthReporter healthReporter)
         {
             Requires.NotNull(log4NetConfigs, nameof(log4NetConfigs));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -72,14 +72,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             try
             {
                 eventFlowRepo = (Hierarchy)LogManager.CreateRepository("EventFlow");
+                _log4NetInputConfiguration.Log4netLevel = eventFlowRepo.LevelMap[_log4NetInputConfiguration.LogLevel];
+
+                eventFlowRepo.Root.AddAppender(this);
+                eventFlowRepo.Configured = true;
             }
-            catch (LogException ex)
+            catch (LogException)
             {
                 eventFlowRepo = (Hierarchy) LogManager.GetRepository("EventFlow");
             }
-            eventFlowRepo.Root.AddAppender(this);
-            eventFlowRepo.Configured = true;
-
         }
 
         protected override void Append(LoggingEvent loggingEvent)
@@ -93,13 +94,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject.OnNext(eventData);
         }
 
-        private bool IsEnabledFor(Level level) => ToLogLevel[level] <= _log4NetInputConfiguration.LogLevel;
+        private bool IsEnabledFor(Level level) => level <= _log4NetInputConfiguration.Log4netLevel;
 
         private EventData ToEventData(LoggingEvent loggingEvent)
         {
             var eventData = new EventData
             {
-                ProviderName = nameof(Log4NetInput),
+                ProviderName = nameof(Log4netInput),
                 Timestamp = loggingEvent.TimeStamp,
                 Level = ToLogLevel[loggingEvent.Level],
                 Keywords = 0
@@ -109,11 +110,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 try
                 {
-                    eventData.AddPayloadProperty(key, loggingEvent.LookupProperty(key), healthReporter, nameof(Log4NetInput));
+                    eventData.AddPayloadProperty(key, loggingEvent.LookupProperty(key), healthReporter, nameof(Log4netInput));
                 }
                 catch (Exception ex)
                 {
-                    healthReporter.ReportWarning($"{nameof(Log4NetInput)}: event property '{key}' could not be rendered{Environment.NewLine}{ex}");
+                    healthReporter.ReportWarning($"{nameof(Log4netInput)}: event property '{key}' could not be rendered{Environment.NewLine}{ex}");
                 }
             }
 

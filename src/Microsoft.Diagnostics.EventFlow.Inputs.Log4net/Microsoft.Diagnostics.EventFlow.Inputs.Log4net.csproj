@@ -9,7 +9,7 @@
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Log4net</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.Log4net</PackageId>
-    <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;EventSource</PackageTags>
+    <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;Log4Net</PackageTags>
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
     <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -19,20 +19,27 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <Version>1.0.0</Version>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.Diagnostics.EventFlow.Core" Version="1.4.1" />
-  </ItemGroup>
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions">
+      <HintPath>..\..\packages\Microsoft.Extensions.Configuration.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
