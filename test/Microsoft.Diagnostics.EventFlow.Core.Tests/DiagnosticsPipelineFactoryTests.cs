@@ -334,6 +334,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""Serilog""
                         },
                         {
+                            ""type"": ""Log4net"",
+                            ""LogLevel"": ""Verbose""
+                        },
+                        {
                             ""type"": ""PerformanceCounter"",
                             ""counters"": [
                                 {
@@ -347,11 +351,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""providers"": [
                                 { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
                             ]
-                        },
-                        {
-                            ""type"": ""Log4net"",
-                            ""LogLevel"": ""Verbose""
-                        }
+                        }                        
                     ],
 
                     ""outputs"": [
