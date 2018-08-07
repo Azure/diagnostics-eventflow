@@ -29,7 +29,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             };
 
         private IHealthReporter healthReporter;
-        private IConfiguration configuration;
         private EventFlowSubject<EventData> subject;
         private Log4netConfiguration _log4NetInputConfiguration;
         private Hierarchy eventFlowRepo;
