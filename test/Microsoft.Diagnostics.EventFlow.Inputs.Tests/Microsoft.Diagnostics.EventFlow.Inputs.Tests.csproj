@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.csproj" />
     <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.EtwUtilities\Microsoft.Diagnostics.EventFlow.EtwUtilities.csproj" />
@@ -41,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Moq" Version="4.8.2" />

@@ -334,6 +334,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""Serilog""
                         },
                         {
+                            ""type"": ""Log4net"",
+                            ""LogLevel"": ""Verbose""
+                        },
+                        {
                             ""type"": ""PerformanceCounter"",
                             ""counters"": [
                                 {
@@ -347,7 +351,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""providers"": [
                                 { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
                             ]
-                        }
+                        }                        
                     ],
 
                     ""outputs"": [
@@ -394,6 +398,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         },
                         {
                             ""type"": ""Serilog""
+                        },
+                        {
+                            ""type"": ""Log4net"",
+                            ""LogLevel"": ""Verbose""
                         }
                     ],
 
@@ -434,13 +442,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             i => Assert.IsType<EventSourceInput>(i),
                             i => Assert.IsType<LoggerInput>(i),
                             i => Assert.IsType<TraceInput>(i),
-                            i => Assert.IsType<SerilogInput>(i)
+                            i => Assert.IsType<SerilogInput>(i),
+                            i => Assert.IsType<Log4netInput>(i)
 #if NET46
                             , i => Assert.IsType<PerformanceCounterInput>(i)
                             , i => Assert.IsType<EtwInput>(i)
 #endif
                         );
-
+                        
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
                             s => Assert.IsType<ElasticSearchOutput>(s.Output),
