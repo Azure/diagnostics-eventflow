@@ -18,6 +18,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     public class EventSourceInput : EventListener, IObservable<EventData>, IDisposable, IRequireActivation
     {
+        private const string AppInsightsDataEventSource = "Microsoft-ApplicationInsights-Data";
+
         private bool constructed;   // Initial value will be false (.NET default)
         private IHealthReporter healthReporter;
         // This does not really need to be a ConcurrentQueue, but the ConcurrentQueue has a very convenient-to-use TryDequeue method.
@@ -39,6 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
             var eventSources = new List<EventSourceConfiguration>();
+            ConfigUtil.ConvertKeywordsToDecimal(sourcesConfiguration);
             try
             {
                 sourcesConfiguration.Bind(eventSources);
@@ -201,7 +204,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             if (eventSources.Count() == 0)
             {
-                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured", EventFlowContextIdentifiers.Configuration);
+                healthReporter.ReportWarning($"{nameof(EventSourceInput)}: no event sources configured, the input will not produce any data", EventFlowContextIdentifiers.Configuration);
             }
 
             var invalidConfigurationItems = new List<EventSourceConfiguration>();
@@ -215,6 +218,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
             // eventSources is a collection created by us, so we can modify it as necessary
             eventSources.RemoveAll(config => invalidConfigurationItems.Contains(config));
+
+            // Special case: because of .NET bug https://github.com/dotnet/coreclr/issues/14434, using Microsoft-ApplicationInsights-Data will result in infinite loop.
+            // So we will disable it by default, unless there is explicit configuration for this EventSource
+            bool hasConfigForAppInsightsDataSource = eventSources.Any(config => 
+                AppInsightsDataEventSource.Equals(config.ProviderName, StringComparison.Ordinal) || 
+                AppInsightsDataEventSource.Equals(config.DisabledProviderNamePrefix, StringComparison.Ordinal));
+            if (!hasConfigForAppInsightsDataSource)
+            {
+                eventSources.Add(new EventSourceConfiguration() { DisabledProviderNamePrefix = AppInsightsDataEventSource });
+            }
+
             this.EventSources = eventSources;
 
             bool haveDisabledSources = this.EventSources.Any(config => !string.IsNullOrWhiteSpace(config.DisabledProviderNamePrefix));

@@ -94,8 +94,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 logger.Debug("some message");
             }
             mockOutput.Verify(
-                output => output.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
-                    It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
+                output => output.SendEventsAsync(It.IsAny<IReadOnlyCollection<EventData>>(), It.IsAny<long>(), It.IsAny<CancellationToken>()), 
+                    Times.Never);
         }
     }
 }

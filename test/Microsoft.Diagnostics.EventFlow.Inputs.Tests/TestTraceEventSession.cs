@@ -5,7 +5,6 @@
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
-#if NET46
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -121,5 +120,4 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             this.ReportEvent(e);
         }
     }
-#endif
 }

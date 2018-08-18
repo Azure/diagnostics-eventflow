@@ -471,7 +471,12 @@ Application Insights input is designed for the following scenario:
 
 For example, you might want to leverage [Application Insights sampling capabilities](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-sampling) to reduce the amount of data analyzed by Application Insights without losing analysis fidelity, while sending full raw logs to Elasticsearch to do detailed log search during problem troubleshooting.
 
-*Usage*
+Application Insights input supports all standard Application Insights telemetry types: trace, request, event, dependency, metric, exception, page view and availability. 
+
+*Usage&#8211;leveraging EventFlow configuration file*
+
+To use Application Insights input in an application that creates EventFlow pipeline using a configuration file, do the following:
+
 1. Add the `EventFlowTelemetryProcessor` to your Application Insights configuration file (it goes into `TelemetryProcessors` element):
    ```xml
    <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" >
@@ -502,9 +507,76 @@ For example, you might want to leverage [Application Insights sampling capabilit
    }
    ```
 
-This is it-after the `EventFlowTelemetryProcessor.Pipeline` property is set, the `EventFlowTelemetryProcessor` will start sending AI telemetry into the EventFlow pipeline.
+This is it&#8211;after the `EventFlowTelemetryProcessor.Pipeline` property is set, the `EventFlowTelemetryProcessor` will start sending AI telemetry into the EventFlow pipeline.
 
-Application Insights input supports all standard Application Insights telemetry types: trace, request, event, dependency, metric, exception, page view and availability. 
+*Usage&#8211;ASP.NET Core*
+
+ASP.NET Core application tend to use code to create various parts of their request processing pipeline, and both EventFlow and Application Insights follow that model. Application Insights input in EventFlow provides a class called `EventFlowTelemetryProcessorFactory` that helps connecting Application Insights with EventFlow in ASP.NET Core environment. Here is an example how one could set up Application Insights input to send telemetry to Elasticsearch:
+
+```csharp
+using System;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Diagnostics.EventFlow.ApplicationInsights;
+using Microsoft.Diagnostics.EventFlow.HealthReporters;
+using Microsoft.Diagnostics.EventFlow.Inputs;
+using Microsoft.Diagnostics.EventFlow.Outputs;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ApplicationInsights.AspNetCore;
+
+namespace AspNetCoreEventFlow
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            using (var eventFlow = CreateEventFlow(args))
+            {
+                BuildWebHost(args, eventFlow).Run();
+            }
+        }
+
+        public static IWebHost BuildWebHost(string[] args, DiagnosticPipeline eventFlow) =>
+            WebHost.CreateDefaultBuilder(args)
+                .ConfigureServices(services => services.AddSingleton<ITelemetryProcessorFactory>(sp => new EventFlowTelemetryProcessorFactory(eventFlow)))
+                .UseStartup<Startup>()
+                .UseApplicationInsights()
+                .Build();
+
+        private static DiagnosticPipeline CreateEventFlow(string[] args)
+        {
+            // Create configuration instance to access configuration information for EventFlow pipeline
+            // To learn about common configuration sources take a peek at https://github.com/aspnet/MetaPackages/blob/master/src/Microsoft.AspNetCore/WebHost.cs (CreateDefaultBuilder method). 
+            // Here we assume all necessary information comes from command-line arguments and environment variables.
+            var configBuilder = new ConfigurationBuilder()
+                .AddEnvironmentVariables();
+            if (args != null)
+            {
+                configBuilder.AddCommandLine(args);
+            }
+            var config = configBuilder.Build();
+
+            var healthReporter = new CsvHealthReporter(new CsvHealthReporterConfiguration());
+            var aiInput = new ApplicationInsightsInputFactory().CreateItem(null, healthReporter);
+            var inputs = new IObservable<EventData>[] { aiInput };
+            var sinks = new EventSink[]
+            {
+                new EventSink(new ElasticSearchOutput(new ElasticSearchOutputConfiguration {
+                    ServiceUri = config["ElasticsearchServiceUri"]
+                    // Set other configuration settings, as necessary
+                }, healthReporter), null)
+            };
+
+            return new DiagnosticPipeline(healthReporter, inputs, null, sinks, null, disposeDependencies: true);
+        }
+    }
+}
+
+```
+
 
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.

@@ -42,6 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
             var providers = new List<EtwProviderConfiguration>();
+            ConfigUtil.ConvertKeywordsToDecimal(providersConfiguration);
             try
             {
                 providersConfiguration.Bind(providers);
