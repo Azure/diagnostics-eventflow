@@ -12,6 +12,8 @@ using log4net.Repository.Hierarchy;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
 using Validation;
+using log4net.Config;
+using System.Linq;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -70,21 +72,22 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             //Can we determine if the repo exists without try/catch
             try
             {
-                eventFlowRepo = (Hierarchy)LogManager.CreateRepository("EventFlow");
+                eventFlowRepo = (Hierarchy)LogManager.CreateRepository("EventFlowRepo");
                 _log4NetInputConfiguration.Log4netLevel = eventFlowRepo.LevelMap[_log4NetInputConfiguration.LogLevel];
 
                 eventFlowRepo.Root.AddAppender(this);
                 eventFlowRepo.Configured = true;
+                BasicConfigurator.Configure(eventFlowRepo);
             }
             catch (LogException)
             {
-                eventFlowRepo = (Hierarchy) LogManager.GetRepository("EventFlow");
+                eventFlowRepo = (Hierarchy) LogManager.GetRepository("EventFlowRepo");
             }
         }
 
         protected override void Append(LoggingEvent loggingEvent)
         {
-            if (loggingEvent == null ||!IsEnabledFor(loggingEvent.Level))
+            if (loggingEvent == null || !IsEnabledFor(loggingEvent.Level))
             {
                 return;
             }
@@ -93,17 +96,23 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.subject.OnNext(eventData);
         }
 
-        private bool IsEnabledFor(Level level) => level <= _log4NetInputConfiguration.Log4netLevel;
+        private bool IsEnabledFor(Level level) => level >= _log4NetInputConfiguration.Log4netLevel;
 
         private EventData ToEventData(LoggingEvent loggingEvent)
         {
             var eventData = new EventData
             {
-                ProviderName = nameof(Log4netInput),
+                ProviderName = $"{nameof(Log4netInput)}.{loggingEvent.LoggerName}",
                 Timestamp = loggingEvent.TimeStamp,
                 Level = ToLogLevel[loggingEvent.Level],
-                Keywords = 0
+                Keywords = 0,
+                Payload = { { "Message", loggingEvent.MessageObject } }
             };
+
+            if (loggingEvent.ExceptionObject != null)
+            {
+                eventData.Payload.Add("Exception", loggingEvent.ExceptionObject);
+            }
 
             foreach (var key in loggingEvent.Properties.GetKeys())
             {

@@ -12,6 +12,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Microsoft.Extensions.Logging](#microsoftextensionslogging)
 - [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
 - [Application Insights](#application-insights-input)
+- [Log4net](#Log4net)
 
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
@@ -575,6 +576,50 @@ namespace AspNetCoreEventFlow
     }
 }
 
+```
+
+#### Log4net
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Log4net**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Log4net/)
+
+This input enables capturing diagnostic data sent to the [Log4net project](https://logging.apache.org/log4net/).
+
+*Configuration example*
+The Log4net input has one configuration, the Log4net Level:
+```json
+{
+  "type": "Log4net",
+  "logLevel": "Debug"
+}
+```
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "Log4net" | Yes | Specifies the output type. For this output, it must be "Log4net". |
+| `logLevel` | "Debug", "Info", "Warn", "Error", or "Fatal" | Yes | Specifies the [Log4net Level](https://logging.apache.org/log4net/log4net-1.2.11/release/sdk/log4net.Core.Level.html) desired. |
+
+
+*Example: instantiating a Log4net logger that uses EventFlow Log4net input*
+
+```csharp
+using System;
+using Microsoft.Diagnostics.EventFlow;
+using log4net;
+
+namespace ConsoleApp2
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
+            {
+                var logger = LogManager.GetLogger("EventFlowRepo", "MY_LOGGER_NAME");
+
+                logger.Debug("Hey! Listen!", new Exception("uhoh"));
+            }
+        }
+    }
+}
 ```
 
 
@@ -1261,6 +1306,7 @@ The following table lists platform support for standard inputs and outputs.
 | [Microsoft.Extensions.Logging](#microsoftextensionslogging) | Yes | Yes | Yes |
 | [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows) | Yes | Yes | No |
 | [Application Insights input](#application-insights-input) | Yes | Yes | Yes |
+| [Log4net](#Log4net) | Yes | Yes | Yes |
 | *Outputs* |
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
 | [Application Insights](#application-insights) | Yes | Yes | Yes |
