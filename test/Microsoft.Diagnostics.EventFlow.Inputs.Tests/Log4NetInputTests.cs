@@ -68,7 +68,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 new IFilter[0],
                 new[] { new EventSink(mockOutput.Object, new IFilter[0]) }))
             {
-                var logger = LogManager.GetLogger("EventFlow", typeof(Log4NetInputTests));
+                var logger = LogManager.GetLogger("EventFlowRepo", typeof(Log4NetInputTests));
                 logger.Info("some message");
             }
             mockOutput.Verify(
@@ -90,7 +90,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 new IFilter[0],
                 new[] { new EventSink(mockOutput.Object, new IFilter[0]) }))
             {
-                var logger = LogManager.GetLogger("EventFlow", typeof(Log4NetInputTests));
+                var logger = LogManager.GetLogger("EventFlowRepo", typeof(Log4NetInputTests));
                 logger.Debug("some message");
             }
             mockOutput.Verify(
