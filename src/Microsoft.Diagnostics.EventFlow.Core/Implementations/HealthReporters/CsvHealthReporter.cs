@@ -37,12 +37,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             public const string Last = "last";
         }
 
-        #region Constants
+        
         internal const string DefaultLogFilePrefix = "HealthReport";
         private const int DefaultThrottlingPeriodMsec = 0;
-        #endregion
 
-        #region Fields
+        
         private static readonly string TraceTag = nameof(CsvHealthReporter);
         private static readonly TimeSpan DisposalTimeout = TimeSpan.FromSeconds(10);
 
@@ -63,13 +62,11 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         internal StreamWriter StreamWriter;
         internal bool EnsureOutputCanBeSaved { get; private set; }
         internal long SingleLogFileMaximumSizeInBytes { get; private set; }
-        #endregion
 
-        #region Properties
+        
         protected CsvHealthReporterConfiguration Configuration { get; private set; }
-        #endregion
 
-        #region Constructors
+        
         /// <summary>
         /// Create a CsvHealthReporter with configuration.
         /// </summary>
@@ -116,9 +113,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             Initialize(configuration, newReportTrigger);
         }
-        #endregion
 
-        #region Public Methods
+        
         /// <summary>
         /// Starts to write the health reports.
         /// </summary>
@@ -253,9 +249,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         {
             Dispose(true);
         }
-        #endregion
 
-        #region Protected Methods
+        
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
@@ -287,9 +282,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
         }
-        #endregion
 
-        #region Private or internal methods
+        
         /// <summary>
         /// Implementation for rotating the log file.
         /// </summary>
@@ -507,10 +501,10 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
             else
             {
-                basePath = Path.GetDirectoryName(System.Reflection.Assembly.GetAssembly(this.GetType()).Location);
+                basePath = Directory.GetCurrentDirectory();
             }
 #else
-            basePath = Path.GetDirectoryName(this.GetType().GetTypeInfo().Assembly.Location);
+            basePath = Directory.GetCurrentDirectory();
 #endif
             this.Configuration.LogFileFolder = Path.Combine(basePath, this.Configuration.LogFileFolder);
         }
@@ -608,6 +602,5 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 return text;
             }
         }
-        #endregion
     }
 }
