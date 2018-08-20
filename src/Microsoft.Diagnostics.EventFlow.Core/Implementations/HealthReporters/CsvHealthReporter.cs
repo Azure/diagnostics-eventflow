@@ -125,8 +125,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public void Activate()
         {
             VerifyObjectIsNotDisposed();
-            bool activated = true;
+            bool activated = false;
             string message = null;
+
             try
             {
                 SetNewStreamWriter();
@@ -137,22 +138,23 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     {
                         throw new InvalidOperationException(message);
                     }
-                    activated = false;
                 }
                 this.flushTime = this.getCurrentTime().AddMilliseconds(this.flushPeriodMsec);
 
                 // Start the consumer of the report items in the collection.
                 this.writingTask = Task.Run(() => ConsumeCollectedData());
-
+                activated = true;
             }
-            catch (UnauthorizedAccessException ex)
+            catch (Exception ex)
             {
-                if (EnsureOutputCanBeSaved)
+                if (!IsIOException(ex) || EnsureOutputCanBeSaved)
                 {
                     throw;
                 }
-                message = ex.Message;
-                activated = false;
+                else
+                {
+                    message = ex.Message;
+                }
             }
 
             if (!activated)
@@ -180,13 +182,18 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                     try
                     {
                         SetNewStreamWriter();
-                        Assumes.NotNull(StreamWriter);
                     }
                     finally
                     {
                         this.newStreamRequested = false;
                     }
                 }
+
+                if (this.StreamWriter == null)
+                {
+                    continue;
+                }
+
                 this.StreamWriter.WriteLine(text);
 
                 if (this.getCurrentTime() >= this.flushTime)
@@ -227,19 +234,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             return RotateLogFileImp(logFileFolder, File.Exists, File.Delete, File.Move);
         }
 
-        public void ReportHealthy(string description = null, string context = null)
+        public virtual void ReportHealthy(string description = null, string context = null)
         {
             VerifyObjectIsNotDisposed();
             this.innerReportWriter?.Invoke(HealthReportLevel.Message, description, context);
         }
 
-        public void ReportProblem(string description, string context = null)
+        public virtual void ReportProblem(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
             this.innerReportWriter?.Invoke(HealthReportLevel.Error, description, context);
         }
 
-        public void ReportWarning(string description, string context = null)
+        public virtual void ReportWarning(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
             this.innerReportWriter?.Invoke(HealthReportLevel.Warning, description, context);
@@ -285,13 +292,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         
         /// <summary>
-        /// Implementation for rotating the log file.
+        /// Rotates the current log file (saves it under different name) and returns path to new log file.
         /// </summary>
         /// <param name="logFileFolder">Log file folder.</param>
         /// <param name="fileExist">Method to check whether a file exists or not.</param>
         /// <param name="fileDelete">Method to delete a file.</param>
         /// <param name="fileMove">Method to move a file.</param>
-        /// <returns></returns>
+        /// <returns>Path (including file name) to be used for "current" log file.</returns>
         internal virtual string RotateLogFileImp(string logFileFolder, Func<string, bool> fileExist, Action<string> fileDelete, Action<string, string> fileMove)
         {
             string fileName = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
@@ -310,6 +317,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 }
                 fileMove(logFilePath, rotateFilePath);
             }
+
             return logFilePath;
         }
 
@@ -319,42 +327,54 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns></returns>
         internal virtual void SetNewStreamWriter()
         {
-            // Ensure Log folder exists
-            string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
-            if (!Directory.Exists(logFileFolder))
+            try
             {
-                Directory.CreateDirectory(logFileFolder);
+                // Ensure Log folder exists
+                string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
+                if (!Directory.Exists(logFileFolder))
+                {
+                    Directory.CreateDirectory(logFileFolder);
+                }
+
+                string logFilePath = RotateLogFile(logFileFolder);
+
+                // Do not update file stream or stream writer when targeting the same path.
+                if (this.fileStream != null &&
+                    this.StreamWriter != null &&
+                    Path.GetFullPath(this.fileStream.Name).Equals(logFilePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                // Flush the current stream.
+                FinishCurrentStream();
+                if (this.fileStream != null)
+                {
+                    this.fileStream.Dispose();
+                    this.fileStream = null;
+                }
+
+                CreateNewFileStream(logFilePath);
+                if (this.fileStream != null)
+                {
+                    this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+                }
             }
-
-            string logFilePath = RotateLogFile(logFileFolder);
-
-            // Do not update file stream or stream writer when targeting the same path.
-            if (this.fileStream != null &&
-                this.StreamWriter != null &&
-                Path.GetFullPath(this.fileStream.Name).Equals(logFilePath, StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                return;
-            }
-
-            // Flush the current stream.
-            FinishCurrentStream();
-
-            if (this.fileStream != null)
-            {
-                this.fileStream.Dispose();
-                this.fileStream = null;
-            }
-
-            // Create a new stream writer
-            CreateNewFileWriter(logFilePath);
-
-            if (this.fileStream != null)
-            {
-                this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+                if (!IsIOException(ex) || EnsureOutputCanBeSaved)
+                {
+                    throw;
+                }
+                else
+                {
+                    this.StreamWriter = null;
+                    this.fileStream = null;
+                }
             }
         }
 
-        internal void CreateNewFileWriter(string logFilePath)
+        internal void CreateNewFileStream(string logFilePath)
         {
             try
             {
@@ -516,6 +536,8 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             // Clean up existing logging files per retention policy
             CleanupExistingLogs();
         }
+
+        private bool IsIOException(Exception e) => e is UnauthorizedAccessException || e is IOException;
 
         internal void CleanupExistingLogs(Action<ILogFileInfo> cleaner = null)
         {

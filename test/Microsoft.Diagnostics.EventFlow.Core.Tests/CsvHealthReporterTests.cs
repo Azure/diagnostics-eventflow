@@ -360,7 +360,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             using (CustomHealthReporter target = new CustomHealthReporter(configuration, 1000, customCreateFileStream: () => throw new UnauthorizedAccessException(exceptionMessage)))
             {
                 // Exception throws within stream writer.
-                Exception ex = Assert.Throws<UnauthorizedAccessException>(() => { target.CreateNewFileWriter(@"c:\log.log"); });
+                Exception ex = Assert.Throws<UnauthorizedAccessException>(() => { target.CreateNewFileStream(@"c:\log.log"); });
                 Assert.Equal(exceptionMessage, ex.Message);
 
                 target.Activate();
@@ -410,6 +410,33 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     rotate = true;
                 });
                 Assert.True(rotate);
+            }
+        }
+
+        [Fact]
+        public void ShouldNoOpIfFilesystemIsReadOnly()
+        {
+
+            var configuration = BuildTestConfigration();
+            using (var reporter = new ReadOnlyFilesystemHealthReporter(configuration))
+            {
+                reporter.Activate(); // No exception for the user of the reporter
+                Assert.True(reporter.LogRotationAttempted);
+                Assert.Equal(0, reporter.HealthyReportCount);
+
+                reporter.ReportHealthy();
+                Assert.Equal(1, reporter.HealthyReportCount);
+            }
+        }
+
+        [Fact]
+        public void ShouldThrowIfFilesystemIsReadOnlyAndReportWritingRequested()
+        {
+            var configuration = BuildTestConfigration();
+            configuration[EnsureOutputCanBeSavedKey] = "true";
+            using (var reporter = new ReadOnlyFilesystemHealthReporter(configuration))
+            {
+                Assert.Throws<IOException>(() => reporter.Activate());
             }
         }
 
