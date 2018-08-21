@@ -14,7 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.csproj" />
     <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.EtwUtilities\Microsoft.Diagnostics.EventFlow.EtwUtilities.csproj" />
@@ -24,6 +23,8 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Etw\Microsoft.Diagnostics.EventFlow.Inputs.Etw.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.NLog\Microsoft.Diagnostics.EventFlow.Inputs.NLog.csproj" />
   </ItemGroup>
 
   
@@ -42,7 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Moq" Version="4.8.2" />
@@ -50,7 +50,6 @@
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="Serilog" Version="2.3.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.11" />
     <PackageReference Include="System.Reflection.Metadata" Version="[1.5.0,1.6.0)" />
   </ItemGroup>
