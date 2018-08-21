@@ -13,6 +13,7 @@ It runs in the same process as the application, so communication overhead is min
 - [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
 - [Application Insights](#application-insights-input)
 - [Log4net](#Log4net)
+- [NLog](#NLog)
 
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
@@ -616,6 +617,46 @@ namespace ConsoleApp2
                 var logger = LogManager.GetLogger("EventFlowRepo", "MY_LOGGER_NAME");
 
                 logger.Debug("Hey! Listen!", new Exception("uhoh"));
+            }
+        }
+    }
+}
+```
+
+#### NLog
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.NLog**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.NLog/)
+
+This input enables capturing diagnostic data sent to the [NLog library](http://nlog-project.org/).
+
+*Configuration example*
+The NLog input has no configuration, other than the "type" property that specifies the type of the input (must be "NLog"):
+```json
+{
+  "type": "NLog"
+}
+```
+
+*Example: instantiating a NLog logger that uses EventFlow NLog input*
+
+```csharp
+using System;
+using Microsoft.Diagnostics.EventFlow;
+using NLog;
+
+namespace NLogEventFlow
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
+            {
+                var nlogTarget = pipeline.ConfigureNLogInput(pipeline, NLog.LogLevel.Info);
+                var logger = NLog.LogManager.GetCurrentClassLogger();
+                logger.Info("Hello from {friend} for {family}!", "NLogInput", "EventFlow");
+                NLog.LogManager.Shutdown();
+                Console.ReadKey();
             }
         }
     }
@@ -1307,6 +1348,7 @@ The following table lists platform support for standard inputs and outputs.
 | [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows) | Yes | Yes | No |
 | [Application Insights input](#application-insights-input) | Yes | Yes | Yes |
 | [Log4net](#Log4net) | Yes | Yes | Yes |
+| [NLog](#NLog) | Yes | Yes | Yes |
 | *Outputs* |
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
 | [Application Insights](#application-insights) | Yes | Yes | Yes |
