@@ -12,8 +12,8 @@ It runs in the same process as the application, so communication overhead is min
 - [Microsoft.Extensions.Logging](#microsoftextensionslogging)
 - [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
 - [Application Insights](#application-insights-input)
-- [Log4net](#Log4net)
-- [NLog](#NLog)
+- [Log4net](#log4net)
+- [NLog](#nlog)
 
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
