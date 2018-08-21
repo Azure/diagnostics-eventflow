@@ -334,6 +334,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""Serilog""
                         },
                         {
+                            ""type"": ""NLog""
+                        },
+                        {
                             ""type"": ""Log4net"",
                             ""LogLevel"": ""Verbose""
                         },
@@ -400,6 +403,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""Serilog""
                         },
                         {
+                            ""type"": ""NLog""
+                        },
+                        {
                             ""type"": ""Log4net"",
                             ""LogLevel"": ""Verbose""
                         }
@@ -443,6 +449,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             i => Assert.IsType<LoggerInput>(i),
                             i => Assert.IsType<TraceInput>(i),
                             i => Assert.IsType<SerilogInput>(i),
+                            i => Assert.IsType<NLogInput>(i),
                             i => Assert.IsType<Log4netInput>(i)
 #if NET46
                             , i => Assert.IsType<PerformanceCounterInput>(i)
