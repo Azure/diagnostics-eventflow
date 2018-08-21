@@ -13,7 +13,6 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
     public class ReadOnlyFilesystemHealthReporter: CsvHealthReporter
     {
         public bool LogRotationAttempted { get; private set; }
-        public int HealthyReportCount { get; private set; }
 
         public ReadOnlyFilesystemHealthReporter(IConfiguration configuration) 
             : base(configuration.ToCsvHealthReporterConfiguration())
@@ -26,12 +25,6 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
             LogRotationAttempted = true;
             // See https://github.com/Azure/diagnostics-eventflow/issues/255 for how this may happen
             throw new IOException("File system is read only");
-        }
-
-        public override void ReportHealthy(string description = null, string context = null)
-        {
-            base.ReportHealthy(description, context);
-            HealthyReportCount++;
         }
     }
 }

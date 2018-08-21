@@ -422,10 +422,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             {
                 reporter.Activate(); // No exception for the user of the reporter
                 Assert.True(reporter.LogRotationAttempted);
-                Assert.Equal(0, reporter.HealthyReportCount);
 
-                reporter.ReportHealthy();
-                Assert.Equal(1, reporter.HealthyReportCount);
+                reporter.ReportHealthy(); // No exception
             }
         }
 

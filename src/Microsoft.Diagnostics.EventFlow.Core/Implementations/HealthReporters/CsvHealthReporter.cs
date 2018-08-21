@@ -234,19 +234,19 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             return RotateLogFileImp(logFileFolder, File.Exists, File.Delete, File.Move);
         }
 
-        public virtual void ReportHealthy(string description = null, string context = null)
+        public void ReportHealthy(string description = null, string context = null)
         {
             VerifyObjectIsNotDisposed();
             this.innerReportWriter?.Invoke(HealthReportLevel.Message, description, context);
         }
 
-        public virtual void ReportProblem(string description, string context = null)
+        public void ReportProblem(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
             this.innerReportWriter?.Invoke(HealthReportLevel.Error, description, context);
         }
 
-        public virtual void ReportWarning(string description, string context = null)
+        public void ReportWarning(string description, string context = null)
         {
             VerifyObjectIsNotDisposed();
             this.innerReportWriter?.Invoke(HealthReportLevel.Warning, description, context);
