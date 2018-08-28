@@ -5,7 +5,7 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <VersionPrefix>1.4.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard2.0;net451;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net451;net471</TargetFrameworks>
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.ServiceFabric</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
@@ -40,7 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net47' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.1" />
