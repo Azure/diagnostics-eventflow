@@ -1,5 +1,8 @@
 * Prerequisites
     * Visual Studio 2017
+	* .NET Framework 4.7.1 SDK and Targeting Pack
+	* .NET Core 1.0 SDK
+	* .NET Core 2.0 SDK
 
 * Build
 

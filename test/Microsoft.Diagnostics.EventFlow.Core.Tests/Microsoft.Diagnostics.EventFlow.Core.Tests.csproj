@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net46;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;net46;netcoreapp2.0;net471</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Core.Tests</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>

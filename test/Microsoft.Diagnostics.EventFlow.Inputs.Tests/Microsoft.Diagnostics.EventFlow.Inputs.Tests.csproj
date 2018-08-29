@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;netcoreapp2.0;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.0;netcoreapp2.0;net462;net471</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Tests</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
@@ -30,6 +30,12 @@
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">    
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[1.1.1,2.0)" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />    
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">    
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.1" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />    
   </ItemGroup>

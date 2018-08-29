@@ -83,6 +83,9 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
+      <Full471Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Core.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
       <CoreAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
@@ -119,11 +122,12 @@
     </ItemGroup>
     
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
+    <Move SourceFiles="@(Full471Assemblies)" DestinationFolder="$(OutputPath)\full471" />
     <Move SourceFiles="@(CoreAssemblies)" DestinationFolder="$(OutputPath)\core" />
     <Move SourceFiles="@(Core20Assemblies)" DestinationFolder="$(OutputPath)\core20" />
     
     <ItemGroup>
-      <FilesToSign Include="$(OutputPath)\full\*.dll;$(OutputPath)\core\*.dll;$(OutputPath)\core20\*.dll">
+      <FilesToSign Include="$(OutputPath)\full\*.dll;$(OutputPath)\full471\*.dll;$(OutputPath)\core\*.dll;$(OutputPath)\core20\*.dll">
         <Authenticode>Microsoft</Authenticode>
       </FilesToSign>
     </ItemGroup>
@@ -150,6 +154,10 @@
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451"/>
+    <!--.Net Framework 4.7.1 assemblies-->
+    <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471"/>
+    <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471"/>
+    <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471"/>
     <!--.Net core assemblies-->
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard1.6"/>
