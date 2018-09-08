@@ -838,11 +838,12 @@ ingestion service). |
 #### Splunk
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.Splunk**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.Splunk/)
 
-This output writes data to a Splunk HTTP Event Collector (HEC) (http://docs.splunk.com/Documentation/Splunk/latest/Data/AboutHEC). Here is an example showing all possible settings:
+This output writes data to a [Splunk HTTP Event Collector (HEC)](http://docs.splunk.com/Documentation/Splunk/latest/Data/AboutHEC).
+Here is an example showing all possible settings:
 ```json
 {
     "type": "Splunk",
-    "serviceBaseAddress": "https://mysplunkloadbalancer.com:8088/",
+    "serviceBaseAddress": "https://hec.mysplunkserver.com:8088/",
     "authenticationToken": "B5A79AAD-D822-46CC-80D1-819F80D7BFB0",
     "host": "localhost",
     "index": "main",
@@ -854,11 +855,11 @@ This output writes data to a Splunk HTTP Event Collector (HEC) (http://docs.splu
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Splunk" | Yes | Specifies the output type. For this output, it must be "Splunk". |
 | `serviceBaseAddress` | string | Yes | Base address for the Splunk HTTP Event Collector (HEC). |
-| `authenticationToken` | string | Yes | Defines the HEC token as configured in Splunk. This token can be used to configure the default index, source and sourcetype associated with all events which use it. |
-| `host` | string | No | The host name associated with the events. If left blank this will default to the name of the server which is executing the process using EventFlow. |
-| `index` | string | No | The Splunk index where the event will be stored. Leave blank unless you specifically want to override the default index associated with the HEC token. |
-| `source` | string | No | The Splunk input source associated with the event (https://docs.splunk.com/Splexicon:Source). Leave blank unless you specifically want to override the default source associated with the HEC token. |
-| `sourcetype` | string | No | The Splunk source type associated with the event (https://docs.splunk.com/Splexicon:Sourcetype). Leave blank unless you specifically want to override the default source type associated with the HEC token. |
+| `authenticationToken` | string | Yes | Defines the [HEC token](http://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector#About_Event_Collector_tokens) as configured in Splunk. This token can be used to configure the default index, source and sourcetype associated with all events which use it. |
+| `host` | string | No | The [host](http://docs.splunk.com/Splexicon:Host) associated with the events. If left blank this will default to the name of the server which is executing the process using EventFlow. |
+| `index` | string | No | The Splunk [index](http://docs.splunk.com/Splexicon:Index) where the event will be stored. Leave blank unless you specifically want to override the default index associated with the HEC token. |
+| `source` | string | No | The Splunk [source](https://docs.splunk.com/Splexicon:Source) associated with the event. Leave blank unless you specifically want to override the default source associated with the HEC token. |
+| `sourcetype` | string | No | The Splunk [source type](https://docs.splunk.com/Splexicon:Sourcetype) associated with the event. Leave blank unless you specifically want to override the default source type associated with the HEC token. |
 
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
