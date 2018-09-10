@@ -19,8 +19,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
     public class DataflowTests
     {
         private static readonly DataflowLinkOptions PropagateCompletion = new DataflowLinkOptions() { PropagateCompletion = true };
-        private static readonly TimeSpan MessageArrivalTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan CompletionTimeout = TimeSpan.FromMilliseconds(1000);
+        private static readonly TimeSpan MessageArrivalTimeout = TimeSpan.FromMilliseconds(2000);
+        private static readonly TimeSpan CompletionTimeout = TimeSpan.FromMilliseconds(5000);
+        private static readonly TimeSpan CompletionInProgressVerificationTimeout = TimeSpan.FromMilliseconds(2000);
+        private static readonly TimeSpan BurstTimeout = TimeSpan.FromSeconds(10);
 
         [Fact]
         public Task BufferBlockKeepsPostponedMessages()
@@ -155,8 +157,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             bb.LinkTo(testTarget, PropagateCompletion);
 
             // Rapidly send 50 messages
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(10);
-            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), BurstTimeout);
 
             bb.Complete();
 
@@ -192,18 +193,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             bb.Complete();
 
             // Completion task should still be running
-            await Task.WhenAny(bb.Completion, Task.Delay(CompletionTimeout));
-            Assert.False(bb.Completion.IsCompleted);
-
             // Assumption: BatchBlock will not start target's completion until it itself completes
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
+            await Task.WhenAny(bb.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
+            Assert.False(bb.Completion.IsCompleted);
             Assert.True(testTarget.Completion.IsNotStarted());
 
             // Assumption: cancellation does not affect the completion of the block (unfortunately!)
             cts.Cancel();
-            await Task.WhenAny(bb.Completion, Task.Delay(CompletionTimeout));
+            await Task.WhenAny(bb.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(bb.Completion.IsCompleted);
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
             
             // The block still has 2 batches: one full, one undersize
@@ -290,8 +288,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             bb.LinkTo(t3, PropagateCompletion);
 
             // Rapidly send 50 messages
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => bb.SendAsync(i)).ToArray(), BurstTimeout);
 
             // Assumption: all 50 messages will go through, even though t2 is declining them and t3 is postponing.
             bool target1ConsumedAllMessages = await TaskUtils.PollWaitAsync(() => t1.MessagesConsumed.Count == 50, MessageArrivalTimeout);
@@ -356,8 +353,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 });
 
             // Send 10 messages as fast as possible
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), BurstTimeout);
 
             // Assumption: all will be eventually processed. 
             bool allProcessed = await TaskUtils.PollWaitAsync(() => processedMessageCount == 10, ProcessingTimeTimesTen + MessageArrivalTimeout);
@@ -385,8 +381,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 });
 
             // Send 10 messages as fast as possible
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 10).Select((i) => ab.SendAsync(i)).ToArray(), BurstTimeout);
 
             // Wait for completion and ensure that it does not time out and that all messages were processed before completion.
             ab.Complete();
@@ -422,8 +417,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.True(testTarget.MessagesConsumed.Count == 0);
             Assert.True(testTarget.MessagesPostponed.Count == 0);
 
-            // The messages are buffered
-            Assert.Equal(3, OutputCount(block));
+            // Use poll waiting because the item count is not always immediately updated by the block
+            bool threeMessagesBuffered = await TaskUtils.PollWaitAsync(() => OutputCount(block) == 3, MessageArrivalTimeout);
+            Assert.True(threeMessagesBuffered);
 
             // Assumption: the block will try NOT to deliver declined messages again when asked to complete.
             testTarget.ConsumptionMode = DataflowMessageStatus.Accepted;
@@ -432,11 +428,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.False(someMessagesDelivered);
 
             // Completion task should still be running
-            await Task.WhenAny(block.Completion, Task.Delay(CompletionTimeout));
+            // And the block should not start target's completion until it itself completes
+            await Task.WhenAny(block.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(block.Completion.IsCompleted);
-
-            // Assumption: block will not start target's completion until it itself completes
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
         }
 
@@ -488,8 +482,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             block.LinkTo(testTarget, PropagateCompletion);
 
             // Rapidly send 50 messages
-            TimeSpan sendTimeout = TimeSpan.FromSeconds(1);
-            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => ((ITargetBlock<int>)block).SendAsync(i)).ToArray(), sendTimeout);
+            Task.WaitAll(Enumerable.Range(0, 50).Select((i) => ((ITargetBlock<int>)block).SendAsync(i)).ToArray(), BurstTimeout);
 
             block.Complete();
 
@@ -523,18 +516,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             block.Complete();
 
             // Completion task should still be running
-            await Task.WhenAny(block.Completion, Task.Delay(CompletionTimeout));
+            // Also, we assume that BufferBlock will not start target's completion until it itself completes
+            await Task.WhenAny(block.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(block.Completion.IsCompleted);
-
-            // Assumption: BufferBlock will not start target's completion until it itself completes
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
 
             // Assumption: cancellation does not affect the completion of the block (unfortunately!)
             cts.Cancel();
-            await Task.WhenAny(block.Completion, Task.Delay(CompletionTimeout));
+            await Task.WhenAny(block.Completion, testTarget.Completion, Task.Delay(CompletionInProgressVerificationTimeout));
             Assert.False(block.Completion.IsCompleted);
-            await Task.WhenAny(testTarget.Completion, Task.Delay(CompletionTimeout));
             Assert.True(testTarget.Completion.IsNotStarted());
             Assert.Equal(2, OutputCount(block));
         }

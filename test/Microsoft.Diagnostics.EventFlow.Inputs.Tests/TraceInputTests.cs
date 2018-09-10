@@ -257,7 +257,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
-#if NET46
+#if !NETCOREAPP1_0
         [Fact]
         public void TraceInputShouldOverrideTraceTransfer()
         {
@@ -277,6 +277,31 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 target.TraceTransfer(null, null, id, message, relatedId);
                 subject.Verify(s =>
                     s.OnNext(It.Is<EventData>(data => data.Payload["EventId"].Equals(id) && data.Payload["RelatedActivityID"].Equals(relatedId.ToString()))),
+                    Times.Exactly(1));
+            }
+        }
+
+        [Fact]
+        public void TraceInputTracksActivityID()
+        {
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                string message = GetRandomString();
+                int id = (new Random()).Next();
+                Guid activityID = Guid.NewGuid();
+                Trace.CorrelationManager.ActivityId = activityID;
+
+                target.TraceData(null, null, TraceEventType.Information, id, message);
+                subject.Verify(s =>
+                    s.OnNext(It.Is<EventData>(data => data.Payload["EventId"].Equals(id) && data.Payload["ActivityID"].Equals(activityID) && data.Payload["Message"].Equals(message))),
                     Times.Exactly(1));
             }
         }

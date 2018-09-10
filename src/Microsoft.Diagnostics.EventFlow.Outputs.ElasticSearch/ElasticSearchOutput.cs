@@ -6,15 +6,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Nest;
 using Validation;
+using RequestData = Microsoft.Diagnostics.EventFlow.Metadata.RequestData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -24,7 +27,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private const string Dash = "-";
 
         private ElasticSearchConnectionData connectionData;
-        // TODO: support for multiple ES nodes/connection pools, for failover and load-balancing        
 
         private readonly IHealthReporter healthReporter;
 
@@ -317,31 +319,23 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Debug.Assert(esOutputConfiguration != null);
             Debug.Assert(this.healthReporter != null);
 
-            this.connectionData = new ElasticSearchConnectionData();
-            this.connectionData.Configuration = esOutputConfiguration;
-
-            Uri esServiceUri;
-            string errorMessage;
-
-            bool serviceUriIsValid = Uri.TryCreate(esOutputConfiguration.ServiceUri, UriKind.Absolute, out esServiceUri);
-            if (!serviceUriIsValid)
+            this.connectionData = new ElasticSearchConnectionData
             {
-                errorMessage = $"{nameof(ElasticSearchOutput)}:  required 'serviceUri' configuration parameter is invalid";
-                this.healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
+                Configuration = esOutputConfiguration
+            };
 
             string userName = esOutputConfiguration.BasicAuthenticationUserName;
             string password = esOutputConfiguration.BasicAuthenticationUserPassword;
             bool credentialsIncomplete = string.IsNullOrWhiteSpace(userName) ^ string.IsNullOrWhiteSpace(password);
             if (credentialsIncomplete)
             {
-                errorMessage = $"{nameof(ElasticSearchOutput)}: for basic authentication to work both user name and password must be specified";
+                var errorMessage = $"{nameof(ElasticSearchOutput)}: for basic authentication to work both user name and password must be specified";
                 healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
                 userName = password = null;
             }
 
-            ConnectionSettings connectionSettings = new ConnectionSettings(esServiceUri);
+            IConnectionPool pool = esOutputConfiguration.GetConnectionPool(healthReporter);
+            ConnectionSettings connectionSettings = new ConnectionSettings(pool);
             if (!string.IsNullOrWhiteSpace(userName) && !string.IsNullOrWhiteSpace(password))
             {
                 connectionSettings = connectionSettings.BasicAuthentication(userName, password);

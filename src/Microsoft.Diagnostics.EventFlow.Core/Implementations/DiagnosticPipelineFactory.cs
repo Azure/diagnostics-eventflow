@@ -316,25 +316,27 @@ namespace Microsoft.Diagnostics.EventFlow
             Debug.Assert(healthReporter != null);
 
             inputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["Serilog"] = "Microsoft.Diagnostics.EventFlow.Inputs.SerilogInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Serilog, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["Microsoft.Extensions.Logging"] = "Microsoft.Diagnostics.EventFlow.Inputs.LoggerInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["ETW"] = "Microsoft.Diagnostics.EventFlow.Inputs.EtwInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Etw, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            inputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsightsInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            inputFactories["EventSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.EventSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.EventSource";
+            inputFactories["PerformanceCounter"] = "Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounterInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter";
+            inputFactories["Trace"] = "Microsoft.Diagnostics.EventFlow.Inputs.TraceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Trace";
+            inputFactories["Serilog"] = "Microsoft.Diagnostics.EventFlow.Inputs.SerilogInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Serilog";
+            inputFactories["Microsoft.Extensions.Logging"] = "Microsoft.Diagnostics.EventFlow.Inputs.LoggerInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging";
+            inputFactories["ETW"] = "Microsoft.Diagnostics.EventFlow.Inputs.EtwInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.Etw";
+            inputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsightsInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights";
+            inputFactories["Log4net"] = "Microsoft.Diagnostics.EventFlow.Inputs.Log4netFactory, Microsoft.Diagnostics.EventFlow.Inputs.Log4net";
+            inputFactories["NLog"] = "Microsoft.Diagnostics.EventFlow.Inputs.NLogInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.NLog";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            outputFactories["EventHub"] = "Microsoft.Diagnostics.EventFlow.Outputs.EventHubOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.EventHub, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            outputFactories["ElasticSearch"] = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearchOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            outputFactories["OmsOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.OmsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.Oms, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            outputFactories["Http"] = "Microsoft.Diagnostics.EventFlow.Outputs.HttpOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights";
+            outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput";
+            outputFactories["EventHub"] = "Microsoft.Diagnostics.EventFlow.Outputs.EventHubOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.EventHub";
+            outputFactories["ElasticSearch"] = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearchOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch";
+            outputFactories["OmsOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.OmsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.Oms";
+            outputFactories["Http"] = "Microsoft.Diagnostics.EventFlow.Outputs.HttpOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput";
 
             filterFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-            filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            filterFactories["metadata"] = "Microsoft.Diagnostics.EventFlow.Filters.EventMetadataFilterFactory, Microsoft.Diagnostics.EventFlow.Core";
+            filterFactories["drop"] = "Microsoft.Diagnostics.EventFlow.Filters.DropFilterFactory, Microsoft.Diagnostics.EventFlow.Core";
 
             // read 3rd party plugins
             IConfiguration extensionsConfiguration = configuration.GetSection("extensions");

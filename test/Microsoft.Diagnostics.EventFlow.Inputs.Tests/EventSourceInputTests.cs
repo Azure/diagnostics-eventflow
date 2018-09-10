@@ -8,21 +8,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
-#if !NETSTANDARD1_6
+#if !NETCOREAPP1_0
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 #endif
 
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
-#if !NET451
-
     public class EventSourceInputTests
     {
         [Fact]
@@ -125,7 +126,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         // High-precision event timestamping is availabe on .NET 4.6+ and .NET Core 2.0+
-#if NET46
+#if !NETCOREAPP1_0
         [Fact]
         public void MeasuresEventTimeWithHighResolution()
         {
@@ -136,21 +137,22 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             List<DateTimeOffset> eventTimes = new List<DateTimeOffset>();
             Action<EventWrittenEventArgs> eventHandler = e => eventTimes.Add(EventDataExtensions.ToEventData(e, healthReporterMock.Object, "context-unused").Timestamp);
-            var hundredMicroseconds = Math.Round(Stopwatch.Frequency / 10000.0);
+            var twoMilliseconds = Math.Round(Stopwatch.Frequency / 500.0);
             using (var listener = new EventSourceInputTestListener(eventHandler))
             {
                 for (int i=0; i < 8; i++)
                 {
                     EventSourceInputTestSource.Log.Message(i.ToString());
                     var sw = Stopwatch.StartNew();
-                    while (sw.ElapsedTicks < hundredMicroseconds)
+                    while (sw.ElapsedTicks < twoMilliseconds)
                     {
                         // Spin wait
                     }
                 }
             }
 
-            Assert.True(eventTimes.Distinct().Count() == 8, "Event timestamps should have less than 1 ms resolution and thus should all be different");
+            // Event timestamps should have less than 1 ms resolution and thus should all be different
+            Assert.Equal(8, eventTimes.Distinct().Count());
         }
 #endif
 
@@ -181,6 +183,100 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                 healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
+        [Fact]
+        public async Task CapturesEventCountersFromEventSource()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderName = "EventSourceInput-TestEventSource",
+                EventCountersSamplingInterval = 1
+            });
+
+            var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object);
+            eventSourceInput.Activate();
+
+            var testTaskCompletionSource = new TaskCompletionSource<EventData>();
+
+            var observer = new Mock<IObserver<EventData>>();
+            observer.Setup(o => o.OnNext(It.IsAny<EventData>())).Callback<EventData>(eventData =>
+            {
+                testTaskCompletionSource.TrySetResult(eventData);
+            });
+
+            using (eventSourceInput.Subscribe(observer.Object))
+            {
+                EventSourceInputTestSource.Log.ReportTestMetric(5);
+                EventSourceInputTestSource.Log.ReportTestMetric(1);
+
+                var firstTaskToComplete = await Task.WhenAny(
+                    testTaskCompletionSource.Task,
+                    Task.Delay(TimeSpan.FromSeconds(3))
+                );
+
+                Assert.Equal(testTaskCompletionSource.Task, firstTaskToComplete);
+
+                var data = testTaskCompletionSource.Task.Result;
+
+                Assert.Equal(-1, data.Payload["EventId"]);
+                Assert.Equal("EventCounters", data.Payload["EventName"]);
+                Assert.Equal("testCounter", data.Payload["Name"]);
+                Assert.Equal(2, data.Payload["Count"]);
+                Assert.Equal((float)5, data.Payload["Max"]);
+                Assert.Equal((float)1, data.Payload["Min"]);
+
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
+        [Fact]
+        public async Task AddsMetricDataToEventCounters()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderName = "EventSourceInput-TestEventSource",
+                EventCountersSamplingInterval = 1
+            });
+
+            var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object);
+            eventSourceInput.Activate();
+
+            var testTaskCompletionSource = new TaskCompletionSource<EventData>();
+
+            var observer = new Mock<IObserver<EventData>>();
+            observer.Setup(o => o.OnNext(It.IsAny<EventData>())).Callback<EventData>(eventData =>
+            {
+                testTaskCompletionSource.TrySetResult(eventData);
+            });
+
+            using (eventSourceInput.Subscribe(observer.Object))
+            {
+                EventSourceInputTestSource.Log.ReportTestMetric(5);
+                EventSourceInputTestSource.Log.ReportTestMetric(1);
+
+                var firstTaskToComplete = await Task.WhenAny(
+                    testTaskCompletionSource.Task,
+                    Task.Delay(TimeSpan.FromSeconds(3))
+                );
+
+                Assert.Equal(testTaskCompletionSource.Task, firstTaskToComplete);
+
+                var data = testTaskCompletionSource.Task.Result;
+
+                Assert.True(data.TryGetMetadata(MetricData.MetricMetadataKind, out var metadata));
+                foreach (EventMetadata eventMetadata in metadata)
+                {
+                    Assert.Equal(data.Payload[eventMetadata.Properties[MetricData.MetricNamePropertyMoniker]], data.Payload[eventMetadata.Properties[MetricData.MetricValuePropertyMoniker]]);
+                }
             }
         }
 
@@ -256,15 +352,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         [Fact]
-        public void CannotEnableByNameAndByPrefixBySingleConfigurationItem()
+        public void CannotEnableWhenEventCountersSamplingIntervalBelowZero()
         {
             var healthReporterMock = new Mock<IHealthReporter>();
 
             var inputConfiguration = new List<EventSourceConfiguration>();
             inputConfiguration.Add(new EventSourceConfiguration()
             {
-                ProviderNamePrefix = "EventSourceInput-Other",
-                ProviderName = "EventSourceInput-OtherTestEventSource"
+                ProviderNamePrefix = "EventSourceInput-Test",
+                EventCountersSamplingInterval = -1
             });
 
             var observer = new Mock<IObserver<EventData>>();
@@ -288,7 +384,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             inputConfiguration.Add(new EventSourceConfiguration()
             {
                 DisabledProviderNamePrefix = "EventSourceInput-Test",
-                Keywords = (EventKeywords) 0x4
+                Keywords = (EventKeywords)0x4
             });
 
             var observer = new Mock<IObserver<EventData>>();
@@ -298,9 +394,28 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
+        [Fact]
+        public void CannotEnableByNameAndByPrefixBySingleConfigurationItem()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            var inputConfiguration = new List<EventSourceConfiguration>();
+            inputConfiguration.Add(new EventSourceConfiguration()
+            {
+                ProviderNamePrefix = "EventSourceInput-Other",
+                ProviderName = "EventSourceInput-OtherTestEventSource"
+            });
+
+            var observer = new Mock<IObserver<EventData>>();
+            using (var eventSourceInput = new EventSourceInput(inputConfiguration, healthReporterMock.Object))
+            {
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Configuration)), Times.Once());
+            }
+        }
+
         // Enabling events with different levels and keywords does not work on .NET Core 1.1. and 2.0
         // (following up with .NET team to see if there is something we can do about it)
-#if NET46
+#if !NETCOREAPP1_0
         [Fact]
         public void CanEnableSameSourceWithDifferentLevelsAndKeywords()
         {
@@ -338,18 +453,56 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 #endif
 
+        [Fact]
+        public void CanReadKeywordsInHexFormat()
+        {
+            string inputConfiguration = @"
+                {
+                    ""type"": ""EventSource"",
+                    ""sources"": [
+                        { ""providerName"": ""EventSourceInput-TestEventSource"", ""keywords"": ""0x05"" }
+                    ]
+                }";
+
+            
+            using (var configFile = new TemporaryFile())
+            {
+                configFile.Write(inputConfiguration);
+                var cb = new ConfigurationBuilder();
+                cb.AddJsonFile(configFile.FilePath);
+                var configuration = cb.Build();
+
+                var healthReporterMock = new Mock<IHealthReporter>();
+                var input = new EventSourceInput(configuration, healthReporterMock.Object);
+
+                Assert.Equal((EventKeywords)0x5, input.EventSources.First().Keywords);
+
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
         [EventSource(Name = "EventSourceInput-TestEventSource")]
         private class EventSourceInputTestSource : EventSource
         {
+            private readonly EventCounter testCounter;
+            private readonly EventCounter otherTestCounter;
+
             public static EventSourceInputTestSource Log = new EventSourceInputTestSource();
 
-            [Event(1, Level = EventLevel.Informational, Message ="Manifest message", Keywords = Keywords.Important)]
+            public EventSourceInputTestSource()
+            {
+                testCounter = new EventCounter(nameof(testCounter), this);
+                otherTestCounter = new EventCounter(nameof(otherTestCounter), this);
+            }
+
+            [Event(1, Level = EventLevel.Informational, Message = "Manifest message", Keywords = Keywords.Important)]
             public void Tricky(int EventId, string EventName, string Message)
             {
                 WriteEvent(1, EventId, EventName, Message);
             }
 
-            [Event(2, Level = EventLevel.Informational, Message ="{0}", Keywords = Keywords.Negligible)]
+            [Event(2, Level = EventLevel.Informational, Message = "{0}", Keywords = Keywords.Negligible)]
             public void Message(string message)
             {
                 WriteEvent(2, message);
@@ -361,15 +514,25 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 WriteEvent(3, message);
             }
 
+            public void ReportTestMetric(float value)
+            {
+                testCounter.WriteMetric(value);
+            }
+
+            public void ReportOtherTestMetric(float value)
+            {
+                otherTestCounter.WriteMetric(value);
+            }
+
             public class Keywords
             {
-                public const EventKeywords Important = (EventKeywords) 0x1;
-                public const EventKeywords Negligible = (EventKeywords) 0x2;
+                public const EventKeywords Important = (EventKeywords)0x1;
+                public const EventKeywords Negligible = (EventKeywords)0x2;
             }
         }
 
         [EventSource(Name = "EventSourceInput-OtherTestEventSource")]
-        private class EventSourceInputTestOtherSource: EventSource
+        private class EventSourceInputTestOtherSource : EventSource
         {
             [Event(3, Level = EventLevel.Informational, Message = "{0}")]
             public void Message(string message)
@@ -404,6 +567,4 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
     }
-
-#endif
-    }
+}

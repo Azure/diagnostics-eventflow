@@ -10,6 +10,7 @@ using System.Linq;
 using System.Diagnostics.Tracing;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 #if !NETSTANDARD1_6
 using System.Runtime.InteropServices;
 #endif
@@ -91,8 +92,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return;
             }
 
-            IDictionary<string, object> payloadData = eventData.Payload;
+            bool isEventCountersEvent = eventSourceEvent.EventName == "EventCounters" && eventSourceEvent.Payload.Count == 1 && eventSourceEvent.PayloadNames[0] == "Payload";
+            if (isEventCountersEvent)
+            {
+                ExtractEventCounterPayloadData(eventSourceEvent, eventData, healthReporter, context);
+            }
+            else
+            {
+                ExtractEventPayloadData(eventSourceEvent, eventData, healthReporter, context);
+            }
+        }
 
+        private static void ExtractEventPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData, IHealthReporter healthReporter, string context)
+        {
             IEnumerator<object> payloadEnumerator = eventSourceEvent.Payload.GetEnumerator();
             IEnumerator<string> payloadNamesEnunmerator = eventSourceEvent.PayloadNames.GetEnumerator();
             while (payloadEnumerator.MoveNext())
@@ -100,6 +112,24 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 payloadNamesEnunmerator.MoveNext();
                 eventData.AddPayloadProperty(payloadNamesEnunmerator.Current, payloadEnumerator.Current, healthReporter, context);
             }
+        }
+
+        private static void ExtractEventCounterPayloadData(this EventWrittenEventArgs eventSourceEvent, EventData eventData, IHealthReporter healthReporter, string context)
+        {
+            foreach(var payload in (IDictionary<string, object>)eventSourceEvent.Payload[0])
+            {
+                eventData.AddPayloadProperty(payload.Key, payload.Value, healthReporter, context);
+                eventData.SetMetadata(CreateMetricMetadata(payload.Key));
+            }
+        }
+
+        private static EventMetadata CreateMetricMetadata(string property)
+        {
+            EventMetadata eventMetadata = new EventMetadata(MetricData.MetricMetadataKind);
+            eventMetadata.Properties.Add(MetricData.MetricNamePropertyMoniker, property);
+            eventMetadata.Properties.Add(MetricData.MetricValuePropertyMoniker, property);
+
+            return eventMetadata;
         }
     }
 }

@@ -6,19 +6,18 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Diagnostics.Tracing;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 using Moq;
-using Microsoft.Diagnostics.EventFlow.Inputs;
 
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.TestHelpers;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
-#if NET46
-    using Microsoft.Diagnostics.Tracing;
-
     public class EtwInputTests
     {
         private TimeSpan TraceSessionActivationTimeout = TimeSpan.FromSeconds(2);
@@ -207,6 +206,35 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
+        [Fact]
+        public void CanReadKeywordsInHexFormat()
+        {
+            string inputConfiguration = @"
+                {
+                    ""type"": ""ETW"",
+                    ""providers"": [
+                        { ""providerName"": ""EventSourceInput-TestEventSource"", ""keywords"": ""0xF7"" }
+                    ]
+                }";
+
+            
+            using (var configFile = new TemporaryFile())
+            {
+                configFile.Write(inputConfiguration);
+                var cb = new ConfigurationBuilder();
+                cb.AddJsonFile(configFile.FilePath);
+                var configuration = cb.Build();
+
+                var healthReporterMock = new Mock<IHealthReporter>();
+                var input = new EtwInput(configuration, healthReporterMock.Object);
+
+                Assert.Equal((TraceEventKeyword)0xF7, input.Providers.First().Keywords);
+
+                healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            }
+        }
+
 
         private void VerifyNoErrorsOrWarnings(Mock<IHealthReporter> healthReporterMock)
         {
@@ -238,5 +266,4 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
     }
-#endif
 }

@@ -12,7 +12,9 @@ It runs in the same process as the application, so communication overhead is min
 - [Microsoft.Extensions.Logging](#microsoftextensionslogging)
 - [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows)
 - [Application Insights](#application-insights-input)
- 
+- [Log4net](#log4net)
+- [NLog](#nlog)
+
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
 - [HTTP (json via http)](#http)
@@ -31,55 +33,32 @@ The EventFlow suite supports .NET applications and .NET Core applications. It al
 The core of the library, as well as inputs and outputs listed above [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
 
 ## Getting Started
-1. To quickly get started, you can create a simple console application in VisualStudio and install the Nuget package Microsoft.Diagnostics.EventFlow. 
-2. After the nuget package is installed, there should be a eventFlowConfig.json file added to the project. This file contains default configuration for the EventFlow pipeline. A few sections with optional configuration elements are commented outs. These sections can be enabled as desired. Here is what the file looks like
+1. To quickly get started, you can create a simple console application in VisualStudio and install the following Nuget packages:
+    * Microsoft.Diagnostics.EventFlow.Inputs.Trace
+    * Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights
+    * Microsoft.Diagnostics.EventFlow.Outputs.StdOutput
+
+2. Add a JSON file named "eventFlowConfig.json" to your project and set the Build Action property of the file to "Copy if Newer". Set the content of the file to the following:
 ```js
 {
     "inputs": [
-        // {
-        //   "type": "EventSource",
-        //   "sources": [
-        //     { "providerName": "Microsoft-Windows-ASPNET" }
-        //   ]
-        // },
-        {
-            "type": "Trace",
-            "traceLevel": "Warning"
-        }
-    ],
-    "filters": [
-        {
-            "type": "drop",
-            "include": "Level == Verbose"
-        }
-    ],
-    "outputs": [
-        // Please update the instrumentationKey.
-        {
-            "type": "ApplicationInsights",
-            "instrumentationKey": "00000000-0000-0000-0000-000000000000"
-        }
-    ],
-    "schemaVersion": "2016-08-11",
-    // "healthReporter": {
-    //   "type": "CsvHealthReporter",
-    //   "logFileFolder": ".",
-    //   "logFilePrefix": "HealthReport",
-    //   "minReportLevel": "Warning",
-    //   "throttlingPeriodMsec": "1000"
-    // },
-    // "settings": {
-    //    "pipelineBufferSize": "1000",
-    //    "maxEventBatchSize": "100",
-    //    "maxBatchDelayMsec": "500",
-    //    "maxConcurrency": "8",
-    //    "pipelineCompletionTimeoutMsec": "30000"
-    // },
-    "extensions": []
+    {
+      "type": "Trace",
+      "traceLevel": "Warning"
+    }
+  ],
+  "outputs": [
+    // Please update the instrumentationKey.
+    {
+      "type": "ApplicationInsights",
+      "instrumentationKey": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "schemaVersion": "2016-08-11"
 }
 ```
-   
-Note: if your project file has VisualStudio 2017 format (with [PackageReference](https://blog.nuget.org/20170316/NuGet-now-fully-integrated-into-MSBuild.html)) the eventFlowConfig.json file will not be automatically added. To fix this you can just copy the example listed above and save it under the name "eventFlowConfig.json" in your project folder. Then, open your project file (this assumes you are using Visual Studio 2017/MSBuild 15 csproj-based project system) and add the following snippet to your project:
+
+Note: if you are using VisualStudio for Mac, you might need to edit the project file directly. Make the following snippet for `eventFlowConfig.json` file is included in the project definition:
    ```xml
    <ItemGroup>
     <None Include="eventFlowConfig.json">
@@ -87,22 +66,26 @@ Note: if your project file has VisualStudio 2017 format (with [PackageReference]
     </None>
   </ItemGroup>
    ```
-   
-3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, simply remove the Application Insights section.
-4. To add a StdOutput output, install the Microsoft.Diagnostics.EventFlow.Outputs.StdOutput nuget package. Then add the following in the outputs array in eventFlowConfig.json:
+
+3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, you can send traces to console output instead by replacing the Application Insights output with the standard output. The `outputs` property in the configuration should then look like this: 
 ```json
+    "outputs": [
     {
-        "type": "StdOutput"
+      "type": "StdOutput"
     }
+  ],
 ```
-5. Create an EventFlow pipeline in your application code using the code below. Make sure there is at least one output defined in the configuration file. Run your application and see your traces in console output or Application Insights.
+
+4. Create an EventFlow pipeline in your application code using the code below. Make sure there is at least one output defined in the configuration file. Run your application and see your traces in console output or in Application Insights.
 ```csharp
     using (var pipeline = DiagnosticPipelineFactory.CreatePipeline("eventFlowConfig.json"))
     {
         System.Diagnostics.Trace.TraceWarning("EventFlow is working!");
-        Console.ReadLine();
+        Console.WriteLine("Trace sent to Application Insights. Press any key to exit...");
+        Console.ReadKey(intercept: true);
     }
 ```
+It usually takes a couple of minutes for the traces to show in Application Insights Azure portal.
 
 ## Configuration Details
 The EventFlow pipeline is built around three core concepts: [inputs](#inputs), [outputs](#outputs), and [filters](#filters). The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
@@ -159,7 +142,8 @@ This input listens to EventSource traces. EventSource classes can be created in 
 | `providerNamePrefix` | EventSource name prefix | Yes(*) | Specifies the name prefix of EventSource(s) to track. For example, if the value is "Microsoft-ServiceFabric", all EventSources that have names starting with Microsoft-ServiceFabric (Microsoft-ServiceFabric-Services, Microsoft-ServiceFabric-Actors and so on) will be tracked. |
 | `disabledProviderNamePrefix` | provider name | Yes(*) | Specifies the name prefix of the EventSource(s) that must be ignored. No events from these sources will be captured(***). |
 | `level` | Critial, Error, Warning, Informational, Verbose, LogAlways | No(**) | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is LogAlways, which means "provider decides what events are raised", which usually results in all events being raised. |
-|`keywords` | An integer | No(**) | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+| `keywords` | An integer | No(**) | A bitmask that specifies what events to collect. Only events with keyword matching the bitmask are collected, except if it's 0, which means everything is collected. Default is 0. |
+| `eventCountersSamplingInterval` | An integer | No | Specifies the sampling interval in seconds for collecting data from EventCounters. Default is 0, which means no EventCounter data is collected.|
 
 *Remarks*
 
@@ -444,6 +428,9 @@ To capture data from EventSources running in the same process as EventFlow, the 
 ```json
 {
     "type": "ETW",
+    "sessionNamePrefix": "MyCompany-MyApplication",
+    "cleanupOldSessions": true,
+    "reuseExistingSession": true,
     "providers": [
         {
             "providerName": "Microsoft-ServiceFabric",
@@ -459,6 +446,9 @@ To capture data from EventSources running in the same process as EventFlow, the 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "ETW" | Yes | Specifies the input type. For this input, it must be "ETW". |
+| `sessionNamePrefix` | string | No | The ETW trace session will be created with this name prefix, which helps in differentiating  ETW input instances owned by multiple applications. If not set, a default prefix will be used. |
+| `cleanupOldSessions` | boolean | No | If set, existing ETW trace sessions matching the `sessionNamePrefix` will be closed. This helps to collect leftover session instances, as there is a limit on their number. |
+| `reuseExistingSession` | boolean | No | If turned on, then an existing trace session matching the `sessionNamePrefix` will be re-used. If `cleanupOldSessions` is also turned on, then it will leave one session open for re-use. |
 | `providers` | JSON array | Yes | Specifies ETW providers to collect data from. |
 
 *Providers object*
@@ -483,7 +473,12 @@ Application Insights input is designed for the following scenario:
 
 For example, you might want to leverage [Application Insights sampling capabilities](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-sampling) to reduce the amount of data analyzed by Application Insights without losing analysis fidelity, while sending full raw logs to Elasticsearch to do detailed log search during problem troubleshooting.
 
-*Usage*
+Application Insights input supports all standard Application Insights telemetry types: trace, request, event, dependency, metric, exception, page view and availability. 
+
+*Usage&#8211;leveraging EventFlow configuration file*
+
+To use Application Insights input in an application that creates EventFlow pipeline using a configuration file, do the following:
+
 1. Add the `EventFlowTelemetryProcessor` to your Application Insights configuration file (it goes into `TelemetryProcessors` element):
    ```xml
    <ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings" >
@@ -514,9 +509,160 @@ For example, you might want to leverage [Application Insights sampling capabilit
    }
    ```
 
-This is it-after the `EventFlowTelemetryProcessor.Pipeline` property is set, the `EventFlowTelemetryProcessor` will start sending AI telemetry into the EventFlow pipeline.
+This is it&#8211;after the `EventFlowTelemetryProcessor.Pipeline` property is set, the `EventFlowTelemetryProcessor` will start sending AI telemetry into the EventFlow pipeline.
 
-Application Insights input supports all standard Application Insights telemetry types: trace, request, event, dependency, metric, exception, page view and availability. 
+*Usage&#8211;ASP.NET Core*
+
+ASP.NET Core application tend to use code to create various parts of their request processing pipeline, and both EventFlow and Application Insights follow that model. Application Insights input in EventFlow provides a class called `EventFlowTelemetryProcessorFactory` that helps connecting Application Insights with EventFlow in ASP.NET Core environment. Here is an example how one could set up Application Insights input to send telemetry to Elasticsearch:
+
+```csharp
+using System;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Diagnostics.EventFlow.ApplicationInsights;
+using Microsoft.Diagnostics.EventFlow.HealthReporters;
+using Microsoft.Diagnostics.EventFlow.Inputs;
+using Microsoft.Diagnostics.EventFlow.Outputs;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ApplicationInsights.AspNetCore;
+
+namespace AspNetCoreEventFlow
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            using (var eventFlow = CreateEventFlow(args))
+            {
+                BuildWebHost(args, eventFlow).Run();
+            }
+        }
+
+        public static IWebHost BuildWebHost(string[] args, DiagnosticPipeline eventFlow) =>
+            WebHost.CreateDefaultBuilder(args)
+                .ConfigureServices(services => services.AddSingleton<ITelemetryProcessorFactory>(sp => new EventFlowTelemetryProcessorFactory(eventFlow)))
+                .UseStartup<Startup>()
+                .UseApplicationInsights()
+                .Build();
+
+        private static DiagnosticPipeline CreateEventFlow(string[] args)
+        {
+            // Create configuration instance to access configuration information for EventFlow pipeline
+            // To learn about common configuration sources take a peek at https://github.com/aspnet/MetaPackages/blob/master/src/Microsoft.AspNetCore/WebHost.cs (CreateDefaultBuilder method). 
+            // Here we assume all necessary information comes from command-line arguments and environment variables.
+            var configBuilder = new ConfigurationBuilder()
+                .AddEnvironmentVariables();
+            if (args != null)
+            {
+                configBuilder.AddCommandLine(args);
+            }
+            var config = configBuilder.Build();
+
+            var healthReporter = new CsvHealthReporter(new CsvHealthReporterConfiguration());
+            var aiInput = new ApplicationInsightsInputFactory().CreateItem(null, healthReporter);
+            var inputs = new IObservable<EventData>[] { aiInput };
+            var sinks = new EventSink[]
+            {
+                new EventSink(new ElasticSearchOutput(new ElasticSearchOutputConfiguration {
+                    ServiceUri = config["ElasticsearchServiceUri"]
+                    // Set other configuration settings, as necessary
+                }, healthReporter), null)
+            };
+
+            return new DiagnosticPipeline(healthReporter, inputs, null, sinks, null, disposeDependencies: true);
+        }
+    }
+}
+
+```
+
+#### Log4net
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Log4net**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Log4net/)
+
+This input enables capturing diagnostic data sent to the [Log4net project](https://logging.apache.org/log4net/).
+
+*Configuration example*
+The Log4net input has one configuration, the Log4net Level:
+```json
+{
+  "type": "Log4net",
+  "logLevel": "Debug"
+}
+```
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "Log4net" | Yes | Specifies the output type. For this output, it must be "Log4net". |
+| `logLevel` | "Debug", "Info", "Warn", "Error", or "Fatal" | Yes | Specifies the [Log4net Level](https://logging.apache.org/log4net/log4net-1.2.11/release/sdk/log4net.Core.Level.html) desired. |
+
+
+*Example: instantiating a Log4net logger that uses EventFlow Log4net input*
+
+```csharp
+using System;
+using Microsoft.Diagnostics.EventFlow;
+using log4net;
+
+namespace ConsoleApp2
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
+            {
+                var logger = LogManager.GetLogger("EventFlowRepo", "MY_LOGGER_NAME");
+
+                logger.Debug("Hey! Listen!", new Exception("uhoh"));
+            }
+        }
+    }
+}
+```
+
+#### NLog
+
+*Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.NLog**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.NLog/)
+
+This input enables capturing diagnostic data sent to the [NLog library](http://nlog-project.org/).
+
+*Configuration example*
+The NLog input has no configuration, other than the "type" property that specifies the type of the input (must be "NLog"):
+```json
+{
+  "type": "NLog"
+}
+```
+
+*Example: instantiating a NLog logger that uses EventFlow NLog input*
+
+```csharp
+using System;
+using Microsoft.Diagnostics.EventFlow;
+using NLog;
+
+namespace NLogEventFlow
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(".\\eventFlowConfig.json"))
+            {
+                var nlogTarget = pipeline.ConfigureNLogInput(pipeline, NLog.LogLevel.Info);
+                var logger = NLog.LogManager.GetCurrentClassLogger();
+                logger.Info("Hello from {friend} for {family}!", "NLogInput", "EventFlow");
+                NLog.LogManager.Shutdown();
+                Console.ReadKey();
+            }
+        }
+    }
+}
+```
+
 
 ### Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
@@ -573,6 +719,7 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 | `type` | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
 | `eventHubName` | event hub name | No | Specifies the name of the event hub. |
 | `connectionString` | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
+| `partitionKeyProperty` | string | No | The name of the event property that will be used as the PartitionKey for the Event Hub events. |
 
 #### Application Insights
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights/)
@@ -611,14 +758,15 @@ All other events will be reported as Application Insights *traces* (telemetry of
 #### Elasticsearch
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
 
-**Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 5.x**
+**Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 6.x**
 
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
 ```json
 {
     "type": "ElasticSearch",
     "indexNamePrefix": "app1",
-    "serviceUri": "https://myElasticSearchCluster:9200",
+    "serviceUri": "https://myElasticSearchCluster:9200;https://myElasticSearchCluster:9201;https://myElasticSearchCluster:9202",
+    "connectionPoolType": "Sniffing",
     "basicAuthenticationUserName": "esUser1",
     "basicAuthenticationUserPassword": "<MyPassword>",
     "eventDocumentTypeName": "diagData",
@@ -631,13 +779,15 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
 | `indexNamePrefix` | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
-| `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. |
+| `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. Single URL or semicolon-separated URLs for connection pooling are accepted |
+| `connectionPoolType` | "Static", "Sniffing", or "Sticky" | No | Specifies the Connection Pool that takes care of registering what nodes there are in the cluster. |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
 | `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
 | `numberOfShards` | int | No | Specifies how many shards to create the index with. If not specified, it defaults to 1.|
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
+
 
 *Standard metadata support*
 
@@ -657,7 +807,7 @@ Fields injected byt the `request` metadata are:
 | `RequestName` | The name of the request, read the event property specified by `requestNameProperty`. |
 | `Duration` | Request duration, read from the event property specified by `durationProperty` (if available). |
 | `IsSuccess` | Success indicator,  read from the event property specified by `isSuccessProperty` (if available). |
-| `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). | 
+| `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). |
 
 #### OMS (Operations Management Suite)
 
@@ -815,7 +965,7 @@ Metrics are named time series of floating-point values. Metric metadata defines 
 | `metricName` | string | (see Remarks) | The name of the metric. |
 | `metricNameProperty` | string | (see Remarks) | The name of the event property that holds metric name. |
 | `metricValue` | double | (see Remarks) | The value of the metric. This is useful for "counter" type of metric when each occurrence of a particular event should result in an increment of the counter. |
-| `metricValueProperty` | string | (see Remarks) | The name of the event property that holds the metric value. | 
+| `metricValueProperty` | string | (see Remarks) | The name of the event property that holds the metric value. |
 
 Remarks: 
 1. Either `metricName` or `metricNameProperty` must be specified.
@@ -886,7 +1036,7 @@ This health reporter writes all errors, warnings, and informational traces gener
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "CsvHealthReporter" | Yes | Specifies the health reporter type. For this reporter, it must be "CsvHealthReporter". |
-| `logFileFolder` | file path | No | Specifies a path for the CSV log file to be written. It can be an absolute path, or a relative path. If it's a relative path, then it's computed relative to the directory where the EventFlow core library is in. However, if it's an ASP.NET application, it's relative to the app_data folder. |
+| `logFileFolder` | file path | No | Specifies a path for the CSV log file to be written. It can be an absolute path, or a relative path. If it's a relative path, then it's computed relative to the current working directory of the program. However, if it's an ASP.NET application, it's relative to the app_data folder. |
 | `logFilePrefix` | file path | No | Specifies a prefix used for the CSV log file. CsvHealthReporter creates the log file name by combining this prefix with the date of when the file is generated. If the prefix is omitted, then a default prefix of "HealthReport" is used. |
 | `minReportLevel` | Error, Warning, Message | No | Specifies the collection report level. Report traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Error, and Warning traces are collected. Default is Error. |
 | `throttlingPeriodMsec` | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
@@ -927,7 +1077,7 @@ The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `
 | Parameter | Default Value | Description |
 | :-------- | :-------------- | :---------- |
 | `healthEntityName` | (none) | The name of the health entity that will be used to report EventFlow pipeline health to Service Fabric. Usually it is set to a value that helps you identify the service using the pipeline, for example "MyApplication-MyService-DiagnosticsPipeline". |
-| `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of a (Service Fabric) service configuration package.| 
+| `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of a (Service Fabric) service configuration package.|
 | `configurationPackageName` | "Config" | The name of the Service Fabric configuration package that contains the pipeline configuration file.|
 
 The recommended place to create the diagnostic pipeline is in the service `Main()` method:
@@ -1005,9 +1155,13 @@ Version 1.1.2 added support for resolving paths to other configuration files tha
 At run time this value will be substituted with a full path to the configuration file with the given name. This is especially useful if an EventFlow pipeline element wraps an existing library that has its own configuration file format (as is the case with Application Insights, for example). 
 
 ## Logical Expressions
-The logical expression allows you to filter events based on the event properties. For example, you can have an expression like "ProviderName == MyEventProvider && EventId == 3", where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
+The logical expression allows you to filter events based on the event properties. For example, you can have an expression like `ProviderName == MyEventProvider && EventId == 3`, where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
 
-Here are the supported operators:
+Standard and custom (payload) properties are treated equally; there is no need to prefix custom properties in any way. For example, expression `TenantId != Unknown && ProviderName == MyEventProvider` will evaluate to true for events that 
+  - were created by `MyEventProvider` provider (ProviderName is a standard property available for all events), and
+  - have a TenantId custom property, with value that is different from "Unknown" string.
+
+Operators supported by logical expressions are:
 
 Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
 
@@ -1193,6 +1347,8 @@ The following table lists platform support for standard inputs and outputs.
 | [Microsoft.Extensions.Logging](#microsoftextensionslogging) | Yes | Yes | Yes |
 | [ETW (Event Tracing for Windows)](#etw-event-tracing-for-windows) | Yes | Yes | No |
 | [Application Insights input](#application-insights-input) | Yes | Yes | Yes |
+| [Log4net](#Log4net) | Yes | Yes | Yes |
+| [NLog](#NLog) | Yes | Yes | Yes |
 | *Outputs* |
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
 | [Application Insights](#application-insights) | Yes | Yes | Yes |

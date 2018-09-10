@@ -186,9 +186,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         var eventSourceInput = pipeline.Inputs.First() as EventSourceInput;
                         Assert.NotNull(eventSourceInput);
 
-                        var expectedEventSources = new EventSourceConfiguration[2];
+                        var expectedEventSources = new EventSourceConfiguration[3];                        
                         expectedEventSources[0] = new EventSourceConfiguration { ProviderName = "Microsoft-ServiceFabric-Services" };
                         expectedEventSources[1] = new EventSourceConfiguration { ProviderName = "MyCompany-AirTrafficControlApplication-Frontend" };
+                        // Microsoft-ApplicationInsights-Data is disabled by default to work around https://github.com/dotnet/coreclr/issues/14434
+                        expectedEventSources[2] = new EventSourceConfiguration { DisabledProviderNamePrefix = "Microsoft-ApplicationInsights-Data" };
                         Assert.True(eventSourceInput.EventSources.SequenceEqual(expectedEventSources));
 
                         var metadata = new EventMetadata("importance");
@@ -332,6 +334,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""Serilog""
                         },
                         {
+                            ""type"": ""NLog""
+                        },
+                        {
+                            ""type"": ""Log4net"",
+                            ""LogLevel"": ""Verbose""
+                        },
+                        {
                             ""type"": ""PerformanceCounter"",
                             ""counters"": [
                                 {
@@ -345,7 +354,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""providers"": [
                                 { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
                             ]
-                        }
+                        }                        
                     ],
 
                     ""outputs"": [
@@ -392,6 +401,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         },
                         {
                             ""type"": ""Serilog""
+                        },
+                        {
+                            ""type"": ""NLog""
+                        },
+                        {
+                            ""type"": ""Log4net"",
+                            ""LogLevel"": ""Verbose""
                         }
                     ],
 
@@ -432,13 +448,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             i => Assert.IsType<EventSourceInput>(i),
                             i => Assert.IsType<LoggerInput>(i),
                             i => Assert.IsType<TraceInput>(i),
-                            i => Assert.IsType<SerilogInput>(i)
+                            i => Assert.IsType<SerilogInput>(i),
+                            i => Assert.IsType<NLogInput>(i),
+                            i => Assert.IsType<Log4netInput>(i)
 #if NET46
                             , i => Assert.IsType<PerformanceCounterInput>(i)
                             , i => Assert.IsType<EtwInput>(i)
 #endif
                         );
-
+                        
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
                             s => Assert.IsType<ElasticSearchOutput>(s.Output),
@@ -459,7 +477,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
         private static async void TryDeleteFile(string startWith, string extension = ".csv", int delayMilliseconds = 0)
         {
-            // Clean up
             await Task.Delay(delayMilliseconds);
             string[] targets = Directory.GetFiles(Directory.GetCurrentDirectory(), $"{startWith}*{extension}");
             foreach (string file in targets)

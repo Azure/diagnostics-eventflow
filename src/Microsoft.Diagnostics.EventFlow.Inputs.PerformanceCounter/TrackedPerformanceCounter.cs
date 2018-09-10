@@ -41,7 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             }
 
             var now = DateTimeOffset.UtcNow;
-            if (now - this.lastAccessedOn < TimeSpan.FromMilliseconds(this.Configuration.SamplingIntervalMsec))
+            if (now - this.lastAccessedOn < TimeSpan.FromMilliseconds(this.Configuration.CollectionIntervalMsec))
             {
                 return false;
             }

@@ -139,6 +139,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 HttpResponseMessage response = await httpClient.PostAsync(new Uri(configuration.ServiceUri), contentPost);
                 response.EnsureSuccessStatusCode();
+                this.healthReporter.ReportHealthy();
             }
             catch (Exception e)
             {

@@ -15,6 +15,7 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+msbuild.binlog
 
 # Roslyn cache directories
 *.ide/
