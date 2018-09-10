@@ -82,7 +82,8 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.dll;" />
       <Full471Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
@@ -101,7 +102,8 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.dll;" />
       <Core20Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
@@ -118,7 +120,8 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll; 
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.dll;"/>
     </ItemGroup>
     
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
@@ -154,6 +157,7 @@
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\bin\$(Configuration)\net451"/>
     <!--.Net Framework 4.7.1 assemblies-->
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471"/>
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471"/>
@@ -175,6 +179,7 @@
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\bin\$(Configuration)\netstandard1.6"/>
     <!--.NET core 2.0 assemblies-->
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard2.0"/>
@@ -193,6 +198,7 @@
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0"/>
+    <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\bin\$(Configuration)\netstandard2.0"/>
   </Target>
   
 </Project>
