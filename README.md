@@ -843,7 +843,7 @@ Here is an example showing all possible settings:
 ```json
 {
     "type": "Splunk",
-    "serviceBaseAddress": "https://hec.mysplunkserver.com:8088/",
+    "serviceBaseAddress": "https://hec.mysplunkserver.com:8088",
     "authenticationToken": "B5A79AAD-D822-46CC-80D1-819F80D7BFB0",
     "host": "localhost",
     "index": "main",
@@ -854,7 +854,7 @@ Here is an example showing all possible settings:
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Splunk" | Yes | Specifies the output type. For this output, it must be "Splunk". |
-| `serviceBaseAddress` | string | Yes | Base address for the Splunk HTTP Event Collector (HEC). |
+| `serviceBaseAddress` | string | Yes | Base address for the Splunk HTTP Event Collector (HEC) (excluding the API URI e.g. /services/collector/event/1.0). |
 | `authenticationToken` | string | Yes | Defines the [HEC token](http://docs.splunk.com/Documentation/Splunk/latest/Data/UsetheHTTPEventCollector#About_Event_Collector_tokens) as configured in Splunk. This token can be used to configure the default index, source and sourcetype associated with all events which use it. |
 | `host` | string | No | The [host](http://docs.splunk.com/Splexicon:Host) associated with the events. If left blank this will default to the name of the server which is executing the process using EventFlow. |
 | `index` | string | No | The Splunk [index](http://docs.splunk.com/Splexicon:Index) where the event will be stored. Leave blank unless you specifically want to override the default index associated with the HEC token. |

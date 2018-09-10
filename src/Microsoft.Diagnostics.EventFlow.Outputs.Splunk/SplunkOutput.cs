@@ -92,11 +92,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Splunk
                     }
                     catch (Exception e)
                     {
-                        healthReporter.ReportProblem($"{nameof(SplunkOutput)}: An error occurred trying to read the content of a failure response. Exception: {e}");
+                        healthReporter.ReportProblem($"{nameof(SplunkOutput)}: An error occurred trying to read the content of a failure response. Exception: {e}", EventFlowContextIdentifiers.Output);
                     }
 
                     string errorMessage = $"{nameof(SplunkOutput)}: Splunk HTTP Event Collector REST API returned an error. Code: {response.StatusCode} Description: {response.ReasonPhrase} {responseContent}";
-                    healthReporter.ReportProblem(errorMessage);
+                    healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Output);
                 }
             }
             catch (Exception e)
@@ -115,14 +115,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Splunk
             if (string.IsNullOrWhiteSpace(serviceBaseAddress))
             {
                 var errorMessage = $"{nameof(SplunkOutput)}: 'serviceBaseAddress' configuration parameter is not set";
-                healthReporter.ReportProblem(errorMessage);
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
             string authenticationToken = configuration.AuthenticationToken;
             if (string.IsNullOrWhiteSpace(authenticationToken))
             {
                 var errorMessage = $"{nameof(SplunkOutput)}: 'authenticationToken' configuration parameter is not set";
-                healthReporter.ReportProblem(errorMessage);
+                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
                 throw new Exception(errorMessage);
             }
 

@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.Splunk\Microsoft.Diagnostics.EventFlow.Outputs.Splunk.csproj" />
     <ProjectReference Include="..\TestHelpers\TestHelpers.csproj" />
   </ItemGroup>
 
