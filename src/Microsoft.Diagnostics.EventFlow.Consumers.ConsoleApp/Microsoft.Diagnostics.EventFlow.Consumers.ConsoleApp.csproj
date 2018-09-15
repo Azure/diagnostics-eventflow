@@ -3,7 +3,7 @@
   
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFramework>net4.6</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Consumers.ConsoleApp</AssemblyName>
   </PropertyGroup>
