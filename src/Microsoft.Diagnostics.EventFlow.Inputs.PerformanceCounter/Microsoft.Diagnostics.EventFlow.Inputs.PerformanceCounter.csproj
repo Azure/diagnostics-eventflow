@@ -5,7 +5,7 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <VersionPrefix>1.4.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter</PackageId>
@@ -19,7 +19,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.5.0" />
   </ItemGroup>
 
