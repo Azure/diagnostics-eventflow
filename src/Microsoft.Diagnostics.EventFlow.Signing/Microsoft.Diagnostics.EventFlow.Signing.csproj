@@ -119,7 +119,7 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\net2.0\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;" />
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;" />
     </ItemGroup>
     
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
