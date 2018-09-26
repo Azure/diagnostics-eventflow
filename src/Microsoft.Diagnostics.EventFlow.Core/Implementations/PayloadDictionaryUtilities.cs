@@ -16,24 +16,39 @@ namespace Microsoft.Diagnostics.EventFlow
             Requires.NotNull(key, nameof(key));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            if (!payload.ContainsKey(key))
+            if (!payload.TryGetValue(key, out var existingValue))
             {
                 payload.Add(key, value);
+                return;
+            }
+            else if ((existingValue?.Equals(value)).GetValueOrDefault(false))
+            {
+                // Existing value with same key is equivalent to the input value
+                // We can return immediately to avoid adding duplicate key/value into the payload
                 return;
             }
 
             string newKey;
             int i = 1;
+
             //update property key till there is no such key in dict
             do
             {
                 newKey = key + "_" + i.ToString("d");
                 i++;
             }
-            while (payload.ContainsKey(newKey));
+            while (payload.TryGetValue(newKey, out existingValue) && !(existingValue?.Equals(value)).GetValueOrDefault(false));
 
-            payload.Add(newKey, value);
-            healthReporter.ReportWarning($"The property with the key '{key}' already exist in the event payload. Value was added under key '{newKey}'", context);
+            if (!payload.ContainsKey(newKey))
+            {
+                payload.Add(newKey, value);
+                healthReporter.ReportWarning($"The property with the key '{key}' already exist in the event payload. Value was added under key '{newKey}'", context);
+            }
+            else
+            {
+                healthReporter.ReportWarning($"The property with the key '{key}' already exist in the event payload with equivalent value under key '{newKey}'. Value was not re-added", context);
+                return;
+            }
         }
     }
 }
