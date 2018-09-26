@@ -25,7 +25,6 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 // Existing value with same key is equivalent to the input value
                 // We can return immediately to avoid adding duplicate key/value into the payload
-                healthReporter.ReportWarning($"The property with the key '{key}' already exist in the event payload with equivalent value. Value was not re-added", context);
                 return;
             }
 

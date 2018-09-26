@@ -50,7 +50,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             object value;
             Assert.True(data.TryGetPropertyValue("prop", out value));
             Assert.Equal("value", value);
-            healthReporterMock.Verify(m => m.ReportWarning(It.Is<string>(s => s.StartsWith("The property with the key 'prop' already exist in the event payload with equivalent value")), It.IsIn("tests")));
+            healthReporterMock.Verify(m => m.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
