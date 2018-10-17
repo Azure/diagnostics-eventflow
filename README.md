@@ -1031,7 +1031,8 @@ This health reporter writes all errors, warnings, and informational traces gener
     "throttlingPeriodMsec": "1000",
     "singleLogFileMaximumSizeInMBytes": "8192",
     "logRetentionInDays": "30",
-    "ensureOutputCanBeSaved": "false"
+    "ensureOutputCanBeSaved": "false",
+    "assumeSharedLogFolder": "false"
 }
 ```
 | Field | Values/Types | Required | Description |
@@ -1043,7 +1044,8 @@ This health reporter writes all errors, warnings, and informational traces gener
 | `throttlingPeriodMsec` | number of milliseconds | No | Specifies the throttling time period. This setting protects the health reporter from being overwhelmed, which can happen if a message is repeatedly generated due to an error in the pipeline. Default is 0, for no throttling. |
 | `singleLogFileMaximumSizeInMBytes` | File size in MB/number | No | Specifies the size of the log file in MB before rotating happens. The default value is 8192 MB (8 GB). Once the size of log file exceeds the value, it will be renamed from fileName.csv to fileName_last.csv. Then logs will be written to a new fileName.csv. This setting prevents a single log file become too big. |
 | `logRetentionInDays` | number of days for the logs files retain | No | Specifies how long log files will be retained. The default value is 30 days. Any log files created earlier than the specified number of days ago will be removed automatically. This prevents continuous generation of logs that might lead to storage exhaustion. |
-| `ensureOutputCanBeSaved` | boolean | No | Specifies whether the health reporter is going to ensure the permission to write to the log folder. The default value is `false`. When set to `true`, it will prevent the pipeline creation when it can't write the log. Otherwise, it will ignore the error.
+| `ensureOutputCanBeSaved` | boolean | No | Specifies whether the health reporter is going to ensure the permission to write to the log folder. The default value is `false`. When set to `true`, it will prevent the pipeline creation when it can't write the log. Otherwise, it will ignore the error. |
+| `assumeSharedLogFolder` | boolean | No | Specifies whether the health reporter will use a random string in attempt to make the health reporter file unique. This is useful if multiple processes using EventFlow use the same folder to store their health reporter files. Default value is `false`. |
 
 CsvHealthReporter will try to open the log file for writing during initialization. If it can't, by default, a debug message will be output to the debugger viewer like Visual Studio Output window, etc. This can happen especially if a value for the log file path is not provided (default is used, which is application executables folder) and the application executables are residing on a read-only file system. Docker tools for Visual Studio use this configuration during debugging, so for containerized services the recommended practice is to specify the log file path explicitly.
 

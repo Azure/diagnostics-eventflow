@@ -16,5 +16,6 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         public int SingleLogFileMaximumSizeInMBytes { get; set; }
         public int LogRetentionInDays { get; set; }
         public bool EnsureOutputCanBeSaved { get; set; }
+        public bool AssumeSharedLogFolder { get; set; }
     }
 }
