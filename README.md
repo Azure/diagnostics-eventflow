@@ -702,6 +702,7 @@ This output writes data to a webserver using diffent encoding methods (Json or J
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with webserver. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with webserver. This field should be used only if basicAuthenticationUserName is specified. |
 | `httpContentType` | string | No | Defines the HTTP Content-Type header |
+| `headers` | object | No | Specifies custom headers that will be added to event upload request. Each property of the object becomes a separate header. |
 
 #### Event Hub
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
