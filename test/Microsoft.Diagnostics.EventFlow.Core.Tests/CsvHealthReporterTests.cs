@@ -29,6 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string SingleLogFileMaximumSizeInMBytesKey = "SingleLogFileMaximumSizeInMBytes";
         private const string LogRetentionInDaysKey = "LogRetentionInDays";
         private const string EnsureOutputCanBeSavedKey = "EnsureOutputCanBeSaved";
+        private const string AssumeSharedLogFolder = "AssumeSharedLogFolder";
         private const int StreamOperationTimeoutMsec = 500;
 
         [Fact]
@@ -480,6 +481,22 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 Assert.False(target.EnsureOutputCanBeSaved);
             }
         }
+
+        [Fact]
+        public void ShouldRandomizeLogFileNameIfRequested()
+        {
+            var configuration = BuildTestConfigration();
+            configuration[AssumeSharedLogFolder] = "true";
+            configuration[LogFileFolderKey] = "/log/folder";
+            DateTime now = DateTime.Now;
+
+            using (SharedFolderTestHealthReporter reporter = new SharedFolderTestHealthReporter(configuration))
+            {
+                reporter.Activate();
+                // Expect "HealthReporter_", followed by 12-char randomizer string, followed by underscore, followed by date in yyyymmdd format, followed by ".csv"
+                Assert.Matches($"{DefaultReporterPrefix}_[a-zA-Z0-9]{{12}}_20[0-9]{{6}}.csv", reporter.CurrentLogFilePath);
+            }
+    }
 
         private IConfiguration BuildTestConfigration(
             long? logFileMaxInMB = null,

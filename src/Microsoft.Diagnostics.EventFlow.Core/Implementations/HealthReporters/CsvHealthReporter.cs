@@ -59,6 +59,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         private int flushPeriodMsec = 5000;
         private Func<DateTime> getCurrentTime = () => DateTime.Now;
         private FileStream fileStream;
+        private string logFileNameRandomizer;
         internal StreamWriter StreamWriter;
         internal bool EnsureOutputCanBeSaved { get; private set; }
         internal long SingleLogFileMaximumSizeInBytes { get; private set; }
@@ -130,7 +131,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             try
             {
-                SetNewStreamWriter();
+                SetNewStreamWriter(Directory.Exists, Directory.CreateDirectory);
                 if (StreamWriter == null)
                 {
                     message = $"Fail to set new stream writer for {nameof(CsvHealthReporter)}.";
@@ -181,7 +182,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 {
                     try
                     {
-                        SetNewStreamWriter();
+                        SetNewStreamWriter(Directory.Exists, Directory.CreateDirectory);
                     }
                     finally
                     {
@@ -301,13 +302,13 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// <returns>Path (including file name) to be used for "current" log file.</returns>
         internal virtual string RotateLogFileImp(string logFileFolder, Func<string, bool> fileExist, Action<string> fileDelete, Action<string, string> fileMove)
         {
-            string fileName = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            string fileName = GetNewLogFileName(); ;
             string logFilePath = Path.Combine(logFileFolder, fileName);
 
             // Rotate the log file when needed
             if (fileExist(logFilePath))
             {
-                string rotateFilePath = Path.Combine(logFileFolder, $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}_{FileSuffix.Last}.csv");
+                string rotateFilePath = Path.Combine(logFileFolder, GetLastLogFileName());
 
                 // Making sure writing to current stream flushed and paused before renaming the log files.
                 FinishCurrentStream();
@@ -325,15 +326,15 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
         /// Create the stream writer for the health reporter.
         /// </summary>
         /// <returns></returns>
-        internal virtual void SetNewStreamWriter()
+        internal virtual void SetNewStreamWriter(Func<string, bool> directoryExists, Func<string, DirectoryInfo> createDirectory)
         {
             try
             {
                 // Ensure Log folder exists
                 string logFileFolder = Path.GetFullPath(this.Configuration.LogFileFolder);
-                if (!Directory.Exists(logFileFolder))
+                if (!directoryExists(logFileFolder))
                 {
-                    Directory.CreateDirectory(logFileFolder);
+                    createDirectory(logFileFolder);
                 }
 
                 string logFilePath = RotateLogFile(logFileFolder);
@@ -417,6 +418,17 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             this.EnsureOutputCanBeSaved = configuration.EnsureOutputCanBeSaved;
 
             this.innerReportWriter = this.ReportText;
+
+            if (configuration.AssumeSharedLogFolder)
+            {
+                var random = new Random(); 
+                const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                this.logFileNameRandomizer = new string(Enumerable.Range(1, 12).Select(i => chars[random.Next(chars.Length)]).ToArray());
+            }
+            else
+            {
+                this.logFileNameRandomizer = string.Empty;
+            }
 
             // Prepare the configuration, set default values, handle invalid values.
             this.Configuration = configuration;
@@ -565,15 +577,56 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
         internal virtual IEnumerable<ILogFileInfo> GetLogFiles(DirectoryInfo logFolder)
         {
-            if (logFolder != null && logFolder.Exists)
+            if (logFolder == null || !logFolder.Exists)
             {
-                return (
-                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly)).Union(
-                    logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly))
-                    .Select(fileInfo => new FileInfoWrapper(fileInfo));
+                return Enumerable.Empty<FileInfoWrapper>();
+                
             }
-            return Enumerable.Empty<FileInfoWrapper>();
+
+            IEnumerable<FileInfo> fileInfos;
+            if (string.IsNullOrEmpty(this.logFileNameRandomizer))
+            {
+                fileInfos = logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????.csv", SearchOption.TopDirectoryOnly).Union(
+                            logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
+            }
+            else
+            {
+                fileInfos = logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_{this.logFileNameRandomizer}_????????.csv", SearchOption.TopDirectoryOnly).Union(
+                            logFolder.EnumerateFiles($"{Configuration.LogFilePrefix}_{this.logFileNameRandomizer}_????????_{FileSuffix.Last}.csv", SearchOption.TopDirectoryOnly));
+            }
+
+            return fileInfos.Select(fileInfo => new FileInfoWrapper(fileInfo));
         }
+
+        private string GetNewLogFileName()
+        {
+            string retval;
+            if (string.IsNullOrEmpty(this.logFileNameRandomizer))
+            {
+                retval = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            }
+            else
+            {
+                retval = $"{this.Configuration.LogFilePrefix}_{this.logFileNameRandomizer}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}.csv";
+            }
+            return retval;
+        }
+
+        private string GetLastLogFileName()
+        {
+            string retval;
+            if (string.IsNullOrEmpty(this.logFileNameRandomizer))
+            {
+                retval = $"{this.Configuration.LogFilePrefix}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}_{FileSuffix.Last}.csv";
+            }
+            else
+            {
+                retval = $"{this.Configuration.LogFilePrefix}_{this.logFileNameRandomizer}_{DateTime.UtcNow.Date.ToString("yyyyMMdd")}_{FileSuffix.Last}.csv";
+            }
+            return retval;
+        }
+
+
 
         private void ReportText(HealthReportLevel level, string text, string context = null)
         {

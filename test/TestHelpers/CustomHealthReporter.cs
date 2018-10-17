@@ -73,7 +73,7 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
             StreamWriterMock.SetupGet(sw => sw.BaseStream).Returns(this.memoryStream);
         }
 
-        internal override void SetNewStreamWriter()
+        internal override void SetNewStreamWriter(Func<string, bool> directoryExists, Func<string, DirectoryInfo> createDirectory)
         {
             this.setStreamWriter();
         }
