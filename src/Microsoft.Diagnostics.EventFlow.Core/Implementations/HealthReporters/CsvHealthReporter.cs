@@ -358,7 +358,9 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 CreateNewFileStream(logFilePath);
                 if (this.fileStream != null)
                 {
-                    this.StreamWriter = new StreamWriter(this.fileStream, Encoding.UTF8);
+                    // Emitting byte order mark (BOM) when using UTF8 encoding is not recommended https://en.wikipedia.org/wiki/Byte_order_mark#UTF-8
+                    var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+                    this.StreamWriter = new StreamWriter(this.fileStream, encoding);
                 }
             }
             catch (Exception ex)
@@ -388,7 +390,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
                 string logFileName = $"{Path.GetFileNameWithoutExtension(logFilePath)}_{Path.GetRandomFileName()}{Path.GetExtension(logFilePath)}";
                 string logFileFolder = Path.GetDirectoryName(logFilePath);
                 logFilePath = Path.Combine(logFileFolder, logFileName);
-                this.fileStream = new FileStream(logFilePath, FileMode.Append);
+                this.fileStream = this.CreateFileStream(logFilePath);
 
                 ReportWarning($"IOExcepion happened for the LogFilePath: {originalFilePath}. Use new path: {logFilePath}", TraceTag);
             }

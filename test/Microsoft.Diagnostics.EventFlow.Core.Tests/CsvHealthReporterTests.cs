@@ -424,7 +424,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                 reporter.Activate(); // No exception for the user of the reporter
                 Assert.True(reporter.LogRotationAttempted);
 
-                reporter.ReportHealthy(); // No exception
+                reporter.ReportProblem("Not sure if anyone will see this"); // No exception
             }
         }
 
