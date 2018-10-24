@@ -130,6 +130,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         [Fact]
         public void MeasuresEventTimeWithHighResolution()
         {
+            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            {
+                // We only use explicit high-precision timestamping on Windows, relying on .NET implementation defaults for other platforms
+                return;
+            }
+
             var healthReporterMock = new Mock<IHealthReporter>();
 
             // Ensure the EventSource is instantiated
