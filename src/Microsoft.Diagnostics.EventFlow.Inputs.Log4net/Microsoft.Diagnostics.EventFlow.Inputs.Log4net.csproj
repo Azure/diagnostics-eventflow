@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Inputs.Log4net infrastructure.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>net46;netstandard1.6;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Log4net</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.Log4net</PackageId>
@@ -24,11 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup>

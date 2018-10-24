@@ -73,7 +73,7 @@
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\net46\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
@@ -145,7 +145,7 @@
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\bin\$(Configuration)\net451"/>
-    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\net46"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451"/>
