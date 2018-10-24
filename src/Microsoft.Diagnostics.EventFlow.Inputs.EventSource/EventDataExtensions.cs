@@ -25,7 +25,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
 
-        private static bool hasPreciseTime = Environment.OSVersion.Version.Major >= 10 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 2);
+        private static bool hasPreciseTime = 
+            Environment.OSVersion.Platform == PlatformID.Win32NT &&
+            (Environment.OSVersion.Version.Major >= 10 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 2));
 #endif
 
         public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent, IHealthReporter healthReporter, string context)
