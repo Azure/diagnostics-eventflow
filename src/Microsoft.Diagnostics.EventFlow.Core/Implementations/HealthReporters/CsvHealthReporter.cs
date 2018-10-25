@@ -131,15 +131,21 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
 
             try
             {
-                SetNewStreamWriter(Directory.Exists, Directory.CreateDirectory);
-                if (StreamWriter == null)
+                if (EnsureOutputCanBeSaved)
                 {
-                    message = $"Fail to set new stream writer for {nameof(CsvHealthReporter)}.";
-                    if (EnsureOutputCanBeSaved)
+                    SetNewStreamWriter(Directory.Exists, Directory.CreateDirectory);
+                    if (StreamWriter == null)
                     {
+                        message = $"Fail to set new stream writer for {nameof(CsvHealthReporter)}.";
                         throw new InvalidOperationException(message);
                     }
                 }
+                else
+                {
+                    // Delay creation of the health reporter file until there are some reports to write.
+                    this.newStreamRequested = true;
+                }
+
                 this.flushTime = this.getCurrentTime().AddMilliseconds(this.flushPeriodMsec);
 
                 // Start the consumer of the report items in the collection.

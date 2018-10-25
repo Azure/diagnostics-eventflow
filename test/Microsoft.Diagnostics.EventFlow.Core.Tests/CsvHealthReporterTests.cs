@@ -421,10 +421,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             var configuration = BuildTestConfigration();
             using (var reporter = new ReadOnlyFilesystemHealthReporter(configuration))
             {
-                reporter.Activate(); // No exception for the user of the reporter
-                Assert.True(reporter.LogRotationAttempted);
-
+                reporter.Activate();
                 reporter.ReportProblem("Not sure if anyone will see this"); // No exception
+
+                Assert.True(reporter.LogRotationAttempted.WaitOne(StreamOperationTimeoutMsec), 
+                    "The log rotation was never attempted; unable to verify the read-only file system exception was handled");
             }
         }
 
@@ -493,6 +494,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             using (SharedFolderTestHealthReporter reporter = new SharedFolderTestHealthReporter(configuration))
             {
                 reporter.Activate();
+                reporter.ReportProblem("Something important");
+                reporter.LogFileCreated.WaitOne(StreamOperationTimeoutMsec);
                 // Expect "HealthReporter_", followed by 12-char randomizer string, followed by underscore, followed by date in yyyymmdd format, followed by ".csv"
                 Assert.Matches($"{DefaultReporterPrefix}_[a-zA-Z0-9]{{12}}_20[0-9]{{6}}.csv", reporter.CurrentLogFilePath);
             }
