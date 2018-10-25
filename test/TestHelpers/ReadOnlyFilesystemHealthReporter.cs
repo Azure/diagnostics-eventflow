@@ -5,6 +5,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Extensions.Configuration;
 
@@ -12,17 +14,19 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 {
     public class ReadOnlyFilesystemHealthReporter: CsvHealthReporter
     {
-        public bool LogRotationAttempted { get; private set; }
+        public AutoResetEvent LogRotationAttempted { get; private set; }
 
         public ReadOnlyFilesystemHealthReporter(IConfiguration configuration) 
             : base(configuration.ToCsvHealthReporterConfiguration())
         {
-            LogRotationAttempted = false;
+            this.LogRotationAttempted = new AutoResetEvent(false);
         }
 
         internal override string RotateLogFileImp(string logFileFolder, Func<string, bool> fileExist, Action<string> fileDelete, Action<string, string> fileMove)
         {
-            LogRotationAttempted = true;
+            // Delay the notification so that the exception can bubble up the stack and the test does not end prematurely.
+            Task.Delay(TimeSpan.FromMilliseconds(200)).ContinueWith((t) => this.LogRotationAttempted.Set());
+
             // See https://github.com/Azure/diagnostics-eventflow/issues/255 for how this may happen
             throw new IOException("File system is read only");
         }
