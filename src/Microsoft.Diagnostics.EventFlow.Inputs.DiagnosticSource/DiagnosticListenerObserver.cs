@@ -1,4 +1,9 @@
-﻿using System;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,13 +11,14 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
 {
-    internal sealed class DiagnosticListenerObserver : IObserver<DiagnosticListener>, IDisposable
+    internal class DiagnosticListenerObserver : IObserver<DiagnosticListener>, IDisposable
     {
         private readonly IHealthReporter _healthReporter;
         private readonly object _lock = new object();
         private readonly IObserver<EventData> _output;
         private readonly IReadOnlyCollection<DiagnosticSourceConfiguration> _sources;
         private readonly List<IDisposable> _subscriptions;
+        private bool _disposed;
 
         public DiagnosticListenerObserver(IReadOnlyCollection<DiagnosticSourceConfiguration> sources, IObserver<EventData> output, IHealthReporter healthReporter)
         {
@@ -26,6 +32,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
         {
             lock (_lock)
             {
+                _disposed = true;
+
                 foreach (var subscription in _subscriptions)
                 {
                     subscription.Dispose();
@@ -49,7 +57,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
             {
                 lock (_lock)
                 {
-                    _subscriptions.Add(listener.Subscribe(new EventObserver(listener.Name, _output, _healthReporter)));
+                    if (!_disposed)
+                    {
+                        _subscriptions.Add(listener.Subscribe(new EventObserver(listener.Name, _output, _healthReporter)));
+                    }
                 }
             }
         }

@@ -1,11 +1,16 @@
-﻿using System;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
 {
-    public sealed class DiagnosticSourceInputFactory : IPipelineItemFactory<DiagnosticSourceInput>
+    public class DiagnosticSourceInputFactory : IPipelineItemFactory<DiagnosticSourceInput>
     {
         public DiagnosticSourceInput CreateItem(IConfiguration configuration, IHealthReporter healthReporter)
         {
