@@ -1,11 +1,16 @@
-﻿using System;
+﻿// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
 {
-    public sealed class DiagnosticSourceInput : IObservable<EventData>, IDisposable
+    public class DiagnosticSourceInput : IObservable<EventData>, IDisposable
     {
         private readonly DiagnosticListenerObserver _listenerObserver;
         private readonly IDisposable _listenerSubscription;
