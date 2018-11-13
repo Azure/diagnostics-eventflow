@@ -23,14 +23,14 @@ try
     {
         foreach($projectFile in $nugetProjects)
         {
-            &"dotnet" pack "$projectFile" -c "$Configuration" -o "$destination"
+            &"dotnet" pack "$projectFile" --no-build -c "$Configuration" -o "$destination"
         }
     }
     else
     {
         foreach($projectFile in $nugetProjects)
         {
-            &"dotnet" pack "$projectFile" -c "$Configuration" -o "$destination" --version-suffix $Suffix
+            &"dotnet" pack "$projectFile" --no-build -c "$Configuration" -o "$destination" --version-suffix $Suffix
         }
     }    
 }
