@@ -183,6 +183,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             {
                 input.Activate();
 
+                // Activation of the input causes creation of an ETW listening session in a separate Task.
+                // It takes a bit of time for the session to start capturing events.
+                // Use a small delay to minimize the chance that the following exception will be missed.
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
+                
                 try
                 {
                     throw new Exception("We seek perfection");
