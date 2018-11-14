@@ -14,6 +14,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Application Insights](#application-insights-input)
 - [Log4net](#log4net)
 - [NLog](#nlog)
+- [DiagnosticSource](#diagnosticsource)
 
 **Outputs**
 - [StdOutput (console output)](#stdoutput)
@@ -153,6 +154,32 @@ This input listens to EventSource traces. EventSource classes can be created in 
 
 (***) There is an issue with .NET frameworks 4.6 and 4.7, and .NET Core framework 1.1 and 2.0 where dynamically created EventSource events are dispatched to all listeners, regardless whether listeners subscribe to events from these EventSources; for more information see https://github.com/dotnet/coreclr/issues/14434  `disabledProviderNamePrefix` property can be usesd to suppress these events.<br/>
 Disabling EventSources is not recommended under normal circumstances, as it introduces a slight performance penalty. Instead, selectively enable necessary events through combination of EventSource names, event levels, and keywords.
+
+#### DiagnosticSource
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource/)
+
+This input listens to System.Diagnostics.DiagnosticSource sources. See the [DiagnosticSource User's Guide](https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/DiagnosticSourceUsersGuide.md) for details of usage. Here is an example showing all possible settings:
+```json
+{
+    "type": "DiagnosticSource",
+    "sources": [
+        { "providerName": "MyDiagnosticSource" }
+    ]
+}
+```
+
+*Top object*
+
+| Field | Values/Types | Required | Description |
+| :---- | :----------- | :------: | :---------- |
+| `type` | "DiagnosticSource" | Yes | Specifies the input type. For this input, it must be "DiagnosticSource". |
+| `sources` | JSON array | Yes | Specifies the DiagnosticSource objects to collect. |
+
+*Source object (element of the sources array)*
+
+| Field | Values/Types | Required | Description |
+| :---- | :----------- | :------: | :---------- |
+| `providerName` | DiagnosticSource name | Yes | Specifies the name of the DiagnosticSource to track. |
 
 #### PerformanceCounter
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter/)
