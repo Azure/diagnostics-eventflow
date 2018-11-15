@@ -623,7 +623,7 @@ The Log4net input has one configuration, the Log4net Level:
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Log4net" | Yes | Specifies the output type. For this output, it must be "Log4net". |
-| `logLevel` | "Debug", "Info", "Warn", "Error", or "Fatal" | Yes | Specifies the [Log4net Level](https://logging.apache.org/log4net/log4net-1.2.11/release/sdk/log4net.Core.Level.html) desired. |
+| `logLevel` | "Debug", "Info", "Warn", "Error", or "Fatal" | Yes | Specifies minimum [Log4net Level](https://logging.apache.org/log4net/log4net-1.2.11/release/sdk/log4net.Core.Level.html) for captured events. For example, if the level is `Warn`, the input will capture events with levels equal to `Warn`, `Error`, or `Fatal`. |
 
 
 *Example: instantiating a Log4net logger that uses EventFlow Log4net input*
