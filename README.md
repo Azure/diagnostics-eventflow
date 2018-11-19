@@ -23,6 +23,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
 - [OMS (Operations Management Suite)](#oms-operations-management-suite)
+- [Dynatrace](#dynatrace)
 
 The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
 
@@ -862,6 +863,85 @@ Supported configuration settings are:
 ingestion service). |
 | `serviceDomain` | string | No | Specifies the domain for your OMS workspace. Default value is "ods.opinsights.azure.com", for Azure Commercial.
 
+#### Dynatrace 
+
+*Nuget package*: [**Microsoft.Diagnostics.EventFlow.Outputs.Dynatrace**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.Dynatrace/)
+
+The Dynatrace output writes data to [Dynatrace](https://www.dynatrace.com) tenants. You will need to create a Dynatrace account and know its tenant and api-token before using Dynatrace output. Here is a sample configuration fragment enabling the output:
+```json
+{
+
+    "type": "Dynatrace",
+    "APIToken": "<YOUR API TOKEN>",
+    "ServiceBaseAddress": "https://<YOUR-TENANT-ID>.live.dynatrace.com",
+    "ServiceAPIEndpoint": "/api/",
+    "MonitoredEntity": {
+        "entityAlias": "ServiceFabric Cluster",
+        "displayName": "ServiceFabric Cluster",
+        "type": "ServiceFabric",
+        "ipAddresses": [ "azure-metadata" ],
+        "listenPorts": [ "8080" ],
+        "tags": [ "ServiceFabric" ],
+        "configUrl": "http://localhost:19080",
+        "favicon": "https://assets.dynatrace.com/global/icons/white/icons_technologies_003_microsoft-azure-fabric.png",
+        "Timeseries": {
+            "timeseriesID": "servicefabric.events",
+            "displayName": "ServiceFabric Events",
+            "unit": "Count",
+            "dimensions": [ "channel", "event" ],
+            "types": [ "ServiceFabric" ]
+        }
+    } 
+    
+}
+```
+
+Supported configuration settings are:
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `type` | "Dynatrace" | Yes | Specifies the output type. For this output, it must be "Dynatrace". |
+| `APIToken` | string (GUID) | Yes | Specifies the Dynatrace API Token |
+| `ServiceBaseAddress` | string | Yes | Specifies the API base address for your tenant |
+| `entityAlias` | string | Yes | Either a custom name or in case of Azure Virtual Machine "azure-metadata" to capture the name from the Azure VM |
+| `ipAddresses` | string | Yes | Either the entities ip-adress(es) or in case of Azure Virtual Machine "azure-metadata" to retrieve the ip-addresses from the Azure VM |
+| `listenPorts` | string | Yes | Ports used by the servicefabric services |
+| `configUrl` | string | true | Should be the endpoint of ServiceFabric Explorer, so Dynatrace automatically links from Dynatrace UI into SF explorer |
+| `Timeseries` | object | false | If defined, event statistics are tracked as a custom timeseries based on "ProviderName" and "Event-ID" |
+
+For more information about how to use Metrics in Dynatrace see [**Dynatrace Device Metrics**](https://www.dynatrace.com/support/help/dynatrace-api/environment/timeseries-api/manage-custom-metrics-via-api/)
+
+
+*Metadata support*
+
+Dynatrace output supports the standard "metric" metadata. 
+Additionally the "dynatrace-event" metadata type is available to customize how the event is sent to dynatrace. 
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `metadata` | "dynatrace-event" | false | Indicates Dynatrace event metadata; must be "dynatrace-event". |
+| `source` | string | false | Overrides the "source" property of the event (default is "eventflow") |
+| `eventType` | string | false | Overrides the "eventType" property of the event (default is "CUSTOM_ANNOTATION") |
+| `annotationType` | string | false | Overrides the "annotationType" property of the event (default is "{eventName} - {eventID}") |
+| `annotationTypeProperty` | string | false | Maps an incoming event-property to "annotationType" property  |
+| `annotationDescription` | string | false | Overrides the "annotationDescription" property of the event (default is "{eventMessage}") |
+| `annotationDescriptionProperty` | string | false | Maps an incoming event-property to "annotationDescription" property |
+| `description` | string | false | Sets the "description" property of the incoming event |
+| `descriptionProperty` | string | false | Maps an incoming event-property to "description" property  |
+| `deploymentName` | string | false | Sets the "deploymentName" property of the event
+| `deploymentNameProperty` | string | false | Maps an incoming event-property to "deploymentName" property
+| `deploymentVersion` | string | false | Sets the "deploymentVersion" property of the event
+| `deploymentVersionProperty` | string | false | Maps an incoming event-property to "deploymentVersion" property
+| `configuration` | string | false | Sets the "configuration" property of the event
+| `configurationProperty` | string | false | Maps an incoming event-property to "configuration" property
+| `tagMatchEntityType` | string | false | filters matching entities by entity-type e.g. "HOST" [read more](https://www.dynatrace.com/support/help/dynatrace-api/environment/events-api/#events-post-parameter-taginfo)
+| `tagMatchContext` | string | true | Filters matching tags by context. e.g. "CONTEXTLESS" matching entities by entity-type e.g. "HOST" [read more](https://www.dynatrace.com/support/help/dynatrace-api/environment/events-api/#events-post-parameter-enum-gWW16rUCfKLr7Ud9I1FpMA)
+| `tagMatchKey` | string | false | Sets the matching tag-key 
+| `tagMatchValue` | string | true | Sets the matching tag-value 
+| `tagMatchValueProperty` | string | true | Maps an incoming event-property to match a tag-value 
+
+For more information about how to use the event properties see [**Dynatrace Event API**](https://www.dynatrace.com/support/help/shortlink/api-events#events-post-parameter-eventpushmessage)
+
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
 With metadata tags, filters and outputs operating further down the pipeline can apply different processing for different data. For example, an output component can choose to send only data with a certain tag. Each filter type has its own set of parameters.
@@ -1385,6 +1465,7 @@ The following table lists platform support for standard inputs and outputs.
 | [Azure EventHub](#event-hub) | Yes | Yes | Yes |
 | [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
 | [OMS (Operations Management Suite)](#oms-operations-management-suite) | Yes | Yes | Yes |
+| [Dynatrace](#dynatrace) | Yes | Yes | Yes |
 
 ## Contributions
 Refer to [contribution guide](contributing.md).
