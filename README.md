@@ -4,7 +4,7 @@
 The EventFlow library suite allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces.
 It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework. It comes with the following inputs and outputs:
 
-**Inputs**
+*Inputs*
 - [Trace (a.k.a. System.Diagnostics.Trace)](#trace) 
 - [EventSource](#eventsource)
 - [PerformanceCounter](#performancecounter)
@@ -16,13 +16,19 @@ It runs in the same process as the application, so communication overhead is min
 - [NLog](#nlog)
 - [DiagnosticSource](#diagnosticsource)
 
-**Outputs**
+*Outputs*
 - [StdOutput (console output)](#stdoutput)
 - [HTTP (json via http)](#http)
 - [Application Insights](#application-insights)
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
 - [OMS (Operations Management Suite)](#oms-operations-management-suite)
+
+There are several EventFlow extensions available from non-Microsoft authors and vendors, including:
+- [Google Big Query output](https://github.com/tsu1980/diagnostics-eventflow-bigquery)
+- [SQL Server output](https://github.com/ycamargo/diagnostics-eventflow-sqloutput)
+- [ReflectInsight output](https://github.com/reflectsoftware/Microsoft.Diagnostics.EventFlow.Outputs.ReflectInsight)
+- [Splunk output](https://github.com/hortha/diagnostics-eventflow-splunk)
 
 The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
 
