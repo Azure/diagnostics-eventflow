@@ -11,6 +11,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Validation;
 using Microsoft.Diagnostics.EventFlow.Inputs;
+using Microsoft.Diagnostics.EventFlow.Metadata;
 
 namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
 {
@@ -74,7 +75,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
                 {
                     var request = item as RequestTelemetry;
                     eventData.Level = LogLevel.Informational;
-                    AddRequestProperties(eventPayload, request);
+                    AddRequestProperties(eventData, request);
                     AddMetricValues(eventData, request.Metrics);
                 }
                 else if (item is TraceTelemetry)
@@ -101,14 +102,14 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
                 {
                     var dependencyCall = item as DependencyTelemetry;
                     eventData.Level = LogLevel.Informational;
-                    AddDependencyProperties(eventPayload, dependencyCall);
+                    AddDependencyProperties(eventData, dependencyCall);
                     AddMetricValues(eventData, dependencyCall.Metrics);
                 }
                 else if (item is MetricTelemetry)
                 {
                     var metric = item as MetricTelemetry;
                     eventData.Level = LogLevel.Informational;
-                    AddMetricProperties(eventPayload, metric);
+                    AddMetricProperties(eventData, metric);
                 }
                 else if (item is ExceptionTelemetry)
                 {
@@ -121,7 +122,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
                     {
                         eventData.Level = LogLevel.Warning;
                     }
-                    AddExceptionProperties(eventPayload, exception);
+                    AddExceptionProperties(eventData, exception);
                     AddMetricValues(eventData, exception.Metrics);
                 }
                 else if (item is PageViewTelemetry)
@@ -283,11 +284,21 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             }
         }
 
-        private void AddRequestProperties(IDictionary<string, object> eventPayload, RequestTelemetry request)
+        private void AddRequestProperties(EventData eventData, RequestTelemetry request)
         {
+            IDictionary<string, object> eventPayload = eventData.Payload;
+            var requestMetadata = new EventMetadata(RequestData.RequestMetadataKind);
+            eventData.SetMetadata(requestMetadata);
+
             eventPayload.Add(TelemetryTypeProperty, "request");
+
             eventPayload.Add(nameof(request.Name), request.Name);
+            requestMetadata.Properties.Add(RequestData.RequestNamePropertyMoniker, nameof(request.Name));
+
             eventPayload.Add(nameof(request.Duration), request.Duration);
+            requestMetadata.Properties.Add(RequestData.DurationPropertyMoniker, nameof(request.Duration));
+            requestMetadata.Properties.Add(RequestData.DurationUnitMoniker, nameof(TimeSpan));
+
             if (!string.IsNullOrEmpty(request.Id))
             {
                 eventPayload.Add(nameof(request.Id), request.Id);
@@ -295,10 +306,12 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             if (!string.IsNullOrEmpty(request.ResponseCode))
             {
                 eventPayload.Add(nameof(request.ResponseCode), request.ResponseCode);
+                requestMetadata.Properties.Add(RequestData.ResponseCodePropertyMoniker, nameof(request.ResponseCode));
             }
             if (request.Success.HasValue)
             {
                 eventPayload.Add(nameof(request.Success), request.Success.Value);
+                requestMetadata.Properties.Add(RequestData.IsSuccessPropertyMoniker, nameof(request.Success));
             }
             if (request.Url != null)
             {
@@ -322,25 +335,35 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             eventPayload.Add(nameof(evt.Name), evt.Name);
         }
 
-        private void AddDependencyProperties(IDictionary<string, object> eventPayload, DependencyTelemetry dependencyCall)
+        private void AddDependencyProperties(EventData eventData, DependencyTelemetry dependencyCall)
         {
+            IDictionary<string, object> eventPayload = eventData.Payload;
+            var dependencyMetadata = new EventMetadata(DependencyData.DependencyMetadataKind);
+            eventData.SetMetadata(dependencyMetadata);
+
             eventPayload.Add(TelemetryTypeProperty, "dependency");
             eventPayload.Add(nameof(dependencyCall.Name), dependencyCall.Name);
+
             if (dependencyCall.Success.HasValue)
             {
                 eventPayload.Add(nameof(dependencyCall.Success), dependencyCall.Success.Value);
+                dependencyMetadata.Properties.Add(DependencyData.IsSuccessPropertyMoniker, nameof(dependencyCall.Success));
             }
             if (dependencyCall.Duration != TimeSpan.Zero)
             {
                 eventPayload.Add(nameof(dependencyCall.Duration), dependencyCall.Duration);
+                dependencyMetadata.Properties.Add(DependencyData.DurationPropertyMoniker, nameof(dependencyCall.Duration));
+                dependencyMetadata.Properties.Add(DependencyData.DurationUnitMoniker, nameof(TimeSpan));
             }
             if (!string.IsNullOrEmpty(dependencyCall.Type))
             {
                 eventPayload.Add(nameof(dependencyCall.Type), dependencyCall.Type);
+                dependencyMetadata.Properties.Add(DependencyData.DependecyTypeMoniker, dependencyCall.Type);
             }
             if (!string.IsNullOrEmpty(dependencyCall.Target))
             {
                 eventPayload.Add(nameof(dependencyCall.Target), dependencyCall.Target);
+                dependencyMetadata.Properties.Add(DependencyData.TargetPropertyMoniker, nameof(dependencyCall.Target));
             }
             if (!string.IsNullOrEmpty(dependencyCall.Data))
             {
@@ -349,6 +372,7 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             if (!string.IsNullOrEmpty(dependencyCall.ResultCode))
             {
                 eventPayload.Add(nameof(dependencyCall.ResultCode), dependencyCall.ResultCode);
+                dependencyMetadata.Properties.Add(DependencyData.ResponseCodePropertyMoniker, nameof(dependencyCall.ResultCode));
             }
             if (!string.IsNullOrEmpty(dependencyCall.Id))
             {
@@ -356,11 +380,20 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             }
         }
 
-        private void AddMetricProperties(IDictionary<string, object> eventPayload, MetricTelemetry metric)
+        private void AddMetricProperties(EventData eventData, MetricTelemetry metric)
         {
+            IDictionary<string, object> eventPayload = eventData.Payload;
+            var metricMetadata = new EventMetadata(MetricData.MetricMetadataKind);
+            eventData.SetMetadata(metricMetadata);
+
             eventPayload.Add(TelemetryTypeProperty, "metric");
+
             eventPayload.Add(nameof(metric.Name), metric.Name);
+            metricMetadata.Properties.Add(MetricData.MetricNamePropertyMoniker, nameof(metric.Name));
+
             eventPayload.Add(nameof(metric.Sum), metric.Sum);
+            metricMetadata.Properties.Add(MetricData.MetricValuePropertyMoniker, nameof(metric.Sum));
+
             if (metric.Count.HasValue)
             {
                 eventPayload.Add(nameof(metric.Count), metric.Count.Value);
@@ -379,10 +412,16 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             }
         }
 
-        private void AddExceptionProperties(IDictionary<string, object> eventPayload, ExceptionTelemetry exception)
+        private void AddExceptionProperties(EventData eventData, ExceptionTelemetry exception)
         {
+            IDictionary<string, object> eventPayload = eventData.Payload;
+            var exceptionMetadata = new EventMetadata(ExceptionData.ExceptionMetadataKind);
+            eventData.SetMetadata(exceptionMetadata);
+
             eventPayload.Add(TelemetryTypeProperty, "exception");
             eventPayload.Add(nameof(exception.Exception), exception.Exception.ToString());
+            exceptionMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, nameof(exception.Exception));
+
             if (!string.IsNullOrEmpty(exception.Message))
             {
                 eventPayload.Add(nameof(exception.Message), exception.Message);
