@@ -3,9 +3,6 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#if NET46
-
-using System;
 using Microsoft.ApplicationInsights.Channel;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
@@ -29,4 +26,3 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
     }
 }
 
-#endif

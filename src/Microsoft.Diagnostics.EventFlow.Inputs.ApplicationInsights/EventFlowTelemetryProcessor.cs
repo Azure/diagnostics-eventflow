@@ -414,13 +414,16 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
 
         private void AddExceptionProperties(EventData eventData, ExceptionTelemetry exception)
         {
+            const string ExceptionObjectPropertyName = "ExceptionObject";
+
             IDictionary<string, object> eventPayload = eventData.Payload;
             var exceptionMetadata = new EventMetadata(ExceptionData.ExceptionMetadataKind);
             eventData.SetMetadata(exceptionMetadata);
 
             eventPayload.Add(TelemetryTypeProperty, "exception");
             eventPayload.Add(nameof(exception.Exception), exception.Exception.ToString());
-            exceptionMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, nameof(exception.Exception));
+            eventPayload.Add(ExceptionObjectPropertyName, exception.Exception);
+            exceptionMetadata.Properties.Add(ExceptionData.ExceptionPropertyMoniker, ExceptionObjectPropertyName);
 
             if (!string.IsNullOrEmpty(exception.Message))
             {
