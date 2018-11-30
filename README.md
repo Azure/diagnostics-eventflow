@@ -1039,7 +1039,7 @@ Exception event corresponds to an occurrence of an unexpected exception. Usually
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `metadata` | "exception" | Yes | Indicates exception metadata definition; must be "exception". |
-| `exceptionProperty` | System.Exception | Yes | The name of the event property that carries the (unexpected) exception object. Note that (for maximum information fidelity) the expected type of the event property is `System.Exception`. In other words, the actual exception is expected to be part of event data, and not just a stringified version of it. |
+| `exceptionProperty` | string | Yes | The name of the event property that carries the (unexpected) exception object. Note that (for maximum information fidelity) the expected type of the event property is `System.Exception`. In other words, the actual exception is expected to be part of event data, and not just a stringified version of it. |
 
 Also see [Application Insight Exception metadata type with EvenSource input issue](https://github.com/Azure/diagnostics-eventflow/issues/92)
 
