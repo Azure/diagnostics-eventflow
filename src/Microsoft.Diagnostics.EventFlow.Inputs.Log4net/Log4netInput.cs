@@ -74,10 +74,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 eventFlowRepo = (Hierarchy)LogManager.CreateRepository("EventFlowRepo");
                 _log4NetInputConfiguration.Log4netLevel = eventFlowRepo.LevelMap[_log4NetInputConfiguration.LogLevel];
-
-                eventFlowRepo.Root.AddAppender(this);
-                eventFlowRepo.Configured = true;
-                BasicConfigurator.Configure(eventFlowRepo);
+                BasicConfigurator.Configure(eventFlowRepo, this);
             }
             catch (LogException)
             {
