@@ -11,9 +11,6 @@ using System.Diagnostics.Tracing;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Diagnostics.EventFlow.Metadata;
-#if !NETSTANDARD1_6
-using System.Runtime.InteropServices;
-#endif
 
 using Microsoft.Diagnostics.EventFlow.Utilities.Etw;
 
@@ -21,41 +18,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     internal static class EventDataExtensions
     {
-#if !NETSTANDARD1_6
-        [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
-        private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
-
-        private static bool hasPreciseTime = 
-            Environment.OSVersion.Platform == PlatformID.Win32NT &&
-            (Environment.OSVersion.Version.Major >= 10 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 2));
-#endif
-
         public static EventData ToEventData(this EventWrittenEventArgs eventSourceEvent, IHealthReporter healthReporter, string context)
         {
             Debug.Assert(healthReporter != null);
-
-            // High-precision event timestamping is availabe on .NET 4.6+ and .NET Core 2.0+ 
-            // For the latter the implementation of DateTime.UtcNow has changed and we do not need to do anything.
-            // .NET Core 1.1 will use imprecise timestamp--there is no easy fix for this target.
-
-#if NETSTANDARD1_6
-            DateTime now = DateTime.UtcNow;
-#else
-            DateTime now;
-            if (hasPreciseTime)
-            {
-                GetSystemTimePreciseAsFileTime(out long filetime);
-                now = DateTime.FromFileTimeUtc(filetime);
-            }
-            else
-            {
-                now = DateTime.UtcNow;
-            }
-#endif
+            
             EventData eventData = new EventData
             {
                 ProviderName = eventSourceEvent.EventSource.Name,
-                Timestamp = now,
+                Timestamp = DateTimePrecise.UtcNow,
                 Level = (LogLevel)(int)eventSourceEvent.Level,
                 Keywords = (long)eventSourceEvent.Keywords
             };

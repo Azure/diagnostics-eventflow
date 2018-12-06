@@ -6,7 +6,7 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource</AssemblyName>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;DiagnosticSource</PackageTags>
