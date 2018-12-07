@@ -157,7 +157,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private string BuildSignature(string message, string dateString)
         {
             string dateHeader = $"{MsDateHeaderName}:{dateString}";
-            string signatureInput = $"POST\n{message.Length}\n{JsonContentId}\n{dateHeader}\n{OmsDataUploadResource}";
+            byte[] messageInBytes = Encoding.UTF8.GetBytes(message);
+            string signatureInput = $"POST\n{messageInBytes.Length}\n{JsonContentId}\n{dateHeader}\n{OmsDataUploadResource}";
             byte[] signatureInputBytes = Encoding.ASCII.GetBytes(signatureInput);
             byte[] hash;
             lock(this.connectionData.Hasher)
