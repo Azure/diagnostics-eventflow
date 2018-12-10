@@ -116,7 +116,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 string dateString = DateTime.UtcNow.ToString("r");
                 HttpContent content = new StringContent(jsonData, Encoding.UTF8, JsonContentId);
-                string signature = this.BuildSignature(content.Headers.ContentLength, dateString);
+                string signature = this.BuildSignature(content.Headers.ContentLength.Value, dateString);
 				
                 content.Headers.ContentType = new MediaTypeHeaderValue(JsonContentId);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, OmsDataUploadUrl);
@@ -153,7 +153,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
         }
 
-        private string BuildSignature(long? contentLength, string dateString)
+        private string BuildSignature(long contentLength, string dateString)
         {
             string dateHeader = $"{MsDateHeaderName}:{dateString}";
             string signatureInput = $"POST\n{contentLength}\n{JsonContentId}\n{dateHeader}\n{OmsDataUploadResource}";
