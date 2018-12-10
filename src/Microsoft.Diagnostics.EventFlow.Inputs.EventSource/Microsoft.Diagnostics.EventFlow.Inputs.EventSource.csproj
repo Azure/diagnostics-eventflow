@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Provides an input implementation for capturing diagnostics data sourced through System.Diagnostics.Tracing.EventSource infrastructure.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.4.3</VersionPrefix>
+    <VersionPrefix>1.4.4</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net46;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.EventSource</AssemblyName>

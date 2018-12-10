@@ -32,9 +32,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
 
         public void OnNext(KeyValuePair<string, object> pair)
         {
-            var eventData = new EventData { ProviderName = _providerName, Timestamp = DateTimeOffset.UtcNow };
-            eventData.Payload["EventName"] = pair.Key;
-            eventData.Payload["Value"] = pair.Value;
+            var eventData = new EventData { ProviderName = _providerName, Timestamp = DateTimePrecise.UtcNow };
+            var payload = eventData.Payload;
+            payload["EventName"] = pair.Key;
+            payload["Value"] = pair.Value;
 
             var activity = Activity.Current;
             if (activity != null)
@@ -42,28 +43,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
                 var id = activity.Id;
                 if (id != null)
                 {
-                    eventData.Payload["ActivityId"] = id;
+                    payload["ActivityId"] = id;
                 }
 
                 var parentId = activity.ParentId;
                 if (parentId != null)
                 {
-                    eventData.Payload["ActivityParentId"] = parentId;
+                    payload["ActivityParentId"] = parentId;
                 }
 
                 var duration = activity.Duration;
                 if (duration != TimeSpan.Zero)
                 {
-                    eventData.Payload["Duration"] = duration;
-                }
-
-                var tags = activity.Tags;
-                if (tags != null)
-                {
-                    foreach (var tag in tags)
-                    {
-                        eventData.AddPayloadProperty(tag.Key, tag.Value, _healthReporter, nameof(DiagnosticSourceInput));
-                    }
+                    payload["Duration"] = duration;
                 }
 
                 var baggage = activity.Baggage;
@@ -72,6 +64,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource
                     foreach (var bag in baggage)
                     {
                         eventData.AddPayloadProperty(bag.Key, bag.Value, _healthReporter, nameof(DiagnosticSourceInput));
+                    }
+                }
+
+                var tags = activity.Tags;
+                if (tags != null)
+                {
+                    foreach (var tag in tags)
+                    {
+                        eventData.AddPayloadProperty(tag.Key, tag.Value, _healthReporter, nameof(DiagnosticSourceInput));
                     }
                 }
             }

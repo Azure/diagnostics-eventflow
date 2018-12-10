@@ -1,3 +1,8 @@
+// ------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------
+
 using System;
 using System.Diagnostics;
 using Microsoft.Diagnostics.EventFlow.Configuration;
@@ -7,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
-    public sealed class DiagnosticSourceInputTests
+    public class DiagnosticSourceInputTests
     {
         private static readonly System.Diagnostics.DiagnosticSource TestLog = new DiagnosticListener("test");
 
@@ -28,17 +33,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 TestLog.StopActivity(activity, activityArgs);
 
                 observer.Verify(o => o.OnNext(It.Is<EventData>(data =>
-                       data.Payload["EventName"].Equals("activity-name.Start")
-                    && data.Payload["Value"].Equals(activityArgs)
-                    && data.Payload["baggage-name"].Equals("baggage-value")
-                    && data.Payload["tag-name"].Equals("tag-value")
+                    data.Payload["EventName"].Equals("activity-name.Start")
+                 && data.Payload["Value"].Equals(activityArgs)
+                 && data.Payload["baggage-name"].Equals("baggage-value")
+                 && data.Payload["tag-name"].Equals("tag-value")
                 )), Times.Once);
                 observer.Verify(o => o.OnNext(It.Is<EventData>(data =>
-                       data.Payload["EventName"].Equals("activity-name.Stop")
-                    && data.Payload["Value"].Equals(activityArgs)
-                    && data.Payload["baggage-name"].Equals("baggage-value")
-                    && data.Payload["tag-name"].Equals("tag-value")
-                    && (TimeSpan)data.Payload["Duration"] != TimeSpan.Zero
+                    data.Payload["EventName"].Equals("activity-name.Stop")
+                 && data.Payload["Value"].Equals(activityArgs)
+                 && data.Payload["baggage-name"].Equals("baggage-value")
+                 && data.Payload["tag-name"].Equals("tag-value")
+                 && (TimeSpan)data.Payload["Duration"] != TimeSpan.Zero
                 )), Times.Once);
             }
         }
@@ -63,9 +68,30 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 TestLog.StopActivity(parentActivity, null);
 
                 observer.Verify(o => o.OnNext(It.Is<EventData>(data =>
-                       data.Payload["EventName"].Equals(eventName)
-                    && data.Payload["ActivityId"].Equals(childActivity.Id)
-                    && data.Payload["ActivityParentId"].Equals(parentActivity.Id)
+                    data.Payload["EventName"].Equals(eventName)
+                 && data.Payload["ActivityId"].Equals(childActivity.Id)
+                 && data.Payload["ActivityParentId"].Equals(parentActivity.Id)
+                )), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void BagsTakePrecedenceOverTags()
+        {
+            var healthReporter = Mock.Of<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            using (var input = new DiagnosticSourceInput(new[] { new DiagnosticSourceConfiguration { ProviderName = "test" } }, healthReporter))
+            {
+                input.Subscribe(observer.Object);
+
+                var activity = new Activity("activity-name");
+                activity.AddBaggage("key", "bag-value");
+                activity.AddTag("key", "tag-value");
+                TestLog.StartActivity(activity, null);
+
+                observer.Verify(o => o.OnNext(It.Is<EventData>(data =>
+                    data.Payload["key"].Equals("bag-value")
+                 && data.Payload["key_1"].Equals("tag-value")
                 )), Times.Once);
             }
         }
@@ -98,10 +124,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 TestLog.Write(eventName, value);
 
                 observer.Verify(o => o.OnNext(It.Is<EventData>(data =>
-                       data.ProviderName.Equals("test")
-                    && data.Timestamp != default(DateTimeOffset)
-                    && data.Payload["EventName"].Equals(eventName)
-                    && data.Payload["Value"].Equals(value)
+                    data.ProviderName.Equals("test")
+                 && data.Timestamp != default(DateTimeOffset)
+                 && data.Payload["EventName"].Equals(eventName)
+                 && data.Payload["Value"].Equals(value)
                 )), Times.Once);
             }
         }
