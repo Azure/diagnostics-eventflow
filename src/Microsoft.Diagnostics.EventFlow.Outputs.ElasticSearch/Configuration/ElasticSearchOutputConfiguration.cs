@@ -30,6 +30,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public int NumberOfShards { get; set; }
         public int NumberOfReplicas { get; set; }
         public string RefreshInterval { get; set; }
+        public string DefaultPipeline { get; set; }
 
         public ElasticSearchOutputConfiguration()
         {
@@ -52,6 +53,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 NumberOfShards = this.NumberOfShards,
                 NumberOfReplicas = this.NumberOfReplicas,
                 RefreshInterval = this.RefreshInterval,
+                DefaultPipeline = this.DefaultPipeline,
             };
 
             return other;
