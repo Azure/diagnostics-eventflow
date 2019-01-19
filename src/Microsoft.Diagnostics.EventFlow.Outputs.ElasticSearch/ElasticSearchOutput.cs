@@ -388,7 +388,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             indexSettings.Settings.NumberOfReplicas = this.connectionData.Configuration.NumberOfReplicas;
             indexSettings.Settings.NumberOfShards = this.connectionData.Configuration.NumberOfShards;
             indexSettings.Settings.Add("refresh_interval", this.connectionData.Configuration.RefreshInterval);
-            indexSettings.Settings.Add("default_pipeline", this.connectionData.Configuration.DefaultPipeline);
+            if (this.connectionData.Configuration.DefaultPipeline != null)
+            {
+                indexSettings.Settings.Add("default_pipeline", this.connectionData.Configuration.DefaultPipeline);
+            }
 
             ICreateIndexResponse createIndexResult = await esClient.CreateIndexAsync(indexName, c => c.InitializeUsing(indexSettings)).ConfigureAwait(false);
 
