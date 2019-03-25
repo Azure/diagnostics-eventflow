@@ -1118,7 +1118,7 @@ The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `
 | `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of a (Service Fabric) service configuration package.|
 | `configurationPackageName` | "Config" | The name of the Service Fabric configuration package that contains the pipeline configuration file.|
 
-The recommended place to create the diagnostic pipeline is in the service `Main()` method:
+The recommended place to create the diagnostic pipeline is in the service `Main()` method. The following code will work all types of Service Fabric services (statefull, stateless and actor):
 
 ```csharp
 public static void Main(string[] args)
@@ -1174,6 +1174,9 @@ The UnhandledException event method is a very simple addition to the standard Se
        WriteEvent(UnhandledExceptionEventId, exception);
     }
 ```
+
+Depending on the type of inputs and outputs used, additional startup code may be necessary. For example [Microsoft.Extensions.Logging](#microsoftextensionslogging) input requires a call to `LoggerFactory.AddEventFlow()` method to register EventFlow logger provider.
+
 
 ### Support for Service Fabric settings and application parameters
 Version 1.0.1 of the EventFlow Service Fabric NuGet package introduced the ability to refer to Service Fabric settings from EventFlow configuration using special syntax for values:
