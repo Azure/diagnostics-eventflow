@@ -3,11 +3,6 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.Utilities;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +12,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Validation;
+
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Utilities;
+
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -185,7 +187,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             if ((events != null) && (events.Count > 0))
             {
                 
-                result.Add(this.connectionData.LogTypeName, JsonConvert.SerializeObject(events));
+                result.Add(this.connectionData.LogTypeName, JsonConvert.SerializeObject(events, EventFlowJsonUtilities.DefaultSerializerSettings));
             }
 
             return result;

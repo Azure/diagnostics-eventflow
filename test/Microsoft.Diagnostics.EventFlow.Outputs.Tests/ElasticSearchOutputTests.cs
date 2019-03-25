@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Elasticsearch.Net;
-using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
+
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
+
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 {
@@ -38,7 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
 
             using (var configFile = new TemporaryFile())
             {
-                var pipelineConfig = JsonConvert.SerializeObject(pipelineConfigObj);
+                var pipelineConfig = JsonConvert.SerializeObject(pipelineConfigObj, EventFlowJsonUtilities.DefaultSerializerSettings);
 
                 configFile.Write(pipelineConfig);
                 var configBuilder = new ConfigurationBuilder();

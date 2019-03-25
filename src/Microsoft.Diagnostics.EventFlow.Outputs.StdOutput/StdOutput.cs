@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Validation;
 
+using Microsoft.Diagnostics.EventFlow;
+
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class StdOutput : IOutput
@@ -30,7 +32,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (EventData evt in events)
                 {
-                    string eventString = JsonConvert.SerializeObject(evt);
+                    string eventString = JsonConvert.SerializeObject(evt, EventFlowJsonUtilities.DefaultSerializerSettings);
                     string output = $"[{transmissionSequenceNumber}] {eventString}";
 
                     Console.WriteLine(output);
