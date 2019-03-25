@@ -332,6 +332,8 @@ namespace Microsoft.Diagnostics.EventFlow
             outputFactories["StdOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.StdOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.StdOutput";
             outputFactories["EventHub"] = "Microsoft.Diagnostics.EventFlow.Outputs.EventHubOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.EventHub";
             outputFactories["ElasticSearch"] = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearchOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch";
+            outputFactories["AzureMonitorLogs"] = "Microsoft.Diagnostics.EventFlow.Outputs.OmsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.Oms";
+            // Old name of the Azure Monitor Logs output, to maintain backward compatibility
             outputFactories["OmsOutput"] = "Microsoft.Diagnostics.EventFlow.Outputs.OmsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.Oms";
             outputFactories["Http"] = "Microsoft.Diagnostics.EventFlow.Outputs.HttpOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput";
 

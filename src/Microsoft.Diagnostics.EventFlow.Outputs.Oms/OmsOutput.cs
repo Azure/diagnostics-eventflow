@@ -154,7 +154,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                             catch { }
 
                             string errorMessage =
-                                $"{nameof(OmsOutput)}: OMS REST API returned an error. Code: {response.StatusCode} Description: {response.ReasonPhrase} {responseContent}";
+                                $"{nameof(OmsOutput)}: Azure Monitor Logs REST API returned an error. Code: {response.StatusCode} Description: {response.ReasonPhrase} {responseContent}";
                             this.healthReporter.ReportProblem(errorMessage);
                         }
                     }
@@ -164,7 +164,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 ErrorHandlingPolicies.HandleOutputTaskError(e, () =>
                 {
-                    string errorMessage = nameof(OmsOutput) + ": an error occurred while sending data to OMS: "
+                    string errorMessage = nameof(OmsOutput) + ": an error occurred while sending data to Azure Monitor Logs service: "
                         + Environment.NewLine + e.ToString();
                     this.healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Output);
                 });

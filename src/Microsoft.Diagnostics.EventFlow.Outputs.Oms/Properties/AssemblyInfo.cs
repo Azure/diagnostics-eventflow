@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Diagnostics.EventFlow.Outputs.OmsEvent")]
+[assembly: AssemblyProduct("Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
