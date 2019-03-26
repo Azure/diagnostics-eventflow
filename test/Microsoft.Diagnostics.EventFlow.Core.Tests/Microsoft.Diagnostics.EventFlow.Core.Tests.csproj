@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;net461;netcoreapp2.0;net471</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.0;net471</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Core.Tests</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dotnet5.4;portable-net451+win8</PackageTargetFallback>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">1.1.0</RuntimeFrameworkVersion>
     <NoWarn>$(NoWarn);NU1603</NoWarn>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
@@ -24,6 +22,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.Oms\Microsoft.Diagnostics.EventFlow.Outputs.Oms.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
@@ -35,11 +34,6 @@
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.11" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="[1.1.1,2.0)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[1.1.1,2.0)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">

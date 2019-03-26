@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Defines core interfaces and types that comprise Microsoft.Diagnostics.EventFlow library.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.5.6</VersionPrefix>
+    <VersionPrefix>1.5.7</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;netstandard2.0;net451;net471</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Core</AssemblyName>
@@ -11,7 +11,7 @@
     <PackageId>Microsoft.Diagnostics.EventFlow.Core</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Core</PackageTags>
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
-    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">2.0.0</NetStandardImplicitPackageVersion>
@@ -30,6 +30,7 @@
     <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
     <PackageReference Include="Validation" Version="2.4.18" />
+    <PaskageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">

@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Provides an output implementation that sends diagnostics data to Microsoft Operations Management Suite.</Description>
+    <Description>Provides an output implementation that sends diagnostics data Azure Monitor Logs Service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;net451;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.Oms</AssemblyName>
-    <VersionPrefix>1.5.0</VersionPrefix>
+    <VersionPrefix>1.6.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.Oms</PackageId>
-    <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Microsoft Operations Management</PackageTags>
+    <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs</PackageId>
+    <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Azure Monitor Logs;Log Analytics</PackageTags>
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
-    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>

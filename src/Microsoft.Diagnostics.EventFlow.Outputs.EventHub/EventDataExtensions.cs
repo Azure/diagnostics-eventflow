@@ -10,6 +10,8 @@ using Microsoft.Diagnostics.EventFlow.Metadata;
 using Newtonsoft.Json;
 using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
 
+using Microsoft.Diagnostics.EventFlow;
+
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     internal static class EventDataExtensions
@@ -39,12 +41,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             public List<ShoeBoxRecord> records = new List<ShoeBoxRecord>();
         }
 
-        private static readonly JsonSerializerSettings serializerSetting = new JsonSerializerSettings()
-        {
-            NullValueHandling = NullValueHandling.Ignore, 
-            DateFormatHandling = DateFormatHandling.IsoDateFormat
-        };
-
         public static MessagingEventData ToMessagingEventData(this EventData eventData, out int messageSize)
         {
             IReadOnlyCollection<EventMetadata> metadataCollection;
@@ -55,7 +51,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             // If this turns out to consume significant CPU time, we could serialize the object "manually".
             // See https://github.com/aspnet/Logging/blob/dev/src/Microsoft.Extensions.Logging.EventSource/EventSourceLogger.cs for an example.
             // This avoids the reflection cost that is associate with single-call SerializeObject approach
-            string eventDataSerialized = JsonConvert.SerializeObject(sbEventData, serializerSetting);
+            string eventDataSerialized = JsonConvert.SerializeObject(sbEventData, EventFlowJsonUtilities.DefaultSerializerSettings);
 
             byte[] messageBytes = Encoding.UTF8.GetBytes(eventDataSerialized);
             messageSize = messageBytes.Length;

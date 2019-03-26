@@ -372,6 +372,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
                         }, 
                         {
+                            ""type"": ""AzureMonitorLogs"",
+                            ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
+                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                        },
+                        {
+                            ""type"": ""Http"",
+                            ""serviceUri"": ""https://example.com/""
+                        },
+                        {
                             ""type"": ""EventHub"",
                             ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
                         }, 
@@ -424,7 +433,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
                             ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
-                        } 
+                        },
+                        {
+                            ""type"": ""AzureMonitorLogs"",
+                            ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
+                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                        },
+                        {
+                            ""type"": ""Http"",
+                            ""serviceUri"": ""https://example.com/""
+                        }
                     ],
 
                     ""schemaVersion"": ""2016-08-11""
@@ -460,7 +478,9 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
                             s => Assert.IsType<ElasticSearchOutput>(s.Output),
-                            s => Assert.IsType<OmsOutput>(s.Output)
+                            s => Assert.IsType<OmsOutput>(s.Output),
+                            s => Assert.IsType<OmsOutput>(s.Output), // Azure Monitor Logs output can be created using the old and the new name
+                            s => Assert.IsType<HttpOutput>(s.Output)
 #if NET46
                             , s => Assert.IsType<EventHubOutput>(s.Output)
                             , s => Assert.IsType<ApplicationInsightsOutput>(s.Output)

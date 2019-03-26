@@ -124,13 +124,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 switch (configuration.Format) 
                 {
                     case HttpOutputFormat.Json:
-                        payload.Append(JsonConvert.SerializeObject(events));
+                        payload.Append(JsonConvert.SerializeObject(events, EventFlowJsonUtilities.DefaultSerializerSettings));
                         break;
 
                     case HttpOutputFormat.JsonLines:
                         foreach (EventData evt in events)
                         {
-                            payload.AppendLine(JsonConvert.SerializeObject(evt));
+                            payload.AppendLine(JsonConvert.SerializeObject(evt, EventFlowJsonUtilities.DefaultSerializerSettings));
                         }
                         break;
                 }

@@ -11,7 +11,7 @@
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;MicrosoftLogging</PackageTags>
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
-    <PackageLicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">2.0.0</NetStandardImplicitPackageVersion>
