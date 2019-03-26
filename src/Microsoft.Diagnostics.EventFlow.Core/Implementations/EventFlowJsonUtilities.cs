@@ -7,18 +7,13 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
-    public class EventFlowJsonUtilities
+    public static class EventFlowJsonUtilities
     {
-        private static readonly JsonSerializerSettings s_defaultSerializerSettings = new JsonSerializerSettings()
+        public static JsonSerializerSettings DefaultSerializerSettings  { get; } =new JsonSerializerSettings()
         {
             NullValueHandling = NullValueHandling.Ignore,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
-
-        public static JsonSerializerSettings DefaultSerializerSettings
-        {
-            get => s_defaultSerializerSettings;
-        }
     }
 }
