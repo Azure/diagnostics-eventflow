@@ -28,8 +28,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private const string MsDateHeaderName = "x-ms-date";
         private const string JsonContentId = "application/json";
 
-        private readonly IHealthReporter healthReporter;
-        private readonly OmsConnectionData connectionData;
+        protected readonly IHealthReporter healthReporter;
+        protected readonly OmsConnectionData connectionData;
 
         public OmsOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
