@@ -11,6 +11,8 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
 {
     public class ServiceFabricHealthReporter : IHealthReporter
     {
+        private static TimeSpan DefaultHealthReportTtl = TimeSpan.FromMinutes(10);
+
         private CodePackageActivationContext activationContext;
         private string entityIdentifier;
 
@@ -44,6 +46,8 @@ namespace Microsoft.Diagnostics.EventFlow.ServiceFabric
         {
             HealthInformation healthInformation = new HealthInformation(this.entityIdentifier, "Connectivity", healthState);
             healthInformation.Description = description;
+            healthInformation.RemoveWhenExpired = true;
+            healthInformation.TimeToLive = ServiceFabricHealthReporter.DefaultHealthReportTtl;
 
             try
             {

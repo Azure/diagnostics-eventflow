@@ -11,11 +11,13 @@ using System.Threading;
 using log4net;
 using log4net.Core;
 using log4net.Repository.Hierarchy;
-using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.TestHelpers;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Newtonsoft.Json;
+
+using Microsoft.Diagnostics.EventFlow;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -38,7 +40,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             using (var configFile = new TemporaryFile())
             {
-                var pipelineConfig = JsonConvert.SerializeObject(pipelineConfigObj);
+                var pipelineConfig = JsonConvert.SerializeObject(pipelineConfigObj, EventFlowJsonUtilities.DefaultSerializerSettings);
 
                 configFile.Write(pipelineConfig);
                 var configBuilder = new ConfigurationBuilder();

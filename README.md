@@ -22,7 +22,7 @@ It runs in the same process as the application, so communication overhead is min
 - [Application Insights](#application-insights)
 - [Azure EventHub](#event-hub)
 - [Elasticsearch](#elasticsearch)
-- [OMS (Operations Management Suite)](#oms-operations-management-suite)
+- [Azure Monitor Logs](#azure-monitor-logs)
 
 There are several EventFlow extensions available from non-Microsoft authors and vendors, including:
 - [Google Big Query output](https://github.com/tsu1980/diagnostics-eventflow-bigquery)
@@ -806,7 +806,8 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
     "eventDocumentTypeName": "diagData",
     "numberOfShards": 1,
     "numberOfReplicas": 1,
-    "refreshInterval": "15s"
+    "refreshInterval": "15s",
+    "defaultPipeline": "my-pipeline"
 }
 ```
 | Field | Values/Types | Required | Description |
@@ -821,6 +822,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `numberOfShards` | int | No | Specifies how many shards to create the index with. If not specified, it defaults to 1.|
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
+| `defaultPipeline` | string | No | Specifies the default ingest node pipeline the index is created with. If not specified, a default pipeline will not be used.|
 
 
 *Standard metadata support*
@@ -843,17 +845,17 @@ Fields injected byt the `request` metadata are:
 | `IsSuccess` | Success indicator,  read from the event property specified by `isSuccessProperty` (if available). |
 | `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). |
 
-#### OMS (Operations Management Suite)
+#### Azure Monitor Logs
 
-*Nuget package*: [**Microsoft.Diagnostics.EventFlow.Outputs.Oms**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.Oms/)
+*Nuget package*: [**Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs/)
 
-The OMS output writes data to [Operations Management Suite](https://www.microsoft.com/en-us/cloud-platform/operations-management-suite) Log Analytics workspaces. You will need to create a Log Analytics workspace in Azure and know its ID and key before using OMS output. Here is a sample configuration fragment enabling the output:
+The Azure Monitor Logs output writes data to [Azure Monitor Logs service (also knowns as Log Analytics service)](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostic-logs-overview) via [HTTP Data Collector API](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/data-collector-api). You will need to create a Log Analytics workspace in Azure and know its ID and key before using Azure Monitor Logs output. Here is a sample configuration fragment enabling the output:
 ```json
 {
-  "type": "OmsOutput",
+  "type": "AzureMonitorLogs",
   "workspaceId": "<workspace-GUID>",
   "workspaceKey": "<base-64-encoded workspace key>",
-  "serviceDomain" : "<optional domain for OMS>"
+  "serviceDomain" : "<optional domain for Log Analytics workspace>"
 }
 ```
 
@@ -861,12 +863,11 @@ Supported configuration settings are:
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
-| `type` | "OmsOutput" | Yes | Specifies the output type. For this output, it must be "OmsOutput". |
+| `type` | "AzureMonitorLogs" | Yes | Specifies the output type. For this output, it must be "AzureMonitorLogs". |
 | `workspaceId` | string (GUID) | Yes | Specifies the workspace identifier. |
 | `workspaceKey` | string (base-64) | Yes | Specifies the workspace authentication key. |
-| `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in OMS (the "_CL" suffix is appended automatically by OMS 
-ingestion service). |
-| `serviceDomain` | string | No | Specifies the domain for your OMS workspace. Default value is "ods.opinsights.azure.com", for Azure Commercial.
+| `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in Log Analytics (the "_CL" suffix is appended automatically by Log Analytics Data Collector). |
+| `serviceDomain` | string | No | Specifies the domain for your Log Analytics workspace. Default value is "ods.opinsights.azure.com", for Azure Commercial.
 
 ### Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
@@ -1116,7 +1117,7 @@ The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `
 | `configurationFileName` | "eventFlowConfig.json" | The name of the configuration file that contains pipeline configuration. The file is expected to be part of a (Service Fabric) service configuration package.|
 | `configurationPackageName` | "Config" | The name of the Service Fabric configuration package that contains the pipeline configuration file.|
 
-The recommended place to create the diagnostic pipeline is in the service `Main()` method:
+The recommended place to create the diagnostic pipeline is in the service `Main()` method. The following code will work all types of Service Fabric services (statefull, stateless and actor):
 
 ```csharp
 public static void Main(string[] args)
@@ -1172,6 +1173,9 @@ The UnhandledException event method is a very simple addition to the standard Se
        WriteEvent(UnhandledExceptionEventId, exception);
     }
 ```
+
+Depending on the type of inputs and outputs used, additional startup code may be necessary. For example [Microsoft.Extensions.Logging](#microsoftextensionslogging) input requires a call to `LoggerFactory.AddEventFlow()` method to register EventFlow logger provider.
+
 
 ### Support for Service Fabric settings and application parameters
 Version 1.0.1 of the EventFlow Service Fabric NuGet package introduced the ability to refer to Service Fabric settings from EventFlow configuration using special syntax for values:
@@ -1390,7 +1394,8 @@ The following table lists platform support for standard inputs and outputs.
 | [Application Insights](#application-insights) | Yes | Yes | Yes |
 | [Azure EventHub](#event-hub) | Yes | Yes | Yes |
 | [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
-| [OMS (Operations Management Suite)](#oms-operations-management-suite) | Yes | Yes | Yes |
+| [Azure Monitor Logs](#azure-monitor-logs) | Yes | Yes | Yes |
+[HTTP (json via http)](#http) | Yes | Yes | Yes |
 
 ## Contributions
 Refer to [contribution guide](contributing.md).
