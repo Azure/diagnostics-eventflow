@@ -3,6 +3,11 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.Utilities;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,14 +17,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Validation;
-
-using Microsoft.Diagnostics.EventFlow;
-using Microsoft.Diagnostics.EventFlow.Configuration;
-using Microsoft.Diagnostics.EventFlow.Utilities;
-
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -30,8 +28,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private const string MsDateHeaderName = "x-ms-date";
         private const string JsonContentId = "application/json";
 
-        private readonly IHealthReporter healthReporter;
-        private readonly OmsConnectionData connectionData;
+        protected readonly IHealthReporter healthReporter;
+        protected readonly OmsConnectionData connectionData;
 
         public OmsOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -186,7 +184,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if ((events != null) && (events.Count > 0))
             {
-                
                 result.Add(this.connectionData.LogTypeName, JsonConvert.SerializeObject(events, EventFlowJsonUtilities.DefaultSerializerSettings));
             }
 
