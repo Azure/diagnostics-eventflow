@@ -91,7 +91,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             foreach(var payload in (IDictionary<string, object>)eventSourceEvent.Payload[0])
             {
                 eventData.AddPayloadProperty(payload.Key, payload.Value, healthReporter, context);
-                eventData.SetMetadata(CreateMetricMetadata(payload.Key));
+                if (IsNumericValue(payload.Value))
+                {
+                    eventData.SetMetadata(CreateMetricMetadata(payload.Key));
+                }
             }
         }
 
@@ -102,6 +105,34 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             eventMetadata.Properties.Add(MetricData.MetricValuePropertyMoniker, property);
 
             return eventMetadata;
+        }
+
+        private static bool IsNumericValue(object payloadValue)
+        {
+            if (payloadValue == null)
+            {
+                return false;
+            }
+
+            Type payloadValueType = payloadValue.GetType();
+            if (payloadValueType == typeof(string))
+            {
+                return double.TryParse((string)payloadValue, out _);
+            }
+            else if (payloadValueType == typeof(double)
+                  || payloadValueType == typeof(float)
+                  || payloadValueType == typeof(long)
+                  || payloadValueType == typeof(ulong)
+                  || payloadValueType == typeof(int)
+                  || payloadValueType == typeof(uint)
+                  || payloadValueType == typeof(short)
+                  || payloadValueType == typeof(ushort)
+                  || payloadValueType == typeof(byte)
+                  || payloadValueType == typeof(sbyte))
+            {
+                return true;
+            }
+            else return false;
         }
     }
 }
