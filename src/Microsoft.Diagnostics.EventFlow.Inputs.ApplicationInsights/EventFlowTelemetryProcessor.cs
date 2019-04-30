@@ -275,9 +275,9 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
                 AddPayloadProperty(eventData, "ai_location_ip", context.Location.Ip);
             }
 
-            if (context.Properties != null)
+            if (context.GlobalProperties != null)
             {
-                foreach(var property in context.Properties)
+                foreach(var property in context.GlobalProperties)
                 {
                     AddPayloadProperty(eventData, "ai_" + property.Key, property.Value);
                 }
