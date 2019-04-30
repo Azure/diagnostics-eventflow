@@ -279,10 +279,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 var data = testTaskCompletionSource.Task.Result;
 
                 Assert.True(data.TryGetMetadata(MetricData.MetricMetadataKind, out var metadata));
-                foreach (EventMetadata eventMetadata in metadata)
-                {
-                    Assert.Equal(data.Payload[eventMetadata.Properties[MetricData.MetricNamePropertyMoniker]], data.Payload[eventMetadata.Properties[MetricData.MetricValuePropertyMoniker]]);
-                }
+                Assert.Equal(6, metadata.Count);
+
+                var expectedMetrics = new List<string>(new string[]{"Mean", "StandardDeviation", "Count", "Min", "Max", "IntervalSec"});
+                Assert.All(metadata, em => expectedMetrics.Contains(em.Properties[MetricData.MetricValuePropertyMoniker], StringComparer.InvariantCulture));
             }
         }
 
