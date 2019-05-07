@@ -44,7 +44,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 client.TrackTrace("This is a trace");
                 client.TrackRequest("DoStuff", DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(20), "200 OK", success: true);
                 client.TrackEvent("ImportantEvent", new Dictionary<string, string> { { "eventProp", "foo" } });
-                client.TrackDependency("otherService", "inquire", DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(57), success: true);
+                client.TrackDependency("otherServiceKind", "otherService", "inquire", DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(57), success: true);
                 client.TrackMetric("rps", 340.7);
                 try
                 {
