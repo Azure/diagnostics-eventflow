@@ -283,6 +283,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 var expectedMetrics = new List<string>(new string[]{"Mean", "StandardDeviation", "Count", "Min", "Max", "IntervalSec"});
                 Assert.All(metadata, em => expectedMetrics.Contains(em.Properties[MetricData.MetricValuePropertyMoniker], StringComparer.InvariantCulture));
+                Assert.All(metadata, em => expectedMetrics.Contains(em.Properties[MetricData.MetricNameMoniker], StringComparer.InvariantCulture));
             }
         }
 

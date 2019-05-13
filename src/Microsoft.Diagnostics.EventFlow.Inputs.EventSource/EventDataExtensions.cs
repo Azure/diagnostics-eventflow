@@ -101,7 +101,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private static EventMetadata CreateMetricMetadata(string property)
         {
             EventMetadata eventMetadata = new EventMetadata(MetricData.MetricMetadataKind);
-            eventMetadata.Properties.Add(MetricData.MetricNamePropertyMoniker, property);
+            eventMetadata.Properties.Add(MetricData.MetricNameMoniker, property);
             eventMetadata.Properties.Add(MetricData.MetricValuePropertyMoniker, property);
 
             return eventMetadata;
