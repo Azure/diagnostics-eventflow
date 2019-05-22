@@ -20,10 +20,11 @@ namespace Microsoft.Diagnostics.EventFlow
     public class DiagnosticPipeline : IDisposable
     {
         private List<IDisposable> inputSubscriptions;
-        private IDisposable batcherTimer;
+        private Timer batcherTimer;
         private List<Task> outputCompletionTasks;
         private bool disposed;
         private bool disposeDependencies;
+        private object batcherTimerDisposalLock;
         private CancellationTokenSource cancellationTokenSource;
         private IDataflowBlock pipelineHead;
         private DiagnosticPipelineConfiguration pipelineConfiguration;
@@ -43,6 +44,7 @@ namespace Microsoft.Diagnostics.EventFlow
             Requires.NotNull(sinks, nameof(sinks));
             Requires.Argument(sinks.Count > 0, nameof(sinks), "There must be at least one sink");
 
+            this.batcherTimerDisposalLock = new object();
             this.pipelineConfiguration = pipelineConfiguration ?? new DiagnosticPipelineConfiguration();
             taskScheduler = taskScheduler ?? TaskScheduler.Current;
 
@@ -84,12 +86,6 @@ namespace Microsoft.Diagnostics.EventFlow
                     }
                 );
             inputBuffer.LinkTo(batcher, propagateCompletion);
-
-            this.batcherTimer = new Timer(
-                (unused) => { try { batcher.TriggerBatch(); } catch {} },
-                state: null,
-                dueTime: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec),
-                period: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec));
 
             ISourceBlock<EventData[]> sinkSource;
             FilterAction filterTransform;
@@ -182,17 +178,41 @@ namespace Microsoft.Diagnostics.EventFlow
 
             this.disposed = false;
             this.disposeDependencies = disposeDependencies;
+
+            this.batcherTimer = new Timer(
+                (_) => {
+                    try
+                    {
+                        lock (this.batcherTimerDisposalLock)
+                        {
+                            if (!this.disposed)
+                            {
+                                batcher.TriggerBatch();
+
+                                this.batcherTimer.Change(dueTime: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec), period: Timeout.InfiniteTimeSpan);
+                            }
+                        }
+                    }
+                    catch { }
+                },
+                state: null,
+                dueTime: TimeSpan.FromMilliseconds(this.pipelineConfiguration.MaxBatchDelayMsec),
+                period: Timeout.InfiniteTimeSpan);
         }
 
         public void Dispose()
         {
-            if (this.disposed)
+            lock (this.batcherTimerDisposalLock)
             {
-                return;
+                if (this.disposed)
+                {
+                    return;
+                }
+
+                this.disposed = true;
+                this.batcherTimer.Dispose();
             }
-
-            this.disposed = true;
-
+            
             DisposeOf(this.inputSubscriptions);
 
             pipelineHead.Complete();
@@ -200,8 +220,6 @@ namespace Microsoft.Diagnostics.EventFlow
             Task.WhenAny(Task.WhenAll(this.outputCompletionTasks.ToArray()), Task.Delay(this.pipelineConfiguration.PipelineCompletionTimeoutMsec)).GetAwaiter().GetResult();
 
             this.cancellationTokenSource.Cancel();
-
-            this.batcherTimer.Dispose();
 
             if (this.disposeDependencies)
             {
