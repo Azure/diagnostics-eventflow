@@ -86,6 +86,5 @@
     <PegGrammar Include="FilterParser.peg" />
   </ItemGroup>
 
-  <Import Project="..\..\packages\Pegasus.3.1.2\build\Pegasus.targets" Condition="Exists('..\..\packages\Pegasus.3.1.2\build\Pegasus.targets')" />
-  
+  <Import Project="..\..\packages\pegasus\3.1.2\build\Pegasus.targets" />  
 </Project>
