@@ -24,7 +24,7 @@ namespace Microsoft.Diagnostics.EventFlow
         private List<Task> outputCompletionTasks;
         private bool disposed;
         private bool disposeDependencies;
-        private object disposalLock;
+        private object batcherTimerDisposalLock;
         private CancellationTokenSource cancellationTokenSource;
         private IDataflowBlock pipelineHead;
         private DiagnosticPipelineConfiguration pipelineConfiguration;
@@ -44,7 +44,7 @@ namespace Microsoft.Diagnostics.EventFlow
             Requires.NotNull(sinks, nameof(sinks));
             Requires.Argument(sinks.Count > 0, nameof(sinks), "There must be at least one sink");
 
-            this.disposalLock = new object();
+            this.batcherTimerDisposalLock = new object();
             this.pipelineConfiguration = pipelineConfiguration ?? new DiagnosticPipelineConfiguration();
             taskScheduler = taskScheduler ?? TaskScheduler.Current;
 
@@ -180,10 +180,10 @@ namespace Microsoft.Diagnostics.EventFlow
             this.disposeDependencies = disposeDependencies;
 
             this.batcherTimer = new Timer(
-                (unused) => {
+                (_) => {
                     try
                     {
-                        lock (this.disposalLock)
+                        lock (this.batcherTimerDisposalLock)
                         {
                             if (!this.disposed)
                             {
@@ -202,7 +202,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
         public void Dispose()
         {
-            lock (this.disposalLock)
+            lock (this.batcherTimerDisposalLock)
             {
                 if (this.disposed)
                 {
