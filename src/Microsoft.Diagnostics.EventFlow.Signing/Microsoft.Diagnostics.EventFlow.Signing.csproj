@@ -132,7 +132,7 @@
     
     <ItemGroup>
       <FilesToSign Include="$(OutputPath)\full\*.dll;$(OutputPath)\full471\*.dll;$(OutputPath)\core\*.dll;$(OutputPath)\core20\*.dll">
-        <Authenticode>Microsoft</Authenticode>
+        <Authenticode>Microsoft400</Authenticode>
       </FilesToSign>
     </ItemGroup>
   </Target>
