@@ -45,7 +45,7 @@ The core of the library, as well as inputs and outputs listed above [are availab
     * Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights
     * Microsoft.Diagnostics.EventFlow.Outputs.StdOutput
 
-2. Add a JSON file named "eventFlowConfig.json" to your project and set the Build Action property of the file to "Copy if Newer". Set the content of the file to the following:
+2. Add a JSON file named "eventFlowConfig.json" to the PackageRoot\Config directory within your project and set the Build Action property of the file to "Copy if Newer". Set the content of the file to the following:
 ```js
 {
     "inputs": [
