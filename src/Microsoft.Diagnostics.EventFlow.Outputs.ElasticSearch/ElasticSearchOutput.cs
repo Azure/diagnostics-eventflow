@@ -98,7 +98,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 // Note: the NEST client is documented to be thread-safe so it should be OK to just reuse the this.esClient instance
                 // between different SendEventsAsync callbacks.
                 // Reference: https://www.elastic.co/blog/nest-and-elasticsearch-net-1-3
-                IBulkResponse response = await this.connectionData.Client.BulkAsync(request).ConfigureAwait(false);
+                BulkResponse response = await this.connectionData.Client.BulkAsync(request).ConfigureAwait(false);
                 if (!response.IsValid)
                 {
                     this.ReportEsRequestError(response, "Bulk upload");
@@ -130,7 +130,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var metricMetadata in metadataSet)
                 {
-                    operation = CreateMetricOperation(eventData, metricMetadata, currentIndexName, documentTypeName);
+                    operation = CreateMetricOperation(eventData, metricMetadata, currentIndexName);
                     if (operation != null)
                     {
                         reportedAsSpecialEvent = true;
@@ -143,7 +143,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var requestMetadata in metadataSet)
                 {
-                    operation = CreateRequestOperation(eventData, requestMetadata, currentIndexName, documentTypeName);
+                    operation = CreateRequestOperation(eventData, requestMetadata, currentIndexName);
                     if (operation != null)
                     {
                         reportedAsSpecialEvent = true;
@@ -156,7 +156,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var dependencyMetadata in metadataSet)
                 {
-                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName, documentTypeName);
+                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName);
                     if (operation != null)
                     {
                         reportedAsSpecialEvent = true;
@@ -169,7 +169,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var dependencyMetadata in metadataSet)
                 {
-                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName, documentTypeName);
+                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName);
                     if (operation != null)
                     {
                         reportedAsSpecialEvent = true;
@@ -182,7 +182,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (var exceptionMetadata in metadataSet)
                 {
-                    operation = CreateExceptionOperation(eventData, exceptionMetadata, currentIndexName, documentTypeName);
+                    operation = CreateExceptionOperation(eventData, exceptionMetadata, currentIndexName);
                     if (operation != null)
                     {
                         reportedAsSpecialEvent = true;
@@ -193,16 +193,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if (!reportedAsSpecialEvent)
             {
-                operation = CreateOperation(eventData, currentIndexName, documentTypeName);
+                operation = CreateOperation(eventData, currentIndexName);
                 yield return operation;
             }
         }
 
-        private BulkIndexOperation<EventData> CreateMetricOperation(
-            EventData eventData, 
-            EventMetadata metricMetadata,
-            string currentIndexName, 
-            string documentTypeName)
+        private BulkIndexOperation<EventData> CreateMetricOperation(EventData eventData, EventMetadata metricMetadata, string currentIndexName)
         {
             var result = MetricData.TryGetData(eventData, metricMetadata, out MetricData metricData);
             if (result.Status != DataRetrievalStatus.Success)
@@ -214,15 +210,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             var metricEventData = eventData.DeepClone();
             metricEventData.Payload[nameof(MetricData.MetricName)] = metricData.MetricName;
             metricEventData.Payload[nameof(MetricData.Value)] = metricData.Value;
-            var operation = CreateOperation(metricEventData, currentIndexName, documentTypeName);
+            var operation = CreateOperation(metricEventData, currentIndexName);
             return operation;
         }
 
-        private BulkIndexOperation<EventData> CreateRequestOperation(
-            EventData eventData,
-            EventMetadata requestMetadata,
-            string currentIndexName,
-            string documentTypeName)
+        private BulkIndexOperation<EventData> CreateRequestOperation(EventData eventData, EventMetadata requestMetadata, string currentIndexName)
         {
             var result = RequestData.TryGetData(eventData, requestMetadata, out RequestData requestData);
             if (result.Status != DataRetrievalStatus.Success)
@@ -245,15 +237,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 requestEventData.Payload[nameof(RequestData.ResponseCode)] = requestData.ResponseCode;
             }
-            var operation = CreateOperation(requestEventData, currentIndexName, documentTypeName);
+            var operation = CreateOperation(requestEventData, currentIndexName);
             return operation;
         }
 
-        private BulkIndexOperation<EventData> CreateDependencyOperation(
-            EventData eventData,
-            EventMetadata dependencyMetadata,
-            string currentIndexName,
-            string documentTypeName)
+        private BulkIndexOperation<EventData> CreateDependencyOperation(EventData eventData, EventMetadata dependencyMetadata, string currentIndexName)
         {
             var result = DependencyData.TryGetData(eventData, dependencyMetadata, out DependencyData dependencyData);
             if (result.Status != DataRetrievalStatus.Success)
@@ -283,15 +271,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 dependencyEventData.Payload[nameof(DependencyData.DependencyType)] = dependencyData.DependencyType;
             }
-            var operation = CreateOperation(dependencyEventData, currentIndexName, documentTypeName);
+            var operation = CreateOperation(dependencyEventData, currentIndexName);
             return operation;
         }
 
-        private BulkIndexOperation<EventData> CreateExceptionOperation(
-            EventData eventData,
-            EventMetadata exceptionMetadata,
-            string currentIndexName,
-            string documentTypeName)
+        private BulkIndexOperation<EventData> CreateExceptionOperation(EventData eventData, EventMetadata exceptionMetadata, string currentIndexName)
         {
             var result = ExceptionData.TryGetData(eventData, exceptionMetadata, out ExceptionData exceptionData);
             if (result.Status != DataRetrievalStatus.Success)
@@ -302,15 +286,14 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             var exceptionEventData = eventData.DeepClone();
             exceptionEventData.Payload[nameof(ExceptionData.Exception)] = exceptionData.Exception.ToString();
-            var operation = CreateOperation(exceptionEventData, currentIndexName, documentTypeName);
+            var operation = CreateOperation(exceptionEventData, currentIndexName);
             return operation;
         }
 
-        private static BulkIndexOperation<EventData> CreateOperation(EventData eventData, string currentIndexName, string documentTypeName)
+        private static BulkIndexOperation<EventData> CreateOperation(EventData eventData, string currentIndexName)
         {
             BulkIndexOperation<EventData> operation = new BulkIndexOperation<EventData>(eventData);            
             operation.Index = currentIndexName;
-            operation.Type = documentTypeName;
             return operation;
         }
 
@@ -371,7 +354,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private async Task EnsureIndexExists(string indexName, ElasticClient esClient)
         {
-            IExistsResponse existsResult = await esClient.IndexExistsAsync(indexName).ConfigureAwait(false);
+            ExistsResponse existsResult = await esClient.Indices.ExistsAsync(indexName).ConfigureAwait(false);
             if (!existsResult.IsValid)
             {
                 this.ReportEsRequestError(existsResult, "Index exists check");
@@ -393,7 +376,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 indexSettings.Settings.Add("default_pipeline", this.connectionData.Configuration.DefaultPipeline);
             }
 
-            ICreateIndexResponse createIndexResult = await esClient.CreateIndexAsync(indexName, c => c.InitializeUsing(indexSettings)).ConfigureAwait(false);
+            CreateIndexResponse createIndexResult = await esClient.Indices.CreateAsync(indexName, c => c.InitializeUsing(indexSettings)).ConfigureAwait(false);
 
             if (!createIndexResult.IsValid)
             {

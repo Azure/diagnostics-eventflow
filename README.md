@@ -792,8 +792,6 @@ All other events will be reported as Application Insights *traces* (telemetry of
 #### Elasticsearch
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
 
-**Note: Nuget package version 1.x supports Elasticsearch version 2.x. Nuget package version 2.x supports Elasticsearch version 6.x**
-
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
 ```json
 {
@@ -803,7 +801,6 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
     "connectionPoolType": "Sniffing",
     "basicAuthenticationUserName": "esUser1",
     "basicAuthenticationUserPassword": "<MyPassword>",
-    "eventDocumentTypeName": "diagData",
     "numberOfShards": 1,
     "numberOfReplicas": 1,
     "refreshInterval": "15s",
@@ -818,7 +815,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `connectionPoolType` | "Static", "Sniffing", or "Sticky" | No | Specifies the Connection Pool that takes care of registering what nodes there are in the cluster. |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
 | `basicAuthenticationUserPassword` | string | No | Specifies the password used to authenticate with Elasticsearch. This field should be used only if basicAuthenticationUserName is specified. |
-| `eventDocumentTypeName` | string | Yes | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. |
+| `eventDocumentTypeName` | string | Yes (ver < 2.7.0) <br/> N/A (ver >= 2.7.0) | Specifies the document type to be applied when data is written. Elasticsearch allows documents to be typed, so they can be distinguished from other types. This type name is user-defined. <br/> <br/> Starting with Elasticsearch 7.x the [mapping types have been removed](https://www.elastic.co/guide/en/elasticsearch/reference/7.0/removal-of-types.html). Consequently this configuration setting has been removed from Elasticsearch output version 2.7.0 and newer. |
 | `numberOfShards` | int | No | Specifies how many shards to create the index with. If not specified, it defaults to 1.|
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
@@ -844,6 +841,13 @@ Fields injected byt the `request` metadata are:
 | `Duration` | Request duration, read from the event property specified by `durationProperty` (if available). |
 | `IsSuccess` | Success indicator,  read from the event property specified by `isSuccessProperty` (if available). |
 | `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). |
+
+*Elasticsearch version support*
+| Elasticsearch output package version | Supported Elasticsearch server version |
+| :---- | :---- |
+| 1.x | 2.x |
+| 2.6.x | 6.x |
+| 2.7.x | 7.x |
 
 #### Azure Monitor Logs
 
