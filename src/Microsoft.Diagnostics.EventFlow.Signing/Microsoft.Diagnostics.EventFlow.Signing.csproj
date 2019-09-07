@@ -77,7 +77,6 @@
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
@@ -86,6 +85,7 @@
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net451\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
       <Full471Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
       <CoreAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
@@ -100,7 +100,6 @@
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
@@ -152,7 +151,6 @@
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\net451"/>
-    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net451"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net451"/>
@@ -162,6 +160,7 @@
     <!--.Net Framework 4.7.1 assemblies-->
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471"/>
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471"/>
+    <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net471"/>
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471"/>
     <!--.Net core assemblies-->
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
@@ -177,7 +176,6 @@
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\netstandard1.6"/>
-    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6"/>

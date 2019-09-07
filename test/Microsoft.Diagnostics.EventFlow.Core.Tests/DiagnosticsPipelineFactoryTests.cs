@@ -314,7 +314,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         [Fact]
         public void CanCreateAllStandardPipelineItems()
         {
-#if NET46
+#if NET461
             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
@@ -361,11 +361,6 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""StdOutput"",
                         },
-                        {
-                            ""type"": ""ElasticSearch"",
-                            ""serviceUri"": ""https://myElasticSearchCluster:9200"",
-                            ""eventDocumentTypeName"": ""diagData""
-                        }, 
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
@@ -469,7 +464,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             i => Assert.IsType<SerilogInput>(i),
                             i => Assert.IsType<NLogInput>(i),
                             i => Assert.IsType<Log4netInput>(i)
-#if NET46
+#if NET461
                             , i => Assert.IsType<PerformanceCounterInput>(i)
                             , i => Assert.IsType<EtwInput>(i)
 #endif
@@ -477,11 +472,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
+#if (!NET461)
                             s => Assert.IsType<ElasticSearchOutput>(s.Output),
+#endif
                             s => Assert.IsType<OmsOutput>(s.Output),
                             s => Assert.IsType<OmsOutput>(s.Output), // Azure Monitor Logs output can be created using the old and the new name
                             s => Assert.IsType<HttpOutput>(s.Output)
-#if NET46
+#if NET461
                             , s => Assert.IsType<EventHubOutput>(s.Output)
                             , s => Assert.IsType<ApplicationInsightsOutput>(s.Output)
 #endif

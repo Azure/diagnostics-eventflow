@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>Provides an output implementation that sends diagnostics data to Elasticsearch.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>2.6.1</VersionPrefix>
+    <VersionPrefix>2.7.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard1.6;net451;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch</PackageId>
@@ -13,8 +13,7 @@
     <PackageProjectUrl>https://github.com/Azure/diagnostics-eventflow</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">2.0.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -27,11 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elasticsearch.Net" Version="[6.1.0,7.0)" />
-    <PackageReference Include="NEST" Version="[6.1.0,7.0)" />
+    <PackageReference Include="Elasticsearch.Net" Version="[7.1.0,8.0)" />
+    <PackageReference Include="NEST" Version="[7.1.0,8.0)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
