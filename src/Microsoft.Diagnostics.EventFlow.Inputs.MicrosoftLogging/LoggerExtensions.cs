@@ -21,5 +21,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             factory.AddProvider(new EventFlowLoggerProvider(loggerInputs.First() as LoggerInput, pipeline.HealthReporter));
             return factory;
         }
+
+#if NETSTANDARD2_0
+        public static ILoggingBuilder AddEventFlow(this ILoggingBuilder loggingBuilder, DiagnosticPipeline pipeline)
+        {
+            Validation.Requires.NotNull(loggingBuilder, nameof(loggingBuilder));
+            Validation.Requires.NotNull(pipeline, nameof(pipeline));
+
+            var loggerInputs = pipeline.Inputs?.Where(i => i is LoggerInput).ToArray();
+            Validation.Requires.NotNullEmptyOrNullElements(loggerInputs, "LoggerInput");
+
+            loggingBuilder.AddProvider(new EventFlowLoggerProvider(loggerInputs.First() as LoggerInput, pipeline.HealthReporter));
+            return loggingBuilder;
+        }
+#endif
     }
 }
