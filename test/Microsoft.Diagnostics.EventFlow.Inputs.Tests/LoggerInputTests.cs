@@ -9,6 +9,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+#if NETCOREAPP2_1
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+#endif
 using Moq;
 using Xunit;
 
@@ -340,6 +344,61 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 }
             }
         }
+
+#if NETCOREAPP2_1
+        [Fact]
+        public async Task LoggerCanBeEnabledFromILoggingBuilder()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();            
+
+            using (LoggerInput target = new LoggerInput(healthReporterMock.Object))
+            {
+                var diagnosticPipeline = createPipeline(target, healthReporterMock.Object);
+                using (target.Subscribe(subject.Object))
+                {
+                    var host = new HostBuilder()
+                        .ConfigureLogging(builder => builder.AddEventFlow(diagnosticPipeline))
+                        .ConfigureServices((hostContext, services) =>
+                        {
+                            services.AddSingleton<TestLogSource>();
+                        })
+                        .Build();
+
+                    host.Start();
+                    var testLogSource = host.Services.GetRequiredService<TestLogSource>();
+                    testLogSource.DoStuff();
+                    await host.StopAsync();
+                    
+                    subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
+                        data,
+                        "log message 1",
+                        // Inner class names are separated by "+" from the outer type full name, a convention that EventFlow does not follow
+                        typeof(TestLogSource).FullName.Replace("+", "."), 
+                        LogLevel.Informational,
+                        0,
+                        null,
+                        new Dictionary<string, object> { { "number", 1 } }))), Times.Exactly(1));
+                }
+            }
+        }
+
+        private class TestLogSource
+        {
+            ILogger<TestLogSource> logger;
+
+            public TestLogSource(ILogger<TestLogSource> logger)
+            {
+                Validation.Requires.NotNull(logger, nameof(logger));
+                this.logger = logger;
+            }
+
+            public void DoStuff()
+            {
+                this.logger.LogInformation("log message {number}", 1);
+            }
+        }
+#endif
 
         private void assertContainsDuplicate(IDictionary<string, object> payload, string keyPrefix, object expectedValue)
         {
