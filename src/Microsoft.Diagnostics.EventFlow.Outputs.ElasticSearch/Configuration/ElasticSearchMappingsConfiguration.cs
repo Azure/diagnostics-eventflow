@@ -8,12 +8,16 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
     public class ElasticSearchMappingsConfiguration
     {
-        public Dictionary<string, ElasticSearchMappingsConfigurationPropertyDescriptor> Properties { get; set; }
+        public Dictionary<string, ElasticSearchMappingsConfigurationPropertyDescriptor> Properties { get; private set; }
+
+        public ElasticSearchMappingsConfiguration()
+        {
+            Properties = new Dictionary<string, ElasticSearchMappingsConfigurationPropertyDescriptor>();
+        }
 
         internal ElasticSearchMappingsConfiguration DeepClone()
         {
             var other = new ElasticSearchMappingsConfiguration();
-            other.Properties = new Dictionary<string, ElasticSearchMappingsConfigurationPropertyDescriptor>();
 
             foreach (var item in this.Properties)
             {
