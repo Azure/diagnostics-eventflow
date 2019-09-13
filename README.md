@@ -804,7 +804,15 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
     "numberOfShards": 1,
     "numberOfReplicas": 1,
     "refreshInterval": "15s",
-    "defaultPipeline": "my-pipeline"
+    "defaultPipeline": "my-pipeline",
+    "mappings": {
+        "properties": {
+            "timestamp": {
+                "type": "date_nanos"
+            }
+        }
+    }
+
 }
 ```
 | Field | Values/Types | Required | Description |
@@ -820,7 +828,8 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
 | `defaultPipeline` | string | No | Specifies the default ingest node pipeline the index is created with. If not specified, a default pipeline will not be used.|
-
+| `mappings`        | object | No | Specifies specific index properties mappings. The mappings are configured by defining the each property.
+| `mappings.properties` | object | No | Specifies the index properties. The format resembles the mappings definition when creating index with ElasticSearch with some constraints - only property name and type definition is supported.
 
 *Standard metadata support*
 
