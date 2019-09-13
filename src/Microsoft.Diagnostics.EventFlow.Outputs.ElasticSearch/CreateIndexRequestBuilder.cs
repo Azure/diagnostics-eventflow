@@ -46,7 +46,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             };
 
 
-        private TypeMappingDescriptor<object> mappingsSelector(TypeMappingDescriptor<object> tm)
+        private TypeMappingDescriptor<object> applyTypeMapping(TypeMappingDescriptor<object> tm)
         {
             return tm.Properties(pd =>
             {
@@ -71,7 +71,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             });
         }
 
-        private IndexSettingsDescriptor settingsSelector(IndexSettingsDescriptor s)
+        private IndexSettingsDescriptor applyIndexSettings(IndexSettingsDescriptor s)
         {
             s = s.NumberOfReplicas(configuration.NumberOfReplicas)
                 .NumberOfShards(configuration.NumberOfShards)
@@ -83,11 +83,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             return s;
         }
 
-        internal ICreateIndexRequest Selector(CreateIndexDescriptor c)
+        internal ICreateIndexRequest BuildRequest(CreateIndexDescriptor c)
         {
             return 
-                c.Settings(settingsSelector)
-                .Map(mappingsSelector);
+                c.Settings(applyIndexSettings)
+                .Map(applyTypeMapping);
         }
     }
 }

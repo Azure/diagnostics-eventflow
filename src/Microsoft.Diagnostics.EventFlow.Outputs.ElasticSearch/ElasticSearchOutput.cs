@@ -368,7 +368,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             CreateIndexRequestBuilder createIndexRequestBuilder = new CreateIndexRequestBuilder(this.connectionData.Configuration, this.healthReporter);
 
 
-            CreateIndexResponse createIndexResult = await esClient.Indices.CreateAsync(indexName, createIndexRequestBuilder.Selector).ConfigureAwait(false);
+            CreateIndexResponse createIndexResult = await esClient.Indices.CreateAsync(indexName, createIndexRequestBuilder.BuildRequest).ConfigureAwait(false);
 
             if (!createIndexResult.IsValid)
             {
