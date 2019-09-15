@@ -828,8 +828,8 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `numberOfReplicas` | int | No | Specifies how many replicas the index is created with. If not specified, it defaults to 5.|
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
 | `defaultPipeline` | string | No | Specifies the default ingest node pipeline the index is created with. If not specified, a default pipeline will not be used.|
-| `mappings`        | object | No | Specifies specific index properties mappings. The mappings are configured by defining the each property.
-| `mappings.properties` | object | No | Specifies the index properties. The format resembles the mappings definition when creating index with ElasticSearch with some constraints - only property name and type definition is supported.
+| `mappings`        | object | No | Specifies how documents created by the Elasticsearch output are stored and indexed (index mappings). For more information refer to [Elasticsearch documentation on index mappings](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html). |
+| `mappings.properties` | object | No | Specifies property mappings for documents created by the Elasticsearch output. Currently only property *type* mappings can be specified. Supported types are: `text`, `keyword`, `date`, `date_nanos`, `boolean`, `long`, `integer`, `short`, `byte`, `double`, `float`, `half_float`, `scaled_float`, `ip`, `geo_point`, `geo_shape`, and `completion`. | 
 
 *Standard metadata support*
 
