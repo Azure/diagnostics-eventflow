@@ -32,7 +32,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public string RefreshInterval { get; set; }
         public string DefaultPipeline { get; set; }
 
-        public ElasticSearchMappingsConfiguration Mappings { get; private set; }
+        public ElasticSearchMappingsConfiguration Mappings { get; set; }
 
         public ElasticSearchOutputConfiguration()
         {
