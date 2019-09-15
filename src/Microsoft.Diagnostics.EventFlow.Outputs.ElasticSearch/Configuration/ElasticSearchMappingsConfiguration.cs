@@ -8,7 +8,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
     public class ElasticSearchMappingsConfiguration
     {
-        public Dictionary<string, ElasticSearchMappingsConfigurationPropertyDescriptor> Properties { get; private set; }
+        public Dictionary<string, ElasticSearchMappingsConfigurationPropertyDescriptor> Properties { get; set; }
 
         public ElasticSearchMappingsConfiguration()
         {
