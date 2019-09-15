@@ -32,12 +32,15 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public string RefreshInterval { get; set; }
         public string DefaultPipeline { get; set; }
 
+        public ElasticSearchMappingsConfiguration Mappings { get; private set; }
+
         public ElasticSearchOutputConfiguration()
         {
             EventDocumentTypeName = DefaultEventDocumentTypeName;
             NumberOfShards = DefaultNumberOfShards;
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
+            Mappings = new ElasticSearchMappingsConfiguration();
         }
 
         public ElasticSearchOutputConfiguration DeepClone()
@@ -54,6 +57,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 NumberOfReplicas = this.NumberOfReplicas,
                 RefreshInterval = this.RefreshInterval,
                 DefaultPipeline = this.DefaultPipeline,
+                Mappings = this.Mappings.DeepClone()
             };
 
             return other;

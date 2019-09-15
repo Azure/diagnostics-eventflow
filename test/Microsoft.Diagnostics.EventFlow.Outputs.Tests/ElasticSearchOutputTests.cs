@@ -35,6 +35,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                         ["numberOfReplicas"] = 20,
                         ["refreshInterval"] = "60s",
                         ["useSniffingConnectionPooling"] = "true",
+                        ["mappings"] = new Dictionary<string, object>
+                        {
+                            ["properties"]= new Dictionary<string, object>
+                            {
+                                ["timestamp"] = new Dictionary<string, object>
+                                {
+                                    ["type"] = "date_nanos"
+                                }
+                            }
+                        }
                     }
                 }
             };
@@ -61,6 +71,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 Assert.Equal(10, esOutputConfiguration.NumberOfShards);
                 Assert.Equal(20, esOutputConfiguration.NumberOfReplicas);
                 Assert.Equal("60s", esOutputConfiguration.RefreshInterval);
+
+                Assert.NotNull(esOutputConfiguration.Mappings);
+                Assert.NotNull(esOutputConfiguration.Mappings.Properties);
+                Assert.NotNull(esOutputConfiguration.Mappings.Properties["timestamp"]);
+
+                Assert.Equal("date_nanos", esOutputConfiguration.Mappings.Properties["timestamp"].Type);
             }
         }
 

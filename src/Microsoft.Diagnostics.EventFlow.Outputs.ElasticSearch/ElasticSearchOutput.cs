@@ -364,19 +364,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 return;
             }
-            
-            // TODO: allow the consumer to fine-tune index settings
-            IndexState indexSettings = new IndexState();
-            indexSettings.Settings = new IndexSettings();
-            indexSettings.Settings.NumberOfReplicas = this.connectionData.Configuration.NumberOfReplicas;
-            indexSettings.Settings.NumberOfShards = this.connectionData.Configuration.NumberOfShards;
-            indexSettings.Settings.Add("refresh_interval", this.connectionData.Configuration.RefreshInterval);
-            if (this.connectionData.Configuration.DefaultPipeline != null)
-            {
-                indexSettings.Settings.Add("default_pipeline", this.connectionData.Configuration.DefaultPipeline);
-            }
 
-            CreateIndexResponse createIndexResult = await esClient.Indices.CreateAsync(indexName, c => c.InitializeUsing(indexSettings)).ConfigureAwait(false);
+            CreateIndexRequestBuilder createIndexRequestBuilder = new CreateIndexRequestBuilder(this.connectionData.Configuration, this.healthReporter);
+
+
+            CreateIndexResponse createIndexResult = await esClient.Indices.CreateAsync(indexName, createIndexRequestBuilder.BuildRequest).ConfigureAwait(false);
 
             if (!createIndexResult.IsValid)
             {
