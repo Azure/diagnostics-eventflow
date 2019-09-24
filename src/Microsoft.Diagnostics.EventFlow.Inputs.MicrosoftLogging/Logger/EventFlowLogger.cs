@@ -8,7 +8,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -41,9 +40,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             var message = formatter(state, exception);
 
             Dictionary<string, object> properties = new Dictionary<string, object>();
-            if (state is FormattedLogValues)
+            if (state is IReadOnlyList<KeyValuePair<string, object>>)
             {
-                var formattedState = state as FormattedLogValues;
+                var formattedState = state as IReadOnlyList<KeyValuePair<string, object>>;
                 //last KV is the whole message, we will pass it separately
                 for (int i = 0; i < formattedState.Count - 1; i++)
                     properties.Add(formattedState[i].Key, formattedState[i].Value);
@@ -63,7 +62,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
                     if (scope.State != null)
                     {
-                        var formattedState = scope.State as FormattedLogValues;
+                        var formattedState = scope.State as IReadOnlyList<KeyValuePair<string, object>>;
                         if (formattedState != null)
                         {
                             for (int i = 0; i < formattedState.Count - 1; i++)
