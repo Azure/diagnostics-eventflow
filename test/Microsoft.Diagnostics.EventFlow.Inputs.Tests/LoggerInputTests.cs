@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NETCOREAPP3_0
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 #endif
@@ -345,7 +345,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NETCOREAPP3_0
         [Fact]
         public async Task LoggerCanBeEnabledFromILoggingBuilder()
         {
@@ -358,10 +358,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 using (target.Subscribe(subject.Object))
                 {
                     var host = new HostBuilder()
-                        .ConfigureLogging(builder => builder.AddEventFlow(diagnosticPipeline))
+                        .ConfigureLogging(builder => {
+                            builder.ClearProviders();                            
+                            builder.AddEventFlow(diagnosticPipeline);
+                        })
                         .ConfigureServices((hostContext, services) =>
                         {
                             services.AddSingleton<TestLogSource>();
+                            services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
                         })
                         .Build();
 

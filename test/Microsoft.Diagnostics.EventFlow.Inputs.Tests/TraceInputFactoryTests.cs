@@ -26,11 +26,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             TraceInputFactory target = new TraceInputFactory();
 
-            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 target.CreateItem(null, healthReporterMock.Object);
             });
-            Assert.Equal("Value cannot be null.\r\nParameter name: configuration", ex.Message);
+            Assert.Equal("configuration", ex.ParamName);
         }
 
         [Fact]
@@ -40,10 +40,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             TraceInputFactory target = new TraceInputFactory();
 
-            Exception ex = Assert.Throws<ArgumentNullException>(() => {
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => {
                 target.CreateItem(configurationMock.Object, null);
             });
-            Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
+            Assert.Equal("healthReporter", ex.ParamName);
         }
     }
 }

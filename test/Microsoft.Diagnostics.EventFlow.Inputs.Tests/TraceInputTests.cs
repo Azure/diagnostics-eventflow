@@ -21,17 +21,17 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         {
             var healthReporterMock = new Mock<IHealthReporter>();
 
-            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 using (TraceInput target = new TraceInput((TraceInputConfiguration) null, healthReporterMock.Object)) { }
             });
-            Assert.Equal("Value cannot be null.\r\nParameter name: traceInputConfiguration", ex.Message);
+            Assert.Equal("traceInputConfiguration", ex.ParamName);
 
             ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 using (TraceInput target = new TraceInput((IConfiguration) null, healthReporterMock.Object)) { }
             });
-            Assert.Equal("Value cannot be null.\r\nParameter name: configuration", ex.Message);
+            Assert.Equal("configuration", ex.ParamName);
         }
 
         [Fact]
@@ -39,11 +39,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         {
             var configurationMock = new Mock<IConfiguration>();
             configurationMock.Setup(section => section["type"]).Returns("Trace");
-            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 using (TraceInput target = new TraceInput(configurationMock.Object, null)) { }
             });
-            Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
+            Assert.Equal("healthReporter", ex.ParamName);
         }
 
         [Fact]
