@@ -21,7 +21,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         [Fact]
         public void ConstructorShouldRequireHealthReport()
         {
-            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 DiagnosticPipeline pipeline = new DiagnosticPipeline(
                     null,
@@ -30,7 +30,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     new List<EventSink>());
             });
 
-            Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
+            Assert.Equal("healthReporter", ex.ParamName);
         }
 
         [Fact]
@@ -353,7 +353,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.InRange(unitTestOutput.CallCount, expectedMinCallCount, TestEventCount);
             // Half of these calls (modulo 1) should have failed
             healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.Is<string>(s => s == EventFlowContextIdentifiers.Output)),
-                Times.Between(unitTestOutput.CallCount / 2, unitTestOutput.CallCount / 2 + 1, Range.Inclusive));
+                Times.Between(unitTestOutput.CallCount / 2, unitTestOutput.CallCount / 2 + 1, Moq.Range.Inclusive));
         }
 
         [Fact]
