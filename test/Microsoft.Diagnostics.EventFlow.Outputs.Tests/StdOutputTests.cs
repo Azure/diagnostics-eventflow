@@ -27,12 +27,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         [Fact]
         public void ConstructorShouldRequireHealthReporter()
         {
-            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 StdOutput target = new StdOutput(null);
             });
 
-            Assert.Equal("Value cannot be null.\r\nParameter name: healthReporter", ex.Message);
+            Assert.Equal("healthReporter", ex.ParamName);
         }
     }
 }
