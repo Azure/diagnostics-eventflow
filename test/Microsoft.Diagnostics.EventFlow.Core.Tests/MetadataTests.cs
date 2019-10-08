@@ -122,9 +122,13 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             Assert.Equal("GetCountOfStuff", rd.RequestName);
             Assert.True(rd.IsSuccess);
             Assert.Equal("200 OK", rd.ResponseCode);
-            // Note the TimeSpan.FromMilliseconds will round to the nearest millisecond
-            Assert.Equal(35, rd.Duration.Value.TotalMilliseconds, DoublePrecisionTolerance);
 
+            // Note the TimeSpan.FromMilliseconds will round to the nearest millisecond on everything older than .NET Core 3.0
+#if NETCOREAPP3_0
+            Assert.Equal(34.7, rd.Duration.Value.TotalMilliseconds, DoublePrecisionTolerance);
+#else
+            Assert.Equal(35, rd.Duration.Value.TotalMilliseconds, DoublePrecisionTolerance);
+#endif
             requestMetadata.Properties["durationUnit"] = "seconds";
             result = RequestData.TryGetData(eventData, requestMetadata, out rd);
             Assert.Equal(DataRetrievalStatus.Success, result.Status);
@@ -151,7 +155,11 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
             eventData.Payload["duration"] = 65.7;
             result = RequestData.TryGetData(eventData, requestMetadata, out rd);
             Assert.Equal(DataRetrievalStatus.Success, result.Status);
+#if NETCOREAPP3_0
+            Assert.Equal(65.7, rd.Duration.Value.TotalMilliseconds, DoublePrecisionTolerance);
+#else
             Assert.Equal(66, rd.Duration.Value.TotalMilliseconds, DoublePrecisionTolerance);
+#endif
         }
 
         [Fact]
