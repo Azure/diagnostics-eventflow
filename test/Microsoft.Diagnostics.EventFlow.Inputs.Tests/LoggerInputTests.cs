@@ -345,6 +345,36 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
+        [Fact]
+        public void LoggerIsUsableViaILogger()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+
+            using (LoggerInput target = new LoggerInput(healthReporterMock.Object))
+            {
+                var diagnosticPipeline = createPipeline(target, healthReporterMock.Object);
+                using (target.Subscribe(subject.Object))
+                {
+                    var factory = new LoggerFactory();
+                    factory.AddEventFlow(diagnosticPipeline);
+                    var logger = new Logger<LoggerInputTests>(factory);
+                    
+                    ((ILogger) logger).Log(Extensions.Logging.LogLevel.Information, 0, 
+                        new Dictionary<string, object> { { "alpha", 1 }, { "bravo", 2 }, { "message", "Log dictionary data" } },
+                        null, (data, ex) => data.Last().Value.ToString());
+                    subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
+                        data,
+                        "Log dictionary data",
+                        typeof(LoggerInputTests).FullName,
+                        LogLevel.Informational,
+                        0,
+                        null,
+                        new Dictionary<string, object> { { "alpha", 1 }, { "bravo", 2 } }))), Times.Exactly(1));
+                }
+            }
+        }
+
 #if NETCOREAPP2_1 || NETCOREAPP3_0
         [Fact]
         public async Task LoggerCanBeEnabledFromILoggingBuilder()
