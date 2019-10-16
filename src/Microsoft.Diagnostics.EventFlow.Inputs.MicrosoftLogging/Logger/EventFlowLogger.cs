@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
@@ -37,16 +38,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             if (!IsEnabled(logLevel))
                 return;
 
-            var message = formatter(state, exception);
-
             Dictionary<string, object> properties = new Dictionary<string, object>();
-            if (state is IReadOnlyList<KeyValuePair<string, object>>)
-            {
-                var formattedState = state as IReadOnlyList<KeyValuePair<string, object>>;
-                //last KV is the whole message, we will pass it separately
-                for (int i = 0; i < formattedState.Count - 1; i++)
-                    properties.Add(formattedState[i].Key, formattedState[i].Value);
-            }
+
+            //last KV pair is the message, we will format and pass it separately
+            ApplyToAllButLast(state, item => properties.Add(item.Key, item.Value));
 
             var scope = EventFlowLoggerScope.Current;
             if (scope != null)
@@ -59,25 +54,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
                 while (scope != null)
                 {
-
                     if (scope.State != null)
                     {
-                        var formattedState = scope.State as IReadOnlyList<KeyValuePair<string, object>>;
-                        if (formattedState != null)
-                        {
-                            for (int i = 0; i < formattedState.Count - 1; i++)
-                            {
-                                KeyValuePair<string, object> current = formattedState[i];
-                                AddPayloadProperty(properties, current.Key, current.Value);
-                            }
-
-                            //last KV is the whole 'scope' message, we will add it formatted
-                            scopeValueStack.Push(formattedState.ToString());
-                        }
-                        else
-                        {
-                            scopeValueStack.Push(scope.State.ToString());
-                        }
+                        ApplyToAllButLast(scope.State, item => AddPayloadProperty(properties, item.Key, item.Value));
+                        scopeValueStack.Push(scope.State.ToString());
                     }
 
                     scope = scope.Parent;
@@ -85,14 +65,14 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
                 if (scopeValueStack.Count > 0)
                 {
-                    AddPayloadProperty(properties, "Scope",
-                        string.Join("\r\n", scopeValueStack));
+                    AddPayloadProperty(properties, "Scope", string.Join("\r\n", scopeValueStack));
                 }
 
                 scopeValueStack.Clear();
                 this.stackPool.Add(scopeValueStack);
             }
 
+            var message = formatter(state, exception);
             loggerInput.SubmitEventData(message, ToLogLevel(logLevel), eventId, exception, categoryName, properties);
         }
 
@@ -120,6 +100,29 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     return LogLevel.Informational;
             }
             return LogLevel.Verbose;
+        }
+
+        private void ApplyToAllButLast(object src, System.Action<KeyValuePair<string, object>> action)
+        {
+            var structuredSrc = src as IEnumerable<KeyValuePair<string, object>>;
+            if (structuredSrc != null)
+            {
+                using (var srcEnumerator = structuredSrc.GetEnumerator())
+                {
+                    if (srcEnumerator.MoveNext())
+                    {
+                        while (true)
+                        {
+                            var item = srcEnumerator.Current;
+                            if (!srcEnumerator.MoveNext())
+                            {
+                                break;
+                            }
+                            action(item);
+                        }
+                    }
+                }
+            }
         }
 
         private void AddPayloadProperty(IDictionary<string, object> payload, string key, object value)
