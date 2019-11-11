@@ -852,6 +852,7 @@ Fields injected byt the `request` metadata are:
 | `ResponseCode` | Response code for the request, read from the event property specified by `responseCodeProperty` (if available). |
 
 *Elasticsearch version support*
+
 | Elasticsearch output package version | Supported Elasticsearch server version |
 | :---- | :---- |
 | 1.x | 2.x |
