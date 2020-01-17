@@ -141,6 +141,17 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
                     retval = Convert.ChangeType(this.value, eventPropertyValueType, CultureInfo.InvariantCulture);
                 }
                 catch { }
+
+                // On .NET Core 3.0 Convert.ChangeType() may return +/- infinity when overflow occurs. 
+                // We do not consider these to be valid values to compare with.
+                if (retval != null)
+                {
+                    if (retval.Equals(double.PositiveInfinity) || retval.Equals(double.NegativeInfinity) || retval.Equals(float.PositiveInfinity) || retval.Equals(float.NegativeInfinity))
+                    {
+                        retval = null;
+                    }
+                }
+                
                 return retval;
             }
         }

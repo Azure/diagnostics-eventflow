@@ -35,12 +35,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         [Fact]
         public void ConstructorShouldRequireConfigFile()
         {
-            Exception ex = Assert.Throws<ArgumentNullException>(() =>
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 CsvHealthReporter target = new CustomHealthReporter(configurationFilePath: null);
             });
 
-            Assert.Equal("Value cannot be null.\r\nParameter name: configurationFilePath", ex.Message);
+            Assert.Equal("configurationFilePath", ex.ParamName);
         }
 
         [Fact]

@@ -233,8 +233,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Assert.Equal("EventCounters", data.Payload["EventName"]);
                 Assert.Equal("testCounter", data.Payload["Name"]);
                 Assert.Equal(2, data.Payload["Count"]);
+#if NETCOREAPP3_0
+                Assert.Equal((double)5, data.Payload["Max"]);
+                Assert.Equal((double)1, data.Payload["Min"]);
+#else
                 Assert.Equal((float)5, data.Payload["Max"]);
                 Assert.Equal((float)1, data.Payload["Min"]);
+#endif
 
                 healthReporterMock.Verify(o => o.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                 healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());

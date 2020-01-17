@@ -40,7 +40,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 EventData eventEntry = new EventData()
                 {
                     ProviderName = string.IsNullOrEmpty(source) ? TraceTag : source,
-                    Timestamp = DateTime.UtcNow,
+                    Timestamp = DateTimePrecise.UtcNow,
                     Level = level
                 };
 
