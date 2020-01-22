@@ -27,7 +27,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                     {
                         ["type"] = "ElasticSearch",
                         ["indexNamePrefix"] = "myprefix",
-                        ["eventDocumentTypeName"] = "mytype",
                         ["serviceUri"] = "http://localhost:1000;http://localhost:1001;http://localhost:1002",
                         ["basicAuthenticationUserName"] = "myesuser",
                         ["basicAuthenticationUserPassword"] = "myespass",
@@ -64,7 +63,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 configFragments[0].Bind(esOutputConfiguration);
 
                 Assert.Equal("myprefix", esOutputConfiguration.IndexNamePrefix);
-                Assert.Equal("mytype", esOutputConfiguration.EventDocumentTypeName);
                 Assert.Equal("http://localhost:1000;http://localhost:1001;http://localhost:1002", esOutputConfiguration.ServiceUri);
                 Assert.Equal("myesuser", esOutputConfiguration.BasicAuthenticationUserName);
                 Assert.Equal("myespass", esOutputConfiguration.BasicAuthenticationUserPassword);
