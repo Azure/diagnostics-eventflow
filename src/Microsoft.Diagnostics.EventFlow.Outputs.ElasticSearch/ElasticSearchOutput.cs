@@ -81,11 +81,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 BulkRequest request = new BulkRequest();
 
                 List<IBulkOperation> operations = new List<IBulkOperation>();
-                string documentTypeName = this.connectionData.Configuration.EventDocumentTypeName;
 
                 foreach (EventData eventData in events)
                 {
-                    operations.AddRange(GetCreateOperationsForEvent(eventData, currentIndexName, documentTypeName));
+                    operations.AddRange(GetCreateOperationsForEvent(eventData, currentIndexName));
                 }
 
                 request.Operations = operations;
@@ -118,7 +117,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
         }
 
-        private IEnumerable<IBulkOperation> GetCreateOperationsForEvent(EventData eventData, string currentIndexName, string documentTypeName)
+        private IEnumerable<IBulkOperation> GetCreateOperationsForEvent(EventData eventData, string currentIndexName)
         {
             bool reportedAsSpecialEvent = false;
             BulkIndexOperation<EventData> operation;
@@ -341,14 +340,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                                                 EventFlowContextIdentifiers.Configuration);
                 }
                 esOutputConfiguration.IndexNamePrefix = lowerCaseIndexNamePrefix + Dash;
-            }
-
-            if (string.IsNullOrWhiteSpace(esOutputConfiguration.EventDocumentTypeName))
-            {
-                string warning = $"{nameof(ElasticSearchOutput)}: '{nameof(ElasticSearchOutputConfiguration.EventDocumentTypeName)}' configuration parameter "
-                                + "should not be empty";
-                healthReporter.ReportWarning(warning, EventFlowContextIdentifiers.Configuration);
-                esOutputConfiguration.EventDocumentTypeName = ElasticSearchOutputConfiguration.DefaultEventDocumentTypeName;
             }
         }
 
