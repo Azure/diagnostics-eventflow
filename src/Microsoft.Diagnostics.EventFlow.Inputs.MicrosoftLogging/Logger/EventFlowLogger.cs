@@ -40,8 +40,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             Dictionary<string, object> properties = new Dictionary<string, object>();
 
-            //last KV pair is the message, we will format and pass it separately
-            ApplyToAllButLast(state, item => properties.Add(item.Key, item.Value));
+            ApplyOmittingUnformattedMessage(state, item => properties.Add(item.Key, item.Value));
 
             var scope = EventFlowLoggerScope.Current;
             if (scope != null)
@@ -54,10 +53,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
                 while (scope != null)
                 {
-                    if (scope.State != null)
+                    object scopeState = scope.State;
+                    if (scopeState != null)
                     {
-                        ApplyToAllButLast(scope.State, item => AddPayloadProperty(properties, item.Key, item.Value));
-                        scopeValueStack.Push(scope.State.ToString());
+                        // Scope data may or may not have a formatted message
+                        bool unformattedMessageOmitted = ApplyOmittingUnformattedMessage(scopeState, item => AddPayloadProperty(properties, item.Key, item.Value));
+                        if (unformattedMessageOmitted)
+                        {
+                            scopeValueStack.Push(scopeState.ToString());
+                        }
                     }
 
                     scope = scope.Parent;
@@ -102,27 +106,39 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             return LogLevel.Verbose;
         }
 
-        private void ApplyToAllButLast(object src, System.Action<KeyValuePair<string, object>> action)
+        private bool ApplyOmittingUnformattedMessage(object src, System.Action<KeyValuePair<string, object>> action)
         {
+            // Special case the "{OriginalFormat}" data key that is used to preserve the message before formatting was applied
+            // This data is omitted from the payload and replaced by formatted message.
+            // See https://github.com/aspnet/Logging/blob/master/src/Microsoft.Extensions.Logging.Abstractions/Internal/LogValuesFormatter.cs
+            const string OriginalFormatKey = "{OriginalFormat}";
+
+            // If the data is not structured, it will be omitted
+            bool unformattedMessageOmitted = true;
+
             var structuredSrc = src as IEnumerable<KeyValuePair<string, object>>;
             if (structuredSrc != null)
             {
+                unformattedMessageOmitted = false;
                 using (var srcEnumerator = structuredSrc.GetEnumerator())
                 {
-                    if (srcEnumerator.MoveNext())
+                    while (srcEnumerator.MoveNext())
                     {
-                        while (true)
+                        var item = srcEnumerator.Current;
+
+                        if (!OriginalFormatKey.Equals(item.Key, StringComparison.Ordinal))
                         {
-                            var item = srcEnumerator.Current;
-                            if (!srcEnumerator.MoveNext())
-                            {
-                                break;
-                            }
                             action(item);
+                        }
+                        else
+                        {
+                            unformattedMessageOmitted = true;
                         }
                     }
                 }
             }
+
+            return unformattedMessageOmitted;
         }
 
         private void AddPayloadProperty(IDictionary<string, object> payload, string key, object value)
