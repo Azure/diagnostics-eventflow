@@ -116,24 +116,18 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             // If the data is not structured, it will be omitted
             bool unformattedMessageOmitted = true;
 
-            var structuredSrc = src as IEnumerable<KeyValuePair<string, object>>;
-            if (structuredSrc != null)
+            if (src is IEnumerable<KeyValuePair<string, object>> structuredSrc)
             {
                 unformattedMessageOmitted = false;
-                using (var srcEnumerator = structuredSrc.GetEnumerator())
+                foreach(KeyValuePair<string, object> item in structuredSrc)
                 {
-                    while (srcEnumerator.MoveNext())
+                    if (!OriginalFormatKey.Equals(item.Key, StringComparison.Ordinal))
                     {
-                        var item = srcEnumerator.Current;
-
-                        if (!OriginalFormatKey.Equals(item.Key, StringComparison.Ordinal))
-                        {
-                            action(item);
-                        }
-                        else
-                        {
-                            unformattedMessageOmitted = true;
-                        }
+                        action(item);
+                    }
+                    else
+                    {
+                        unformattedMessageOmitted = true;
                     }
                 }
             }

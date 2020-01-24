@@ -389,7 +389,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 {
                     var factory = new LoggerFactory();
                     factory.AddEventFlow(diagnosticPipeline);
-                    var logger = (ILogger) new Logger<LoggerInputTests>(factory);
+                    ILogger logger = new Logger<LoggerInputTests>(factory);
 
                     using (logger.BeginScope(new Dictionary<string, object> { { "OpID", 342 }, { "TransactionID", "transaction-1234" } }))
                     {
