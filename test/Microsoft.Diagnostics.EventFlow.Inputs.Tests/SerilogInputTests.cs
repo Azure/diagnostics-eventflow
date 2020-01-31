@@ -11,6 +11,7 @@ using Serilog;
 using Xunit;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -244,6 +245,58 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
             mockOutput.Verify(output => output.SendEventsAsync(It.Is<IReadOnlyCollection<EventData>>(c => c.Count == 1),
                 It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        }
+
+        [Fact]
+        public void DestructureDepthEqualsOne()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            IDictionary<string, object> spiedPayload = null;
+            observer.Setup(p => p.OnNext(It.IsAny<EventData>()))
+                .Callback<EventData>((p) => { spiedPayload = p.Payload; });
+
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
+
+                var structure = new { A = "alpha", B = "bravo", C = new { Y = "yankee", Z = "zulu" } };
+                logger.Information("Here is {@AStructure}", structure);
+            }
+            Assert.Equal("alpha", ((IDictionary<string, object>)spiedPayload["AStructure"])["A"]);
+            Assert.Equal("bravo", ((IDictionary<string, object>)spiedPayload["AStructure"])["B"]);
+            Assert.Equal("{ Y: \"yankee\", Z: \"zulu\" }", ((IDictionary<string, object>)spiedPayload["AStructure"])["C"]);
+        }
+
+        [Fact]
+        public void DestructureDepthGreaterThanOne()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            IDictionary<string, object> spiedPayload = null;
+            observer.Setup(p => p.OnNext(It.IsAny<EventData>()))
+                .Callback<EventData>((p) => { spiedPayload = p.Payload; });
+            var inMemorySettings = new Dictionary<string, string>
+            {
+                {SerilogInput.IGNORE_SERILOG_DEPTH_LEVEL_CONFIG, "false"},
+            };
+
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(inMemorySettings)
+                .Build();
+            using (var serilogInput = new SerilogInput(healthReporterMock.Object, configuration))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
+
+                var structure = new { A = "alpha", B = "bravo", C = new { Y = "yankee", Z = "zulu" } };
+                logger.Information("Here is {@AStructure}", structure);
+            }
+            Assert.Equal("alpha", ((IDictionary<string, object>)spiedPayload["AStructure"])["A"]);
+            Assert.Equal("bravo", ((IDictionary<string, object>)spiedPayload["AStructure"])["B"]);
+            Assert.Equal("yankee", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Y"]);
+            Assert.Equal("zulu", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Z"]);
         }
     }
 }
