@@ -10,6 +10,7 @@ using Microsoft.Diagnostics.EventFlow.Metadata;
 using Serilog.Events;
 using Validation;
 using Serilog.Core;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -18,6 +19,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
     /// </summary>
     public class SerilogInput : ILogEventSink, IObservable<EventData>, IDisposable
     {
+        ///<Summary>
+        /// Config parameter name to fully use Serilog destructure depth level
+        ///</Summary>
+        public static readonly string IGNORE_SERILOG_DEPTH_LEVEL_CONFIG = "ignoreSerilogDepthLevel";
+
         private static readonly IDictionary<LogEventLevel, LogLevel> ToLogLevel =
             new Dictionary<LogEventLevel, LogLevel>
             {
@@ -31,16 +37,19 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         private EventFlowSubject<EventData> subject;
         private readonly IHealthReporter healthReporter;
+        private readonly bool ignoreSerilogDepthLevel;
 
         /// <summary>
         /// Construct a <see cref="SerilogInput"/>.
         /// </summary>
+        /// <param name="configuration">A configuration to be used to configure the input</param>
         /// <param name="healthReporter">A health reporter through which the input can report errors.</param>
-        public SerilogInput(IHealthReporter healthReporter)
+        public SerilogInput(IHealthReporter healthReporter, IConfiguration configuration = null)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
+            ignoreSerilogDepthLevel = configuration == null ? true : configuration.GetValue(IGNORE_SERILOG_DEPTH_LEVEL_CONFIG, true);
             this.subject = new EventFlowSubject<EventData>();
         }
 
@@ -112,7 +121,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 try
                 {
-                    eventData.AddPayloadProperty(property.Key, ToRawValue(property.Value), healthReporter, nameof(SerilogInput));
+                    eventData.AddPayloadProperty(property.Key, ToRawValue(property.Value, ignoreSerilogDepthLevel), healthReporter, nameof(SerilogInput));
                 }
                 catch (Exception e)
                 {
@@ -123,7 +132,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             return eventData;
         }
 
-        private static object ToRawValue(LogEventPropertyValue logEventValue)
+        private static object ToRawValue(LogEventPropertyValue logEventValue, bool ignoreSerilogDepthLevel = false)
         {
             // Special-case a few types of LogEventPropertyValue that allow us to maintain better type fidelity.
             // For everything else take the default string rendering as the data.
@@ -136,7 +145,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             SequenceValue sequenceValue = logEventValue as SequenceValue;
             if (sequenceValue != null)
             {
-                object[] arrayResult = sequenceValue.Elements.Select(e => ToRawScalar(e)).ToArray();
+                object[] arrayResult = sequenceValue.Elements.Select(e => ignoreSerilogDepthLevel ? ToRawScalar(e) : ToRawValue(e)).ToArray();
                 if (arrayResult.Length == sequenceValue.Elements.Count)
                 {
                     // All values extracted successfully, it is a flat array of scalars
@@ -150,7 +159,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 IDictionary<string, object> structureResult = new Dictionary<string, object>(structureValue.Properties.Count);
                 foreach (var property in structureValue.Properties)
                 {
-                    structureResult[property.Name] = ToRawScalar(property.Value);
+                    structureResult[property.Name] = ignoreSerilogDepthLevel ? ToRawScalar(property.Value) : ToRawValue(property.Value);
                 }
 
                 if (structureResult.Count == structureValue.Properties.Count)
@@ -169,7 +178,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 IDictionary<string, object> dictionaryResult = dictionaryValue.Elements
                     .Where(kvPair => kvPair.Key.Value is string)
-                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => ToRawScalar(kvPair.Value));
+                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => ignoreSerilogDepthLevel ? ToRawScalar(kvPair.Value) : ToRawValue(kvPair.Value));
                 if (dictionaryResult.Count == dictionaryValue.Elements.Count)
                 {
                     return dictionaryResult;
