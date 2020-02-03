@@ -257,9 +257,16 @@ This input enables capturing diagnostic data created through [Serilog library](h
 The Serilog input has no configuration, other than the "type" property that specifies the type of the input (must be "Serilog"):
 ```json
 {
-  "type": "Serilog"
+  "type": "Serilog",
+  "ignoreSerilogDepthLevel": false
 }
 ```
+
+*Top-level configuration settings*
+
+| Field | Values/Types | Required | Description |
+| :---- | :-------------- | :------: | :---------- |
+| `ignoreSerilogDepthLevel` | bool | No | Default true, will only support first level of destructured objects. Nested objects will be turned into a string. If set to false will let Serilog control the depth of destructuring. |
 
 *Example: instantiating a Serilog logger that uses EventFlow Serilog input*
 
