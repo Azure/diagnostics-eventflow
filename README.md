@@ -254,7 +254,6 @@ If you need to consume such counters, make sure the account your process runs un
 This input enables capturing diagnostic data created through [Serilog library](https://serilog.net/).
 
 *Configuration example*
-The Serilog input has no configuration, other than the "type" property that specifies the type of the input (must be "Serilog"):
 ```json
 {
   "type": "Serilog",
@@ -266,6 +265,7 @@ The Serilog input has no configuration, other than the "type" property that spec
 
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
+| `type` | "Serilog" | Yes | Specifies the input type. For this input, it must be "Serilog". |
 | `ignoreSerilogDepthLevel` | bool | No | Default true, will only support first level of destructured objects. Nested objects will be turned into a string. If set to false will let Serilog control the depth of destructuring. |
 
 *Example: instantiating a Serilog logger that uses EventFlow Serilog input*

@@ -12,6 +12,8 @@ using Xunit;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Diagnostics.EventFlow.Configuration;
+using Microsoft.Diagnostics.EventFlow.TestHelpers;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 {
@@ -279,13 +281,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 .Callback<EventData>((p) => { spiedPayload = p.Payload; });
             var inMemorySettings = new Dictionary<string, string>
             {
-                {SerilogInput.IGNORE_SERILOG_DEPTH_LEVEL_CONFIG, "false"},
+                {nameof(SerilogInputConfiguration.IgnoreSerilogDepthLevel), "false"},
             };
 
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(inMemorySettings)
                 .Build();
-            using (var serilogInput = new SerilogInput(healthReporterMock.Object, configuration))
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
                 var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
@@ -297,6 +299,80 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             Assert.Equal("bravo", ((IDictionary<string, object>)spiedPayload["AStructure"])["B"]);
             Assert.Equal("yankee", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Y"]);
             Assert.Equal("zulu", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Z"]);
+        }
+
+        [Fact]
+        public void CanReadConfigurationFromJson()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+
+            using (var configFile = new TemporaryFile())
+            {
+                string inputConfiguration = @"
+                {
+                    ""type"": ""Serilog""
+                }";
+                configFile.Write(inputConfiguration);
+                var cb = new ConfigurationBuilder();
+                cb.AddJsonFile(configFile.FilePath);
+                var configuration = cb.Build();
+                
+                var input = new SerilogInput(configuration, healthReporterMock.Object);
+
+                Assert.True(input.inputConfiguration.IgnoreSerilogDepthLevel);
+            }
+
+            using (var configFile = new TemporaryFile())
+            {
+                string inputConfiguration = @"
+                {
+                    ""type"": ""Serilog"",
+                    ""ignoreSerilogDepthLevel"": ""true""
+                }";
+                configFile.Write(inputConfiguration);
+                var cb = new ConfigurationBuilder();
+                cb.AddJsonFile(configFile.FilePath);
+                var configuration = cb.Build();
+
+                var input = new SerilogInput(configuration, healthReporterMock.Object);
+
+                Assert.True(input.inputConfiguration.IgnoreSerilogDepthLevel);
+            }
+
+            using (var configFile = new TemporaryFile())
+            {
+                string inputConfiguration = @"
+                {
+                    ""type"": ""Serilog"",
+                    ""ignoreSerilogDepthLevel"": ""false""
+                }";
+                configFile.Write(inputConfiguration);
+                var cb = new ConfigurationBuilder();
+                cb.AddJsonFile(configFile.FilePath);
+                var configuration = cb.Build();
+
+                var input = new SerilogInput(configuration, healthReporterMock.Object);
+
+                Assert.False(input.inputConfiguration.IgnoreSerilogDepthLevel);
+            }
+        }
+
+        [Fact]
+        public void UsesSerilogMaxDestructuringDepth()
+        {
+
+        }
+
+        [Fact]
+        public void CanSerializeCircularObjectGraphs()
+        {
+
+        }
+
+        private class EntityWithChildren
+        {
+            public string Name { get; set; }
+            public List<EntityWithChildren> Children { get; } = new List<EntityWithChildren>();
         }
     }
 }
