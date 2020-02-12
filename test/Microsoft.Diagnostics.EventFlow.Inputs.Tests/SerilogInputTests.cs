@@ -514,7 +514,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         [Fact]
-        public void DestructuresNestedArraysPastDepthLimit()
+        public void ObservesDepthLimitWhileDestructuringNestedArrays()
         {
             var healthReporterMock = new Mock<IHealthReporter>();
             var observer = new Mock<IObserver<EventData>>();
@@ -539,15 +539,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             Assert.Equal("yankee", bb["Y"]);
             object z = bb["Z"];
             Assert.True(z is object[]);
-            Assert.Single((object[])z);
-            Assert.Null(((object[])z)[0]);
-            Assert.True(((object[])b)[1] is IDictionary<string, object>);
-            bb = (IDictionary<string, object>)((object[])b)[1];
-            Assert.Equal("zulu", bb["Y"]);
-            z = bb["Z"];
-            Assert.True(z is object[]);
-            Assert.Single((object[])z);
-            Assert.Null(((object[])z)[0]);
+            Assert.Empty((object[])z);
         }
 
         private class EntityWithChildren
