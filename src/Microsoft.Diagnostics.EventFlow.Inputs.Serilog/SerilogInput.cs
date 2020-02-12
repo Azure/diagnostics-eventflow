@@ -36,6 +36,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private EventFlowSubject<EventData> subject;
         private IHealthReporter healthReporter;
         internal SerilogInputConfiguration inputConfiguration;
+        private Func<LogEventPropertyValue, object> valueSerializer;
 
         /// <summary>
         /// Creates an instance of <see cref="SerilogInput"/> using default values
@@ -87,6 +88,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.healthReporter = healthReporter;
             this.inputConfiguration = inputConfiguration;
             this.subject = new EventFlowSubject<EventData>();
+            this.valueSerializer = this.inputConfiguration.UseSerilogDepthLevel ? (Func<LogEventPropertyValue, object>)this.ToRawValue : this.ToRawScalar;
         }
 
         void ILogEventSink.Emit(LogEvent logEvent)
@@ -178,18 +180,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return scalarValue.Value;
             }
 
-            Func<LogEventPropertyValue, object> valueSerializer = this.inputConfiguration.UseSerilogDepthLevel ? 
-                (Func<LogEventPropertyValue, object>) this.ToRawValue: this.ToRawScalar;
-
             SequenceValue sequenceValue = logEventValue as SequenceValue;
             if (sequenceValue != null)
             {
-                object[] arrayResult = sequenceValue.Elements.Select(e => valueSerializer(e)).ToArray();
-                if (arrayResult.Length == sequenceValue.Elements.Count)
-                {
-                    // All values extracted successfully, it is a flat array of scalars
-                    return arrayResult;
-                }
+                object[] arrayResult = sequenceValue.Elements.Select(e => valueSerializer(e)).Where(e => e != null).ToArray();
+                return arrayResult;
             }
 
             StructureValue structureValue = logEventValue as StructureValue;
@@ -201,15 +196,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                     structureResult[property.Name] = valueSerializer(property.Value);
                 }
 
-                if (structureResult.Count == structureValue.Properties.Count)
+                if (structureValue.TypeTag != null)
                 {
-                    if (structureValue.TypeTag != null)
-                    {
-                        structureResult["$type"] = structureValue.TypeTag;
-                    }
-
-                    return structureResult;
+                    structureResult["$type"] = structureValue.TypeTag;
                 }
+
+                return structureResult;
             }
 
             DictionaryValue dictionaryValue = logEventValue as DictionaryValue;
@@ -218,10 +210,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 IDictionary<string, object> dictionaryResult = dictionaryValue.Elements
                     .Where(kvPair => kvPair.Key.Value is string)
                     .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => valueSerializer(kvPair.Value));
-                if (dictionaryResult.Count == dictionaryValue.Elements.Count)
-                {
-                    return dictionaryResult;
-                }
+                return dictionaryResult;
             }
 
             // Fall back to string rendering of the value

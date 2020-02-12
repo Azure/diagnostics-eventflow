@@ -361,15 +361,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         public void UsesSerilogMaxDestructuringDepth()
         {
             // Create object structure 5 levels deep
-            var e = new EntityWithChildren() { Name = "Echo" };
-            var newE = new EntityWithChildren("Delta", new EntityWithChildren[] { e });
-            e = newE;
-            newE = new EntityWithChildren("Charlie", new EntityWithChildren[] { e });
-            e = newE;
-            newE = new EntityWithChildren("Bravo", new EntityWithChildren[] { e });
-            e = newE;
-            newE = new EntityWithChildren("Alpha", new EntityWithChildren[] { e });
-            e = newE;
+            var bravo = new EntityWithChildren() { Name = "Bravo" };
+            var alpha = new EntityWithChildren("Alpha", new EntityWithChildren[] { bravo });
 
             var healthReporterMock = new Mock<IHealthReporter>();
             var observer = new Mock<IObserver<EventData>>();
@@ -378,23 +371,105 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 .Callback<EventData>((p) => { spiedPayload = p.Payload; });
 
             SerilogInputConfiguration configuration = new SerilogInputConfiguration() { UseSerilogDepthLevel = true };
+
+
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).Destructure.ToMaximumDepth(2).CreateLogger();
+
+                logger.Information("Here is an {@entity}", alpha);
+            }
+
+            // At depth 2 there should be no children
+            Assert.Equal("Alpha", ((IDictionary<string, object>)spiedPayload["entity"])["Name"]);
+            Assert.Empty((IEnumerable<object>)((IDictionary<string, object>)spiedPayload["entity"])["Children"]);
+
+
             using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
             using (serilogInput.Subscribe(observer.Object))
             {
                 var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).Destructure.ToMaximumDepth(3).CreateLogger();
 
-                logger.Information("Here is an {@entity}", e);
+                logger.Information("Here is an {@entity}", alpha);
             }
-            Assert.Equal("Alpha", ((IDictionary<string, object>)spiedPayload["entity"])["A"]);
-            //Assert.Equal("bravo", ((IDictionary<string, object>)spiedPayload["AStructure"])["B"]);
-            //Assert.Equal("yankee", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Y"]);
-            //Assert.Equal("zulu", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Z"]);
+
+            // At depth 3 there should be one child of Alpha, but all its properties should be blank
+            Assert.Equal("Alpha", ((IDictionary<string, object>)spiedPayload["entity"])["Name"]);
+            var childrenOfAlpha = ((IDictionary<string, object>)spiedPayload["entity"])["Children"] as object[];
+            Assert.Single(childrenOfAlpha);
+            var b = childrenOfAlpha.First() as IDictionary<string, object>;
+            Assert.True(b.ContainsKey("Name"));
+            Assert.Null(b["Name"]);
+            Assert.True(b.ContainsKey("Children"));
+            Assert.Null(b["Children"]);
+
+
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).Destructure.ToMaximumDepth(4).CreateLogger();
+
+                logger.Information("Here is an {@entity}", alpha);
+            }
+
+            // At depth 4 the child of Alpha (Bravo) should have its properties set, "Name" in particular.
+            Assert.Equal("Alpha", ((IDictionary<string, object>)spiedPayload["entity"])["Name"]);
+            childrenOfAlpha = ((IDictionary<string, object>)spiedPayload["entity"])["Children"] as object[];
+            Assert.Single(childrenOfAlpha);
+            b = childrenOfAlpha.First() as IDictionary<string, object>;
+            Assert.Equal("Bravo", b["Name"]);
         }
 
         [Fact]
         public void CanSerializeCircularObjectGraphs()
         {
+            var charlie = new EntityWithChildren() { Name = "Charlie" };
+            var bravo = new EntityWithChildren("Bravo", new EntityWithChildren[] { charlie });
+            var alpha = new EntityWithChildren("Alpha", new EntityWithChildren[] { bravo });
+            charlie.Children.Add(alpha); // Establish a cycle Alpha -> Bravo -> Charlie -> Alpha
 
+            // Also form a cycle of direct "Sibling" references the other way round, i.e Charlie -> Bravo -> Alpha -> Charlie
+            charlie.Sibling = bravo;
+            bravo.Sibling = alpha;
+            alpha.Sibling = charlie;
+
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            IDictionary<string, object> spiedPayload = null;
+            observer.Setup(p => p.OnNext(It.IsAny<EventData>()))
+                .Callback<EventData>((p) => { spiedPayload = p.Payload; });
+
+            SerilogInputConfiguration configuration = new SerilogInputConfiguration() { UseSerilogDepthLevel = true };
+
+            const int MaxDepth = 10;
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).Destructure.ToMaximumDepth(MaxDepth).CreateLogger();
+
+                logger.Information("Here is an {@entity}", alpha);
+            }
+
+            // The fact that the loging of alpha succeeds at all (instead of going into an infinite loop) is already a good sign :-)
+
+            IDictionary<string, object> entity = (IDictionary<string, object>)spiedPayload["entity"];
+            object[] children = null;
+            int depth = 0;
+            while (entity != null && entity.ContainsKey("Children"))
+            {
+                children = entity["Children"] as object[];
+                entity = null;
+                if (children != null && children.Length > 0)
+                {
+                    entity = children[0] as IDictionary<string, object>;
+                }
+
+                depth++;
+            }
+
+            // Every child increases depth by two because the Children property is and array.
+            Assert.Equal(MaxDepth / 2, depth);
         }
 
         [Fact]
