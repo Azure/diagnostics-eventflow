@@ -281,7 +281,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 .Callback<EventData>((p) => { spiedPayload = p.Payload; });
             var inMemorySettings = new Dictionary<string, string>
             {
-                {nameof(SerilogInputConfiguration.IgnoreSerilogDepthLevel), "false"},
+                {nameof(SerilogInputConfiguration.UseSerilogDepthLevel), "true"},
             };
 
             IConfiguration configuration = new ConfigurationBuilder()
@@ -319,7 +319,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 
                 var input = new SerilogInput(configuration, healthReporterMock.Object);
 
-                Assert.True(input.inputConfiguration.IgnoreSerilogDepthLevel);
+                Assert.False(input.inputConfiguration.UseSerilogDepthLevel);
             }
 
             using (var configFile = new TemporaryFile())
@@ -327,7 +327,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 string inputConfiguration = @"
                 {
                     ""type"": ""Serilog"",
-                    ""ignoreSerilogDepthLevel"": ""true""
+                    ""useSerilogDepthLevel"": ""false""
                 }";
                 configFile.Write(inputConfiguration);
                 var cb = new ConfigurationBuilder();
@@ -336,7 +336,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 var input = new SerilogInput(configuration, healthReporterMock.Object);
 
-                Assert.True(input.inputConfiguration.IgnoreSerilogDepthLevel);
+                Assert.False(input.inputConfiguration.UseSerilogDepthLevel);
             }
 
             using (var configFile = new TemporaryFile())
@@ -344,7 +344,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 string inputConfiguration = @"
                 {
                     ""type"": ""Serilog"",
-                    ""ignoreSerilogDepthLevel"": ""false""
+                    ""useSerilogDepthLevel"": ""true""
                 }";
                 configFile.Write(inputConfiguration);
                 var cb = new ConfigurationBuilder();
@@ -353,14 +353,42 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                 var input = new SerilogInput(configuration, healthReporterMock.Object);
 
-                Assert.False(input.inputConfiguration.IgnoreSerilogDepthLevel);
+                Assert.True(input.inputConfiguration.UseSerilogDepthLevel);
             }
         }
 
         [Fact]
         public void UsesSerilogMaxDestructuringDepth()
         {
+            // Create object structure 5 levels deep
+            var e = new EntityWithChildren() { Name = "Echo" };
+            var newE = new EntityWithChildren("Delta", new EntityWithChildren[] { e });
+            e = newE;
+            newE = new EntityWithChildren("Charlie", new EntityWithChildren[] { e });
+            e = newE;
+            newE = new EntityWithChildren("Bravo", new EntityWithChildren[] { e });
+            e = newE;
+            newE = new EntityWithChildren("Alpha", new EntityWithChildren[] { e });
+            e = newE;
 
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            IDictionary<string, object> spiedPayload = null;
+            observer.Setup(p => p.OnNext(It.IsAny<EventData>()))
+                .Callback<EventData>((p) => { spiedPayload = p.Payload; });
+
+            SerilogInputConfiguration configuration = new SerilogInputConfiguration() { UseSerilogDepthLevel = true };
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).Destructure.ToMaximumDepth(3).CreateLogger();
+
+                logger.Information("Here is an {@entity}", e);
+            }
+            Assert.Equal("Alpha", ((IDictionary<string, object>)spiedPayload["entity"])["A"]);
+            //Assert.Equal("bravo", ((IDictionary<string, object>)spiedPayload["AStructure"])["B"]);
+            //Assert.Equal("yankee", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Y"]);
+            //Assert.Equal("zulu", ((IDictionary<string, object>)((IDictionary<string, object>)spiedPayload["AStructure"])["C"])["Z"]);
         }
 
         [Fact]
@@ -369,10 +397,96 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
         }
 
+        [Fact]
+        public void DestructuresNestedArrays()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            IDictionary<string, object> spiedPayload = null;
+            observer.Setup(p => p.OnNext(It.IsAny<EventData>()))
+                .Callback<EventData>((p) => { spiedPayload = p.Payload; });
+
+            SerilogInputConfiguration configuration = new SerilogInputConfiguration() { UseSerilogDepthLevel = true };
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).CreateLogger();
+
+                var structure = new { A = "alpha", B = new[] { new { Y = "yankee", Z = new[] { new { Alpha = "A" } } }, new { Y = "zulu", Z = new[] { new { Alpha = "B" } } } } };
+                logger.Information("Here is {@AStructure}", structure);
+            }
+            Assert.Equal("alpha", ((IDictionary<string, object>)spiedPayload["AStructure"])["A"]);
+            object b = ((IDictionary<string, object>)spiedPayload["AStructure"])["B"];
+            Assert.True(b is object[]);
+            Assert.Equal(2, ((object[])b).Length);
+            var bb = (IDictionary<string, object>)((object[])b)[0];
+            Assert.Equal("yankee", bb["Y"]);
+            object z = bb["Z"];
+            Assert.True(z is object[]);
+            Assert.Single((object[])z);
+            Assert.True(((object[])z)[0] is IDictionary<string, object>);
+            var zz = (IDictionary<string, object>)((object[])z)[0];
+            Assert.Equal("A", zz["Alpha"]);
+            Assert.True(((object[])b)[1] is IDictionary<string, object>);
+            bb = (IDictionary<string, object>)((object[])b)[1];
+            Assert.Equal("zulu", bb["Y"]);
+            z = bb["Z"];
+            Assert.True(z is object[]);
+            Assert.Single((object[])z);
+            Assert.True(((object[])z)[0] is IDictionary<string, object>);
+            zz = (IDictionary<string, object>)((object[])z)[0];
+            Assert.Equal("B", zz["Alpha"]);
+        }
+
+        [Fact]
+        public void DestructuresNestedArraysPastDepthLimit()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var observer = new Mock<IObserver<EventData>>();
+            IDictionary<string, object> spiedPayload = null;
+            observer.Setup(p => p.OnNext(It.IsAny<EventData>()))
+                .Callback<EventData>((p) => { spiedPayload = p.Payload; });
+
+            SerilogInputConfiguration configuration = new SerilogInputConfiguration() { UseSerilogDepthLevel = true };
+            using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
+            using (serilogInput.Subscribe(observer.Object))
+            {
+                var logger = new LoggerConfiguration().WriteTo.Sink(serilogInput).Destructure.ToMaximumDepth(4).CreateLogger();
+
+                var structure = new { A = "alpha", B = new[] { new { Y = "yankee", Z = new[] { new { Alpha = "A" } } }, new { Y = "zulu", Z = new[] { new { Alpha = "B" } } } } };
+                logger.Information("Here is {@AStructure}", structure);
+            }
+            Assert.Equal("alpha", ((IDictionary<string, object>)spiedPayload["AStructure"])["A"]);
+            object b = ((IDictionary<string, object>)spiedPayload["AStructure"])["B"];
+            Assert.True(b is object[]);
+            Assert.Equal(2, ((object[])b).Length);
+            var bb = (IDictionary<string, object>)((object[])b)[0];
+            Assert.Equal("yankee", bb["Y"]);
+            object z = bb["Z"];
+            Assert.True(z is object[]);
+            Assert.Single((object[])z);
+            Assert.Null(((object[])z)[0]);
+            Assert.True(((object[])b)[1] is IDictionary<string, object>);
+            bb = (IDictionary<string, object>)((object[])b)[1];
+            Assert.Equal("zulu", bb["Y"]);
+            z = bb["Z"];
+            Assert.True(z is object[]);
+            Assert.Single((object[])z);
+            Assert.Null(((object[])z)[0]);
+        }
+
         private class EntityWithChildren
         {
             public string Name { get; set; }
             public List<EntityWithChildren> Children { get; } = new List<EntityWithChildren>();
+            public EntityWithChildren Sibling { get; set; }
+
+            public EntityWithChildren() { }
+            public EntityWithChildren(string name, IEnumerable<EntityWithChildren> children)
+            {
+                Name = name;
+                Children.AddRange(children);
+            }
         }
     }
 }

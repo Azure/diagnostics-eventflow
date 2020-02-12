@@ -178,8 +178,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 return scalarValue.Value;
             }
 
-            Func<LogEventPropertyValue, object> valueSerializer = this.inputConfiguration.IgnoreSerilogDepthLevel ? 
-                (Func<LogEventPropertyValue, object>) this.ToRawScalar : this.ToRawValue;
+            Func<LogEventPropertyValue, object> valueSerializer = this.inputConfiguration.UseSerilogDepthLevel ? 
+                (Func<LogEventPropertyValue, object>) this.ToRawValue: this.ToRawScalar;
 
             SequenceValue sequenceValue = logEventValue as SequenceValue;
             if (sequenceValue != null)

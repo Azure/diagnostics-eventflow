@@ -257,7 +257,7 @@ This input enables capturing diagnostic data created through [Serilog library](h
 ```json
 {
   "type": "Serilog",
-  "ignoreSerilogDepthLevel": false
+  "useSerilogDepthLevel": true
 }
 ```
 
@@ -266,7 +266,7 @@ This input enables capturing diagnostic data created through [Serilog library](h
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "Serilog" | Yes | Specifies the input type. For this input, it must be "Serilog". |
-| `ignoreSerilogDepthLevel` | bool | No | Default true, will only support first level of destructured objects. Nested objects will be turned into a string. If set to false will let Serilog control the depth of destructuring. |
+| `useSerilogDepthLevel` | bool | No | If true the input will try to preserve the structure of data passed to it, up to a maximum depth determined by Serilog maximum destructuring depth setting; otherwise all objects will be flattened. Defaults to false for backward compatibility. |
 
 *Example: instantiating a Serilog logger that uses EventFlow Serilog input*
 

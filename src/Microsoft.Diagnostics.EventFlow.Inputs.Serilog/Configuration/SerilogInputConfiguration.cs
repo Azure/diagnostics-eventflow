@@ -10,9 +10,9 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     public class SerilogInputConfiguration: ItemConfiguration
     {
         /// <summary>
-        /// True if Serilog maxiumum destructuring depth setting should be ignored, otherwise false.
+        /// True if Serilog maxiumum destructuring depth setting should be used, otherwise false.
         /// </summary>
-        /// <remarks>Defaults to true (destructuring depth is ignored) for backward compatibility.</remarks>
-        public bool IgnoreSerilogDepthLevel { get; set; } = true;
+        /// <remarks>Defaults to false (destructuring depth is ignored) for backward compatibility.</remarks>
+        public bool UseSerilogDepthLevel { get; set; } = false;
     }
 }
