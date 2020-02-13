@@ -183,7 +183,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             SequenceValue sequenceValue = logEventValue as SequenceValue;
             if (sequenceValue != null)
             {
-                object[] arrayResult = sequenceValue.Elements.Select(e => valueSerializer(e)).Where(e => e != null).ToArray();
+                object[] arrayResult = sequenceValue.Elements.Select(e => valueSerializer(e)).ToArray();
                 return arrayResult;
             }
 

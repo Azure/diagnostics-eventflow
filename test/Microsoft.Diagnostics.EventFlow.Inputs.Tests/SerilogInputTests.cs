@@ -381,9 +381,10 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 logger.Information("Here is an {@entity}", alpha);
             }
 
-            // At depth 2 there should be no children
-            Assert.Equal("Alpha", ((IDictionary<string, object>)spiedPayload["entity"])["Name"]);
-            Assert.Empty((IEnumerable<object>)((IDictionary<string, object>)spiedPayload["entity"])["Children"]);
+            // At depth 2 there should be no children (only a null child placeholder)
+            var e = (IDictionary<string, object>)spiedPayload["entity"];
+            Assert.Equal("Alpha", e["Name"]);
+            Assert.Collection((object[]) e["Children"], c => Assert.Null(c));
 
 
             using (var serilogInput = new SerilogInput(configuration, healthReporterMock.Object))
@@ -539,7 +540,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             Assert.Equal("yankee", bb["Y"]);
             object z = bb["Z"];
             Assert.True(z is object[]);
-            Assert.Empty((object[])z);
+            Assert.Collection((object[]) z, z_el => Assert.Null(z_el));
         }
 
         private class EntityWithChildren
