@@ -75,7 +75,7 @@ Note: if you are using VisualStudio for Mac, you might need to edit the project 
    ```
 
 3. If you wish to send diagnostics data to Application Insights, fill in the value for the instrumentationKey. If not, you can send traces to console output instead by replacing the Application Insights output with the standard output. The `outputs` property in the configuration should then look like this: 
-```json
+```jsonc
     "outputs": [
     {
       "type": "StdOutput"
@@ -106,7 +106,7 @@ These define what data will flow into the engine. At least one input is required
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.Trace**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Trace/)
 
 This input listens to traces written with System.Diagnostics.Trace API. Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "Trace",
     "traceLevel":  "Warning"
@@ -121,7 +121,7 @@ This input listens to traces written with System.Diagnostics.Trace API. Here is 
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.EventSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.EventSource/)
 
 This input listens to EventSource traces. EventSource classes can be created in the application by deriving from the [System.Diagnostics.Tracing.EventSource](https://msdn.microsoft.com/en-us/library/system.diagnostics.tracing.eventsource(v=vs.110).aspx) class. Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "EventSource",
     "sources": [
@@ -165,7 +165,7 @@ Disabling EventSources is not recommended under normal circumstances, as it intr
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource/)
 
 This input listens to System.Diagnostics.DiagnosticSource sources. See the [DiagnosticSource User's Guide](https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/DiagnosticSourceUsersGuide.md) for details of usage. Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "DiagnosticSource",
     "sources": [
@@ -205,7 +205,7 @@ In general there is no canonical way to find a performance counter instance that
 EventFlow PerformanceCounter input supports the first method of deterimining counter instance name for current process via configuration settings. It also supports the second method, but only for .NET performance counters.
 
 *Configuration example*
-```json
+```jsonc
 {
     "type": "PerformanceCounter",
     "sampleIntervalMsec": "5000",
@@ -254,7 +254,7 @@ If you need to consume such counters, make sure the account your process runs un
 This input enables capturing diagnostic data created through [Serilog library](https://serilog.net/).
 
 *Configuration example*
-```json
+```jsonc
 {
   "type": "Serilog",
   "useSerilogDepthLevel": true
@@ -306,7 +306,7 @@ This input enables capturing diagnostic data created through Microsoft.Extension
 
 *Configuration example*
 The ILogger input has no configuration, other than the "type" property that specifies the type of the input (must be "Microsoft.Extensions.Logging"):
-```json
+```jsonc
 {
   "type": "Microsoft.Extensions.Logging"
 }
@@ -465,7 +465,7 @@ This input captures data from Microsoft Event Tracing for Windows (ETW) provider
 To capture data from EventSources running in the same process as EventFlow, the [EventSource input](#eventsource) is a better choice, with better performance and no additional security requirements.
 
 *Configuration example*
-```json
+```jsonc
 {
     "type": "ETW",
     "sessionNamePrefix": "MyCompany-MyApplication",
@@ -534,7 +534,7 @@ To use Application Insights input in an application that creates EventFlow pipel
    *Note that the order of telemetry processors does matter.* In particular, if the `EventFlowTelemetryProcessor` is placed before the Application Insights sampling processor, EventFlow will capture all telemetry, but if the `EventFlowTelemetryProcessor` is placed after the sampling processor, it will only "see" telemetry that was sampled in. For more information on configuring Application Insights see [Application Insights configuration documentation](https://docs.microsoft.com/azure/application-insights/app-insights-configuration-with-applicationinsights-config).
 
 2. In the EventFlow configuration make sure to include the Application Insights input. It does not take any parameters:
-   ```json
+   ```jsonc
    { "type": "ApplicationInsights" }
    ```
 
@@ -627,7 +627,7 @@ This input enables capturing diagnostic data sent to the [Log4net project](https
 
 *Configuration example*
 The Log4net input has one configuration, the Log4net Level:
-```json
+```jsonc
 {
   "type": "Log4net",
   "logLevel": "Debug"
@@ -671,7 +671,7 @@ This input enables capturing diagnostic data sent to the [NLog library](http://n
 
 *Configuration example*
 The NLog input has no configuration, other than the "type" property that specifies the type of the input (must be "NLog"):
-```json
+```jsonc
 {
   "type": "NLog"
 }
@@ -711,7 +711,7 @@ Outputs define where data will be published from the engine. It's an error if th
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.StdOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.StdOutput/)
 
 This output writes data to the console window. Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "StdOutput"
 }
@@ -724,7 +724,7 @@ This output writes data to the console window. Here is an example showing all po
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput/)
 
 This output writes data to a webserver using diffent encoding methods (Json or JsonLines, eg. for logstash). Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "Http",
     "serviceUri": "https://example.com/",
@@ -748,7 +748,7 @@ This output writes data to a webserver using diffent encoding methods (Json or J
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
 
 This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-us/documentation/articles/event-hubs-overview/). Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "EventHub",
     "eventHubName": "myEventHub",
@@ -766,7 +766,7 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights/)
 
 This output writes data to the [Azure Application Insights service](https://azure.microsoft.com/en-us/documentation/articles/app-insights-overview/). Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "ApplicationInsights",
     "instrumentationKey": "00000000-0000-0000-0000-000000000000",
@@ -800,7 +800,7 @@ All other events will be reported as Application Insights *traces* (telemetry of
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
 
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "ElasticSearch",
     "indexNamePrefix": "app1",
@@ -871,7 +871,7 @@ Fields injected byt the `request` metadata are:
 *Nuget package*: [**Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs/)
 
 The Azure Monitor Logs output writes data to [Azure Monitor Logs service (also knowns as Log Analytics service)](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/diagnostic-logs-overview) via [HTTP Data Collector API](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/data-collector-api). You will need to create a Log Analytics workspace in Azure and know its ID and key before using Azure Monitor Logs output. Here is a sample configuration fragment enabling the output:
-```json
+```jsonc
 {
   "type": "AzureMonitorLogs",
   "workspaceId": "<workspace-GUID>",
@@ -896,7 +896,7 @@ With metadata tags, filters and outputs operating further down the pipeline can 
 
 Filters can appear in two places in the EventFlow configuration: on the same level as inputs and outputs (_global filters_) and as part of output declaration (_output-specific filters_). Global filters are applied to all data coming from the inputs. Output-specific filters are applied to just one output, just before the data reaches the output. Here is an example with two global filters and one output-specific filter:
 
-```json
+```jsonc
 {
     "inputs": [...],
 
@@ -934,7 +934,7 @@ EventFlow comes with two standard filter types: `drop` and `metadata`.
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
 This filter discards all data that satisfies the include expression. Here is an example showing all possible settings:
-```json
+```jsonc
 {
     "type": "drop",
     "include": "Level == Verbose || Level == Informational"
@@ -949,7 +949,7 @@ This filter discards all data that satisfies the include expression. Here is an 
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
 This filter adds additional metadata to all event data that satisfies the include expression. The filter recognizes a few standard properties (`type`, `metadata` and `include`); the rest are custom properties, specific for the given metadata type:
-```json
+```jsonc
 {
     "type": "metadata",
     "metadata": "metric",
@@ -969,7 +969,7 @@ Here are a few examples of using the metadata filter:
 
 1. Submit a metric with a value of 1 (a counter) whenever there is a Service Fabric stateful service run failure
 
-    ```json
+    ```jsonc
     {
     "type": "metadata",
     "metadata": "metric",
@@ -982,7 +982,7 @@ Here are a few examples of using the metadata filter:
     
 2. Turn processor time performance counter into a metric
 
-    ```json
+    ```jsonc
     {
       "type": "metadata",
       "metadata": "metric",
@@ -995,7 +995,7 @@ Here are a few examples of using the metadata filter:
     
 3. Turn a custom EventSource event into a request. The event has 3 interesting properties: requestTypeName indicates what kind of request it was; durationMsec has the total request processing duration and ‘isSuccess’ indicates whether the processing succeeded or failed
 
-    ```json
+    ```jsonc
     {
       "type": "metadata",
       "metadata": "request",
@@ -1077,7 +1077,7 @@ ServiceFabricHealthReporter is described in the [Service Fabric support paragrap
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Core**
 
 This health reporter writes all errors, warnings, and informational traces generated from the pipeline into a CSV file. Here is an example showing all possible settings:
-```json
+```jsonc
 "healthReporter": {
     "type": "CsvHealthReporter",
     "logFileFolder": ".",
@@ -1107,7 +1107,7 @@ CsvHealthReporter will try to open the log file for writing during initializatio
 ### Pipeline Settings
 The EventFlow configuration has settings allowing the application to adjust certain behaviors of the pipeline. These range from how many events the pipeline buffer, to the timeout the pipeline should use when waiting for an operation. If this section is omitted, the pipeline will use default settings.
 Here is an example of all the possible settings:
-```json
+```jsonc
 "settings": {
     "pipelineBufferSize": "1000",
     "maxEventBatchSize": "100",
@@ -1214,6 +1214,55 @@ Version 1.1.2 added support for resolving paths to other configuration files tha
 `servicefabricfile:/<configuration-file-name>`
 
 At run time this value will be substituted with a full path to the configuration file with the given name. This is especially useful if an EventFlow pipeline element wraps an existing library that has its own configuration file format (as is the case with Application Insights, for example). 
+
+### Using Application Insights ServerTelemetryChannel
+For Service Fabric applications running in production, we recommend to use Application Insights `ServerTelemetryChannel`. This channel [has the capability to store data on disk during periods of intermittent connectivity](https://docs.microsoft.com/en-us/azure/azure-monitor/app/telemetry-channels) and is a better choice for long-running server processes than the default in-memory channel.
+
+To use the `ServerMemoryChannel` you need to create an EventFlow configuration file and an Application Insights configuration file in the same Service Fabric configuration package:
+
+*eventFlowConfig.json*
+```jsonc
+{
+  "inputs": [
+    {
+      "type": "EventSource",
+      "sources": [
+        { "providerName": "Microsoft-ServiceFabric-Services" },
+        // Other event sources, as necessary...
+      ]
+    }
+  ],
+  "filters": [
+    // Filters, as necessary
+  ],
+  "outputs": [
+    {
+      "type": "ApplicationInsights",      
+      "configurationFilePath":  "servicefabricfile:/ApplicationInsights.config"
+    }
+  ]
+}
+```
+
+*ApplicationInsights.config*
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<ApplicationInsights xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings">
+
+  <TelemetryModules>    
+  <!-- Telemetry module configuration, as necessary -->
+  </TelemetryModules>
+
+  <TelemetryProcessors>
+  <!-- Telemetry processor configuration, as necessary -->    
+  </TelemetryProcessors> 
+
+  <TelemetryChannel Type="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.ServerTelemetryChannel, Microsoft.AI.ServerTelemetryChannel"/>
+
+</ApplicationInsights>
+```
+
+Ensure that your service consumes `Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel` NuGet package.
 
 ## Logical Expressions
 The logical expression allows you to filter events based on the event properties. For example, you can have an expression like `ProviderName == MyEventProvider && EventId == 3`, where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
@@ -1368,7 +1417,7 @@ namespace EventFlowCustomOutput
 
 (content of eventFlowConfig.json)
 
-```json
+```jsonc
 {
   "inputs": [
     {
