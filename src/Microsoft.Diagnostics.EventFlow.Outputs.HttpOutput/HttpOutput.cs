@@ -61,6 +61,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Initialize(configuration.DeepClone(), httpClient);
         }
 
+        public JsonSerializerSettings SerializerSettings { get; set; }
+
         private void Initialize(HttpOutputConfiguration configuration, Implementation.IHttpClient httpClient)
         {
             string errorMessage;
@@ -108,6 +110,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 this.httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
             }
+
+            SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
         }
 
         public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
@@ -124,13 +128,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 switch (configuration.Format) 
                 {
                     case HttpOutputFormat.Json:
-                        payload.Append(JsonConvert.SerializeObject(events, EventFlowJsonUtilities.DefaultSerializerSettings));
+                        payload.Append(JsonConvert.SerializeObject(events, SerializerSettings));
                         break;
 
                     case HttpOutputFormat.JsonLines:
                         foreach (EventData evt in events)
                         {
-                            payload.AppendLine(JsonConvert.SerializeObject(evt, EventFlowJsonUtilities.DefaultSerializerSettings));
+                            payload.AppendLine(JsonConvert.SerializeObject(evt, SerializerSettings));
                         }
                         break;
                 }

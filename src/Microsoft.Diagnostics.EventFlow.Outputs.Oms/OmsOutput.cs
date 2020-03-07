@@ -29,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         private const string JsonContentId = "application/json";
 
         protected readonly IHealthReporter healthReporter;
-        protected readonly OmsConnectionData connectionData;
+        protected OmsConnectionData connectionData;
 
         public OmsOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -50,7 +50,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 throw;
             }
 
-            this.connectionData = CreateConnectionData(omsOutputConfiguration);
+            Initialize(omsOutputConfiguration);
         }
 
         public OmsOutput(OmsOutputConfiguration configuration, IHealthReporter healthReporter)
@@ -59,8 +59,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
             this.healthReporter = healthReporter;
-            this.connectionData = CreateConnectionData(configuration);
+            Initialize(configuration);
         }
+
+        public JsonSerializerSettings SerializerSettings { get; set; }
 
         protected virtual OmsConnectionData CreateConnectionData(OmsOutputConfiguration configuration)
         {
@@ -184,7 +186,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if ((events != null) && (events.Count > 0))
             {
-                result.Add(this.connectionData.LogTypeName, JsonConvert.SerializeObject(events, EventFlowJsonUtilities.DefaultSerializerSettings));
+                result.Add(this.connectionData.LogTypeName, JsonConvert.SerializeObject(events, SerializerSettings));
             }
 
             return result;
@@ -202,6 +204,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
             string signature = $"SharedKey {this.connectionData.WorkspaceId}:{Convert.ToBase64String(hash)}";
             return signature;
+        }
+
+        private void Initialize(OmsOutputConfiguration configuration)
+        {
+            this.connectionData = CreateConnectionData(configuration);
+            SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
         }
 
         protected class OmsConnectionData

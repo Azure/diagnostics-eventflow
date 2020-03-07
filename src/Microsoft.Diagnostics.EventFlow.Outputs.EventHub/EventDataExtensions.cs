@@ -41,7 +41,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             public List<ShoeBoxRecord> records = new List<ShoeBoxRecord>();
         }
 
-        public static MessagingEventData ToMessagingEventData(this EventData eventData, out int messageSize)
+        public static MessagingEventData ToMessagingEventData(this EventData eventData, JsonSerializerSettings serializerSettings, out int messageSize)
         {
             IReadOnlyCollection<EventMetadata> metadataCollection;
             var sbEventData = eventData.TryGetMetadata("metric", out metadataCollection)
@@ -51,7 +51,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             // If this turns out to consume significant CPU time, we could serialize the object "manually".
             // See https://github.com/aspnet/Logging/blob/dev/src/Microsoft.Extensions.Logging.EventSource/EventSourceLogger.cs for an example.
             // This avoids the reflection cost that is associate with single-call SerializeObject approach
-            string eventDataSerialized = JsonConvert.SerializeObject(sbEventData, EventFlowJsonUtilities.DefaultSerializerSettings);
+            string eventDataSerialized = JsonConvert.SerializeObject(sbEventData, serializerSettings);
 
             byte[] messageBytes = Encoding.UTF8.GetBytes(eventDataSerialized);
             messageSize = messageBytes.Length;

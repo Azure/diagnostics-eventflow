@@ -24,7 +24,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             this.healthReporter = healthReporter;
+            SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
         }
+
+        public JsonSerializerSettings SerializerSettings { get; set; }
 
         public Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
@@ -32,7 +35,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 foreach (EventData evt in events)
                 {
-                    string eventString = JsonConvert.SerializeObject(evt, EventFlowJsonUtilities.DefaultSerializerSettings);
+                    string eventString = JsonConvert.SerializeObject(evt, SerializerSettings);
                     string output = $"[{transmissionSequenceNumber}] {eventString}";
 
                     Console.WriteLine(output);

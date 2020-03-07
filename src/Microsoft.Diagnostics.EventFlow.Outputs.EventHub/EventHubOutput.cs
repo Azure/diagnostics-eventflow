@@ -13,6 +13,7 @@ using Microsoft.Azure.EventHubs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Validation;
 using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
 
@@ -71,6 +72,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Initialize();
         }
 
+        public JsonSerializerSettings SerializerSettings { get; set; }
+
         public async Task SendEventsAsync(IReadOnlyCollection<EventData> events, long transmissionSequenceNumber, CancellationToken cancellationToken)
         {
             // Get a reference to the current connections array first, just in case there is another thread wanting to clean
@@ -91,7 +94,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 foreach (var partitionedEventData in groupedEventData)
                 {
                     //assemble the full list of MessagingEventData items plus their messageSize 
-                    List<(MessagingEventData message, int messageSize)> batchRecords = partitionedEventData.Select(e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(out var messageSize), messageSize).ToValueTuple()).ToList();
+                    List<(MessagingEventData message, int messageSize)> batchRecords = partitionedEventData.Select(
+                        e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(SerializerSettings, out var messageSize), messageSize).ToValueTuple()).ToList();
 
                     SendBatch(batchRecords);
 
@@ -160,7 +164,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 this.clients[i] = this.eventHubClientFactory(this.outputConfiguration.ConnectionString);
             }
 
-
+            SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
         }
 
         void IDisposable.Dispose()
