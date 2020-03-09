@@ -4,16 +4,30 @@
 // ------------------------------------------------------------
 
 using Newtonsoft.Json;
+using System;
+using System.Dynamic;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
     public static class EventFlowJsonUtilities
     {
-        public static JsonSerializerSettings DefaultSerializerSettings  { get; } =new JsonSerializerSettings()
+        private static Lazy<JsonSerializerSettings> settings = new Lazy<JsonSerializerSettings>(GetDefaultSerializerSettings, System.Threading.LazyThreadSafetyMode.PublicationOnly);
+
+        [Obsolete("Use GetDefaultSerializerSettings() instead")]
+        public static JsonSerializerSettings DefaultSerializerSettings => settings.Value;
+
+        public static JsonSerializerSettings GetDefaultSerializerSettings()
         {
-            NullValueHandling = NullValueHandling.Ignore,
-            DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-        };
+            var settings = new JsonSerializerSettings()
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            };
+
+            settings.Converters.Add(new MemberInfoConverter());
+            return settings;
+        }
     }
 }
