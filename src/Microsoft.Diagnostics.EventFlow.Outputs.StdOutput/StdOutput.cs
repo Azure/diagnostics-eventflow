@@ -19,12 +19,21 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         public static readonly string TraceTag = nameof(StdOutput);
 
         private readonly IHealthReporter healthReporter;
+        private readonly Action<string> writeOutput;
 
         public StdOutput(IHealthReporter healthReporter)
         {
             Requires.NotNull(healthReporter, nameof(healthReporter));
             this.healthReporter = healthReporter;
             SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
+            this.writeOutput = Console.WriteLine;
+        }
+
+        // Test constructor
+        internal StdOutput(IHealthReporter healthReporter, Action<string> outputWriter): this(healthReporter)
+        {
+            Requires.NotNull(outputWriter, nameof(outputWriter));
+            this.writeOutput = outputWriter;
         }
 
         public JsonSerializerSettings SerializerSettings { get; set; }
@@ -38,7 +47,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     string eventString = JsonConvert.SerializeObject(evt, SerializerSettings);
                     string output = $"[{transmissionSequenceNumber}] {eventString}";
 
-                    Console.WriteLine(output);
+                    this.writeOutput(output);
                 }
                 return Task.FromResult(true);
             }
