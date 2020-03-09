@@ -93,15 +93,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                         ""Level"":3,
                         ""Keywords"":0,
                         ""Payload"":{""Message"":""Hey!""}
-                    }]";
-            expectedContent = RemoveWhitespace(expectedContent);
+                    }]".RemoveAllWhitespace();
             
             await output.SendEventsAsync(events, 78, CancellationToken.None);
             httpClientMock.Verify(client => client.PostAsync(
                 new Uri("http://logcollector:1234"), 
                 It.Is<HttpContent>(content => content.ReadAsStringAsync().GetAwaiter().GetResult() == expectedContent)
             ), Times.Once());
-
         }
 
         [Fact]
@@ -148,13 +146,106 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                     ""Level"":3,
                     ""Keywords"":0,
                     ""Payload"":{""Message"":""Hey!""}
-                }";
-            expectedContent = RemoveWhitespace(expectedContent);
+                }".RemoveAllWhitespace();
 
             await output.SendEventsAsync(events, 78, CancellationToken.None);
             httpClientMock.Verify(client => client.PostAsync(
                 new Uri("http://logcollector:1234"),
-                It.Is<HttpContent>(content => RemoveWhitespace(content.ReadAsStringAsync().GetAwaiter().GetResult()) == expectedContent)
+                It.Is<HttpContent>(content => content.ReadAsStringAsync().GetAwaiter().GetResult().RemoveAllWhitespace() == expectedContent)
+            ), Times.Once());
+        }
+
+        [Fact]
+        public async Task MethodInfoIsSerializedAsFullyQualifiedName()
+        {
+            var config = new HttpOutputConfiguration();
+            config.ServiceUri = "http://logcollector:1234";
+
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var httpClientMock = new Mock<Implementation.IHttpClient>();
+            httpClientMock.Setup(client => client.PostAsync(It.IsAny<Uri>(), It.IsAny<HttpContent>()))
+                .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.NoContent));
+
+            var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
+
+            EventData e = new EventData();
+            e.ProviderName = "HttpOutputTests";
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 12, 0, TimeSpan.Zero);
+            e.Level = LogLevel.Warning;
+            e.Payload.Add("Method", typeof(HttpOutputTests).GetMethod(nameof(MethodInfoIsSerializedAsFullyQualifiedName)));
+
+            string expectedContent = @"
+                [
+                    {
+                        ""Timestamp"":""2018-01-02T14:12:00+00:00"",
+                        ""ProviderName"":""HttpOutputTests"",
+                        ""Level"":3,
+                        ""Keywords"":0,
+                        ""Payload"":{""Method"":""Microsoft.Diagnostics.EventFlow.Outputs.Tests.HttpOutputTests.MethodInfoIsSerializedAsFullyQualifiedName""}
+                    }
+                ]".RemoveAllWhitespace();
+
+            await output.SendEventsAsync(new EventData[] { e }, 78, CancellationToken.None);
+            httpClientMock.Verify(client => client.PostAsync(
+                new Uri("http://logcollector:1234"),
+                It.Is<HttpContent>(content => content.ReadAsStringAsync().GetAwaiter().GetResult() == expectedContent)
+            ), Times.Once());
+        }
+
+        [Fact]
+        public async Task UsesCustomJsonSerializerSettings()
+        {
+            var config = new HttpOutputConfiguration();
+            config.ServiceUri = "http://logcollector:1234";
+
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var httpClientMock = new Mock<Implementation.IHttpClient>();
+            httpClientMock.Setup(client => client.PostAsync(It.IsAny<Uri>(), It.IsAny<HttpContent>()))
+                .ReturnsAsync(new HttpResponseMessage(System.Net.HttpStatusCode.NoContent));
+
+            var output = new HttpOutput(config, healthReporterMock.Object, httpClientMock.Object);
+
+            EventData e = new EventData();
+            e.ProviderName = "HttpOutputTests";
+            e.Timestamp = new DateTimeOffset(2018, 1, 2, 14, 12, 0, TimeSpan.Zero);
+            e.Level = LogLevel.Warning;
+            e.Payload.Add("InfinityProperty", Double.PositiveInfinity);
+
+            string expectedContent = @"
+                [
+                    {
+                        ""Timestamp"":""2018-01-02T14:12:00+00:00"",
+                        ""ProviderName"":""HttpOutputTests"",
+                        ""Level"":3,
+                        ""Keywords"":0,
+                        ""Payload"":{""InfinityProperty"":""Infinity""}
+                    }
+                ]".RemoveAllWhitespace();
+
+            await output.SendEventsAsync(new EventData[] { e }, 78, CancellationToken.None);
+            httpClientMock.Verify(client => client.PostAsync(
+                new Uri("http://logcollector:1234"),
+                It.Is<HttpContent>(content => content.ReadAsStringAsync().GetAwaiter().GetResult() == expectedContent)
+            ), Times.Once());
+
+            // Now verify changing serializer settings is effective.
+            output.SerializerSettings.FloatFormatHandling = FloatFormatHandling.DefaultValue;
+            httpClientMock.ResetCalls();
+            expectedContent = @"
+                [
+                    {
+                        ""Timestamp"":""2018-01-02T14:12:00+00:00"",
+                        ""ProviderName"":""HttpOutputTests"",
+                        ""Level"":3,
+                        ""Keywords"":0,
+                        ""Payload"":{""InfinityProperty"":0.0}
+                    }
+                ]".RemoveAllWhitespace();
+
+            await output.SendEventsAsync(new EventData[] { e }, 79, CancellationToken.None);
+            httpClientMock.Verify(client => client.PostAsync(
+                new Uri("http://logcollector:1234"),
+                It.Is<HttpContent>(content => content.ReadAsStringAsync().GetAwaiter().GetResult() == expectedContent)
             ), Times.Once());
         }
 
@@ -177,11 +268,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             events.Add(e);
 
             return events;
-        }
-
-        private string RemoveWhitespace(string input)
-        {
-            return new string(input.Where(c => !Char.IsWhiteSpace(c)).ToArray());
         }
     }
 }
