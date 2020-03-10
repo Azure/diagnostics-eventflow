@@ -40,7 +40,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             using (var configFile = new TemporaryFile())
             {
-                var pipelineConfig = JsonConvert.SerializeObject(pipelineConfigObj, EventFlowJsonUtilities.DefaultSerializerSettings);
+                var pipelineConfig = JsonConvert.SerializeObject(pipelineConfigObj, EventFlowJsonUtilities.GetDefaultSerializerSettings());
 
                 configFile.Write(pipelineConfig);
                 var configBuilder = new ConfigurationBuilder();
