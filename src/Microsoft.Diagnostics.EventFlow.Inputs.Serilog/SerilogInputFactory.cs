@@ -19,7 +19,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
-            return new SerilogInput(healthReporter);
+            return new SerilogInput(configuration, healthReporter);
         }
     }
 }

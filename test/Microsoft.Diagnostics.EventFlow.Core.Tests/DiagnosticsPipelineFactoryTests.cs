@@ -421,8 +421,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         },
                         {
                             ""type"": ""ElasticSearch"",
-                            ""serviceUri"": ""https://myElasticSearchCluster:9200"",
-                            ""eventDocumentTypeName"": ""diagData""
+                            ""serviceUri"": ""https://myElasticSearchCluster:9200""
                         }, 
                         {
                             ""type"": ""OmsOutput"",

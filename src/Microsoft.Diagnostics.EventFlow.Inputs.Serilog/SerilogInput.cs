@@ -6,10 +6,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Diagnostics.EventFlow.Metadata;
-using Serilog.Events;
+using Microsoft.Extensions.Configuration;
 using Validation;
+
 using Serilog.Core;
+using Serilog.Events;
+
+using Microsoft.Diagnostics.EventFlow.Metadata;
+using Microsoft.Diagnostics.EventFlow.Configuration;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
@@ -30,18 +34,61 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             };
 
         private EventFlowSubject<EventData> subject;
-        private readonly IHealthReporter healthReporter;
+        private IHealthReporter healthReporter;
+        internal SerilogInputConfiguration inputConfiguration;
+        private Func<LogEventPropertyValue, object> valueSerializer;
+
+        /// <summary>
+        /// Creates an instance of <see cref="SerilogInput"/> using default values
+        /// </summary>
+        /// <param name="healthReporter">A health reporter through which the input can report errors.</param>
+        public SerilogInput(IHealthReporter healthReporter) : this(new SerilogInputConfiguration(), healthReporter) { }
+
 
         /// <summary>
         /// Construct a <see cref="SerilogInput"/>.
         /// </summary>
+        /// <param name="configuration">A configuration to be used to configure the input</param>
         /// <param name="healthReporter">A health reporter through which the input can report errors.</param>
-        public SerilogInput(IHealthReporter healthReporter)
+        public SerilogInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
+            Requires.NotNull(configuration, nameof(configuration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
 
+            var inputConfiguration = new SerilogInputConfiguration();
+            try
+            {
+                configuration.Bind(inputConfiguration);
+            }
+            catch
+            {
+                healthReporter.ReportProblem($"Invalid {nameof(SerilogInputConfiguration)} configuration encountered: '{configuration}'",
+                   EventFlowContextIdentifiers.Configuration);
+                throw;
+            }
+
+            Initialize(inputConfiguration, healthReporter);
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="SerilogInput"/>
+        /// </summary>
+        /// <param name="inputConfiguration">A configuration to be used to configure the input</param>
+        /// <param name="healthReporter">A health reporter through which the input can report errors.</param>
+        public SerilogInput(SerilogInputConfiguration inputConfiguration, IHealthReporter healthReporter)
+        {
+            Requires.NotNull(inputConfiguration, nameof(inputConfiguration));
+            Requires.NotNull(healthReporter, nameof(healthReporter));
+
+            Initialize(inputConfiguration, healthReporter);
+        }
+
+        private void Initialize(SerilogInputConfiguration inputConfiguration, IHealthReporter healthReporter)
+        {
             this.healthReporter = healthReporter;
+            this.inputConfiguration = inputConfiguration;
             this.subject = new EventFlowSubject<EventData>();
+            this.valueSerializer = this.inputConfiguration.UseSerilogDepthLevel ? (Func<LogEventPropertyValue, object>)this.ToRawValue : this.ToRawScalar;
         }
 
         void ILogEventSink.Emit(LogEvent logEvent)
@@ -123,7 +170,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             return eventData;
         }
 
-        private static object ToRawValue(LogEventPropertyValue logEventValue)
+        private object ToRawValue(LogEventPropertyValue logEventValue)
         {
             // Special-case a few types of LogEventPropertyValue that allow us to maintain better type fidelity.
             // For everything else take the default string rendering as the data.
@@ -136,12 +183,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             SequenceValue sequenceValue = logEventValue as SequenceValue;
             if (sequenceValue != null)
             {
-                object[] arrayResult = sequenceValue.Elements.Select(e => ToRawScalar(e)).ToArray();
-                if (arrayResult.Length == sequenceValue.Elements.Count)
-                {
-                    // All values extracted successfully, it is a flat array of scalars
-                    return arrayResult;
-                }
+                object[] arrayResult = sequenceValue.Elements.Select(e => valueSerializer(e)).ToArray();
+                return arrayResult;
             }
 
             StructureValue structureValue = logEventValue as StructureValue;
@@ -150,18 +193,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 IDictionary<string, object> structureResult = new Dictionary<string, object>(structureValue.Properties.Count);
                 foreach (var property in structureValue.Properties)
                 {
-                    structureResult[property.Name] = ToRawScalar(property.Value);
+                    structureResult[property.Name] = valueSerializer(property.Value);
                 }
 
-                if (structureResult.Count == structureValue.Properties.Count)
+                if (structureValue.TypeTag != null)
                 {
-                    if (structureValue.TypeTag != null)
-                    {
-                        structureResult["$type"] = structureValue.TypeTag;
-                    }
-
-                    return structureResult;
+                    structureResult["$type"] = structureValue.TypeTag;
                 }
+
+                return structureResult;
             }
 
             DictionaryValue dictionaryValue = logEventValue as DictionaryValue;
@@ -169,18 +209,15 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             {
                 IDictionary<string, object> dictionaryResult = dictionaryValue.Elements
                     .Where(kvPair => kvPair.Key.Value is string)
-                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => ToRawScalar(kvPair.Value));
-                if (dictionaryResult.Count == dictionaryValue.Elements.Count)
-                {
-                    return dictionaryResult;
-                }
+                    .ToDictionary(kvPair => (string)kvPair.Key.Value, kvPair => valueSerializer(kvPair.Value));
+                return dictionaryResult;
             }
 
             // Fall back to string rendering of the value
             return logEventValue.ToString();
         }
 
-        private static object ToRawScalar(LogEventPropertyValue value)
+        private object ToRawScalar(LogEventPropertyValue value)
         {
             ScalarValue scalarValue = value as ScalarValue;
             if (scalarValue != null)

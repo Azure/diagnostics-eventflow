@@ -6,7 +6,7 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</AssemblyName>
-    <VersionPrefix>1.4.1</VersionPrefix>
+    <VersionPrefix>1.5.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Event Hub;Event Hubs</PackageTags>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
     <PackageReference Include="Validation" Version="2.4.18" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.1" />

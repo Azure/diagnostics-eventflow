@@ -15,7 +15,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     // If you make any changes here, please update the README.md file to reflect the new configuration
     public class ElasticSearchOutputConfiguration: ItemConfiguration
     {
-        public static readonly string DefaultEventDocumentTypeName = "event";
         public static readonly int DefaultNumberOfShards = 1;
         public static readonly int DefaultNumberOfReplicas = 5;
         public static readonly string DefaultRefreshInterval = "15s";
@@ -26,7 +25,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public string ConnectionPoolType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
         public string BasicAuthenticationUserPassword { get; set; }
-        public string EventDocumentTypeName { get; set; }
         public int NumberOfShards { get; set; }
         public int NumberOfReplicas { get; set; }
         public string RefreshInterval { get; set; }
@@ -36,7 +34,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 
         public ElasticSearchOutputConfiguration()
         {
-            EventDocumentTypeName = DefaultEventDocumentTypeName;
             NumberOfShards = DefaultNumberOfShards;
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
@@ -52,7 +49,6 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 ConnectionPoolType = this.ConnectionPoolType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
                 BasicAuthenticationUserPassword = this.BasicAuthenticationUserPassword,
-                EventDocumentTypeName = this.EventDocumentTypeName,
                 NumberOfShards = this.NumberOfShards,
                 NumberOfReplicas = this.NumberOfReplicas,
                 RefreshInterval = this.RefreshInterval,

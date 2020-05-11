@@ -6,7 +6,7 @@
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;netstandard2.0;net451</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging</AssemblyName>
-    <VersionPrefix>1.4.4</VersionPrefix>
+    <VersionPrefix>1.4.5</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;MicrosoftLogging</PackageTags>

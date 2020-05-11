@@ -358,11 +358,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 {
                     var factory = new LoggerFactory();
                     factory.AddEventFlow(diagnosticPipeline);
-                    var logger = new Logger<LoggerInputTests>(factory);
+                    var logger = (ILogger) new Logger<LoggerInputTests>(factory);
                     
-                    ((ILogger) logger).Log(Extensions.Logging.LogLevel.Information, 0, 
+                    logger.Log(Extensions.Logging.LogLevel.Information, 0, 
                         new Dictionary<string, object> { { "alpha", 1 }, { "bravo", 2 }, { "message", "Log dictionary data" } },
                         null, (data, ex) => data.Last().Value.ToString());
+
                     subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
                         data,
                         "Log dictionary data",
@@ -371,6 +372,80 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                         0,
                         null,
                         new Dictionary<string, object> { { "alpha", 1 }, { "bravo", 2 } }))), Times.Exactly(1));
+                }
+            }
+        }
+
+        [Fact]
+        public void LoggerCanHandleScopeDataPassedAsDictionary()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            
+            using (LoggerInput target = new LoggerInput(healthReporterMock.Object))
+            {
+                var diagnosticPipeline = createPipeline(target, healthReporterMock.Object);
+                using (target.Subscribe(subject.Object))
+                {
+                    var factory = new LoggerFactory();
+                    factory.AddEventFlow(diagnosticPipeline);
+                    ILogger logger = new Logger<LoggerInputTests>(factory);
+
+                    using (logger.BeginScope(new Dictionary<string, object> { { "OpID", 342 }, { "TransactionID", "transaction-1234" } }))
+                    {
+                        logger.LogInformation(1, "Did {step}", "first step");
+
+                        subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
+                            data,
+                            "Did first step",
+                            typeof(LoggerInputTests).FullName,
+                            LogLevel.Informational,
+                            1,
+                            null,
+                            new Dictionary<string, object> {
+                                { "step", "first step" }, 
+                                { "OpID", 342 },
+                                { "TransactionID", "transaction-1234" }
+                            }))), Times.Exactly(1));
+                        subject.ResetCalls();
+
+                        // Note: this scope uses a formatted message instead of dictionary data
+                        using (logger.BeginScope("Activity {activityID}", "activity-7722"))
+                        {
+                            logger.LogInformation(2, "Did {step}", "second step");
+
+                            subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
+                            data,
+                            "Did second step",
+                            typeof(LoggerInputTests).FullName,
+                            LogLevel.Informational,
+                            2,
+                            null,
+                            new Dictionary<string, object> {
+                                { "step", "second step" },
+                                { "activityID", "activity-7722" },
+                                { "OpID", 342 },
+                                { "TransactionID", "transaction-1234" },
+                                { "Scope", "Activity activity-7722" } // Formatted scope message
+                            }))), Times.Exactly(1));
+                            subject.ResetCalls();
+                        }
+
+                        logger.LogInformation(3, "Did {step}", "third step");
+
+                        subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
+                            data,
+                            "Did third step",
+                            typeof(LoggerInputTests).FullName,
+                            LogLevel.Informational,
+                            3,
+                            null,
+                            new Dictionary<string, object> {
+                                { "step", "third step" },
+                                { "OpID", 342 },
+                                { "TransactionID", "transaction-1234" }
+                            }))), Times.Exactly(1));
+                    }
                 }
             }
         }

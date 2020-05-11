@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
@@ -28,7 +29,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             e.Payload.Add("DateTimeProperty", new DateTime(2017, 4, 19, 10, 15, 23, DateTimeKind.Utc));
             e.Payload.Add("DateTimeOffsetProperty", new DateTimeOffset(2017, 4, 19, 10, 16, 07, TimeSpan.Zero));
 
-            var messagingData = EventDataExtensions.ToMessagingEventData(e, out int messageSize);
+            var messagingData = EventDataExtensions.ToMessagingEventData(e, EventFlowJsonUtilities.GetDefaultSerializerSettings(), out int messageSize);
             string messageBody = Encoding.UTF8.GetString(messagingData.Body.Array, messagingData.Body.Offset, messagingData.Body.Count);
 
             var dateTimeRegex = new Regex(@"""DateTimeProperty"" \s* : \s* ""2017-04-19T10:15:23Z""", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromMilliseconds(100));
@@ -187,6 +188,105 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             //the individual messages are 55Kb in size each, so a maximum of 4 messages total byte size fits within EventHubMessageSizeLimit limits.
             //so we expect `itemCount` / 4 batches executed against EventHubClient.SendAsync()
             client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b)), "partition3"), Times.Exactly(itemCount / 4));
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MethodInfoIsSerializedAsFullyQualifiedName()
+        {
+            var client = new Mock<IEventHubClient>();
+            var healthReporter = new Mock<IHealthReporter>();
+            var configuration = new EventHubOutputConfiguration();
+            configuration.ConnectionString = "Connection string";
+            configuration.EventHubName = "foo";
+
+            EventData e = new EventData();
+            e.ProviderName = "TestProvider";
+            e.Timestamp = DateTimeOffset.UtcNow;
+            e.Level = LogLevel.Warning;
+            e.Payload.Add("Method", typeof(EventHubOutputTests).GetMethod(nameof(MethodInfoIsSerializedAsFullyQualifiedName)));
+
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+            await eho.SendEventsAsync(new EventData[] { e, }, 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
+                if (batch.Count() != 1) return false;
+
+                var data = batch.First();
+                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var recordSet = JObject.Parse(bodyString);
+                var message = recordSet["records"][0];
+
+                return (string)message["level"] == "Warning"
+                       && (string)message["properties"]["ProviderName"] == "TestProvider"
+                       && (string)message["properties"]["Method"] == "Microsoft.Diagnostics.EventFlow.Outputs.Tests.EventHubOutputTests.MethodInfoIsSerializedAsFullyQualifiedName";
+            };
+
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UsesCustomJsonSerializerSettings()
+        {
+            var client = new Mock<IEventHubClient>();
+            var healthReporter = new Mock<IHealthReporter>();
+            var configuration = new EventHubOutputConfiguration();
+            configuration.ConnectionString = "Connection string";
+            configuration.EventHubName = "foo";
+
+            EventData e = new EventData();
+            e.ProviderName = "TestProvider";
+            e.Timestamp = DateTimeOffset.UtcNow;
+            e.Level = LogLevel.Warning;
+            e.Payload.Add("InfinityProperty", Double.PositiveInfinity);
+
+            EventHubOutput eho = new EventHubOutput(configuration, healthReporter.Object, connectionString => client.Object);
+            await eho.SendEventsAsync(new EventData[] { e, }, 17, CancellationToken.None);
+
+            Func<IEnumerable<MessagingEventData>, bool> verifyBatch = batch =>
+            {
+                if (batch.Count() != 1) return false;
+
+                var data = batch.First();
+                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var recordSet = JObject.Parse(bodyString);
+                var message = recordSet["records"][0];
+
+                return (string)message["level"] == "Warning"
+                       && (string)message["properties"]["ProviderName"] == "TestProvider"
+                       // By default floating-point infinity values are converted to strings
+                       && (string)message["properties"]["InfinityProperty"] == "Infinity";
+            };
+
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
+            healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+
+            // Now verify changing serializer settings is effective
+            eho.SerializerSettings.FloatFormatHandling = FloatFormatHandling.DefaultValue;
+            client.ResetCalls();
+
+            verifyBatch = batch =>
+            {
+                if (batch.Count() != 1) return false;
+
+                var data = batch.First();
+                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var recordSet = JObject.Parse(bodyString);
+                var message = recordSet["records"][0];
+
+                return (string)message["level"] == "Warning"
+                       && (string)message["properties"]["ProviderName"] == "TestProvider"
+                       && (double)message["properties"].OfType<JProperty>().First(p => p.Name == "InfinityProperty").OfType<JValue>().First().Value == 0.0;
+            };
+
+            await eho.SendEventsAsync(new EventData[] { e, }, 18, CancellationToken.None);
+
+            client.Verify(c => c.SendAsync(It.Is<IEnumerable<MessagingEventData>>(b => verifyBatch(b))), Times.Once);
             healthReporter.Verify(hr => hr.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             healthReporter.Verify(hr => hr.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
