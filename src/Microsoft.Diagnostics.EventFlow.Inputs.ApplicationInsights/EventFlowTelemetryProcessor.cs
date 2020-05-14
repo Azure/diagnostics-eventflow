@@ -344,6 +344,19 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             eventPayload.Add(TelemetryTypeProperty, "dependency");
             eventPayload.Add(nameof(dependencyCall.Name), dependencyCall.Name);
 
+            // Target is a mandatory dependency property, so we need to have it present in the payload. 
+            // A dependency telemetry without target information is not very useful, but we'd rather err on the side of preserving as much data as possible.
+            // Also see https://github.com/Azure/diagnostics-eventflow/issues/358
+            if (!string.IsNullOrEmpty(dependencyCall.Target))
+            {
+                eventPayload.Add(nameof(dependencyCall.Target), dependencyCall.Target);
+            }
+            else
+            {
+                eventPayload.Add(nameof(dependencyCall.Target), string.Empty);
+            }
+            dependencyMetadata.Properties.Add(DependencyData.TargetPropertyMoniker, nameof(dependencyCall.Target));
+
             if (dependencyCall.Success.HasValue)
             {
                 eventPayload.Add(nameof(dependencyCall.Success), dependencyCall.Success.Value);
@@ -359,11 +372,6 @@ namespace Microsoft.Diagnostics.EventFlow.ApplicationInsights
             {
                 eventPayload.Add(nameof(dependencyCall.Type), dependencyCall.Type);
                 dependencyMetadata.Properties.Add(DependencyData.DependecyTypeMoniker, dependencyCall.Type);
-            }
-            if (!string.IsNullOrEmpty(dependencyCall.Target))
-            {
-                eventPayload.Add(nameof(dependencyCall.Target), dependencyCall.Target);
-                dependencyMetadata.Properties.Add(DependencyData.TargetPropertyMoniker, nameof(dependencyCall.Target));
             }
             if (!string.IsNullOrEmpty(dependencyCall.Data))
             {
