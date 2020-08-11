@@ -3,10 +3,10 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using Newtonsoft.Json;
 using System;
-using System.Dynamic;
-using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
+
+using Microsoft.Diagnostics.EventFlow.JsonConverters;
 
 namespace Microsoft.Diagnostics.EventFlow
 {
@@ -27,6 +27,8 @@ namespace Microsoft.Diagnostics.EventFlow
             };
 
             settings.Converters.Add(new MemberInfoConverter());
+            settings.Converters.Add(new IPEndpointConverter());
+            settings.Converters.Add(new IPAddressConverter());
             return settings;
         }
     }
