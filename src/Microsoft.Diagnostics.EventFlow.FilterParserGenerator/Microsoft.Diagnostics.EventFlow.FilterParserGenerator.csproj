@@ -56,6 +56,9 @@
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\FilterEvaluators\NegationEvaluator.cs">
       <Link>NegationEvaluator.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\FilterEvaluators\NullPropertyEvaluator.cs">
+      <Link>NullPropertyEvaluator.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Diagnostics.EventFlow.Core\Implementations\FilterEvaluators\OrderingEvaluator.cs">
       <Link>OrderingEvaluator.cs</Link>
     </Compile>
