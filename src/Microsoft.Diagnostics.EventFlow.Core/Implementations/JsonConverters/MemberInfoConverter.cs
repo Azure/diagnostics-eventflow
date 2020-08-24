@@ -7,7 +7,7 @@ using System;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Microsoft.Diagnostics.EventFlow
+namespace Microsoft.Diagnostics.EventFlow.JsonConverters
 {
 #if NET471 || NETSTANDARD2_0
     public class MemberInfoConverter : JsonConverter<MemberInfo>

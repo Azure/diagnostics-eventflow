@@ -1130,7 +1130,7 @@ Here is an example of all the possible settings:
 
 This package contains two components that make it easier to include EventFlow in Service Fabric applications: the `ServiceFabricDiagnosticPipelineFactory` and `ServiceFabricHealthReporter`. `ServiceFabricHealthReporter` is used automatically by `ServiceFabricDiagnosticPipelineFactory`. It does not require any configuration and does not need to be listed in the pipeline configuration file.
 
-The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `DiagnosticPipelineFactory`, one that uses Service Fabric configuration support to load pipeline configuration. The resulting pipeline reports any execution problems through the Service Fabric health subsystem. The factory exposes a static `Create()` method that takes two parameters:
+The `ServiceFabricDiagnosticPipelineFactory` is a replacement for the standard `DiagnosticPipelineFactory`, one that uses Service Fabric configuration support to load pipeline configuration. The resulting pipeline reports any execution problems through the Service Fabric health subsystem. The factory exposes a static `Create()` method that takes the following parameters:
 
 | Parameter | Default Value | Description |
 | :-------- | :-------------- | :---------- |
