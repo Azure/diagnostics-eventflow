@@ -3,21 +3,19 @@ using Xunit;
 
 namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
 {
-    public class NullPropertyEvaluatorTests
+    public class HasNoPropertyEvaluatorTests
     {
-        private readonly FilterParser parser = new FilterParser();
-
         [Fact]
         public void MissingPropertyEquality()
         {
-            var evaluator = new NullPropertyEvaluator("InvalidPropertyName", "null");
+            var evaluator = new HasNoPropertyEvaluator("InvalidPropertyName");
             Assert.True(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
 
         [Fact]
         public void ExistingPropertyEquality()
         {
-            var evaluator = new NullPropertyEvaluator("EventId", "1234");
+            var evaluator = new HasNoPropertyEvaluator("EventId");
             Assert.False(evaluator.Evaluate(FilteringTestData.ManyPropertiesEvent));
         }
     }
