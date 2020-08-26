@@ -37,9 +37,6 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
                 case "&==":
                     return new BitwiseEqualityEvaluator(propertyName, value);
 
-                case "is":
-                    return new NullPropertyEvaluator(propertyName, value);
-
                 default:
                     throw new ArgumentException("Unknown operator", nameof(op));
             }
