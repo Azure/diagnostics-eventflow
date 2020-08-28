@@ -1,4 +1,9 @@
-﻿using System;
+﻿// ------------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
+// ------------------------------------------------------------------------------------------------
+
+using System;
 using System.Globalization;
 
 namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
@@ -14,21 +19,11 @@ namespace Microsoft.Diagnostics.EventFlow.FilterEvaluators
 
         public override string SemanticsString
         {
-            get { return string.Format(CultureInfo.InvariantCulture, "(__EqualityEvaluator:hasproperty {0})", this.propertyName); }
+            get { return string.Format(CultureInfo.InvariantCulture, "(hasproperty {0})", this.propertyName); }
         }
 
         public override bool Evaluate(EventData e)
         {
-            return EvaluateEquality(e);
-        }
-
-        protected bool EvaluateEquality(EventData e)
-        {
-            if (e == null)
-            {
-                throw new ArgumentNullException(nameof(e));
-            }
-
             return e.TryGetPropertyValue(this.propertyName, out _);
         }
     }
