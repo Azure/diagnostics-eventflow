@@ -22,7 +22,9 @@ primaryExp <FilterEvaluator>
   / "!" _ "(" _ exp:orExp _ ")" { new NegationEvaluator(exp) }
 
 basicExp <FilterEvaluator>
-  = p:property _ o:operator _ v:(value / quotedText) { EventPropertyExpressionEvaluatorFactory.CreateEvaluator(p, o, v) }
+  = "hasproperty" p:property { new HasPropertyEvaluator(p) }
+  / "hasnoproperty" p:property { new HasNoPropertyEvaluator(p) }
+  / p:property _ o:operator _ v:(value / quotedText) { EventPropertyExpressionEvaluatorFactory.CreateEvaluator(p, o, v) }
 
 property
   = ([A-Za-z] / "_") (letterDigit / "_" / ".")*
