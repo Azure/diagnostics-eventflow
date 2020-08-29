@@ -1271,17 +1271,16 @@ Standard and custom (payload) properties are treated equally; there is no need t
   - were created by `MyEventProvider` provider (ProviderName is a standard property available for all events), and
   - have a TenantId custom property, with value that is different from "Unknown" string.
 
-Operators supported by logical expressions are:
+The following table lists operators supported by logical expressions
 
-Comparison: `==`, `!=`, `<`, `>`, `<=`, `>=`
-
-Bitwise Equality: `&==` (true if bit mask is set, i.e., (lhsValue & rhsValue) == rhsValue, this is useful when filter on properties like Keywords)
-
-Regular Expression: `~=` (provide a regular expression pattern on the right)
-
-Logical: `&&`, `||`, `!` (the precedence is `!` > `&&` > `||`)
-
-Grouping: `(expression)` (grouping can be used to change the evaluation order of expressions with logical operators)
+| Class | Operators | Description |
+| :---- | :-------- | :---------------- |
+| Comparison | `==`, `!=`, `<`, `>`, `<=`, `>=` | Evaluates to true if the property (left side of the expression)  successfully compares to the value (right side of the expression). |
+| Property presence and absence | `hasproperty` `hasnoproperty` | `hasproperty transactionId` will only allow events that have a property named "`transactionId`". <br/>`hasnoproperty transactionId` does the opposite: it will only allow events that *do not* have a property named "`transactionId`". |
+| Bitwise Equality | `&==` | Evaluates to true if bit mask is set, i.e., `(lhsValue & rhsValue) == rhsValue`. This is useful to filter on properties like `Keywords`. |
+| Regular Expression | `~=` | Evaluates to true if the property value matches a regular expression pattern on the right. |
+| Logical | `&&`, `||`, `!` | Enables building complex logical expressions out of simpler ones. <br/> The precedence is `!` > `&&` > `||` (highest to lowest).
+| Grouping | `(expression)` | Grouping can be used to change the evaluation order of expressions with logical operators. |
 
 ## Store Secret Securely
 If you don't want to put sensitive information in the EventFlow configuration file, you can store the information at a secured place and pass it to the configuration at run time. Here is the sample code:
