@@ -22,8 +22,8 @@ primaryExp <FilterEvaluator>
   / "!" _ "(" _ exp:orExp _ ")" { new NegationEvaluator(exp) }
 
 basicExp <FilterEvaluator>
-  = "hasproperty" p:property { new HasPropertyEvaluator(p) }
-  / "hasnoproperty" p:property { new HasNoPropertyEvaluator(p) }
+  = "hasproperty" _ p:property { new HasPropertyEvaluator(p) }
+  / "hasnoproperty" _ p:property { new HasNoPropertyEvaluator(p) }
   / p:property _ o:operator _ v:(value / quotedText) { EventPropertyExpressionEvaluatorFactory.CreateEvaluator(p, o, v) }
 
 property
