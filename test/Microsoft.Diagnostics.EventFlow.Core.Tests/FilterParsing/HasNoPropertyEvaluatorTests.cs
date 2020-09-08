@@ -25,7 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests.FilterParsing
         }
 
         [Fact]
-        public void HasPropertyEvaluatorParsing()
+        public void HasNoPropertyEvaluatorParsing()
         {
             FilterParser parser = new FilterParser();
 
