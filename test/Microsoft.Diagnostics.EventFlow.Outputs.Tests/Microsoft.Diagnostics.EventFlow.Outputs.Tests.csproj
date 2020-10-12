@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.14.0" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />    
     <PackageReference Include="Moq" Version="4.8.2" />

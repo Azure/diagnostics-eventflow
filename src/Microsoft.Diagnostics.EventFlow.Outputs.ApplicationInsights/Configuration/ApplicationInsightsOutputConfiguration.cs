@@ -10,6 +10,20 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     public class ApplicationInsightsOutputConfiguration: ItemConfiguration
     {
         public string InstrumentationKey { get; set; }
+        public string ConnectionString { get; set; }
         public string ConfigurationFilePath { get; set; }
+
+        public bool Validate(out string validationError)
+        {
+            validationError = null;
+
+            if (string.IsNullOrWhiteSpace(this.InstrumentationKey) && string.IsNullOrWhiteSpace(ConnectionString) && string.IsNullOrWhiteSpace(ConfigurationFilePath))
+            {
+                validationError = "At least one of the configuration parameters (InstrumentationKey, ConnectionString, or ConfigurationFilePath) must have a value";
+                return false;
+            }
+
+            return true;
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         };
         private static Lazy<Random> RandomGenerator = new Lazy<Random>();
 
-        private TelemetryClient telemetryClient;
+        internal TelemetryClient telemetryClient;
         private readonly IHealthReporter healthReporter;
 
         public ApplicationInsightsOutput(IConfiguration configuration, IHealthReporter healthReporter)
@@ -145,21 +145,34 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             Debug.Assert(aiOutputConfiguration != null);
             Debug.Assert(this.healthReporter != null);
 
+            if (!aiOutputConfiguration.Validate(out string validationError))
+            {
+                this.healthReporter.ReportProblem($"{nameof(ApplicationInsightsOutput)}: invalid configuration. {validationError} No data will be sent to Application Insights", EventFlowContextIdentifiers.Output);
+                return;
+            }
+
+            TelemetryConfiguration telemetryConfiguration = null;
             if (string.IsNullOrWhiteSpace(aiOutputConfiguration.ConfigurationFilePath))
             {
-                this.telemetryClient = new TelemetryClient();                
+                telemetryConfiguration = TelemetryConfiguration.CreateDefault();              
             }
             else
             {
                 string configurationFileContent = File.ReadAllText(aiOutputConfiguration.ConfigurationFilePath);
-                TelemetryConfiguration telemetryConfiguration = TelemetryConfiguration.CreateFromConfiguration(configurationFileContent);
-                this.telemetryClient = new TelemetryClient(telemetryConfiguration);
+                telemetryConfiguration = TelemetryConfiguration.CreateFromConfiguration(configurationFileContent);
+            }
+
+            if (!string.IsNullOrWhiteSpace(aiOutputConfiguration.ConnectionString))
+            {
+                telemetryConfiguration.ConnectionString = aiOutputConfiguration.ConnectionString;
             }
 
             if (!string.IsNullOrWhiteSpace(aiOutputConfiguration.InstrumentationKey))
             {
-                this.telemetryClient.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
+                telemetryConfiguration.InstrumentationKey = aiOutputConfiguration.InstrumentationKey;
             }
+
+            this.telemetryClient = new TelemetryClient(telemetryConfiguration);
         }
 
         private bool TrackMetric(EventData e, IReadOnlyCollection<EventMetadata> metadata)
