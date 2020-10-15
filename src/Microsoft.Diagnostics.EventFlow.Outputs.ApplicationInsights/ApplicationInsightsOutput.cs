@@ -147,7 +147,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             if (!aiOutputConfiguration.Validate(out string validationError))
             {
-                this.healthReporter.ReportProblem($"{nameof(ApplicationInsightsOutput)}: invalid configuration. {validationError} No data will be sent to Application Insights", EventFlowContextIdentifiers.Output);
+                this.healthReporter.ReportWarning($"{nameof(ApplicationInsightsOutput)}: invalid configuration. {validationError} No data will be sent to Application Insights", EventFlowContextIdentifiers.Output);
                 return;
             }
 
