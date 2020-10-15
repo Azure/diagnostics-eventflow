@@ -94,7 +94,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var output = new ApplicationInsightsOutput(config, healthReporterMock.Object);
 
             healthReporterMock.Verify(
-                hr => hr.ReportProblem(
+                hr => hr.ReportWarning(
                     It.IsRegex("invalid configuration"), 
                     It.Is<string>(ctx => string.Equals(ctx, EventFlowContextIdentifiers.Output, StringComparison.Ordinal))),
                 Times.Exactly(1));
