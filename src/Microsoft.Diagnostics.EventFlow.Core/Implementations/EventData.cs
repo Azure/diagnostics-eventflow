@@ -137,13 +137,8 @@ namespace Microsoft.Diagnostics.EventFlow
 
         public bool GetValueFromPayload<T>(string payloadName, ProcessPayload<T> handler)
         {
-            if (string.IsNullOrEmpty(payloadName))
-            {
-                return false;
-            }
-
-            object p;
-            if (!Payload.TryGetValue(payloadName, out p) || p == null)
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
             {
                 return false;
             }
@@ -153,7 +148,7 @@ namespace Microsoft.Diagnostics.EventFlow
 
             try
             {
-                value = (T)p;
+                value = (T)pv;
                 converted = true;
             }
             catch { }
@@ -162,7 +157,7 @@ namespace Microsoft.Diagnostics.EventFlow
             {
                 try
                 {
-                    value = (T)Convert.ChangeType(p, typeof(T));
+                    value = (T)Convert.ChangeType(pv, typeof(T));
                     converted = true;
                 }
                 catch { }
@@ -175,6 +170,296 @@ namespace Microsoft.Diagnostics.EventFlow
 
             return converted;
         }
+
+        // The follosing overloads of GetValueFromPayload eliminate a (handled) InvalidCastException 
+        // when dealing with a few well-known  and often-used primitive type combinations.
+        // See https://github.com/Azure/diagnostics-eventflow/issues/371 for more information.
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<bool> handler)
+        {
+            return GetValueFromPayloadMatchingType<bool>(payloadName, handler) ? true : GetValueFromPayload<bool>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<DateTime> handler)
+        {
+            return GetValueFromPayloadMatchingType<DateTime>(payloadName, handler) ? true : GetValueFromPayload<DateTime>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<DateTimeOffset> handler)
+        {
+            return GetValueFromPayloadMatchingType<DateTimeOffset>(payloadName, handler) ? true : GetValueFromPayload<DateTimeOffset>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<Guid> handler)
+        {
+            return GetValueFromPayloadMatchingType<Guid>(payloadName, handler) ? true : GetValueFromPayload<Guid>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<TimeSpan> handler)
+        {
+            return GetValueFromPayloadMatchingType<TimeSpan>(payloadName, handler) ? true : GetValueFromPayload<TimeSpan>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<float> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            float? value = null;
+
+            switch(pv)
+            {
+                case float fv:
+                    value = fv;
+                    break;
+                case byte bv:
+                    value = bv;
+                    break;
+                case short sv:
+                    value = sv;
+                    break;
+                case ushort usv:
+                    value = usv;
+                    break;
+                case int iv:
+                    value = iv;
+                    break;
+                case uint uiv:
+                    value = uiv;
+                    break;
+                case long lv:
+                    value = lv;
+                    break;
+                case ulong ulv:
+                    value = ulv;
+                    break;
+            }
+
+            if (value.HasValue)
+            {
+                handler(value.Value);
+                return true;
+            }
+            else return GetValueFromPayload<float>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<double> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            double? value = null;
+
+            switch (pv)
+            {
+                case double dv:
+                    value = dv;
+                    break;
+                case float fv:
+                    value = fv;
+                    break;
+                case byte bv:
+                    value = bv;
+                    break;
+                case short sv:
+                    value = sv;
+                    break;
+                case ushort usv:
+                    value = usv;
+                    break;
+                case int iv:
+                    value = iv;
+                    break;
+                case uint uiv:
+                    value = uiv;
+                    break;
+                case long lv:
+                    value = lv;
+                    break;
+                case ulong ulv:
+                    value = ulv;
+                    break;
+            }
+
+            if (value.HasValue)
+            {
+                handler(value.Value);
+                return true;
+            }
+            else return GetValueFromPayload<double>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<int> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            int? value = null;
+
+            switch (pv)
+            {
+                case int iv:
+                    value = iv;
+                    break;
+                case byte bv:
+                    value = bv;
+                    break;
+                case short sv:
+                    value = sv;
+                    break;
+                case ushort usv:
+                    value = usv;
+                    break;
+            }
+
+            if (value.HasValue)
+            {
+                handler(value.Value);
+                return true;
+            }
+            else return GetValueFromPayload<int>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<long> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            long? value = null;
+
+            switch (pv)
+            {
+                case long lv:
+                    value = lv;
+                    break;
+                case int iv:
+                    value = iv;
+                    break;
+                case uint uiv:
+                    value = uiv;
+                    break;
+                case byte bv:
+                    value = bv;
+                    break;
+                case short sv:
+                    value = sv;
+                    break;
+                case ushort usv:
+                    value = usv;
+                    break;
+            }
+
+            if (value.HasValue)
+            {
+                handler(value.Value);
+                return true;
+            }
+            else return GetValueFromPayload<long>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<uint> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            uint? value = null;
+
+            switch (pv)
+            {
+                case uint uiv:
+                    value = uiv;
+                    break;
+                case byte bv:
+                    value = bv;
+                    break;
+                case ushort usv:
+                    value = usv;
+                    break;
+            }
+
+            if (value.HasValue)
+            {
+                handler(value.Value);
+                return true;
+            }
+            else return GetValueFromPayload<uint>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<ulong> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            ulong? value = null;
+
+            switch (pv)
+            {
+                case ulong ulv:
+                    value = ulv;
+                    break;
+                case uint uiv:
+                    value = uiv;
+                    break;
+                case byte bv:
+                    value = bv;
+                    break;
+                case ushort usv:
+                    value = usv;
+                    break;
+            }
+
+            if (value.HasValue)
+            {
+                handler(value.Value);
+                return true;
+            }
+            else return GetValueFromPayload<ulong>(payloadName, handler);
+        }
+
+        public bool GetValueFromPayload(string payloadName, ProcessPayload<string> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            if (pv is string sv)
+            {
+                handler(sv);
+                return true;
+            }
+
+            try
+            {
+                sv = Convert.ToString(pv);
+                handler(sv);
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
+        }
+        
 
         public void AddPayloadProperty(string key, object value, IHealthReporter healthReporter, string context)
         {
@@ -197,6 +482,37 @@ namespace Microsoft.Diagnostics.EventFlow
                 other.metadata = new Dictionary<string, List<EventMetadata>>(this.metadata);
             }
             return other;
+        }
+
+        private bool GetValueFromPayloadMatchingType<T>(string payloadName, ProcessPayload<T> handler)
+        {
+            object pv = TryGetNonNullPayloadValue(payloadName);
+            if (pv == null)
+            {
+                return false;
+            }
+
+            if (pv is T tValue)
+            {
+                handler(tValue);
+                return true;
+            }
+            else return false;
+        }
+
+        private object TryGetNonNullPayloadValue(string payloadName)
+        {
+            if (string.IsNullOrEmpty(payloadName))
+            {
+                return null;
+            }
+
+            if (!Payload.TryGetValue(payloadName, out object pv))
+            {
+                return null;
+            }
+
+            return pv;
         }
     }
 }

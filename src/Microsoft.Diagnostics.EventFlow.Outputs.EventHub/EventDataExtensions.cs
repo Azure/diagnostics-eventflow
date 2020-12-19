@@ -96,7 +96,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
                 else
                 {
-                    eventData.GetValueFromPayload<double>(metricValueProperty, (v) => metricValue = v);
+                    eventData.GetValueFromPayload(metricValueProperty, (double v) => metricValue = v);
                 }
 
                 var metricRecord = new ShoeBoxMetricRecord()

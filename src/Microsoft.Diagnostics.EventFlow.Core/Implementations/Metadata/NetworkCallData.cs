@@ -26,7 +26,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             if (!string.IsNullOrWhiteSpace(isSuccessProperty))
             {
                 bool? localSuccessVal = null;
-                if (!eventData.GetValueFromPayload<bool>(isSuccessProperty, (v) => localSuccessVal = v))
+                if (!eventData.GetValueFromPayload(isSuccessProperty, (v) => localSuccessVal = v))
                 {
                     return DataRetrievalResult.DataMissingOrInvalid(isSuccessProperty);
                 }
@@ -56,7 +56,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
                 if (durationUnit != DurationUnit.TimeSpan)
                 {
                     double tempDuration = 0.0;
-                    if (!eventData.GetValueFromPayload<double>(durationProperty, (v) => tempDuration = v))
+                    if (!eventData.GetValueFromPayload(durationProperty, (double v) => tempDuration = v))
                     {
                         return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
                     }
@@ -65,7 +65,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
                 else
                 {
                     TimeSpan? localDurationVal = null;
-                    if (!eventData.GetValueFromPayload<TimeSpan>(durationProperty, (v) => localDurationVal = v))
+                    if (!eventData.GetValueFromPayload(durationProperty, (v) => localDurationVal = v))
                     {
                         return DataRetrievalResult.DataMissingOrInvalid(durationProperty);
                     }
@@ -86,7 +86,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             if (!string.IsNullOrWhiteSpace(responseCodeProperty))
             {
                 string localResponseCodeVal = null;
-                if (!eventData.GetValueFromPayload<string>(responseCodeProperty, (v) => localResponseCodeVal = v))
+                if (!eventData.GetValueFromPayload(responseCodeProperty, (v) => localResponseCodeVal = v))
                 {
                     return DataRetrievalResult.DataMissingOrInvalid(responseCodeProperty);
                 }
