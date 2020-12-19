@@ -45,7 +45,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             }
             else
             {
-                if (!eventData.GetValueFromPayload<string>(metricNameProperty, (v) => metricName = v))
+                if (!eventData.GetValueFromPayload(metricNameProperty, (v) => metricName = v))
                 {
                     return DataRetrievalResult.DataMissingOrInvalid(metricNameProperty);
                 }
@@ -69,7 +69,7 @@ namespace Microsoft.Diagnostics.EventFlow.Metadata
             }
             else
             {
-                if (!eventData.GetValueFromPayload<double>(metricValueProperty, (v) => value = v))
+                if (!eventData.GetValueFromPayload(metricValueProperty, (double v) => value = v))
                 {
                     return DataRetrievalResult.DataMissingOrInvalid(metricValueProperty);
                 }
