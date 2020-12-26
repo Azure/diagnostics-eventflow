@@ -12,9 +12,7 @@ using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
-#if !NETCOREAPP1_0
 using System.Collections.ObjectModel;
-#endif
 
 using Microsoft.Diagnostics.EventFlow.Inputs;
 using Microsoft.Diagnostics.EventFlow.Configuration;
@@ -126,7 +124,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         // High-precision event timestamping is availabe on .NET 4.6+ and .NET Core 2.0+
-#if !NETCOREAPP1_0
         [Fact]
         public void MeasuresEventTimeWithHighResolution()
         {
@@ -160,7 +157,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             // Event timestamps should have less than 1 ms resolution and thus should all be different
             Assert.Equal(8, eventTimes.Distinct().Count());
         }
-#endif
 
         [Fact]
         public void CapturesEventsFromSourcesIdentifiedByNamePrefix()
@@ -233,7 +229,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Assert.Equal("EventCounters", data.Payload["EventName"]);
                 Assert.Equal("testCounter", data.Payload["Name"]);
                 Assert.Equal(2, data.Payload["Count"]);
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
                 Assert.Equal((double)5, data.Payload["Max"]);
                 Assert.Equal((double)1, data.Payload["Min"]);
 #else
@@ -425,9 +421,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
-        // Enabling events with different levels and keywords does not work on .NET Core 1.1. and 2.0
-        // (following up with .NET team to see if there is something we can do about it)
-#if !NETCOREAPP1_0
         [Fact]
         public void CanEnableSameSourceWithDifferentLevelsAndKeywords()
         {
@@ -463,7 +456,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
             }
         }
-#endif
 
         [Fact]
         public void CanReadKeywordsInHexFormat()

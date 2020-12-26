@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-#if NETCOREAPP2_1 || NETCOREAPP3_0
+#if NETCOREAPP2_1 || NETCOREAPP3_1
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 #endif
@@ -450,7 +450,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
-#if NETCOREAPP2_1 || NETCOREAPP3_0
+#if NETCOREAPP2_1 || NETCOREAPP3_1
         [Fact]
         public async Task LoggerCanBeEnabledFromILoggingBuilder()
         {
