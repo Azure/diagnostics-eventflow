@@ -3,7 +3,6 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#if !NETCOREAPP1_0
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,4 +53,3 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         }
     }
 }
-#endif

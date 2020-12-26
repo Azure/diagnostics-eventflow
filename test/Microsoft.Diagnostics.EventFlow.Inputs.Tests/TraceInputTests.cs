@@ -257,7 +257,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
-#if !NETCOREAPP1_0
         [Fact]
         public void TraceInputShouldOverrideTraceTransfer()
         {
@@ -305,7 +304,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                     Times.Exactly(1));
             }
         }
-#endif
 
         private static string GetRandomString()
         {
