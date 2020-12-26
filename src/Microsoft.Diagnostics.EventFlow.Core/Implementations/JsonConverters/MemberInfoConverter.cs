@@ -16,7 +16,7 @@ namespace Microsoft.Diagnostics.EventFlow.JsonConverters
 #endif
     {
 
-#if NET451 || NETSTANDARD1_6
+#if NET452 || NETSTANDARD1_6
         public override bool CanConvert(Type objectType)
         {
             return typeof(MemberInfo).GetTypeInfo().IsAssignableFrom(objectType);

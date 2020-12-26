@@ -6,7 +6,7 @@
 using System;
 using System.Threading;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
-#if NET451
+#if NET452
 using Microsoft.Win32;
 #endif
 
@@ -37,7 +37,7 @@ namespace Microsoft.Diagnostics.EventFlow
             CreateNewTimer();
 
             // TODO: Find an event to subscribe for .NET Core application when system time is changed.
-#if NET451
+#if NET452
             SystemEvents.TimeChanged += OnSystemTimeChanged;
 #endif
         }

@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
-#if NET451
+#if NET452
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
@@ -23,7 +23,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         public Object State { get; private set; }
         public EventFlowLoggerScope Parent { get; private set; }
 
-#if NET451
+#if NET452
         // LogicalCallContext will flow through cross app domain calls.
         // Thus we make the FieldKey domain specific and wrap the EventFlowLoggerScope in ObjectHandle to avoid exceptions when cross app domain call happens.
         private static readonly string FieldKey = $"{typeof(EventFlowLoggerScope).FullName}_{AppDomain.CurrentDomain.Id}";
