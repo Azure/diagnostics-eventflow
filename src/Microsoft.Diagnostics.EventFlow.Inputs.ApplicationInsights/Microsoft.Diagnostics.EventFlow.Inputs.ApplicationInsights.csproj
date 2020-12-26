@@ -4,9 +4,9 @@
     <Description>Provides an implementation of Application Insights telemetry processor that feeds Application Insights telemetry into EventFlow pipeline. 
     This allows sending diagnostics data from applications instrumented with Application Insights to destinations other than Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.5.1</VersionPrefix>
+    <VersionPrefix>1.6.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard1.6;net451;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net452;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</PackageId>
@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net451'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
     <Reference Include="System" />
   </ItemGroup>
 </Project>

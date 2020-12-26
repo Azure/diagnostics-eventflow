@@ -4,9 +4,9 @@
     <Description>Provides an output implementation that sends diagnostics data to Azure Event Hubs.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</AssemblyName>
-    <VersionPrefix>1.5.1</VersionPrefix>
+    <VersionPrefix>1.6.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Event Hub;Event Hubs</PackageTags>
@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>

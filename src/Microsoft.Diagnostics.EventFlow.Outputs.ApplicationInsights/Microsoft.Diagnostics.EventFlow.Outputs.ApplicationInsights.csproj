@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.6.0</VersionPrefix>
+    <VersionPrefix>1.7.0</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</PackageId>
@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.14.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
