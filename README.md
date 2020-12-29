@@ -2,9 +2,22 @@
 
 ## Introduction
 The EventFlow library suite allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces.
-It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework. It comes with the following inputs and outputs:
+It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework. 
 
-*Inputs*
+The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
+
+- Azure Web Apps
+- Service Fabric
+- Azure Cloud Service
+- Azure Virtual Machines
+
+The core of the library, as well as inputs and outputs listed above [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
+
+## Topics
+
+[**Getting started**](#getting-started)
+
+[**Inputs**](#inputs)
 - [Trace (a.k.a. System.Diagnostics.Trace)](#trace) 
 - [EventSource](#eventsource)
 - [PerformanceCounter](#performancecounter)
@@ -15,8 +28,9 @@ It runs in the same process as the application, so communication overhead is min
 - [Log4net](#log4net)
 - [NLog](#nlog)
 - [DiagnosticSource](#diagnosticsource)
+- [ActivitySource](#activitysource)
 
-*Outputs*
+[**Outputs**](#outputs)
 - [StdOutput (console output)](#stdoutput)
 - [HTTP (json via http)](#http)
 - [Application Insights](#application-insights)
@@ -30,16 +44,31 @@ There are several EventFlow extensions available from non-Microsoft authors and 
 - [ReflectInsight output](https://github.com/reflectsoftware/Microsoft.Diagnostics.EventFlow.Outputs.ReflectInsight)
 - [Splunk output](https://github.com/hortha/diagnostics-eventflow-splunk)
 
-The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
+[**Filters**](#filters)
 
-- Azure Web Apps
-- Service Fabric
-- Azure Cloud Service
-- Azure Virtual Machines
+[**Standard metatadata types**](#standard-metadata-types)
 
-The core of the library, as well as inputs and outputs listed above [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
+[**Health reporter**](#health-reporter)
+
+[**Pipeline settings**](#pipeline-settings)
+
+[**Service Fabric support**](#service-fabric-support)
+
+[**Filter expressions**](#filter-expressions)
+
+[**Secret storage**](#store-secrets-securely)
+
+[**Extensibility**](#extensibility)
+
+[**Troubleshooting**](#troubleshooting)
+
+[**Platform support**](#platform-support)
+
+[**Contributing to EventFlow**](#contributions)
 
 ## Getting Started
+The EventFlow pipeline is built around three core concepts: [inputs](#inputs), [outputs](#outputs), and [filters](#filters). The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. Finally, the extensions section allows declaration of custom developed plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search extensions to instantiate custom  inputs, outputs, or filters.
+
 1. To quickly get started, you can create a simple console application in VisualStudio and install the following Nuget packages:
     * Microsoft.Diagnostics.EventFlow.Inputs.Trace
     * Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights
@@ -94,15 +123,12 @@ Note: if you are using VisualStudio for Mac, you might need to edit the project 
 ```
 It usually takes a couple of minutes for the traces to show in Application Insights Azure portal.
 
-## Configuration Details
-The EventFlow pipeline is built around three core concepts: [inputs](#inputs), [outputs](#outputs), and [filters](#filters). The number of inputs, outputs, and filters depend on the need of diagnostics. The configuration 
-also has a healthReporter and settings section for configuring settings fundamental to the pipeline operation. Finally, the extensions section allows declaration of custom developed
-plugins. These extension declarations act like references. On pipeline initialization, EventFlow will search extensions to instantiate custom  inputs, outputs, or filters.
+[**Back to Topics**](#topics)
 
-### Inputs
+## Inputs
 These define what data will flow into the engine. At least one input is required. Each input type has its own set of parameters.
 
-#### Trace
+### Trace
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.Trace**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Trace/)
 
 This input listens to traces written with System.Diagnostics.Trace API. Here is an example showing all possible settings:
@@ -117,7 +143,9 @@ This input listens to traces written with System.Diagnostics.Trace API. Here is 
 | `type` | "Trace" | Yes | Specifies the input type. For this input, it must be "Trace". |
 | `traceLevel` | Critical, Error, Warning, Information, Verbose, All | No | Specifies the collection trace level. Traces with equal or higher severity than specified are collected. For example, if Warning is specified, then Critial, Error, and Warning traces are collected. Default is Error. |
 
-#### EventSource
+[**Back to Topics**](#topics)
+
+### EventSource
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.EventSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.EventSource/)
 
 This input listens to EventSource traces. EventSource classes can be created in the application by deriving from the [System.Diagnostics.Tracing.EventSource](https://msdn.microsoft.com/en-us/library/system.diagnostics.tracing.eventsource(v=vs.110).aspx) class. Here is an example showing all possible settings:
@@ -161,7 +189,9 @@ This input listens to EventSource traces. EventSource classes can be created in 
 (***) There is an issue with .NET frameworks 4.6 and 4.7, and .NET Core framework 1.1 and 2.0 where dynamically created EventSource events are dispatched to all listeners, regardless whether listeners subscribe to events from these EventSources; for more information see https://github.com/dotnet/coreclr/issues/14434  `disabledProviderNamePrefix` property can be usesd to suppress these events.<br/>
 Disabling EventSources is not recommended under normal circumstances, as it introduces a slight performance penalty. Instead, selectively enable necessary events through combination of EventSource names, event levels, and keywords.
 
-#### DiagnosticSource
+[**Back to Topics**](#topics)
+
+### DiagnosticSource
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource/)
 
 This input listens to System.Diagnostics.DiagnosticSource sources. See the [DiagnosticSource User's Guide](https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/DiagnosticSourceUsersGuide.md) for details of usage. Here is an example showing all possible settings:
@@ -187,7 +217,67 @@ This input listens to System.Diagnostics.DiagnosticSource sources. See the [Diag
 | :---- | :----------- | :------: | :---------- |
 | `providerName` | DiagnosticSource name | Yes | Specifies the name of the DiagnosticSource to track. |
 
-#### PerformanceCounter
+[**Back to Topics**](#topics)
+
+### ActivitySource
+*Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource/)
+
+This input listens to `System.Diagnostics.ActivitySource` sources (introduced in .NET 5.0). ActivitySource is designed to emit telemetry in a way that is compatible with [OpenTelemetry specification](https://github.com/open-telemetry/opentelemetry-specification/). Here is an example showing all possible settings:
+```jsonc
+{
+    "type": "ActivitySource",
+    "sources": [
+        { 
+            "ActivitySourceName": "JobSchedulingActivitySource",
+            "ActivityName": "JobStatusRequest",
+            "CapturedData": "PropagationData"
+        },
+        { 
+            "ActivitySourceName": "JobSchedulingActivitySource",
+            "ActivityName": "NewJobRequest",
+            "CapturedData": "AllDataAndRecorded",
+            "CapturedEvents": "Both" 
+        }
+    ]
+}
+```
+
+*Top object*
+
+| Field | Values/Types | Required | Description |
+| :---- | :----------- | :------: | :---------- |
+| `type` | "ActivitySource" | Yes | Specifies the input type. For this input, it must be "ActivitySource". |
+| `sources` | JSON array | Yes | Specifies the activity data to collect. |
+
+*Source object (element of the sources array)*
+
+| Field | Values/Types | Required | Description |
+| :---- | :----------- | :------: | :---------- |
+| `ActivitySourceName` | string | No | The name of the `ActivitySource` to track. If left empty or omitted, all `ActivitySources` available in the process will be tracked. |
+| `ActivityName` | string | No | The name of the activity to track. If left empty or omitted, all activities from a given source will be captured. |
+| `CapturedData` | `AllData`, `AllDataAndRecorded`, `PropagationData`, or `None` | No | Specifies what data will be captured for the activity. For more information about what each option means see [ActivitySamplingResult documentation](https://docs.microsoft.com/dotnet/api/system.diagnostics.activitysamplingresult)<br/><br/>The default value for this setting is is `AllData`. |
+| `CapturedEvents` | `Start`, `Stop`, `Both`, or `None` | No | Specifies when activity data gets captured. `Start` means activity data will be captured just after the activity is started. `Stop` means the activity data will be captured just after the activity is completed. `Both` means the activity data will be captured twice: at the beginning, and at the end of the activity.<br/><br/>The default value for this setting is is `Stop`. |
+
+*Notes*
+
+Be careful about leaving `ActivitySourceName` and `ActivityName` blank. It might be tempting to capture all activity data for the process, but it might have a significant, negative impact on performance, and result in a lot of data that will be expensive to process and store.
+
+It is possible to come up with configuration that will "match" a given activity multiple times. Records in the `sources` array are matched to activities *in the order in which they appear in configuration*; the first record "wins" and determines what settings will be used. For example, if the configuration is 
+
+```jsonc
+{
+    "Type": "ActivitySource",
+    "Sources": [
+        { "ActivitySourceName": "S", "CapturedData": "PropagationData" },
+        { "ActivitySourceName": "S", "ActivityName": "A", "CapturedData": "AllData" }
+    ]
+}
+```
+and activity `A` from source `S` occurs, the first `sources` record will match the activity, and only propagation data will be captured for activity `A`. That is why more specific sources should generally precede less specific sources (ones that omit `ActivitySourceName` or `ActivityName`). A common scenario when this rule comes handy is when it is necessary to capture all data from specific subset of activities from a given source, and then capture propagation data for all other activities from the same source.
+
+[**Back to Topics**](#topics)
+
+### PerformanceCounter
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter/)
 
 This input enables gathering data from Windows performance counters. Only *process-specific* counters are supported, that is, the counter must have an instance that is associated with the current process. For machine-wide counters use an external agent such as [Azure Diagnostics Agent](https://azure.microsoft.com/en-us/documentation/articles/azure-diagnostics/) or create a custom input.
@@ -247,7 +337,9 @@ This can manifest itself by health reporter reporting "category does not exist" 
 despite the fact that the category and counter are properly configured and clearly visible in Windows Performance Monitor. 
 If you need to consume such counters, make sure the account your process runs under belongs to Performance Monitor Users group.
 
-#### Serilog
+[**Back to Topics**](#topics)
+
+### Serilog
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Serilog**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Serilog/)
 
@@ -298,7 +390,9 @@ namespace SerilogEventFlow
 }
 ```
 
-#### Microsoft.Extensions.Logging
+[**Back to Topics**](#topics)
+
+### Microsoft.Extensions.Logging
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging/)
 
@@ -452,9 +546,9 @@ The following example shows how to enable EventFlow ILogger inside a Service Fab
 
       // (rest of controller code is irrelevant)
 ```
+[**Back to Topics**](#topics)
 
-
-#### ETW (Event Tracing for Windows)
+### ETW (Event Tracing for Windows)
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Etw**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Etw/)
 
@@ -502,7 +596,9 @@ To capture data from EventSources running in the same process as EventFlow, the 
 
 (*) Either providerName, or providerGuid must be specified. When both are specified, provider GUID takes precedence.
 
-#### Application Insights input
+[**Back to Topics**](#topics)
+
+### Application Insights input
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights/)
 
@@ -616,10 +712,11 @@ namespace AspNetCoreEventFlow
         }
     }
 }
-
 ```
 
-#### Log4net
+[**Back to Topics**](#topics)
+
+### Log4net
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.Log4net**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.Log4net/)
 
@@ -663,7 +760,9 @@ namespace ConsoleApp2
 }
 ```
 
-#### NLog
+[**Back to Topics**](#topics)
+
+### NLog
 
 *Nuget package:* [**Microsoft.Diagnostics.EventFlow.Inputs.NLog**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Inputs.NLog/)
 
@@ -703,11 +802,12 @@ namespace NLogEventFlow
 }
 ```
 
+[**Back to Topics**](#topics)
 
-### Outputs
+## Outputs
 Outputs define where data will be published from the engine. It's an error if there are no outputs defined. Each output type has its own set of parameters.
 
-#### StdOutput
+### StdOutput
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.StdOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.StdOutput/)
 
 This output writes data to the console window. Here is an example showing all possible settings:
@@ -720,7 +820,9 @@ This output writes data to the console window. Here is an example showing all po
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "StdOutput" | Yes | Specifies the output type. For this output, it must be "StdOutput". |
 
-#### Http
+[**Back to Topics**](#topics)
+
+### Http
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput/)
 
 This output writes data to a webserver using diffent encoding methods (Json or JsonLines, eg. for logstash). Here is an example showing all possible settings:
@@ -744,7 +846,9 @@ This output writes data to a webserver using diffent encoding methods (Json or J
 | `httpContentType` | string | No | Defines the HTTP Content-Type header |
 | `headers` | object | No | Specifies custom headers that will be added to event upload request. Each property of the object becomes a separate header. |
 
-#### Event Hub
+[**Back to Topics**](#topics)
+
+### Event Hub
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
 
 This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-us/documentation/articles/event-hubs-overview/). Here is an example showing all possible settings:
@@ -762,7 +866,9 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
 | `connectionString` | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
 | `partitionKeyProperty` | string | No | The name of the event property that will be used as the PartitionKey for the Event Hub events. |
 
-#### Application Insights
+[**Back to Topics**](#topics)
+
+### Application Insights
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights/)
 
 This output writes data to the [Azure Application Insights service](https://azure.microsoft.com/en-us/documentation/articles/app-insights-overview/). Here is an example showing all possible settings:
@@ -799,7 +905,9 @@ Remarks:
 
 All other events will be reported as Application Insights *traces* (telemetry of type Trace). 
 
-#### Elasticsearch
+[**Back to Topics**](#topics)
+
+### Elasticsearch
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch/)
 
 This output writes data to the [Elasticsearch](https://www.elastic.co/products/elasticsearch). Here is an example showing all possible settings:
@@ -869,7 +977,9 @@ Fields injected byt the `request` metadata are:
 | 2.6.x | 6.x |
 | 2.7.x | 7.x |
 
-#### Azure Monitor Logs
+[**Back to Topics**](#topics)
+
+### Azure Monitor Logs
 
 *Nuget package*: [**Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.AzureMonitorLogs/)
 
@@ -893,7 +1003,9 @@ Supported configuration settings are:
 | `logTypeName` | string | No | Specifies the log entry type created by the output. Default value for this setting is "Event", which results in "Event_CL" entries being created in Log Analytics (the "_CL" suffix is appended automatically by Log Analytics Data Collector). |
 | `serviceDomain` | string | No | Specifies the domain for your Log Analytics workspace. Default value is "ods.opinsights.azure.com", for Azure Commercial.
 
-### Filters
+[**Back to Topics**](#topics)
+
+## Filters
 As data comes through the EventFlow pipeline, the application can add extra processing or tagging to them. These optional operations are accomplished with filters. Filters can transform, drop, or tag data with extra metadata, with rules based on custom expressions.
 With metadata tags, filters and outputs operating further down the pipeline can apply different processing for different data. For example, an output component can choose to send only data with a certain tag. Each filter type has its own set of parameters.
 
@@ -933,7 +1045,7 @@ Filters can appear in two places in the EventFlow configuration: on the same lev
 
 EventFlow comes with two standard filter types: `drop` and `metadata`.
 
-#### drop
+### Drop
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
 This filter discards all data that satisfies the include expression. Here is an example showing all possible settings:
@@ -948,7 +1060,9 @@ This filter discards all data that satisfies the include expression. Here is an 
 | `type` | "drop" | Yes | Specifies the filter type. For this filter, it must be "drop". |
 | `include` | logical expression | Yes | Specifies the logical expression that determines if the action should apply to the event data or not. For information about the logical expression, please see section [Logical Expressions](#logical-expressions). |
 
-#### metadata
+[**Back to Topics**](#topics)
+
+### Metadata
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Core**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Core/)
 
 This filter adds additional metadata to all event data that satisfies the include expression. The filter recognizes a few standard properties (`type`, `metadata` and `include`); the rest are custom properties, specific for the given metadata type:
@@ -1010,11 +1124,13 @@ Here are a few examples of using the metadata filter:
     }
     ```
 
-### Standard metadata types
+[**Back to Topics**](#topics)
+
+## Standard metadata types
 
 EventFlow core library defines several standard metadata types. They have pre-defined set of fields and are recognized by [Application Insights](#application-insights) and [Elasticsearch](#elasticsearch) outputs (see documentation for each output, respectively, to learn how they handle standard metadata).
 
-**Metric metadata type**
+### Metric metadata type
 
 Metrics are named time series of floating-point values. Metric metadata defines how metrics are derived from ordinary events. Following fields are supported:
 
@@ -1030,7 +1146,9 @@ Remarks:
 1. Either `metricName` or `metricNameProperty` must be specified.
 2. Either `metricValue` or `metricValueProperty` must be specified.
 
-**Request metadata type**
+[**Back to Topics**](#topics)
+
+### Request metadata type
 
 Requests are special events that represent invocations of a network service by its clients. Request metadata defines how requests are derived from ordinary events. Following fields are supported:
 
@@ -1043,7 +1161,9 @@ Requests are special events that represent invocations of a network service by i
 | `durationUnit` | "TimeSpan", "milliseconds", "seconds", "minutes" or "hours" | No | Specifies the type of data used by request duration property. If not set, it is assumed that request duration is expressed as a double value, representing milliseconds. |
 | `responseCodeProperty` | string | No | The name of the event property that specifies response code associated with the request. A response code describes in more detail the outcome of the request. It is expected that the event property is, or can be converted to a string. |
 
-**Dependency metadata type**
+[**Back to Topics**](#topics)
+
+### Dependency metadata type
 
 Dependency event represents the act of calling a service that your service depends on. It has the following properties:
 
@@ -1057,7 +1177,9 @@ Dependency event represents the act of calling a service that your service depen
 | `targetProperty` | string | Yes | The name of the event property that specifies the target of the call, i.e. the identifier of the service that your service depends on. |
 | `dependencyType` | string | No | An optional, user-defined designation of the dependency type. For example, it could be "SQL", "cache", "customer_data_service" or similar. |
 
-**Exception metadata type**
+[**Back to Topics**](#topics)
+
+### Exception metadata type
 
 Exception event corresponds to an occurrence of an unexpected exception. Usually a small amount of exceptions is continuously being thrown, caught and handled by a .NET process, this is normal and should not raise a concern. On the other hand, if an exception is unhandled, or unexpected, it needs to be logged and examined. This metadata is meant to cover the second case. It has the following properties:
 
@@ -1068,7 +1190,9 @@ Exception event corresponds to an occurrence of an unexpected exception. Usually
 
 Also see [Application Insight Exception metadata type with EvenSource input issue](https://github.com/Azure/diagnostics-eventflow/issues/92)
 
-### Health Reporter
+[**Back to Topics**](#topics)
+
+## Health Reporter
 Every software component can generate errors or warnings the developer should be aware of. The EventFlow library is no exception. An EventFlow health reporter reports errors and warnings generated by any components in the EventFlow pipeline.
 In what format the report is presented depends on the implementation of the health reporter. The EventFlow library suite includes two health reporters: CsvHealthReporter and ServiceFabricHealthReporter. 
 
@@ -1076,7 +1200,7 @@ The CsvHealthReporter is the default health reporter for EventFlow library and i
 
 ServiceFabricHealthReporter is described in the [Service Fabric support paragraph](#service-fabric-support). It is designed to be used in the context of Service Fabric applications and does not need any configuration.
 
-#### CsvHealthReporter
+### CsvHealthReporter
 *Nuget Package*: **Microsoft.Diagnostics.EventFlow.Core**
 
 This health reporter writes all errors, warnings, and informational traces generated from the pipeline into a CSV file. Here is an example showing all possible settings:
@@ -1107,7 +1231,9 @@ This health reporter writes all errors, warnings, and informational traces gener
 
 CsvHealthReporter will try to open the log file for writing during initialization. If it can't, by default, a debug message will be output to the debugger viewer like Visual Studio Output window, etc. This can happen especially if a value for the log file path is not provided (default is used, which is application executables folder) and the application executables are residing on a read-only file system. Docker tools for Visual Studio use this configuration during debugging, so for containerized services the recommended practice is to specify the log file path explicitly.
 
-### Pipeline Settings
+[**Back to Topics**](#topics)
+
+## Pipeline Settings
 The EventFlow configuration has settings allowing the application to adjust certain behaviors of the pipeline. These range from how many events the pipeline buffer, to the timeout the pipeline should use when waiting for an operation. If this section is omitted, the pipeline will use default settings.
 Here is an example of all the possible settings:
 ```jsonc
@@ -1126,6 +1252,8 @@ Here is an example of all the possible settings:
 | `maxBatchDelayMsec` | number of milliseconds | No | Specifies the maximum time that events are held in a batch before the batch gets pushed through the pipeline to filters and outputs. The batch is pushed down when it reaches the maxEventBatchSize, or its oldest event has been in the batch for more than maxBatchDelayMsec milliseconds. |
 | `maxConcurrency` | number | No | Specifies the maximum number of threads that events can be processed. Each event will be processed by a single thread, by multiple threads can process different events simultaneously. |
 | `pipelineCompletionTimeoutMsec` | number of milliseconds | No | Specifies the timeout to wait for the pipeline to shutdown and clean up. The shutdown process starts when the DiagnosePipeline object is disposed, which usually happens on application exit. |
+
+[**Back to Topics**](#topics)
 
 ## Service Fabric Support
 
@@ -1200,6 +1328,7 @@ The UnhandledException event method is a very simple addition to the standard Se
 
 Depending on the type of inputs and outputs used, additional startup code may be necessary. For example [Microsoft.Extensions.Logging](#microsoftextensionslogging) input requires a call to `LoggerFactory.AddEventFlow()` method to register EventFlow logger provider.
 
+[**Back to Topics**](#topics)
 
 ### Support for Service Fabric settings and application parameters
 Version 1.0.1 of the EventFlow Service Fabric NuGet package introduced the ability to refer to Service Fabric settings from EventFlow configuration using special syntax for values:
@@ -1217,6 +1346,8 @@ Version 1.1.2 added support for resolving paths to other configuration files tha
 `servicefabricfile:/<configuration-file-name>`
 
 At run time this value will be substituted with a full path to the configuration file with the given name. This is especially useful if an EventFlow pipeline element wraps an existing library that has its own configuration file format (as is the case with Application Insights, for example). 
+
+[**Back to Topics**](#topics)
 
 ### Using Application Insights ServerTelemetryChannel
 For Service Fabric applications running in production, we recommend to use Application Insights `ServerTelemetryChannel`. This channel [has the capability to store data on disk during periods of intermittent connectivity](https://docs.microsoft.com/en-us/azure/azure-monitor/app/telemetry-channels) and is a better choice for long-running server processes than the default in-memory channel.
@@ -1267,8 +1398,10 @@ To use the `ServerMemoryChannel` you need to create an EventFlow configuration f
 
 Ensure that your service consumes `Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel` NuGet package.
 
-## Logical Expressions
-The logical expression allows you to filter events based on the event properties. For example, you can have an expression like `ProviderName == MyEventProvider && EventId == 3`, where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
+[**Back to Topics**](#topics)
+
+## Filter Expressions
+Filter expressions allows you to filter events based on the event properties. For example, you can have an expression like `ProviderName == MyEventProvider && EventId == 3`, where you specify the event property name on the left side and the value to compare on the right side. If the value on the right side contains special characters, you can enclose it in double quotes.
 
 Standard and custom (payload) properties are treated equally; there is no need to prefix custom properties in any way. For example, expression `TenantId != Unknown && ProviderName == MyEventProvider` will evaluate to true for events that 
   - were created by `MyEventProvider` provider (ProviderName is a standard property available for all events), and
@@ -1285,7 +1418,9 @@ The following table lists operators supported by logical expressions
 | Logical | `&&`, `||`, `!` | Enables building complex logical expressions out of simpler ones. <br/> The precedence is `!` > `&&` > `||` (highest to lowest).
 | Grouping | `(expression)` | Grouping can be used to change the evaluation order of expressions with logical operators. |
 
-## Store Secret Securely
+[**Back to Topics**](#topics)
+
+## Store Secrets Securely
 If you don't want to put sensitive information in the EventFlow configuration file, you can store the information at a secured place and pass it to the configuration at run time. Here is the sample code:
 ```csharp
 string configFilePath = @".\eventFlowConfig.json";
@@ -1303,6 +1438,8 @@ using (DiagnosticPipeline pipeline = DiagnosticPipelineFactory.CreatePipeline(co
     // ...
 }
 ```
+
+[**Back to Topics**](#topics)
 
 ## Extensibility
 Every pipeline element type (input, filter, output and health reporter) is a point of extensibility, that is, custom elements of these types can be used inside the pipeline. Contracts for all EventFlow element types are provided by [EventFlow.Core assembly](https://github.com/Azure/diagnostics-eventflow/tree/master/src/Microsoft.Diagnostics.EventFlow.Core/Interfaces) (except from the input type, see below).
@@ -1324,6 +1461,8 @@ EventFlow pipelines operate on [EventData objects](https://github.com/Azure/diag
 | `DeepClone()` | `EventData` | Performs a deep clone operation on the EventData. The resulting copy is independent from the original and either can be modified without affecting the other (e.g. properties or metadata can be added or removed). The only exception is that _payload values_ are not cloned (and thus are shared between the copies). |
 
 Note that EventData type is not thread-safe. Don't try to use it concurrently from multiple threads. 
+
+[**Back to Topics**](#topics)
 
 ### EventFlow pipeline element types
 #### Inputs
@@ -1351,6 +1490,8 @@ public interface IOutput
 ```
 The output receives a batch of events, along with transmission sequence number and a cancellation token. The transmission sequence number can be treated as an identifier for the `SendEventsAsync()` method invocation; it is guaranteed to be unique for each invocation, but there is no guarantee that there will be no "gaps", nor that it will be strictly increasing. The cancellation token should be used to cancel long-running operations if necessary; typically it is passed as a parameter to asynchronous i/o operations.
 
+[**Back to Topics**](#topics)
+
 ### Pipeline structure and threading considerations
 Every EventFlow pipeline can be created imperatively, i.e. in the program code. The structure of every pipeline is reflected in the constructor of the `DiagnosticPipeline` class and is as follows:
 
@@ -1363,6 +1504,8 @@ EventFlow employs the following policies with regards to concurrency:
 1. Inputs are free to call OnNext() on associated observers using any thread.
 2. EventFlow will ensure that only one filter at a time is evaluating any given EventData object. That said, the same filter can be invoked concurrently for different events.
 3. Outputs will invoked concurrently for different batches of data. 
+
+[**Back to Topics**](#topics)
 
 ### Using custom pipeline items imperatively
 The simplest way to use custom EventFlow elements is to create a pipeline imperatively, in code. You just need to create a read-only collections of the inputs, global filters and sinks and pass them to `DiagnosticPipeline` constructor. Custom and standard elements can be combined freely; each of the standard pipeline elements has a public constructor and associated public configuration class and can be created imperatively.
@@ -1445,6 +1588,27 @@ namespace EventFlowCustomOutput
 }
 ```
 
+[**Back to Topics**](#topics)
+
+## Troubleshooting
+
+### Events are getting dropped
+
+Under high load you might emit a health warning that says
+
+`An event was dropped from the diagnostic pipeline because there was not enough capacity`
+
+The “capacity” referred to in the error message is the size of the event buffer that EventFlow has. By default the buffer can hold 1000 events, although that can be changed by [configuration settings](#pipeline-settings). The “not enough capacity” error indicates EventFlow output(s) cannot consume incoming events fast enough. The buffer is exhausted and events are starting to get dropped. 
+
+If the event inflow is quite bursty, increasing the buffer size might help.
+
+For `ApplicationInsightsOutput` make you are using [the ServerTelemetryChannel](https://docs.microsoft.com/en-us/azure/azure-monitor/app/telemetry-channels) for sending data to Application Insights. This channel has the ability to buffer data on disk if the connectivity to Application Insights is intermittent. It can be [enabled via output configuration](#application-insights), using a separate [ApplicationInsights configuration file](https://docs.microsoft.com/en-us/azure/azure-monitor/app/configuration-with-applicationinsights-config#telemetry-channel).
+
+Ultimately it might be necessary just to reduce the number of events produced by the service
+
+
+[**Back to Topics**](#topics)
+
 ## Platform Support
 EventFlow supports full .NET Framework (.NET 4.5 series and 4.6 series) and .NET Core, but not all inputs and outputs are supported on all platforms. 
 The following table lists platform support for standard inputs and outputs.  
@@ -1467,10 +1631,14 @@ The following table lists platform support for standard inputs and outputs.
 | [Azure EventHub](#event-hub) | Yes | Yes | Yes |
 | [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
 | [Azure Monitor Logs](#azure-monitor-logs) | Yes | Yes | Yes |
-[HTTP (json via http)](#http) | Yes | Yes | Yes |
+| [HTTP (json via http)](#http) | Yes | Yes | Yes |
+
+[**Back to Topics**](#topics)
 
 ## Contributions
 Refer to [contribution guide](contributing.md).
 
 ## Code of Conduct
 Refer to [Code of Conduct guide](CODE_OF_CONDUCT.md).
+
+[**Back to Topics**](#topics)
