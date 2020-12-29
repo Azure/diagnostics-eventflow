@@ -122,15 +122,17 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll;" />
+      <Net50Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\bin\$(Configuration)\net5.0\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.dll;" />
     </ItemGroup>
     
     <Move SourceFiles="@(FullAssemblies)" DestinationFolder="$(OutputPath)\full" />
     <Move SourceFiles="@(Full471Assemblies)" DestinationFolder="$(OutputPath)\full471" />
     <Move SourceFiles="@(CoreAssemblies)" DestinationFolder="$(OutputPath)\core" />
     <Move SourceFiles="@(Core20Assemblies)" DestinationFolder="$(OutputPath)\core20" />
+    <Move SourceFiles="@(Net50Assemblies)" DestinationFolder="$(OutputPath)\net5.0" />
     
     <ItemGroup>
-      <FilesToSign Include="$(OutputPath)\full\*.dll;$(OutputPath)\full471\*.dll;$(OutputPath)\core\*.dll;$(OutputPath)\core20\*.dll">
+      <FilesToSign Include="$(OutputPath)\full\*.dll;$(OutputPath)\full471\*.dll;$(OutputPath)\core\*.dll;$(OutputPath)\core20\*.dll;$(OutputPath)\net5.0\*.dll">
         <Authenticode>Microsoft400</Authenticode>
       </FilesToSign>
     </ItemGroup>
@@ -199,6 +201,8 @@
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\bin\$(Configuration)\netstandard2.0"/>
+    <!--.NET 5.0 assemblies -->
+    <Copy SourceFiles="$(OutputPath)\net5.0\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\bin\$(Configuration)\net5.0"/>
   </Target>
   
 </Project>

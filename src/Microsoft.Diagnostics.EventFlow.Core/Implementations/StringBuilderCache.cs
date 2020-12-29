@@ -6,12 +6,12 @@
 using System;
 using System.Text;
 
-namespace Microsoft.Diagnostics.EventFlow.Utilities.Etw
+namespace Microsoft.Diagnostics.EventFlow
 {
     /// <summary>
     /// Provides a cached reusable instance of a StringBuilder per thread. It is an optimization that reduces the number of instances constructed and collected.
     /// </summary>
-    internal static class StringBuilderCache
+    public static class StringBuilderCache
     {
         // The value 360 was chosen in discussion with performance experts as a compromise between using
         // as litle memory (per thread) as possible and still covering a large part of short-lived

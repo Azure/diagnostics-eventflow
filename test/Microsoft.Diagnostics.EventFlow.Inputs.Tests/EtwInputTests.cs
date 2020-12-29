@@ -248,27 +248,5 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             healthReporterMock.Verify(o => o.ReportProblem(It.IsAny<string>(), It.IsAny<string>()),
                 Times.Exactly(0));
         }
-
-        private class TestObserver : IObserver<EventData>
-        {
-            public bool Completed { get; private set; } = false;
-            public Exception Error { get; private set; }
-            public ConcurrentQueue<EventData> Data { get; } = new ConcurrentQueue<EventData>();
-
-            public void OnCompleted()
-            {
-                Completed = true;
-            }
-
-            public void OnError(Exception error)
-            {
-                Error = error;
-            }
-
-            public void OnNext(EventData value)
-            {
-                Data.Enqueue(value);
-            }
-        }
     }
 }

@@ -326,6 +326,7 @@ namespace Microsoft.Diagnostics.EventFlow
             inputFactories["Log4net"] = "Microsoft.Diagnostics.EventFlow.Inputs.Log4netFactory, Microsoft.Diagnostics.EventFlow.Inputs.Log4net";
             inputFactories["NLog"] = "Microsoft.Diagnostics.EventFlow.Inputs.NLogInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.NLog";
             inputFactories["DiagnosticSource"] = "Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.DiagnosticSourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource";
+            inputFactories["ActivitySource"] = "Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.ActivitySourceInputFactory, Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource";
 
             outputFactories = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             outputFactories["ApplicationInsights"] = "Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsightsOutputFactory, Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights";
