@@ -15,10 +15,27 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public class EventFlowSubject<SubjectType> : IObservable<SubjectType>, IObserver<SubjectType>, IDisposable, IItemWithLabels
     {
-        private readonly object lockObject = new object();
-        private volatile ImmutableList<IObserver<SubjectType>> observers = ImmutableList<IObserver<SubjectType>>.Empty;
-        private volatile bool notifyingObservers = false;
-        private Lazy<IDictionary<string, string>> labelsSource = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>());
+        private readonly object lockObject;
+        private volatile ImmutableList<IObserver<SubjectType>> observers;
+        private volatile bool shuttingDown;
+        private volatile int notificationsInProgress;
+        private Lazy<IDictionary<string, string>> labelsSource;
+        private TimeSpan shutdownTimeout;
+
+        public EventFlowSubject()
+        {
+            this.lockObject = new object();
+            this.observers = ImmutableList<IObserver<SubjectType>>.Empty;
+            this.shuttingDown = false;
+            this.notificationsInProgress = 0;
+            this.labelsSource = new Lazy<IDictionary<string, string>>(() => new Dictionary<string, string>());
+            this.shutdownTimeout = TimeSpan.FromSeconds(5);
+        }
+
+        public EventFlowSubject(TimeSpan shutdownTimeout): this()
+        {
+            this.shutdownTimeout = shutdownTimeout;
+        }
 
         public IDictionary<string, string> Labels { get { return this.labelsSource.Value; } }
 
@@ -47,13 +64,13 @@ namespace Microsoft.Diagnostics.EventFlow
 
         public void OnNext(SubjectType value)
         {
-            var currentObservers = this.observers;
-            if (currentObservers != null)
+            try
             {
-                try
-                {
-                    this.notifyingObservers = true;
+                Interlocked.Increment(ref this.notificationsInProgress);
 
+                var currentObservers = this.observers;
+                if (currentObservers != null && !this.shuttingDown)
+                {
                     foreach (var observer in currentObservers)
                     {
                         // In our library we expect observers to process notifications very fast and there is no point in notifying them in parallel.
@@ -61,10 +78,10 @@ namespace Microsoft.Diagnostics.EventFlow
                         observer.OnNext(value);
                     }
                 }
-                finally
-                {
-                    this.notifyingObservers = false;
-                }
+            }
+            finally
+            {
+                Interlocked.Decrement(ref this.notificationsInProgress);
             }
         }
 
@@ -107,12 +124,17 @@ namespace Microsoft.Diagnostics.EventFlow
             IEnumerable<IObserver<SubjectType>> currentObservers;
             lock (this.lockObject)
             {
+                if (this.shuttingDown)
+                {
+                    return null;
+                }
+                this.shuttingDown = true;
                 currentObservers = this.observers;
                 this.observers = null;
             }
 
             // Wait for observer notifications to complete before completing them (i.e. calling OnCompleted or OnError).
-            SpinWait.SpinUntil(() => !this.notifyingObservers, TimeSpan.FromSeconds(5));
+            SpinWait.SpinUntil(() => Interlocked.CompareExchange(ref this.notificationsInProgress, 0,0) == 0, this.shutdownTimeout);
             return currentObservers;
         }
 
