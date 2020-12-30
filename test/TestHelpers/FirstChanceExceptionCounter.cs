@@ -51,13 +51,14 @@ namespace Microsoft.Diagnostics.EventFlow.TestHelpers
 
         public void Dispose()
         {
-#if !NETSTANDARD1_6
             if (!this.disposed)
             {
+#if !NETSTANDARD1_6
+            
                 AppDomain.CurrentDomain.FirstChanceException -= OnException;
-            }
 #endif
-            this.disposed = true;
+                this.disposed = true;
+            }
         }
     }
 }
