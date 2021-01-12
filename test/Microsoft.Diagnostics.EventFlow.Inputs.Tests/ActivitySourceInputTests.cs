@@ -3,7 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-#if NET5_0
+#if NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

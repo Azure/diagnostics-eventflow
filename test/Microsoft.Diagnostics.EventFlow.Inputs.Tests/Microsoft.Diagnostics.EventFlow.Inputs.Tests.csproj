@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.NLog\Microsoft.Diagnostics.EventFlow.Inputs.NLog.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj" />
   </ItemGroup>
 
   
@@ -43,10 +44,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.0" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.7.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj" />
   </ItemGroup>
 
   <ItemGroup>
