@@ -7,7 +7,7 @@
     <TargetFrameworks>netstandard1.6;net452;netstandard2.0;net471</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.EtwUtilities</AssemblyName>
-    <VersionPrefix>1.8.1</VersionPrefix>
+    <VersionPrefix>1.8.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.EtwUtilities</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Utilities;Event Tracing for Windows</PackageTags>

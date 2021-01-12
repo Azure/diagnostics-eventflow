@@ -7,8 +7,6 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
-using Microsoft.Diagnostics.EventFlow;
-
 namespace Microsoft.Diagnostics.EventFlow.Utilities.Etw
 {
     /// <summary>
