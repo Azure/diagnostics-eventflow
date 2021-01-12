@@ -11,7 +11,7 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Filters;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Diagnostics.EventFlow.Inputs;
-#if NET5_0
+#if NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
 using Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource;
 #endif
 using Microsoft.Diagnostics.EventFlow.Metadata;
@@ -390,8 +390,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                     ""schemaVersion"": ""2016-08-11""
                 }";
-#elif NET471 || NETCOREAPP2_1 || NETCOREAPP3_1
-            string pipelineConfiguration = @"
+#elif NET471
+             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
                         {
@@ -444,7 +444,67 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                     ""schemaVersion"": ""2016-08-11""
                 }";
-#else
+#elif NETCOREAPP2_1 || NETCOREAPP3_1
+            string pipelineConfiguration = @"
+                {
+                    ""inputs"": [
+                        {
+                            ""type"": ""EventSource"",
+                            ""sources"": [
+                                { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
+                            ]
+                        },
+                        {
+                            ""type"": ""Microsoft.Extensions.Logging""
+                        },
+                        {
+                            ""type"": ""Trace""
+                        },
+                        {
+                            ""type"": ""Serilog""
+                        },
+                        {
+                            ""type"": ""NLog""
+                        },
+                        {
+                            ""type"": ""Log4net"",
+                            ""LogLevel"": ""Verbose""
+                        },
+                        {
+                            ""type"": ""ActivitySource"",
+                            ""sources"": [
+                                { ""ActivitySourceName"": ""EventFlowTestSource"", ""ActivityName"": ""EventFlowTestActivity"" }
+                            ]
+                        }
+                    ],
+
+                    ""outputs"": [
+                        {
+                            ""type"": ""StdOutput"",
+                        },
+                        {
+                            ""type"": ""ElasticSearch"",
+                            ""serviceUri"": ""https://myElasticSearchCluster:9200""
+                        }, 
+                        {
+                            ""type"": ""OmsOutput"",
+                            ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
+                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                        },
+                        {
+                            ""type"": ""AzureMonitorLogs"",
+                            ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
+                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                        },
+                        {
+                            ""type"": ""Http"",
+                            ""serviceUri"": ""https://example.com/""
+                        }
+                    ],
+
+                    ""schemaVersion"": ""2016-08-11""
+                }";
+#elif NET5_0 
             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
@@ -526,7 +586,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             , i => Assert.IsType<PerformanceCounterInput>(i)
                             , i => Assert.IsType<EtwInput>(i)
 #endif
-#if NET5_0
+#if NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
                             , i => Assert.IsType<ActivitySourceInput>(i)
 #endif
                         );

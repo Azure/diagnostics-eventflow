@@ -39,7 +39,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp3.1' " >
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj" />
   </ItemGroup>
 
@@ -53,6 +53,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Elasticsearch.Net" Version="[7.1.0, 8.0)" />

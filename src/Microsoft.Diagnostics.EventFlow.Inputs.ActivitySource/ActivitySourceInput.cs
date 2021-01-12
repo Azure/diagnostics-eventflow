@@ -129,7 +129,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
                 {
                     FlushSamplingInfoCacheIfNeeded();
                     
-                    activitySampling_.AddOrUpdate(activityKey, (sc.CapturedData, sc.CapturedEvents), (_, _) => (sc.CapturedData, sc.CapturedEvents));
+                    activitySampling_.AddOrUpdate(activityKey, (sc.CapturedData, sc.CapturedEvents), (oldData, oldEvents) => (sc.CapturedData, sc.CapturedEvents));
 
                     return (sc.CapturedData, sc.CapturedEvents);
                 }
