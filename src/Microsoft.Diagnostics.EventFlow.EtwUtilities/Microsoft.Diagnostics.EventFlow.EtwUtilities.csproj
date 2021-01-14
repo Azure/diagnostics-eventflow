@@ -45,7 +45,6 @@
 
   <ItemGroup>
     <PackageReference Include="Validation" Version="2.4.18" />
-    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
   </ItemGroup>
 
 </Project>
