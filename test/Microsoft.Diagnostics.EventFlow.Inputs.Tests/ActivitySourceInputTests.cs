@@ -144,11 +144,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 }
             }
 
-            // We expect a warning about an ActivitySource configured with CapturedData = None, since that has no effect
-            healthReporter.Verify(hr => hr.ReportWarning(
-                It.Is<string>(s => s.Contains("CapturedData = None", StringComparison.OrdinalIgnoreCase)), 
-                It.Is<string>(ctx => OrdinalEquals(ctx, EventFlowContextIdentifiers.Configuration))
-            ), Times.Exactly(1));
             healthReporter.VerifyNoOtherCalls();
 
             Assert.True(observer.Completed);
@@ -802,6 +797,46 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 }
             }
         }
+
+        [Fact]
+        public void WarnsAboutInnefectiveConfigurationEntries()
+        {
+            var healthReporter = new Mock<IHealthReporter>();
+            var ActivityNameSuffix = GetRandomName();
+
+            var sources = new List<ActivitySourceConfiguration>(new[]
+            {
+                new ActivitySourceConfiguration
+                {
+                    ActivitySourceName = SourceOneName,
+                    ActivityName = "ActivityA" + ActivityNameSuffix
+                },
+                new ActivitySourceConfiguration
+                {
+                    ActivitySourceName = SourceOneName,
+                    CapturedData = ActivitySamplingResult.PropagationData,
+                    CapturedEvents = CapturedActivityEvents.Stop
+                },
+                new ActivitySourceConfiguration
+                {
+                    ActivitySourceName = SourceOneName,
+                    ActivityName = "ActivityB" + ActivityNameSuffix,
+                    CapturedData = ActivitySamplingResult.None
+                }
+            });
+
+            using (var input = new ActivitySourceInput(new ActivitySourceInputConfiguration { Sources = sources }, healthReporter.Object))
+            {
+            }
+
+            // We expect a warning about an ActivitySource configured with CapturedData = None, since that has no effect
+            healthReporter.Verify(hr => hr.ReportWarning(
+                It.Is<string>(s => s.Contains("entries will not be used", StringComparison.OrdinalIgnoreCase)),
+                It.Is<string>(ctx => OrdinalEquals(ctx, EventFlowContextIdentifiers.Configuration))
+            ), Times.Exactly(1));
+            healthReporter.VerifyNoOtherCalls();
+        }
+
 
         private bool OrdinalEquals(object o1, object o2) => StringComparer.Ordinal.Equals(o1, o2);
 
