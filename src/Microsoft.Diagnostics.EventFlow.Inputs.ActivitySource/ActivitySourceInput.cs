@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using Validation;
 
 using Microsoft.Diagnostics.EventFlow.Configuration;
+using System.Data.Common;
 
 namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
 {
@@ -88,13 +89,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
                     EventFlowContextIdentifiers.Configuration);
             }
 
-            var removed = configuration_.Sources.RemoveAll(s => s.CapturedData == ActivitySamplingResult.None);
-            if (removed > 0)
-            {
-                healthReporter.ReportWarning(
-                    $"{nameof(ActivitySourceInput)}: configuration has sources with CapturedData = None. These sources will be ignored.",
-                    EventFlowContextIdentifiers.Configuration);
-            }
+            WarnAboutIneffectiveEntries(configuration_, healthReporter);
 
             hasUnrestrictedSources_ = configuration_.Sources.Any(s => string.IsNullOrWhiteSpace(s.ActivitySourceName));
 
@@ -254,5 +249,41 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
                 }
             }
         }
+
+        private void WarnAboutIneffectiveEntries(ActivitySourceInputConfiguration configuration_, IHealthReporter healthReporter)
+        {
+            // If (SomeSource, *) configuration entry is succeeded by (SomeSource, SomeActivity) configuration entry,
+            // the latter will never be used. So issue a warning.
+
+            // The presence of an entry in this dictionary means an "capture all activities" entry for a given ActivitySource
+            // has been encountered. We want to limit the warnings to one per ActivitySource, 
+            // so we flip the value from false to true after we issue a warning.
+            var captureAllActivitiesEntries = new Dictionary<string, bool>();
+
+            foreach(var source in configuration_.Sources)
+            {
+                if (string.IsNullOrWhiteSpace(source.ActivitySourceName)) continue;
+
+                bool hasAllActivityEntry = captureAllActivitiesEntries.TryGetValue(source.ActivitySourceName, out bool warningIssued);
+                if (hasAllActivityEntry)
+                {
+                    if (!warningIssued)
+                    {
+                        captureAllActivitiesEntries[source.ActivitySourceName] = true;
+
+                        healthReporter.ReportWarning(
+                            $"{nameof(ActivitySourceInput)}: configuration for source '{source.ActivitySourceName}' has an entry that applies to all activities (activity name is blank)" +
+                            " followed by other entries. The other entries will not be used. See input documentation for more information.",
+                            EventFlowContextIdentifiers.Configuration);
+                    }
+                }
+                else if (string.IsNullOrWhiteSpace(source.ActivityName))
+                {
+                    captureAllActivitiesEntries[source.ActivitySourceName] = false;
+                }
+            }
+        }
+
+
     }
 }
