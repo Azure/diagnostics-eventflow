@@ -60,7 +60,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
             Initialize(configuration, healthReporter);
         }
 
-        public JsonSerializerSettings SerializerSettings { get; set; }
         public ActivitySourceInputConfiguration Configuration => configuration_;
 
         public void Dispose()
@@ -81,7 +80,6 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
             subject_ = new EventFlowSubject<EventData>();
             activitySampling_ = new ConcurrentDictionary<string, (ActivitySamplingResult CapturedData, CapturedActivityEvents CapturedEvents)>();
             activityListener_ = new ActivityListener();
-            SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
 
             if (configuration_.Sources.Count == 0)
             {
