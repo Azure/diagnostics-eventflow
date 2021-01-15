@@ -254,36 +254,75 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource
         {
             // If (SomeSource, *) configuration entry is succeeded by (SomeSource, SomeActivity) configuration entry,
             // the latter will never be used. So issue a warning.
+            // Similarly, if (*, SomeActivity) configuration entry is succeeded by (SomeSource, SomeActivity) configuration entry,
+            // the latter will never be used either.
+            // Finally, anything following (*, *) is not going to be used.
 
             // The presence of an entry in this dictionary means an "capture all activities" entry for a given ActivitySource
             // has been encountered. We want to limit the warnings to one per ActivitySource, 
             // so we flip the value from false to true after we issue a warning.
             var captureAllActivitiesEntries = new Dictionary<string, bool>();
 
+            // The presence of an entry in this dictionary means an "capture all sources emitting activity XXX"
+            // has been encountered. The values are used in the same way as with captureAllActivitiesEntries.
+            var captureAllSourcesEntries = new Dictionary<string, bool>();
+
+            bool captureEverythingEntry = false;
+
             foreach(var source in configuration_.Sources)
             {
-                if (string.IsNullOrWhiteSpace(source.ActivitySourceName)) continue;
-
-                bool hasAllActivityEntry = captureAllActivitiesEntries.TryGetValue(source.ActivitySourceName, out bool warningIssued);
-                if (hasAllActivityEntry)
+                if (captureEverythingEntry)
                 {
-                    if (!warningIssued)
-                    {
-                        captureAllActivitiesEntries[source.ActivitySourceName] = true;
-
-                        healthReporter.ReportWarning(
-                            $"{nameof(ActivitySourceInput)}: configuration for source '{source.ActivitySourceName}' has an entry that applies to all activities (activity name is blank)" +
-                            " followed by other entries. The other entries will not be used. See input documentation for more information.",
-                            EventFlowContextIdentifiers.Configuration);
-                    }
+                    healthReporter.ReportWarning(
+                        $"{nameof(ActivitySourceInput)}: configuration has an entry that applies to all activities from all sources " +
+                        "(both activity name and activity source name are blank). Following entries will not be used. " +
+                        "See input documentation for more information.",
+                        EventFlowContextIdentifiers.Configuration);
+                    break;
                 }
-                else if (string.IsNullOrWhiteSpace(source.ActivityName))
+
+                bool captureAllSources = string.IsNullOrWhiteSpace(source.ActivitySourceName);
+                bool captureAllActivities = string.IsNullOrWhiteSpace(source.ActivityName);
+
+                if (captureAllSources && captureAllActivities)
+                {
+                    captureEverythingEntry = true;
+                    continue;
+                }
+
+                bool warningIssued = false;
+
+                bool hasAllActivityEntry = !captureAllSources && captureAllActivitiesEntries.TryGetValue(source.ActivitySourceName, out warningIssued);
+                if (hasAllActivityEntry && !warningIssued)
+                {
+                    captureAllActivitiesEntries[source.ActivitySourceName] = true;
+
+                    healthReporter.ReportWarning(
+                        $"{nameof(ActivitySourceInput)}: configuration for source '{source.ActivitySourceName}' has an entry that applies to all activities (activity name is blank)" +
+                        " followed by other entries. The other entries will not be used. See input documentation for more information.",
+                            EventFlowContextIdentifiers.Configuration);
+                }
+                else if (captureAllActivities)
                 {
                     captureAllActivitiesEntries[source.ActivitySourceName] = false;
                 }
+
+
+                bool hasAllSourcesEntry = !captureAllActivities && captureAllSourcesEntries.TryGetValue(source.ActivityName, out warningIssued);
+                if (hasAllSourcesEntry && !warningIssued)
+                {
+                    captureAllSourcesEntries[source.ActivityName] = true;
+
+                    healthReporter.ReportWarning(
+                        $"{nameof(ActivitySourceInput)}: configuration has an entry that captures activity '{source.ActivityName}' for all sources." +
+                        " That entry is followed by other entries referring to the same activity. The other entries will not be used. See input documentation for more information.",
+                        EventFlowContextIdentifiers.Configuration);
+                }
+                else if (captureAllSources)
+                {
+                    captureAllSourcesEntries[source.ActivityName] = false;
+                }
             }
         }
-
-
     }
 }

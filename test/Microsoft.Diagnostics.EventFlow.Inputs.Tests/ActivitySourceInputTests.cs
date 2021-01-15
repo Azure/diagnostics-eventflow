@@ -831,10 +831,68 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
             // We expect a warning about an ActivitySource configured with CapturedData = None, since that has no effect
             healthReporter.Verify(hr => hr.ReportWarning(
-                It.Is<string>(s => s.Contains("entries will not be used", StringComparison.OrdinalIgnoreCase)),
+                It.Is<string>(s => s.Contains($"source '{SourceOneName}' has an entry that applies to all activities", StringComparison.OrdinalIgnoreCase)),
                 It.Is<string>(ctx => OrdinalEquals(ctx, EventFlowContextIdentifiers.Configuration))
             ), Times.Exactly(1));
             healthReporter.VerifyNoOtherCalls();
+            healthReporter.ResetCalls();
+
+            sources = new List<ActivitySourceConfiguration>(new[]
+            {
+                new ActivitySourceConfiguration
+                {
+                    ActivitySourceName = SourceOneName,
+                    ActivityName = "ActivityA" + ActivityNameSuffix
+                },
+                new ActivitySourceConfiguration
+                {
+                    ActivityName = "ActivityA" + ActivityNameSuffix,
+                    CapturedData = ActivitySamplingResult.PropagationData,
+                    CapturedEvents = CapturedActivityEvents.Stop
+                },
+                new ActivitySourceConfiguration
+                {
+                    ActivitySourceName = SourceTwoName,
+                    ActivityName = "ActivityA" + ActivityNameSuffix,
+                    CapturedData = ActivitySamplingResult.None
+                }
+            });
+
+            using (var input = new ActivitySourceInput(new ActivitySourceInputConfiguration { Sources = sources }, healthReporter.Object))
+            {
+            }
+
+            healthReporter.Verify(hr => hr.ReportWarning(
+                It.Is<string>(s => s.Contains($"an entry that captures activity '{"ActivityA" + ActivityNameSuffix}' for all sources", StringComparison.OrdinalIgnoreCase)),
+                It.Is<string>(ctx => OrdinalEquals(ctx, EventFlowContextIdentifiers.Configuration))
+            ), Times.Exactly(1));
+            healthReporter.VerifyNoOtherCalls();
+            healthReporter.ResetCalls();
+
+            sources = new List<ActivitySourceConfiguration>(new[]
+            {
+                new ActivitySourceConfiguration
+                {
+                    CapturedData = ActivitySamplingResult.PropagationData,
+                    CapturedEvents = CapturedActivityEvents.Stop
+                },
+                new ActivitySourceConfiguration
+                {
+                    ActivityName = "ActivityA" + ActivityNameSuffix,
+                    CapturedData = ActivitySamplingResult.AllData
+                }
+            });
+
+            using (var input = new ActivitySourceInput(new ActivitySourceInputConfiguration { Sources = sources }, healthReporter.Object))
+            {
+            }
+
+            healthReporter.Verify(hr => hr.ReportWarning(
+                It.Is<string>(s => s.Contains($"entry that applies to all activities from all sources", StringComparison.OrdinalIgnoreCase)),
+                It.Is<string>(ctx => OrdinalEquals(ctx, EventFlowContextIdentifiers.Configuration))
+            ), Times.Exactly(1));
+            healthReporter.VerifyNoOtherCalls();
+            healthReporter.ResetCalls();
         }
 
 
