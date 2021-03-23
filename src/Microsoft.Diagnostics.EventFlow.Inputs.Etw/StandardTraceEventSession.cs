@@ -16,9 +16,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 {
     internal class StandardTraceEventSession : ITraceEventSession
     {
-        private TraceEventSession inner;
-        private bool isProcessing;
-        private IHealthReporter healthReporter;
+        protected TraceEventSession inner;
+        protected bool isProcessing;
+        protected IHealthReporter healthReporter;
 
         public StandardTraceEventSession(string sessionNamePrefix, bool cleanupOldSessions, bool reuseExisting, IHealthReporter healthReporter)
         {
@@ -72,7 +72,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.inner.EnableProvider(providerName, maximumEventLevel, enabledKeywords);
         }
 
-        public void Process(Action<EventData> onEvent)
+        public virtual void Process(Action<EventData> onEvent)
         {
             if (this.inner == null)
             {
