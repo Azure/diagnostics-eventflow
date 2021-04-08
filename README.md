@@ -39,6 +39,7 @@ The core of the library, as well as inputs and outputs listed above [are availab
 - [Azure Monitor Logs](#azure-monitor-logs)
 
 There are several EventFlow extensions available from non-Microsoft authors and vendors, including:
+- [Dynatrace output](https://github.com/dynatrace/diagnostics-eventflow)
 - [Google Big Query output](https://github.com/tsu1980/diagnostics-eventflow-bigquery)
 - [SQL Server output](https://github.com/ycamargo/diagnostics-eventflow-sqloutput)
 - [ReflectInsight output](https://github.com/reflectsoftware/Microsoft.Diagnostics.EventFlow.Outputs.ReflectInsight)
