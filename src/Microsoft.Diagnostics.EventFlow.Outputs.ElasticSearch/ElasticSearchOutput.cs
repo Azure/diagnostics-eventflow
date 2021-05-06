@@ -164,19 +164,6 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
             }
 
-            if (eventData.TryGetMetadata(DependencyData.DependencyMetadataKind, out metadataSet))
-            {
-                foreach (var dependencyMetadata in metadataSet)
-                {
-                    operation = CreateDependencyOperation(eventData, dependencyMetadata, currentIndexName);
-                    if (operation != null)
-                    {
-                        reportedAsSpecialEvent = true;
-                        yield return operation;
-                    }
-                }
-            }
-
             if (eventData.TryGetMetadata(ExceptionData.ExceptionMetadataKind, out metadataSet))
             {
                 foreach (var exceptionMetadata in metadataSet)
