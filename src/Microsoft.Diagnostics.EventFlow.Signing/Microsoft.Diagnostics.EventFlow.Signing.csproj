@@ -96,10 +96,8 @@
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
@@ -173,10 +171,8 @@
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Trace.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Trace\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.MicrosoftLogging\bin\$(Configuration)\netstandard1.6"/>
-    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.NLog.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.NLog\bin\$(Configuration)\netstandard1.6"/>
-    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\netstandard1.6"/>
