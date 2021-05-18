@@ -32,7 +32,6 @@
     It can be removed once direct dependencies do not transitively depend on old versions of the System.Text.Encodings.Web anymore.
     This will probably happen starting with Microsoft.ApplicationInsights version 2.18.
     -->
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.22" />
     <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" />
     
   </ItemGroup>
