@@ -26,6 +26,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
         private ITraceEventSession session;
         private bool isDisposed;
 
+        // Optional flag that allows to decode incoming events as MsgPack
+        private bool isMsgPack = false;
+
         public EtwInput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
@@ -34,6 +37,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             string sessionNamePrefix = configuration.GetValue<string>("sessionNamePrefix", DefaultSessionnamePrefix);
             bool cleanupOldSessions = configuration.GetValue<bool>("cleanupOldSessions", false);
             bool reuseExistingSession = configuration.GetValue<bool>("reuseExistingSession", false);
+
+            // ETW event payload contains MsgPack binary-encoded event
+            isMsgPack = (configuration.GetValue<string>("encoding", "") == "MsgPack");
 
             IConfiguration providersConfiguration = configuration.GetSection(ProvidersSectionName);
             if (providersConfiguration == null)
@@ -159,7 +165,9 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.healthReporter = healthReporter;
             this.subject = new EventFlowSubject<EventData>();
             this.isDisposed = false;
-            this.SessionFactory = () => new StandardTraceEventSession(sessionNamePrefix, cleanupOldSessions, restartExisting, healthReporter);
+            this.SessionFactory = () => ((isMsgPack) ?
+            new MsgPackTraceEventSession(sessionNamePrefix, cleanupOldSessions, restartExisting, healthReporter) :
+            new StandardTraceEventSession(sessionNamePrefix, cleanupOldSessions, restartExisting, healthReporter));
 
             this.Providers = providers;
             // The session is not started until Activate() is called.
