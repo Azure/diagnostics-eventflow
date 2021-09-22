@@ -852,8 +852,6 @@ This output writes data to a webserver using diffent encoding methods (Json or J
 ### Event Hub
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
 
-> **BREAKING CHANGE**: Starting from version `2.0.0` this package targets _only_ `netstandard2.0`.
-
 This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-us/documentation/articles/event-hubs-overview/).
 
 Here is an example showing configuration using connection string:
@@ -1650,7 +1648,7 @@ The following table lists platform support for standard inputs and outputs.
 | *Outputs* |
 | [StdOutput (console output)](#stdoutput) | Yes | Yes | Yes |
 | [Application Insights](#application-insights) | Yes | Yes | Yes |
-| [Azure EventHub](#event-hub) | Yes | Yes | Yes |
+| [Azure EventHub](#event-hub) | No | Yes | Yes |
 | [Elasticsearch](#elasticsearch) | Yes | Yes | Yes |
 | [Azure Monitor Logs](#azure-monitor-logs) | Yes | Yes | Yes |
 | [HTTP (json via http)](#http) | Yes | Yes | Yes |
