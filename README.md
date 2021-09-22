@@ -1614,7 +1614,7 @@ Ultimately it might be necessary just to reduce the number of events produced by
 EventFlow supports full .NET Framework (.NET 4.5 series and 4.6 series) and .NET Core, but not all inputs and outputs are supported on all platforms. 
 The following table lists platform support for standard inputs and outputs.  
 
-| Input Name | .NET 4.5.1 | .NET 4.6 | .NET Core |
+| Input Name | .NET 4.5.1 | .NET 4.6 | .NET Core and .NET 5 |
 | :------------ | :---- | :---- | :---- |
 | *Inputs* |
 | [System.Diagnostics.Trace](#trace) | Yes | Yes | Yes |
