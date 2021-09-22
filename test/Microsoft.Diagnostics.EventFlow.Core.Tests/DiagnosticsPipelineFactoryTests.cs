@@ -379,6 +379,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""serviceUri"": ""https://example.com/""
                         },
                         {
+                            ""type"": ""EventHub"",
+                            ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
+                        },
+                        {
                             ""type"": ""ApplicationInsights"",
                             ""instrumentationKey"": ""00000000-0000-0000-0000-000000000000""
                         }
@@ -606,10 +610,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 #endif
                             s => Assert.IsType<OmsOutput>(s.Output),
                             s => Assert.IsType<OmsOutput>(s.Output), // Azure Monitor Logs output can be created using the old and the new name
-                            s => Assert.IsType<HttpOutput>(s.Output)
-#if !NET461
-                            , s => Assert.IsType<EventHubOutput>(s.Output)
-#endif
+                            s => Assert.IsType<HttpOutput>(s.Output),
+                            s => Assert.IsType<EventHubOutput>(s.Output)
 #if NET461
                             , s => Assert.IsType<ApplicationInsightsOutput>(s.Output)
 #endif
