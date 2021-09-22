@@ -3,6 +3,8 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+using Azure.Core;
+
 namespace Microsoft.Diagnostics.EventFlow.Configuration
 {
     // !!ACTION!!
@@ -11,6 +13,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     {
         public string ConnectionString { get; set; }
         public bool UseAzureIdentity { get; set; }
+        public TokenCredential AzureTokenCredential { get; set; }
         public string FullyQualifiedNamespace { get; set; }
         public string EventHubName { get; set; }
         public string PartitionKeyProperty { get; set; }

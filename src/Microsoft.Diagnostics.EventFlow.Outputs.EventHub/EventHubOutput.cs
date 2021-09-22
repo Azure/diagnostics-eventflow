@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
@@ -198,8 +199,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                     throw new Exception(emptyNamespaceMsg);
                 }
 
+                TokenCredential azureTokenCredential = this.outputConfiguration.AzureTokenCredential ?? new DefaultAzureCredential();
+
                 return new EventHubClientImpl(
-                    new EventHubProducerClient(this.outputConfiguration.FullyQualifiedNamespace, this.eventHubName, new DefaultAzureCredential())
+                    new EventHubProducerClient(this.outputConfiguration.FullyQualifiedNamespace, this.eventHubName, azureTokenCredential)
                 );
             }
 
