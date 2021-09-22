@@ -12,13 +12,21 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 {
     public class DateTimePreciseTests
     {
+        const double MaxResolutionThresholdMS = 200.0;
+
         private static double GetAverageResolution()
         {
             const int count = 1000;
             var precisions = new List<double>(count);
             for (var i = 0; i < count; ++i)
             {
-                precisions.Add(GetResolution().TotalMilliseconds);
+                var res = GetResolution().TotalMilliseconds;
+                if (res > MaxResolutionThresholdMS)
+                {
+                    // Not a valid sample--most likely the test process was suspended by the OS for extended period of time.
+                    continue;
+                }
+                precisions.Add(res);
             }
             return precisions.Average();
         }
