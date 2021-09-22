@@ -3,6 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
+#if NETCOREAPP2_1_OR_GREATER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
+using MessagingEventData = Azure.Messaging.EventHubs.EventData;
 
 using Microsoft.Diagnostics.EventFlow.Configuration;
 
@@ -30,7 +31,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             e.Payload.Add("DateTimeOffsetProperty", new DateTimeOffset(2017, 4, 19, 10, 16, 07, TimeSpan.Zero));
 
             var messagingData = EventDataExtensions.ToMessagingEventData(e, EventFlowJsonUtilities.GetDefaultSerializerSettings(), out int messageSize);
-            string messageBody = Encoding.UTF8.GetString(messagingData.Body.Array, messagingData.Body.Offset, messagingData.Body.Count);
+            string messageBody = Encoding.UTF8.GetString(messagingData.EventBody);
 
             var dateTimeRegex = new Regex(@"""DateTimeProperty"" \s* : \s* ""2017-04-19T10:15:23Z""", RegexOptions.IgnorePatternWhitespace, TimeSpan.FromMilliseconds(100));
             Assert.Matches(dateTimeRegex, messageBody);
@@ -63,7 +64,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 if (batch.Count() != 1) return false;
 
                 var data = batch.First();
-                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var bodyString = Encoding.UTF8.GetString(data.EventBody);
                 var recordSet = JObject.Parse(bodyString);
                 var message = recordSet["records"][0];
 
@@ -215,7 +216,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 if (batch.Count() != 1) return false;
 
                 var data = batch.First();
-                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var bodyString = Encoding.UTF8.GetString(data.EventBody);
                 var recordSet = JObject.Parse(bodyString);
                 var message = recordSet["records"][0];
 
@@ -252,7 +253,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 if (batch.Count() != 1) return false;
 
                 var data = batch.First();
-                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var bodyString = Encoding.UTF8.GetString(data.EventBody);
                 var recordSet = JObject.Parse(bodyString);
                 var message = recordSet["records"][0];
 
@@ -275,7 +276,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 if (batch.Count() != 1) return false;
 
                 var data = batch.First();
-                var bodyString = Encoding.UTF8.GetString(data.Body.Array, data.Body.Offset, data.Body.Count);
+                var bodyString = Encoding.UTF8.GetString(data.EventBody);
                 var recordSet = JObject.Parse(bodyString);
                 var message = recordSet["records"][0];
 
@@ -292,3 +293,4 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         }
     }
 }
+#endif

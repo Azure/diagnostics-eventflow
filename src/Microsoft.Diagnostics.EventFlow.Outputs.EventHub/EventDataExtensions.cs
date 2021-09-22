@@ -8,9 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Diagnostics.EventFlow.Metadata;
 using Newtonsoft.Json;
-using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
-
-using Microsoft.Diagnostics.EventFlow;
+using MessagingEventData = Azure.Messaging.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -49,7 +47,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 : ConvertToShoeboxTrace(eventData);
 
             // If this turns out to consume significant CPU time, we could serialize the object "manually".
-            // See https://github.com/aspnet/Logging/blob/dev/src/Microsoft.Extensions.Logging.EventSource/EventSourceLogger.cs for an example.
+            // See https://github.com/dotnet/runtime/blob/0ea3b7d8cf957508a94061b8e921b28d6f6becd6/src/libraries/Microsoft.Extensions.Logging.EventSource/src/EventSourceLogger.cs for an example.
             // This avoids the reflection cost that is associate with single-call SerializeObject approach
             string eventDataSerialized = JsonConvert.SerializeObject(sbEventData, serializerSettings);
 

@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
+using MessagingEventData = Azure.Messaging.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {

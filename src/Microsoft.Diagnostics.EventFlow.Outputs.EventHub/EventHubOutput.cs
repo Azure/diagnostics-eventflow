@@ -9,13 +9,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.EventHubs;
+using Azure.Identity;
+using Azure.Messaging.EventHubs;
+using Azure.Messaging.EventHubs.Producer;
 using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Utilities;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Validation;
-using MessagingEventData = Microsoft.Azure.EventHubs.EventData;
+using MessagingEventData = Azure.Messaging.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
@@ -32,7 +34,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         // Clients field will be used by multi-threads. Throughout this class, try to use Interlocked methods to load the field first,
         // before accessing to guarantee your function won't be affected by another thread.
         private IEventHubClient[] clients;
-        private Func<string, IEventHubClient> eventHubClientFactory;
+        private Func<EventHubOutputConfiguration, IEventHubClient> eventHubClientFactory;
         private EventHubOutputConfiguration outputConfiguration;
         private readonly IHealthReporter healthReporter;
 
@@ -61,7 +63,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         public EventHubOutput(
             EventHubOutputConfiguration eventHubOutputConfiguration,
             IHealthReporter healthReporter,
-            Func<string, IEventHubClient> eventHubClientFactory = null)
+            Func<EventHubOutputConfiguration, IEventHubClient> eventHubClientFactory = null)
         {
             Requires.NotNull(eventHubOutputConfiguration, nameof(eventHubOutputConfiguration));
             Requires.NotNull(healthReporter, nameof(healthReporter));
@@ -93,7 +95,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
                 foreach (var partitionedEventData in groupedEventData)
                 {
-                    //assemble the full list of MessagingEventData items plus their messageSize 
+                    //assemble the full list of MessagingEventData items plus their messageSize
                     List<(MessagingEventData message, int messageSize)> batchRecords = partitionedEventData.Select(
                         e => new Tuple<MessagingEventData, int>(e.ToMessagingEventData(SerializerSettings, out var messageSize), messageSize).ToValueTuple()).ToList();
 
@@ -151,17 +153,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         {
             Debug.Assert(this.healthReporter != null);
 
-            if (string.IsNullOrWhiteSpace(this.outputConfiguration.ConnectionString))
-            {
-                var errorMessage = $"{nameof(EventHubOutput)}: '{nameof(EventHubOutputConfiguration.ConnectionString)}' configuration parameter must be set to a valid connection string";
-                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
-            }
-
             this.clients = new IEventHubClient[ConcurrentConnections];
             for (uint i = 0; i < this.clients.Length; i++)
             {
-                this.clients[i] = this.eventHubClientFactory(this.outputConfiguration.ConnectionString);
+                this.clients[i] = this.eventHubClientFactory(this.outputConfiguration);
             }
 
             SerializerSettings = EventFlowJsonUtilities.GetDefaultSerializerSettings();
@@ -187,23 +182,53 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        private IEventHubClient CreateEventHubClient(string connectionString)
+        private IEventHubClient CreateEventHubClient(EventHubOutputConfiguration _)
         {
-            Debug.Assert(this.outputConfiguration.ConnectionString != null);
-            EventHubsConnectionStringBuilder connStringBuilder = new EventHubsConnectionStringBuilder(this.outputConfiguration.ConnectionString);
+            Debug.Assert(this.outputConfiguration != null);
 
-            this.eventHubName = connStringBuilder.EntityPath ?? this.outputConfiguration.EventHubName;
-            if (string.IsNullOrWhiteSpace(this.eventHubName))
+            if (this.outputConfiguration.UseAzureIdentity)
             {
-                var errorMessage = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
+                this.eventHubName = this.outputConfiguration.EventHubName;
+                ensureEventHubName();
 
-                healthReporter.ReportProblem(errorMessage, EventFlowContextIdentifiers.Configuration);
-                throw new Exception(errorMessage);
+                if (string.IsNullOrWhiteSpace(this.outputConfiguration.FullyQualifiedNamespace))
+                {
+                    var emptyNamespaceMsg = $"{nameof(EventHubOutput)}: Event Hub namespace must not be empty when using Azure Identity. It can be specified in the '{nameof(EventHubOutputConfiguration.FullyQualifiedNamespace)}' configuration parameter";
+                    healthReporter.ReportProblem(emptyNamespaceMsg, EventFlowContextIdentifiers.Configuration);
+                    throw new Exception(emptyNamespaceMsg);
+                }
+
+                return new EventHubClientImpl(
+                    new EventHubProducerClient(this.outputConfiguration.FullyQualifiedNamespace, this.eventHubName, new DefaultAzureCredential())
+                );
             }
 
-            connStringBuilder.EntityPath = this.eventHubName;
+            if (!string.IsNullOrWhiteSpace(this.outputConfiguration.ConnectionString))
+            {
+                var connString = EventHubsConnectionStringProperties.Parse(this.outputConfiguration.ConnectionString);
+                this.eventHubName = connString.EventHubName ?? this.outputConfiguration.EventHubName;
+                ensureEventHubName();
 
-            return new EventHubClientImpl(EventHubClient.CreateFromConnectionString(connStringBuilder.ToString()));
+                return new EventHubClientImpl(
+                    new EventHubProducerClient(this.outputConfiguration.ConnectionString, this.eventHubName)
+                );
+            }
+
+            var invalidConfigMsg =
+                $"Invalid {nameof(EventHubOutput)} configuration encountered: '{nameof(EventHubOutputConfiguration.ConnectionString)}' value is empty and '{nameof(EventHubOutputConfiguration.UseAzureIdentity)}' is set to false. " +
+                $"You need to specify either '{nameof(EventHubOutputConfiguration.ConnectionString)}' to EventHub or set '{nameof(EventHubOutputConfiguration.UseAzureIdentity)}' flag.";
+            healthReporter.ReportProblem(invalidConfigMsg, EventFlowContextIdentifiers.Configuration);
+            throw new Exception(invalidConfigMsg);
+
+            void ensureEventHubName()
+            {
+                if (string.IsNullOrWhiteSpace(this.eventHubName))
+                {
+                    var emptyEventHubNameMsg = $"{nameof(EventHubOutput)}: Event Hub name must not be empty. It can be specified in the '{nameof(EventHubOutputConfiguration.ConnectionString)}' or '{nameof(EventHubOutputConfiguration.EventHubName)}' configuration parameter";
+                    healthReporter.ReportProblem(emptyEventHubNameMsg);
+                    throw new Exception(emptyEventHubNameMsg);
+                }
+            }
         }
     }
 }
