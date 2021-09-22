@@ -189,7 +189,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         var eventSourceInput = pipeline.Inputs.First() as EventSourceInput;
                         Assert.NotNull(eventSourceInput);
 
-                        var expectedEventSources = new EventSourceConfiguration[3];                        
+                        var expectedEventSources = new EventSourceConfiguration[3];
                         expectedEventSources[0] = new EventSourceConfiguration { ProviderName = "Microsoft-ServiceFabric-Services" };
                         expectedEventSources[1] = new EventSourceConfiguration { ProviderName = "MyCompany-AirTrafficControlApplication-Frontend" };
                         // Microsoft-ApplicationInsights-Data is disabled by default to work around https://github.com/dotnet/coreclr/issues/14434
@@ -357,7 +357,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""providers"": [
                                 { ""providerName"": ""Microsoft-ServiceFabric-Services"" },
                             ]
-                        }                        
+                        }
                     ],
 
                     ""outputs"": [
@@ -368,7 +368,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
                             ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
-                        }, 
+                        },
                         {
                             ""type"": ""AzureMonitorLogs"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
@@ -379,19 +379,15 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             ""serviceUri"": ""https://example.com/""
                         },
                         {
-                            ""type"": ""EventHub"",
-                            ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
-                        }, 
-                        {
                             ""type"": ""ApplicationInsights"",
                             ""instrumentationKey"": ""00000000-0000-0000-0000-000000000000""
-                        } 
+                        }
                     ],
 
                     ""schemaVersion"": ""2016-08-11""
                 }";
 #elif NET471
-             string pipelineConfiguration = @"
+            string pipelineConfiguration = @"
                 {
                     ""inputs"": [
                         {
@@ -425,7 +421,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""ElasticSearch"",
                             ""serviceUri"": ""https://myElasticSearchCluster:9200""
-                        }, 
+                        },
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
@@ -439,6 +435,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""Http"",
                             ""serviceUri"": ""https://example.com/""
+                        },
+                        {
+                            ""type"": ""EventHub"",
+                            ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
                         }
                     ],
 
@@ -485,7 +485,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""ElasticSearch"",
                             ""serviceUri"": ""https://myElasticSearchCluster:9200""
-                        }, 
+                        },
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
@@ -499,12 +499,16 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""Http"",
                             ""serviceUri"": ""https://example.com/""
+                        },
+                        {
+                            ""type"": ""EventHub"",
+                            ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
                         }
                     ],
 
                     ""schemaVersion"": ""2016-08-11""
                 }";
-#elif NET5_0 
+#elif NET5_0
             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
@@ -541,7 +545,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     ""outputs"": [
                         {
                             ""type"": ""StdOutput"",
-                        },                         
+                        },
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
@@ -555,6 +559,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""Http"",
                             ""serviceUri"": ""https://example.com/""
+                        },
+                        {
+                            ""type"": ""EventHub"",
+                            ""connectionString"": ""Endpoint=sb://unused.servicebus.windows.net/;SharedAccessKeyName=send-only;SharedAccessKey=+lw95uDEcOLYE/zZFycZx3gxgomPgzfFmSdj+iBQiI8=;EntityPath=hub1""
                         }
                     ],
 
@@ -574,8 +582,8 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                     using (var pipeline = DiagnosticPipelineFactory.CreatePipeline(configuration))
                     {
                         Assert.NotNull(pipeline);
-                                                
-                        Assert.Collection(pipeline.Inputs, 
+
+                        Assert.Collection(pipeline.Inputs,
                             i => Assert.IsType<EventSourceInput>(i),
                             i => Assert.IsType<LoggerInput>(i),
                             i => Assert.IsType<TraceInput>(i),
@@ -590,7 +598,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             , i => Assert.IsType<ActivitySourceInput>(i)
 #endif
                         );
-                        
+
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
 #if (!NET461 && !NET5_0)
@@ -599,8 +607,10 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             s => Assert.IsType<OmsOutput>(s.Output),
                             s => Assert.IsType<OmsOutput>(s.Output), // Azure Monitor Logs output can be created using the old and the new name
                             s => Assert.IsType<HttpOutput>(s.Output)
-#if NET461
+#if !NET461
                             , s => Assert.IsType<EventHubOutput>(s.Output)
+#endif
+#if NET461
                             , s => Assert.IsType<ApplicationInsightsOutput>(s.Output)
 #endif
                         );
