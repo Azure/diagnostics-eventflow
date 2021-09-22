@@ -3,34 +3,37 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.EventHubs;
+using Azure.Messaging.EventHubs.Producer;
 using Validation;
+using MessagingEventData = Azure.Messaging.EventHubs.EventData;
 
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     internal class EventHubClientImpl : IEventHubClient
     {
-        private EventHubClient inner;
+        private EventHubProducerClient inner;
 
-        public EventHubClientImpl(EventHubClient inner)
+        public EventHubClientImpl(EventHubProducerClient inner)
         {
             Requires.NotNull(inner, nameof(inner));
             this.inner = inner;
         }
 
-        public Task SendAsync(IEnumerable<Azure.EventHubs.EventData> batch)
+        public Task SendAsync(IEnumerable<MessagingEventData> batch)
         {
             return this.inner.SendAsync(batch);
         }
 
-        public Task SendAsync(IEnumerable<Azure.EventHubs.EventData> batch, string partitionKey)
+        public Task SendAsync(IEnumerable<MessagingEventData> batch, string partitionKey)
         {
-            return this.inner.SendAsync(batch, partitionKey);
+            var sendOptions = new SendEventOptions
+            {
+                PartitionKey = partitionKey
+            };
+
+            return this.inner.SendAsync(batch, sendOptions);
         }
 
         public Task CloseAsync()

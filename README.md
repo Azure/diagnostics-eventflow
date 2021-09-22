@@ -852,7 +852,11 @@ This output writes data to a webserver using diffent encoding methods (Json or J
 ### Event Hub
 *Nuget Package*: [**Microsoft.Diagnostics.EventFlow.Outputs.EventHub**](https://www.nuget.org/packages/Microsoft.Diagnostics.EventFlow.Outputs.EventHub/)
 
-This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-us/documentation/articles/event-hubs-overview/). Here is an example showing all possible settings:
+> **BREAKING CHANGE**: Starting from version `2.0.0` this package targets _only_ `netstandard2.0`.
+
+This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-us/documentation/articles/event-hubs-overview/).
+
+Here is an example showing configuration using connection string:
 ```jsonc
 {
     "type": "EventHub",
@@ -860,12 +864,29 @@ This output writes data to the [Azure Event Hub](https://azure.microsoft.com/en-
     "connectionString": "Endpoint=sb://<myEventHubNamespace>.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<MySharedAccessKey>"
 }
 ```
+
+Here is an example showing configuration using Azure Identity:
+```jsonc
+{
+    "type": "EventHub",
+    "useAzureIdentity": true,
+    "fullyQualifiedNamespace": "<myEventHubNamespace>.servicebus.windows.net",
+    "eventHubName": "myEventHub"
+}
+```
+
 | Field | Values/Types | Required | Description |
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "EventHub" | Yes | Specifies the output type. For this output, it must be "EventHub". |
-| `eventHubName` | event hub name | No | Specifies the name of the event hub. |
-| `connectionString` | connection string | Yes | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
+| `connectionString` | connection string | Yes(*) | Specifies the connection string for the event hub. The corresponding shared access policy must have send permission. If the event hub name does not appear in the connection string, then it must be specified in the eventHubName field. |
+| `eventHubName` | event hub name | No(**)  | Specifies the name of the event hub. |
+| `useAzureIdentity` | boolean | Yes(*) | Specifies that Event Hub client will be using Azure Identity for authentication. The identity (managed of user) must have assigned policy with send permission. |
+| `fullyQualifiedNamespace` | string | Yes(**) | Specifies the root vent hub namespace. Should be a fully qualified name, i.e. `<namespace>.servicebus.windows.net`. |
 | `partitionKeyProperty` | string | No | The name of the event property that will be used as the PartitionKey for the Event Hub events. |
+
+(*) Either `connectionString` or `useAzureIdentity` must be specified. `useAzureIdentity` takes precedence.
+
+(**) When `useAzureIdentity` is set to `true` then both `eventHubName` and `fullyQualifiedNamespace` must be specified.
 
 [**Back to Topics**](#topics)
 

@@ -10,6 +10,8 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     public class EventHubOutputConfiguration: ItemConfiguration
     {
         public string ConnectionString { get; set; }
+        public bool UseAzureIdentity { get; set; }
+        public string FullyQualifiedNamespace { get; set; }
         public string EventHubName { get; set; }
         public string PartitionKeyProperty { get; set; }
     }
