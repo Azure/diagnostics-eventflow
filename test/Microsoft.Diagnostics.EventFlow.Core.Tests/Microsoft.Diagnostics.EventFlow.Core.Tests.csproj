@@ -19,7 +19,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.NLog\Microsoft.Diagnostics.EventFlow.Inputs.NLog.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />    
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.Oms\Microsoft.Diagnostics.EventFlow.Outputs.Oms.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.csproj" />
   </ItemGroup>
@@ -27,7 +27,6 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter\Microsoft.Diagnostics.EventFlow.Inputs.PerformanceCounter.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights\Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Etw\Microsoft.Diagnostics.EventFlow.Inputs.Etw.csproj" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.11" />
@@ -41,6 +40,10 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp3.1' " >
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net471' Or '$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp3.1' " >
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
@@ -58,7 +61,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Elasticsearch.Net" Version="[7.1.0, 8.0)" />
