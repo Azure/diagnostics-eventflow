@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Diagnostics.EventFlow.JsonConverters
 {
-#if NET471 || NETSTANDARD2_0
+#if NET461 || NET471 || NETSTANDARD2_0
     public class MemberInfoConverter : JsonConverter<MemberInfo>
 #else
     public class MemberInfoConverter : JsonConverter
@@ -33,7 +33,7 @@ namespace Microsoft.Diagnostics.EventFlow.JsonConverters
         }
 #endif
 
-#if NET471 || NETSTANDARD2_0
+#if NET461 || NET471 || NETSTANDARD2_0
         public override MemberInfo ReadJson(JsonReader reader, Type objectType, MemberInfo existingValue, bool hasExistingValue, JsonSerializer serializer)
 #else
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
@@ -42,7 +42,7 @@ namespace Microsoft.Diagnostics.EventFlow.JsonConverters
             throw new NotImplementedException();
         }
 
-#if NET471 || NETSTANDARD2_0
+#if NET461 || NET471 || NETSTANDARD2_0
         public override void WriteJson(JsonWriter writer, MemberInfo value, JsonSerializer serializer)
 #else
         public void WriteJson(JsonWriter writer, MemberInfo value, JsonSerializer serializer)

@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Serilog\Microsoft.Diagnostics.EventFlow.Inputs.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.Log4net\Microsoft.Diagnostics.EventFlow.Inputs.Log4net.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.NLog\Microsoft.Diagnostics.EventFlow.Inputs.NLog.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.Oms\Microsoft.Diagnostics.EventFlow.Outputs.Oms.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.csproj" />
@@ -42,23 +43,16 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net471' Or '$(TargetFramework)' == 'net5.0' Or '$(TargetFramework)' == 'netcoreapp2.1' Or '$(TargetFramework)' == 'netcoreapp3.1' " >
-    <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Outputs.EventHub\Microsoft.Diagnostics.EventFlow.Outputs.EventHub.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
   </ItemGroup>
 
