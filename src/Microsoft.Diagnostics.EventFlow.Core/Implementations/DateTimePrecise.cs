@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 
 using System;
-#if NET452 || NET471
+#if NET461 || NET471
 using System.Runtime.InteropServices;
 #endif
 
@@ -12,7 +12,7 @@ namespace Microsoft.Diagnostics.EventFlow
 {
     public static class DateTimePrecise
     {
-#if NET452 || NET471
+#if NET461 || NET471
         [DllImport("Kernel32.dll", CallingConvention = CallingConvention.Winapi)]
         private static extern void GetSystemTimePreciseAsFileTime(out long filetime);
 
@@ -25,7 +25,7 @@ namespace Microsoft.Diagnostics.EventFlow
         {
             get
             {
-#if NET452 || NET471
+#if NET461 || NET471
                 if (UseSystemTimePrecise)
                 {
                     GetSystemTimePreciseAsFileTime(out var filetime);
