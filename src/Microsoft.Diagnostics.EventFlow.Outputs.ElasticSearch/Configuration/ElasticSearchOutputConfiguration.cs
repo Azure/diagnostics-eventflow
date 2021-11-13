@@ -31,6 +31,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
         public string DefaultPipeline { get; set; }
 
         public ElasticSearchMappingsConfiguration Mappings { get; set; }
+        public ElasticSearchProxyConfiguration Proxy { get; set; }
 
         public ElasticSearchOutputConfiguration()
         {
@@ -38,6 +39,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
             Mappings = new ElasticSearchMappingsConfiguration();
+            Proxy = new ElasticSearchProxyConfiguration();
         }
 
         public ElasticSearchOutputConfiguration DeepClone()
@@ -53,7 +55,8 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
                 NumberOfReplicas = this.NumberOfReplicas,
                 RefreshInterval = this.RefreshInterval,
                 DefaultPipeline = this.DefaultPipeline,
-                Mappings = this.Mappings.DeepClone()
+                Mappings = this.Mappings.DeepClone(),
+                Proxy = this.Proxy.DeepClone()
             };
 
             return other;
