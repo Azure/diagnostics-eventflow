@@ -309,22 +309,17 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             {
                 connectionSettings = connectionSettings.BasicAuthentication(userName, password);
             }
+
             if (!string.IsNullOrWhiteSpace(esOutputConfiguration.Proxy.Uri))
             {
-                Uri proxyUri = null;
-                try
+                if (Uri.TryCreate(esOutputConfiguration.Proxy.Uri, UriKind.Absolute, out Uri proxyUri))
                 {
-                    proxyUri = new Uri(esOutputConfiguration.Proxy.Uri);
-                }
-                catch { }
-                if (proxyUri == null)
-                {
-                    var errorMessage = $"{nameof(ElasticSearchOutput)}: proxy URI setting value '{esOutputConfiguration.Proxy.Uri}' is not valid";
-                    healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
+                    connectionSettings.Proxy(proxyUri, esOutputConfiguration.Proxy.UserName, esOutputConfiguration.Proxy.UserPassword);
                 }
                 else
                 {
-                    connectionSettings.Proxy(proxyUri, esOutputConfiguration.Proxy.UserName, esOutputConfiguration.Proxy.UserPassword);
+                    var errorMessage = $"{nameof(ElasticSearchOutput)}: proxy URI setting value '{esOutputConfiguration.Proxy.Uri}' is not valid";
+                    healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
                 }
             }
 
