@@ -949,8 +949,10 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
                 "type": "date_nanos"
             }
         }
+    },
+    "proxy": {
+        "uri": "https://myESProxy/"
     }
-
 }
 ```
 | Field | Values/Types | Required | Description |
@@ -967,7 +969,8 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | `refreshInterval` | string | No | Specifies what refresh interval the index is created with. If not specified, it defaults to 15s.|
 | `defaultPipeline` | string | No | Specifies the default ingest node pipeline the index is created with. If not specified, a default pipeline will not be used.|
 | `mappings`        | object | No | Specifies how documents created by the Elasticsearch output are stored and indexed (index mappings). For more information refer to [Elasticsearch documentation on index mappings](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html). |
-| `mappings.properties` | object | No | Specifies property mappings for documents created by the Elasticsearch output. Currently only property *type* mappings can be specified. Supported types are: `text`, `keyword`, `date`, `date_nanos`, `boolean`, `long`, `integer`, `short`, `byte`, `double`, `float`, `half_float`, `scaled_float`, `ip`, `geo_point`, `geo_shape`, and `completion`. | 
+| `mappings.properties` | object | No | Specifies property mappings for documents created by the Elasticsearch output. Currently only property *type* mappings can be specified. Supported types are: `text`, `keyword`, `date`, `date_nanos`, `boolean`, `long`, `integer`, `short`, `byte`, `double`, `float`, `half_float`, `scaled_float`, `ip`, `geo_point`, `geo_shape`, and `completion`. |
+| `proxy` | object | No | Specifies connection proxy settings. Valid properties are `uri` (proxy URI, i.e. address), `userName` and `userPassword`. |
 
 *Standard metadata support*
 

@@ -310,6 +310,19 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 connectionSettings = connectionSettings.BasicAuthentication(userName, password);
             }
 
+            if (!string.IsNullOrWhiteSpace(esOutputConfiguration.Proxy.Uri))
+            {
+                if (Uri.TryCreate(esOutputConfiguration.Proxy.Uri, UriKind.Absolute, out Uri proxyUri))
+                {
+                    connectionSettings.Proxy(proxyUri, esOutputConfiguration.Proxy.UserName, esOutputConfiguration.Proxy.UserPassword);
+                }
+                else
+                {
+                    var errorMessage = $"{nameof(ElasticSearchOutput)}: proxy URI setting value '{esOutputConfiguration.Proxy.Uri}' is not valid";
+                    healthReporter.ReportWarning(errorMessage, EventFlowContextIdentifiers.Configuration);
+                }
+            }
+
             this.connectionData.Client = new ElasticClient(connectionSettings);
             this.connectionData.LastIndexName = null;
 

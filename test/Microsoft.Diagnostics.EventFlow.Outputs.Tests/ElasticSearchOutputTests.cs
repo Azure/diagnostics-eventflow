@@ -43,7 +43,13 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                                     ["type"] = "date_nanos"
                                 }
                             }
-                        }
+                        },
+                        ["proxy"] = new Dictionary<string, object>
+                        {
+                            ["uri"] = "https://proxy.local/net/esproxy",
+                            ["userName"] = "esuser",
+                            ["userPassword"] = "verysecret"
+                        },
                     }
                 }
             };
@@ -73,6 +79,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 Assert.NotNull(esOutputConfiguration.Mappings);
                 Assert.NotNull(esOutputConfiguration.Mappings.Properties);
                 Assert.NotNull(esOutputConfiguration.Mappings.Properties["timestamp"]);
+
+                Assert.NotNull(esOutputConfiguration.Proxy);
+                Assert.Equal("https://proxy.local/net/esproxy", esOutputConfiguration.Proxy.Uri);
+                Assert.Equal("esuser", esOutputConfiguration.Proxy.UserName);
+                Assert.Equal("verysecret", esOutputConfiguration.Proxy.UserPassword);
 
                 Assert.Equal("date_nanos", esOutputConfiguration.Mappings.Properties["timestamp"].Type);
             }
