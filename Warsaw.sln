@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{E7AA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform Support", "Platform Support", "{23A17E0F-86FD-4C55-A448-9A43C4C5E451}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Incubation", "Incubation", "{DF3A81C9-6084-4945-B493-39B9A78572C2}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalTests", "FunctionalTests", "{05441E68-B217-475A-8E81-DB36614D1823}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{C0F892AE-D5F5-42FD-943C-6428CA252650}"
@@ -32,8 +30,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Core", "src\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj", "{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch", "src\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.csproj", "{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Outputs.TableStorage", "src\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.csproj", "{B56C3023-E73E-43C4-859A-8AD328E675ED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Inputs.EventSource", "src\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.csproj", "{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}"
 EndProject
@@ -116,14 +112,6 @@ Global
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}.Release|x64.ActiveCfg = Release|Any CPU
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB}.Release|x64.Build.0 = Release|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Debug|x64.Build.0 = Debug|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Release|x64.ActiveCfg = Release|Any CPU
-		{B56C3023-E73E-43C4-859A-8AD328E675ED}.Release|x64.Build.0 = Release|Any CPU
 		{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -347,7 +335,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245} = {FC86C736-6428-431B-B83F-940BF7182757}
 		{B6372F30-BBDC-41A4-AFB0-93D571DDA9FB} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}
-		{B56C3023-E73E-43C4-859A-8AD328E675ED} = {DF3A81C9-6084-4945-B493-39B9A78572C2}
 		{705EB0A8-8FB0-4F80-8F6A-7BB71A202A2A} = {47200F40-43E1-4B09-B803-A921FED2BF05}
 		{02D7E06C-E535-4BDC-8990-7A403DA546D9} = {47200F40-43E1-4B09-B803-A921FED2BF05}
 		{EF3B9B49-1372-4A4B-9E20-A2C1ADABEB64} = {5AD3BB0F-B6F8-4361-AC2D-CC3514DA37A0}

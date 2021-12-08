@@ -80,7 +80,6 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net452\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net452\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\net452\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll;
-                               ..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net452\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net452\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
       <Full471Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
@@ -151,7 +150,6 @@
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.StdOutput\bin\$(Configuration)\net452"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\net452"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.HttpOutput\bin\$(Configuration)\net452"/>
-    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.TableStorage\bin\$(Configuration)\net452"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net452"/>
     <!--.Net Framework 4.7.1 assemblies-->
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471"/>
