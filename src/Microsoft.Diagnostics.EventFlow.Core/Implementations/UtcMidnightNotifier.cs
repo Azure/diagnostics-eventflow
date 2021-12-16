@@ -6,9 +6,6 @@
 using System;
 using System.Threading;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
-#if NET452
-using Microsoft.Win32;
-#endif
 
 namespace Microsoft.Diagnostics.EventFlow
 {
@@ -35,11 +32,6 @@ namespace Microsoft.Diagnostics.EventFlow
         private UtcMidnightNotifier()
         {
             CreateNewTimer();
-
-            // TODO: Find an event to subscribe for .NET Core application when system time is changed.
-#if NET452
-            SystemEvents.TimeChanged += OnSystemTimeChanged;
-#endif
         }
 
         private void CreateNewTimer()
@@ -61,15 +53,6 @@ namespace Microsoft.Diagnostics.EventFlow
         {
             DayChanged?.Invoke(this, EventArgs.Empty);
             NewReportFileRequested?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnSystemTimeChanged(object sender, EventArgs e)
-        {
-            if (timer != null)
-            {
-                timer.Dispose();
-            }
-            CreateNewTimer();
         }
     }
 }

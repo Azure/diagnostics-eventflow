@@ -4,9 +4,9 @@
     <Description>Provides an input implementation for capturing diagnostics data from Event Tracing for Windows (ETW) providers.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>net452;netstandard1.6;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard1.6;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Etw</AssemblyName>
-    <VersionPrefix>1.5.0</VersionPrefix>
+    <VersionPrefix>1.7.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.Etw</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Inputs;ETW;Event Tracing for Windows</PackageTags>
@@ -24,14 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.11" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.74" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-   
    <!--
     Remove TraceEvent native binaries that are not really needed-the Etw input Nuget package depends on TraceEvent Nuget package
     and TraceEvent Nuget package will take care of installing them into user's Project.

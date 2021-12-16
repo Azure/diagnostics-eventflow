@@ -11,7 +11,7 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Filters;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Diagnostics.EventFlow.Inputs;
-#if NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET6_0 || NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
 using Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource;
 #endif
 using Microsoft.Diagnostics.EventFlow.Metadata;
@@ -317,7 +317,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         [Fact]
         public void CanCreateAllStandardPipelineItems()
         {
-#if NET461
+#if NET462
             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
@@ -512,7 +512,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                     ""schemaVersion"": ""2016-08-11""
                 }";
-#elif NET5_0
+#elif NET5_0 || NET6_0
             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
@@ -594,25 +594,25 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             i => Assert.IsType<SerilogInput>(i),
                             i => Assert.IsType<NLogInput>(i),
                             i => Assert.IsType<Log4netInput>(i)
-#if NET461
+#if NET462
                             , i => Assert.IsType<PerformanceCounterInput>(i)
                             , i => Assert.IsType<EtwInput>(i)
 #endif
-#if NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET6_0 || NET5_0 || NETCOREAPP2_1 || NETCOREAPP3_1
                             , i => Assert.IsType<ActivitySourceInput>(i)
 #endif
                         );
 
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
-#if (!NET461 && !NET5_0)
+#if (!NET462 && !NET5_0 && !NET6_0)
                             s => Assert.IsType<ElasticSearchOutput>(s.Output),
 #endif
                             s => Assert.IsType<OmsOutput>(s.Output),
                             s => Assert.IsType<OmsOutput>(s.Output), // Azure Monitor Logs output can be created using the old and the new name
                             s => Assert.IsType<HttpOutput>(s.Output),
                             s => Assert.IsType<EventHubOutput>(s.Output)
-#if NET461
+#if NET462
                             , s => Assert.IsType<ApplicationInsightsOutput>(s.Output)
 #endif
                         );
