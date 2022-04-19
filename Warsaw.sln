@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.ServiceFabric", "src\Microsoft.Diagnostics.EventFlow.ServiceFabric\Microsoft.Diagnostics.EventFlow.ServiceFabric.csproj", "{E988D6E6-5DC2-4FED-9AD6-3B2B5EF2BD58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster", "test\Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster\Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster.csproj", "{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster", "test\Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster\Microsoft.Diagnostics.EventFlow.FunctionalTests.HealthReporterBuster.csproj", "{242D4BE6-4CA8-4288-8843-65DF84BBBD3E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{F1EF768D-9E8B-42D5-B0E1-C7EF2270C245} = {F1EF768D-9E8B-42D5-B0E1-C7EF2270C245}
 	EndProjectSection
