@@ -204,7 +204,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
 
                     return exceptionEvent.Payload.Keys.Contains("ExceptionMessage") 
                         && string.Equals("We seek perfection", exceptionEvent.Payload["ExceptionMessage"]);
-                }, TimeSpan.FromSeconds(5));
+                }, TimeSpan.FromSeconds(20));
                 Assert.True(exceptionEventRaised);
 
                 VerifyNoErrorsOrWarnings(healthReporterMock);
