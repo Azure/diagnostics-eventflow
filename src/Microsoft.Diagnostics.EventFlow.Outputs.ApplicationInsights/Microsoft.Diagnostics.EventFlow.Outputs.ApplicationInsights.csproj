@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Provides an output implementation that sends diagnostics data to Microsoft Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.9.0</VersionPrefix>
+    <VersionPrefix>1.9.1</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ApplicationInsights</AssemblyName>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.18.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.20.0" />
   </ItemGroup>
 
 </Project>
