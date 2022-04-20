@@ -64,8 +64,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
-    <PackageReference Include="Elasticsearch.Net" Version="[7.1.0, 8.0)" />
-    <PackageReference Include="NEST" Version="[7.1.0, 8.0)" />
+    <PackageReference Include="Elasticsearch.Net" Version="[7.12.0, 8.0)" />
+    <PackageReference Include="NEST" Version="[7.12.0, 8.0)" />
     <PackageReference Include="Moq" Version="4.8.2" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
