@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Validation;
 
-#if NET452
+#if NET462
 using System.Web;
 #else
 using System.Reflection;
@@ -534,7 +534,7 @@ namespace Microsoft.Diagnostics.EventFlow.HealthReporters
             }
 
             string basePath;
-#if NET452
+#if NET462
             if (HttpContext.Current != null && HttpContext.Current.Server != null)
             {
                 basePath = HttpContext.Current.Server.MapPath("~/App_Data");

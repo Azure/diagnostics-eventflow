@@ -4,9 +4,9 @@
     <Description>Provides an implementation of Application Insights telemetry processor that feeds Application Insights telemetry into EventFlow pipeline. 
     This allows sending diagnostics data from applications instrumented with Application Insights to destinations other than Application Insights service.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.7.0</VersionPrefix>
+    <VersionPrefix>1.8.1</VersionPrefix>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Inputs.ApplicationInsights</PackageId>
@@ -24,19 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.17.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
-    
-    <!-- 
-    The following dependencies are included to exclude versions of respective package that have critical vulnerabilities.
-    It can be removed once direct dependencies do not transitively depend on old versions of the System.Text.Encodings.Web anymore.
-    This will probably happen starting with Microsoft.ApplicationInsights version 2.18.
-    -->
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" />
-    
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.20.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-    <Reference Include="System" />
-  </ItemGroup>
 </Project>

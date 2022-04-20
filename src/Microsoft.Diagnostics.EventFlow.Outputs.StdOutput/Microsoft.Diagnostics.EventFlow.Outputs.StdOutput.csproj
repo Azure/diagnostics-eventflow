@@ -4,9 +4,9 @@
     <Description>Provides an output implementation that sends diagnostics data to standard output stream (useful for debugging purposes).</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard1.6;net452;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;net462;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.StdOutput</AssemblyName>
-    <VersionPrefix>1.6.0</VersionPrefix>
+    <VersionPrefix>1.7.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.StdOutput</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs</PackageTags>
@@ -26,12 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>

@@ -4,10 +4,10 @@
     <Description>Provides utility classes for processing data from Event Tracing for Windows (ETW) providers.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <Authors>Microsoft</Authors>
-    <TargetFrameworks>netstandard1.6;net452;netstandard2.0;net461;net471</TargetFrameworks>
+    <TargetFrameworks>netstandard1.6;netstandard2.0;net462;net471</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.EtwUtilities</AssemblyName>
-    <VersionPrefix>1.8.1</VersionPrefix>
+    <VersionPrefix>1.9.0</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.EtwUtilities</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Utilities;Event Tracing for Windows</PackageTags>
@@ -31,13 +31,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[1.1.1,2.0)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' Or '$(TargetFramework)' == 'net471' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' Or '$(TargetFramework)' == 'net471' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Provides an output implementation that sends diagnostics data to Elasticsearch.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>2.7.4</VersionPrefix>
+    <VersionPrefix>2.7.5</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>net471;netstandard2.0</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch</AssemblyName>
@@ -26,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elasticsearch.Net" Version="[7.1.0,8.0)" />
-    <PackageReference Include="NEST" Version="[7.1.0,8.0)" />
+    <PackageReference Include="Elasticsearch.Net" Version="[7.12.0,8.0)" />
+    <PackageReference Include="NEST" Version="[7.12.0,8.0)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">

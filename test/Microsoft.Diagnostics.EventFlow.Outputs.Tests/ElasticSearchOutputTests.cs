@@ -139,7 +139,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
             var manyResult = elasticConfigManyNode.GetConnectionPool(healthReporterMock.Object);
 
             Assert.Equal(singleExpected, singleResult.Nodes);
-            Assert.Equal(manyExpected, manyResult.Nodes);
+
+            // The nodes might be returned in different order, so we cannot just use "Equals" to compare the expected and actual collections.
+            Assert.Equal(manyExpected.Count, manyResult.Nodes.Count);
+            Assert.All(manyResult.Nodes, n => manyExpected.Contains(n));
+
             healthReporterMock.Verify(m => m.ReportHealthy("ElasticSearchOutput: Using default Static connection type.", EventFlowContextIdentifiers.Configuration));
         }
 
