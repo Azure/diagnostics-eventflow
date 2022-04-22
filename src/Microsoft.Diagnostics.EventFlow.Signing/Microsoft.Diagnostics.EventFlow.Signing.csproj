@@ -54,7 +54,7 @@
     Remove TraceEvent native binaries that are not really needed-the Etw input Nuget package depends on TraceEvent Nuget package
     and TraceEvent Nuget package will take care of installing them into user's Project.
   -->
-  <Target Name="RemoveTraceEventNativeBinaries" AfterTargets="Build">
+  <Target Name="RemoveTraceEventNativeBinaries" DependsOnTargets="Build">
     <RemoveDir Directories="$(OutputPath)x86;$(OutputPath)amd64" />
   </Target>
   
@@ -62,7 +62,7 @@
     The signing task expect the assemblies to sign under some certain folder. So before signing, we move the assemblies to
     the expected folder. After signing, we move the signed assemblies back to its original place for nuget packaging.
   -->
-  <Target Name="MoveAssembliesBeforeSigning" Condition="'$(SignType)'!=''" BeforeTargets="SignFiles">
+  <Target Name="MoveAssembliesBeforeSigning" Condition="'$(SignType)'!=''" BeforeTargets="SignFiles" DependsOnTargets="RemoveTraceEventNativeBinaries">
     <ItemGroup>
       <FullAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
