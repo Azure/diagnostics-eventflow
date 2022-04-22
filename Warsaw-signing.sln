@@ -1,0 +1,40 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32002.185
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.NugetSigning", "src\Microsoft.Diagnostics.EventFlow.NugetSigning\Microsoft.Diagnostics.EventFlow.NugetSigning.csproj", "{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Signing", "src\Microsoft.Diagnostics.EventFlow.Signing\Microsoft.Diagnostics.EventFlow.Signing.csproj", "{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1CB9BDC-2F26-46AA-9F2C-F9C12E9A3418}.Release|x64.Build.0 = Release|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Debug|x64.Build.0 = Debug|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Release|x64.ActiveCfg = Release|Any CPU
+		{69AA6421-82A5-43BF-AD27-8E2C172FF8CE}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F1BC23F-956D-4D83-B675-710B743F08EF}
+	EndGlobalSection
+EndGlobal
