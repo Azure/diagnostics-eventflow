@@ -4,14 +4,7 @@
 The EventFlow library suite allows applications to define what diagnostics data to collect, and where they should be outputted to. Diagnostics data can be anything from performance counters to application traces.
 It runs in the same process as the application, so communication overhead is minimized. It also has an extensibility mechanism so additional inputs and outputs can be created and plugged into the framework. 
 
-The EventFlow suite supports .NET applications and .NET Core applications. It allows diagnostic data to be collected and transferred for applications running in these Azure environments:
-
-- Azure Web Apps
-- Service Fabric
-- Azure Cloud Service
-- Azure Virtual Machines
-
-The core of the library, as well as inputs and outputs listed above [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
+The EventFlow suite supports .NET applications and .NET Core applications. The core of the library, as well as inputs and outputs listed below [are available as NuGet packages](https://www.nuget.org/packages?q=Microsoft.Diagnostics.EventFlow).
 
 ## Topics
 
