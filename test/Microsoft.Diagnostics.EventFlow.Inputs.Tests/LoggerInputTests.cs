@@ -54,6 +54,8 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         {
             var healthReporterMock = new Mock<IHealthReporter>();
             var subject = new Mock<IObserver<EventData>>();
+            EventData savedData = null;
+            subject.Setup(s => s.OnNext(It.IsAny<EventData>())).Callback((EventData data) => savedData = data);
 
             using (LoggerInput target = new LoggerInput(healthReporterMock.Object))
             {
@@ -72,6 +74,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                         0,
                         null,
                         new Dictionary<string, object> { { "number", 1 } }))), Times.Exactly(1));
+
+                    assertDoesNotContainDuplicate(savedData.Payload, keyPrefix: "number", expectedValue: 1);
+
+                    healthReporterMock.Verify(it => it.ReportWarning(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+                    healthReporterMock.Verify(it => it.ReportProblem(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
                 }
             }
         }
@@ -541,6 +548,13 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             var duplicates = payload.Keys.Where(k => k.StartsWith(keyPrefix) && k != keyPrefix).ToArray();
             Assert.Single(duplicates);
             Assert.Equal(expectedValue, payload[duplicates.First()]);
+        }
+
+        private void assertDoesNotContainDuplicate(IDictionary<string, object> payload, string keyPrefix, object expectedValue)
+        {
+            var singleValue = payload.Keys.Where(k => k.StartsWith(keyPrefix)).ToArray();
+            Assert.Single(singleValue);
+            Assert.Equal(expectedValue, payload[singleValue.First()]);
         }
 
         private DiagnosticPipeline createPipeline(LoggerInput input, IHealthReporter reporter)
