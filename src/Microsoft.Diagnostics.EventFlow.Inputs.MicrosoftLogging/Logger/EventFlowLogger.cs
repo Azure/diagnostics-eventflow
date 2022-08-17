@@ -40,7 +40,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
             Dictionary<string, object> properties = new Dictionary<string, object>();
 
-            ApplyOmittingUnformattedMessage(state, item => properties.Add(item.Key, item.Value));
+            ApplyOmittingUnformattedMessage(state, item => AddPayloadProperty(properties, item.Key, item.Value));
 
             var scope = EventFlowLoggerScope.Current;
             if (scope != null)

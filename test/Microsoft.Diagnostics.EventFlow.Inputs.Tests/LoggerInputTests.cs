@@ -50,6 +50,33 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
         }
 
         [Fact]
+        public void LoggerShouldSubmitDataWhenEncounterDuplicates()
+        {
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+
+            using (LoggerInput target = new LoggerInput(healthReporterMock.Object))
+            {
+                var diagnosticPipeline = createPipeline(target, healthReporterMock.Object);
+                using (target.Subscribe(subject.Object))
+                {
+                    var factory = new LoggerFactory();
+                    factory.AddEventFlow(diagnosticPipeline);
+                    var logger = new Logger<LoggerInputTests>(factory);
+                    logger.LogInformation("log message {number} {number}", 1, 1);
+                    subject.Verify(s => s.OnNext(It.Is<EventData>(data => checkEventData(
+                        data,
+                        "log message 1 1",
+                        typeof(LoggerInputTests).FullName,
+                        LogLevel.Informational,
+                        0,
+                        null,
+                        new Dictionary<string, object> { { "number", 1 } }))), Times.Exactly(1));
+                }
+            }
+        }
+
+        [Fact]
         public void LoggerShouldSubmitException()
         {
             var healthReporterMock = new Mock<IHealthReporter>();
