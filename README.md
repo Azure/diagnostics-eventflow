@@ -928,6 +928,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 {
     "type": "ElasticSearch",
     "indexNamePrefix": "app1",
+    "indexFormat": "yyyy.MM.dd",
     "serviceUri": "https://myElasticSearchCluster:9200;https://myElasticSearchCluster:9201;https://myElasticSearchCluster:9202",
     "connectionPoolType": "Sniffing",
     "basicAuthenticationUserName": "esUser1",
@@ -952,6 +953,7 @@ This output writes data to the [Elasticsearch](https://www.elastic.co/products/e
 | :---- | :-------------- | :------: | :---------- |
 | `type` | "ElasticSearch" | Yes | Specifies the output type. For this output, it must be "ElasticSearch". |
 | `indexNamePrefix` | string | No | Specifies the prefix to be used when creating the Elasticsearch index. This prefix, together with the date of when the data was generated, will be used to form the name of the Elasticsearch index. If not specified, a prefix will not be used. |
+| `indexFormat` | string | No | Specifies the format to be used when creating the Elasticsearch index in C# date/time formatting conventions against the date of when the data was generated. This will be used to form the name of the Elasticsearch index (defaults to 'yyyy.MM.dd' if not specified). If a prefix is specified, a dash and the prefix will be appended. |
 | `serviceUri` | URL:port | Yes | Specifies where the Elasticsearch cluster is. This is needed for EventFlow to locate the cluster and send the data. Single URL or semicolon-separated URLs for connection pooling are accepted |
 | `connectionPoolType` | "Static", "Sniffing", or "Sticky" | No | Specifies the Connection Pool that takes care of registering what nodes there are in the cluster. |
 | `basicAuthenticationUserName` | string | No | Specifies the user name used to authenticate with Elasticsearch. To protect the cluster, authentication is often setup on the cluster. |
