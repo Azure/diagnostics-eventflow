@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,14 +20,14 @@ using Nest;
 using Validation;
 using RequestData = Microsoft.Diagnostics.EventFlow.Metadata.RequestData;
 
+[assembly: InternalsVisibleTo("Microsoft.Diagnostics.EventFlow.Outputs.Tests")]
 namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class ElasticSearchOutput : IOutput
     {
-        private const string Dot = ".";
         private const string Dash = "-";
 
-        private ElasticSearchConnectionData connectionData;
+        protected internal ElasticSearchConnectionData connectionData;
 
         private readonly IHealthReporter healthReporter;
 
@@ -378,10 +379,25 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             }
         }
 
-        private string GetIndexName(ElasticSearchConnectionData connectionData)
+        protected internal string GetIndexName(ElasticSearchConnectionData connectionData)
         {
-            DateTimeOffset now = DateTimeOffset.UtcNow;
-            string retval = connectionData.Configuration.IndexNamePrefix + now.ToString("yyyy" + Dot + "MM" + Dot + "dd");
+            string dateString = "";
+            try
+            {
+                dateString = string.Format($"{{0:{connectionData.Configuration.IndexFormat}}}", DateTimeOffset.UtcNow);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"{nameof(ElasticSearchOutput)}: indexFormat could not parse as date: {ex.Message}{Environment.NewLine}" +
+                                      $"Invalid IndexFormat value: {connectionData.Configuration.IndexFormat}{Environment.NewLine}" +
+                                      $"Falling back to default value: {ElasticSearchOutputConfiguration.DefaultIndexFormat}";
+                // Changing in connectionData.Configuration so we don't report this every log message
+                connectionData.Configuration.IndexFormat = ElasticSearchOutputConfiguration.DefaultIndexFormat;
+                healthReporter.ReportProblem(errorMessage);
+                dateString = string.Format($"{{0:{connectionData.Configuration.IndexFormat}}}", DateTimeOffset.UtcNow);
+            }
+
+            string retval = connectionData.Configuration.IndexNamePrefix + dateString;
             return retval;
         }
 
@@ -410,7 +426,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             this.healthReporter.ReportWarning(errorMessage);
         }
 
-        private class ElasticSearchConnectionData
+        protected internal class ElasticSearchConnectionData
         {
             public ElasticClient Client { get; set; }
 

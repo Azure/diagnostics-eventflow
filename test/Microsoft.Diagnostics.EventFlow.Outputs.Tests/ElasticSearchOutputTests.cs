@@ -27,6 +27,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                     {
                         ["type"] = "ElasticSearch",
                         ["indexNamePrefix"] = "myprefix",
+                        ["indexFormat"] = "yyyy.MM",
                         ["serviceUri"] = "http://localhost:1000;http://localhost:1001;http://localhost:1002",
                         ["basicAuthenticationUserName"] = "myesuser",
                         ["basicAuthenticationUserPassword"] = "myespass",
@@ -69,6 +70,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 configFragments[0].Bind(esOutputConfiguration);
 
                 Assert.Equal("myprefix", esOutputConfiguration.IndexNamePrefix);
+                Assert.Equal("yyyy.MM", esOutputConfiguration.IndexFormat);
                 Assert.Equal("http://localhost:1000;http://localhost:1001;http://localhost:1002", esOutputConfiguration.ServiceUri);
                 Assert.Equal("myesuser", esOutputConfiguration.BasicAuthenticationUserName);
                 Assert.Equal("myespass", esOutputConfiguration.BasicAuthenticationUserPassword);
@@ -86,6 +88,9 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
                 Assert.Equal("verysecret", esOutputConfiguration.Proxy.UserPassword);
 
                 Assert.Equal("date_nanos", esOutputConfiguration.Mappings.Properties["timestamp"].Type);
+
+                var eso = new ElasticSearchOutput(esOutputConfiguration, new CustomHealthReporter(configuration));
+                Assert.Equal($"myprefix-{DateTimeOffset.UtcNow:yyyy.MM}", eso.GetIndexName(eso.connectionData));
             }
         }
 

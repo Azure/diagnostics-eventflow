@@ -15,12 +15,16 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
     // If you make any changes here, please update the README.md file to reflect the new configuration
     public class ElasticSearchOutputConfiguration: ItemConfiguration
     {
+        private const string Dot = ".";
+
+        public static readonly string DefaultIndexFormat = $"yyyy{Dot}MM{Dot}dd";
         public static readonly int DefaultNumberOfShards = 1;
         public static readonly int DefaultNumberOfReplicas = 5;
         public static readonly string DefaultRefreshInterval = "15s";
         public static readonly ElasticConnectionPoolType DefaultConnectionPoolType = ElasticConnectionPoolType.Static; 
 
         public string IndexNamePrefix { get; set; }
+        public string IndexFormat { get; set; }
         public string ServiceUri { get; set; }
         public string ConnectionPoolType { get; set; }
         public string BasicAuthenticationUserName { get; set; }
@@ -35,6 +39,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
 
         public ElasticSearchOutputConfiguration()
         {
+            IndexFormat = DefaultIndexFormat;
             NumberOfShards = DefaultNumberOfShards;
             NumberOfReplicas = DefaultNumberOfReplicas;
             RefreshInterval = DefaultRefreshInterval;
@@ -47,6 +52,7 @@ namespace Microsoft.Diagnostics.EventFlow.Configuration
             var other = new ElasticSearchOutputConfiguration()
             {
                 IndexNamePrefix = this.IndexNamePrefix,
+                IndexFormat = this.IndexFormat,
                 ServiceUri = this.ServiceUri,
                 ConnectionPoolType = this.ConnectionPoolType,
                 BasicAuthenticationUserName = this.BasicAuthenticationUserName,
