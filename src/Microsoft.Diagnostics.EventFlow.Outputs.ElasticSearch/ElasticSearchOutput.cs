@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -25,6 +26,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class ElasticSearchOutput : IOutput
     {
+        static GregorianCalendar gc = new GregorianCalendar();
+
         private const string Dash = "-";
 
         protected internal ElasticSearchConnectionData connectionData;
@@ -384,7 +387,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             string dateString = "";
             try
             {
-                dateString = string.Format($"{{0:{connectionData.Configuration.IndexFormat}}}", DateTimeOffset.UtcNow);
+                dateString = ConvertIndexFormat(connectionData.Configuration.IndexFormat);
             }
             catch (Exception ex)
             {
@@ -397,8 +400,59 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 dateString = string.Format($"{{0:{connectionData.Configuration.IndexFormat}}}", DateTimeOffset.UtcNow);
             }
 
-            string retval = connectionData.Configuration.IndexNamePrefix + dateString;
-            return retval;
+            return connectionData.Configuration.IndexNamePrefix + dateString;
+        }
+
+        public Func<DateTimeOffset> Now { get; set; } = DefaultNow;
+        public static DateTimeOffset DefaultNow() { return DateTimeOffset.UtcNow; }
+
+        protected internal string ConvertIndexFormat(string dateString)
+        {
+            var index = dateString.IndexOf('q');
+            if (index > -1)
+                dateString = dateString.Substring(0, index) + GetQuarterOfYear() + dateString.Substring(index + 1);
+            index = dateString.IndexOf('w');
+            if (index > -1)
+                dateString = dateString.Substring(0, index) + GetWeekOfMonth() + dateString.Substring(index + 1);
+            else
+            {
+                index = dateString.IndexOf("WW", StringComparison.Ordinal);
+                if (index > -1)
+                    dateString = dateString.Substring(0, index) + GetWeekOfYear(true) + dateString.Substring(index + 2);
+                else
+                {
+                    index = dateString.IndexOf('W');
+                    if (index > -1)
+                        dateString = dateString.Substring(0, index) + GetWeekOfYear(false) +
+                                     dateString.Substring(index + 1);
+                }
+            }
+
+            return string.Format($"{{0:{dateString}}}", Now());
+        }
+
+        private string GetQuarterOfYear()
+        {
+            return "q"+ (((Now().Month - 1) / 3) + 1);
+        }
+
+        private string GetWeekOfMonth()
+        {
+            DateTimeOffset date = Now();
+            DateTimeOffset first = new DateTime(date.Year, date.Month, 1);
+            return "w" + (GetWeekOfYear() - GetWeekOfYear() + 1);
+        }
+
+        private int GetWeekOfYear()
+        {
+            DateTimeOffset date = Now();
+            return gc.GetWeekOfYear(date.UtcDateTime, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+        }
+
+        private string GetWeekOfYear(bool forceDoubleDigit)
+        {
+            var retVal = GetWeekOfYear();
+            return (forceDoubleDigit && retVal < 10 ? "w0" : "w") + retVal;
         }
 
         private void ReportEsRequestError(IResponse response, string request)
