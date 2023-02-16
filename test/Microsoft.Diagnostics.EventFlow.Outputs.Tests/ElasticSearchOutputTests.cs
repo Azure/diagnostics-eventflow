@@ -95,6 +95,32 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         }
 
         [Theory]
+        [InlineData(2023, 1, 1, "yyyy.q", "2023.q1")]
+        [InlineData(2023, 3, 1, "yyyy.q", "2023.q1")]
+        [InlineData(2023, 4, 1, "yyyy.q", "2023.q2")]
+        [InlineData(2023, 1, 1, "yyyy.MM.w", "2023.01.w1")]
+        [InlineData(2023, 2, 1, "yyyy.MM.w", "2023.02.w1")]
+        [InlineData(2023, 2, 1, "yyyy.W", "2023.w5")]
+        [InlineData(2023, 2, 1, "yyyy.WW", "2023.w05")]
+        [InlineData(2023, 4, 1, "yyyy.W", "2023.w13")]
+        [InlineData(2023, 4, 1, "yyyy.WW", "2023.w13")]
+        [InlineData(2023, 4, 2, "yyyy.WW", "2023.w14")]
+        public void VerifyIndexFormatValues(int year, int month, int day, string formatString, string expectedValue)
+        {
+            var dateTimeOffset = new DateTimeOffset(year, month, day, 0, 0, 0, DateTimeOffset.UtcNow.Offset);
+            var elasticConfig = new ElasticSearchOutputConfiguration
+            {
+                ServiceUri = "http://localhost:8080",
+                IndexFormat = formatString
+            };
+            var eso = new ElasticSearchOutput(elasticConfig, new Mock<IHealthReporter>().Object);
+            DateTimeOffset TestDate() => dateTimeOffset;
+            eso.Now = TestDate;
+            var formattedString = eso.ConvertIndexFormat(formatString);
+            Assert.Equal(expectedValue, formattedString);
+        }
+
+        [Theory]
         [InlineData("", typeof(StaticConnectionPool))]
         [InlineData("Static", typeof(StaticConnectionPool))]
         [InlineData("Sniffing", typeof(SniffingConnectionPool))]
