@@ -396,7 +396,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                                       $"Falling back to default value: {ElasticSearchOutputConfiguration.DefaultIndexFormat}";
                 // Changing in connectionData.Configuration so we don't report this every log message
                 connectionData.Configuration.IndexFormat = ElasticSearchOutputConfiguration.DefaultIndexFormat;
-                healthReporter.ReportProblem(errorMessage);
+                healthReporter.ReportWarning(errorMessage);
                 dateString = string.Format($"{{0:{connectionData.Configuration.IndexFormat}}}", DateTimeOffset.UtcNow);
             }
 
