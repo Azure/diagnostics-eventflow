@@ -100,6 +100,8 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         [InlineData(2023, 4, 1, "yyyy.q", "2023.q2")]
         [InlineData(2023, 1, 1, "yyyy.MM.w", "2023.01.w1")]
         [InlineData(2023, 2, 1, "yyyy.MM.w", "2023.02.w1")]
+        [InlineData(2023, 1, 11, "yyyy.MM.w", "2023.01.w2")]
+        [InlineData(2023, 2, 12, "yyyy.MM.w", "2023.02.w3")]
         [InlineData(2023, 2, 1, "yyyy.W", "2023.w5")]
         [InlineData(2023, 2, 1, "yyyy.WW", "2023.w05")]
         [InlineData(2023, 4, 1, "yyyy.W", "2023.w13")]
