@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net471;netcoreapp3.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net471;net6.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Inputs.Tests</AssemblyName>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
@@ -27,18 +27,11 @@
     <ProjectReference Include="..\..\src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj" />
   </ItemGroup>
 
-  
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">    
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net471' ">
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />    
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.11" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.11" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.7.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
