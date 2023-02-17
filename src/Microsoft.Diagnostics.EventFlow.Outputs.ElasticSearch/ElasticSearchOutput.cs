@@ -34,6 +34,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private readonly IHealthReporter healthReporter;
 
+
+        private int indexFormatQoY = -1;
+        private int indexFormatWoM = -1;
+        private int indexFormatWoYd = -1;
+        private int indexFormatWoY = -1;
+
         public ElasticSearchOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
             Requires.NotNull(configuration, nameof(configuration));
@@ -345,6 +351,12 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 }
                 esOutputConfiguration.IndexNamePrefix = lowerCaseIndexNamePrefix + Dash;
             }
+
+            indexFormatQoY = esOutputConfiguration.IndexFormat.IndexOf('q');
+            indexFormatWoM = esOutputConfiguration.IndexFormat.IndexOf('w');
+            indexFormatWoYd = esOutputConfiguration.IndexFormat.IndexOf("WW", StringComparison.Ordinal);
+            if(indexFormatWoYd == -1)
+                indexFormatWoY = esOutputConfiguration.IndexFormat.IndexOf('W');
         }
 
         private async Task EnsureIndexExists(string indexName, ElasticClient esClient)
@@ -408,50 +420,42 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         protected internal string ConvertIndexFormat(string dateString)
         {
-            var index = dateString.IndexOf('q');
-            if (index > -1)
-                dateString = dateString.Substring(0, index) + GetQuarterOfYear() + dateString.Substring(index + 1);
-            index = dateString.IndexOf('w');
-            if (index > -1)
-                dateString = dateString.Substring(0, index) + GetWeekOfMonth() + dateString.Substring(index + 1);
+            var now = Now();
+            if (indexFormatQoY > -1)
+                dateString = dateString.Substring(0, indexFormatQoY) + GetQuarterOfYear(now) + dateString.Substring(indexFormatQoY + 1);
+            if (indexFormatWoM > -1)
+                dateString = dateString.Substring(0, indexFormatWoM) + GetWeekOfMonth(now) + dateString.Substring(indexFormatWoM + 1);
+            if (indexFormatWoYd > -1)
+                dateString = dateString.Substring(0, indexFormatWoYd) + GetWeekOfYear(now, true) + dateString.Substring(indexFormatWoYd + 2);
             else
             {
-                index = dateString.IndexOf("WW", StringComparison.Ordinal);
-                if (index > -1)
-                    dateString = dateString.Substring(0, index) + GetWeekOfYear(true) + dateString.Substring(index + 2);
-                else
-                {
-                    index = dateString.IndexOf('W');
-                    if (index > -1)
-                        dateString = dateString.Substring(0, index) + GetWeekOfYear(false) +
-                                     dateString.Substring(index + 1);
-                }
+                if (indexFormatWoY > -1)
+                    dateString = dateString.Substring(0, indexFormatWoY) + GetWeekOfYear(now, false) +
+                                 dateString.Substring(indexFormatWoY + 1);
             }
 
-            return string.Format($"{{0:{dateString}}}", Now());
+            return string.Format($"{{0:{dateString}}}", now);
         }
 
-        private string GetQuarterOfYear()
+        private string GetQuarterOfYear(DateTimeOffset date)
         {
-            return "q"+ (((Now().Month - 1) / 3) + 1);
+            return "q"+ (((date.Month - 1) / 3) + 1);
         }
 
-        private string GetWeekOfMonth()
+        private string GetWeekOfMonth(DateTimeOffset date)
         {
-            DateTimeOffset date = Now();
             DateTimeOffset first = new DateTime(date.Year, date.Month, 1);
-            return "w" + (GetWeekOfYear() - GetWeekOfYear() + 1);
+            return "w" + (GetWeekOfYear(date) - GetWeekOfYear(first) + 1);
         }
 
-        private int GetWeekOfYear()
+        private int GetWeekOfYear(DateTimeOffset date)
         {
-            DateTimeOffset date = Now();
             return gc.GetWeekOfYear(date.UtcDateTime, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
         }
 
-        private string GetWeekOfYear(bool forceDoubleDigit)
+        private string GetWeekOfYear(DateTimeOffset date, bool forceDoubleDigit)
         {
-            var retVal = GetWeekOfYear();
+            var retVal = GetWeekOfYear(date);
             return (forceDoubleDigit && retVal < 10 ? "w0" : "w") + retVal;
         }
 
