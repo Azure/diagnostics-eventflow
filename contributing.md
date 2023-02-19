@@ -1,8 +1,6 @@
-* Prerequisites
-    * Visual Studio 2017
-	* .NET Framework 4.7.1 SDK and Targeting Pack
-	* .NET Core 1.0 SDK
-	* .NET Core 2.0 SDK
+* Prerequisites for full build:
+    * Visual Studio 2022
+	* .NET Framework SDKs/Targeting Packs for .NET 6, .NET Framework 4.6.2 and .NET Framework 4.7.1.
 
 * Build
 
@@ -10,8 +8,6 @@
 
         tools\scorch.cmd
         tools\restore.cmd
-    
-    *You must run `tools\restore.cmd` at least once before attempting to build or run tests*, otherwise you will encouter errors such as "missing FileParser.peg.cs file".
     
     Run the following command to build a release build:
 
