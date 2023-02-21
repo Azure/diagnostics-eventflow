@@ -26,7 +26,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 {
     public class ElasticSearchOutput : IOutput
     {
-        static GregorianCalendar gc = new GregorianCalendar();
+        private static readonly GregorianCalendar Gc = new GregorianCalendar();
 
         private const string Dash = "-";
 
@@ -34,11 +34,29 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private readonly IHealthReporter healthReporter;
 
+        private enum FormatIndexType {QuarterOfYear, WeekOfMonth, WeekOfYearDoubleDigit, WeekOfYear}
 
-        private int indexFormatQoY = -1;
-        private int indexFormatWoM = -1;
-        private int indexFormatWoYd = -1;
-        private int indexFormatWoY = -1;
+        private class FormatIndex: IComparable
+        {
+            public FormatIndex(int index, FormatIndexType formatIndexType)
+            {
+                Index = index;
+                FormatIndexType = formatIndexType;
+            }
+
+            public int Index { get; set; }
+
+            public FormatIndexType FormatIndexType { get; set; }
+
+            public int CompareTo(object obj)
+            {
+                var temp = (FormatIndex)obj;
+                if (Index < temp.Index) return 1;
+                return Index > temp.Index? -1 : 0;
+            }
+        }
+
+        private FormatIndex[] formatIndexes;
 
         public ElasticSearchOutput(IConfiguration configuration, IHealthReporter healthReporter)
         {
@@ -352,11 +370,20 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 esOutputConfiguration.IndexNamePrefix = lowerCaseIndexNamePrefix + Dash;
             }
 
-            indexFormatQoY = esOutputConfiguration.IndexFormat.IndexOf('q');
-            indexFormatWoM = esOutputConfiguration.IndexFormat.IndexOf('w');
-            indexFormatWoYd = esOutputConfiguration.IndexFormat.IndexOf("WW", StringComparison.Ordinal);
-            if(indexFormatWoYd == -1)
+            var indexFormatQoY = esOutputConfiguration.IndexFormat.IndexOf('q');
+            var indexFormatWoM = esOutputConfiguration.IndexFormat.IndexOf('w');
+            var indexFormatWoYd = esOutputConfiguration.IndexFormat.IndexOf("WW", StringComparison.Ordinal);
+            var indexFormatWoY = -1;
+            if (indexFormatWoYd == -1)
                 indexFormatWoY = esOutputConfiguration.IndexFormat.IndexOf('W');
+            var formatIndexesSet = new SortedSet<FormatIndex>
+            {
+                new FormatIndex(indexFormatQoY, FormatIndexType.QuarterOfYear),
+                new FormatIndex(indexFormatWoM, FormatIndexType.WeekOfMonth),
+                new FormatIndex(indexFormatWoYd, FormatIndexType.WeekOfYearDoubleDigit),
+                new FormatIndex(indexFormatWoY, FormatIndexType.WeekOfYear)
+            };
+            formatIndexes = formatIndexesSet.ToArray();
         }
 
         private async Task EnsureIndexExists(string indexName, ElasticClient esClient)
@@ -421,17 +448,29 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
         protected internal string ConvertIndexFormat(string dateString)
         {
             var now = Now();
-            if (indexFormatQoY > -1)
-                dateString = dateString.Substring(0, indexFormatQoY) + GetQuarterOfYear(now) + dateString.Substring(indexFormatQoY + 1);
-            if (indexFormatWoM > -1)
-                dateString = dateString.Substring(0, indexFormatWoM) + GetWeekOfMonth(now) + dateString.Substring(indexFormatWoM + 1);
-            if (indexFormatWoYd > -1)
-                dateString = dateString.Substring(0, indexFormatWoYd) + GetWeekOfYear(now, true) + dateString.Substring(indexFormatWoYd + 2);
-            else
+            foreach (var formatIndex in formatIndexes)
             {
-                if (indexFormatWoY > -1)
-                    dateString = dateString.Substring(0, indexFormatWoY) + GetWeekOfYear(now, false) +
-                                 dateString.Substring(indexFormatWoY + 1);
+                switch (formatIndex.FormatIndexType)
+                {
+                    case FormatIndexType.QuarterOfYear:
+                        if(formatIndex.Index > -1)
+                            dateString = dateString.Substring(0, formatIndex.Index) + GetQuarterOfYear(now) + dateString.Substring(formatIndex.Index + 1);
+                        break;
+                    case FormatIndexType.WeekOfMonth:
+                        if (formatIndex.Index > -1)
+                            dateString = dateString.Substring(0, formatIndex.Index) + GetWeekOfMonth(now) + dateString.Substring(formatIndex.Index + 1);
+                        break;
+                    case FormatIndexType.WeekOfYearDoubleDigit:
+                        if (formatIndex.Index > -1)
+                            dateString = dateString.Substring(0, formatIndex.Index) + GetWeekOfYear(now, true) + dateString.Substring(formatIndex.Index + 2);
+                        break;
+                    case FormatIndexType.WeekOfYear:
+                        if (formatIndex.Index > -1)
+                            dateString = dateString.Substring(0, formatIndex.Index) + GetWeekOfYear(now, false) + dateString.Substring(formatIndex.Index + 1);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             return string.Format($"{{0:{dateString}}}", now);
@@ -450,7 +489,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private int GetWeekOfYear(DateTimeOffset date)
         {
-            return gc.GetWeekOfYear(date.UtcDateTime, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            return Gc.GetWeekOfYear(date.UtcDateTime, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
         }
 
         private string GetWeekOfYear(DateTimeOffset date, bool forceDoubleDigit)
