@@ -36,7 +36,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private enum FormatIndexType {QuarterOfYear, WeekOfMonth, WeekOfYearDoubleDigit, WeekOfYear}
 
-        private class FormatIndex: IComparable
+        private class FormatIndex: IComparable<FormatIndex>
         {
             public FormatIndex(int index, FormatIndexType formatIndexType)
             {
@@ -48,11 +48,11 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
             public FormatIndexType FormatIndexType { get; set; }
 
-            public int CompareTo(object obj)
+            public int CompareTo(FormatIndex other)
             {
-                var temp = (FormatIndex)obj;
-                if (Index < temp.Index) return 1;
-                return Index > temp.Index? -1 : 0;
+                if (other is null) return 1;
+                if (Index < other.Index) return 1;
+                return Index > other.Index? -1 : 0;
             }
         }
 
@@ -373,9 +373,16 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
             var indexFormatQoY = esOutputConfiguration.IndexFormat.IndexOf('q');
             var indexFormatWoM = esOutputConfiguration.IndexFormat.IndexOf('w');
             var indexFormatWoYd = esOutputConfiguration.IndexFormat.IndexOf("WW", StringComparison.Ordinal);
+            
             var indexFormatWoY = -1;
-            if (indexFormatWoYd == -1)
-                indexFormatWoY = esOutputConfiguration.IndexFormat.IndexOf('W');
+            // Avoid "WW" format directives, only single "W" matter. 
+            // The single "W" can be either be followed by "not-W", or it can be at the end of the string, but then it cannot be preceded by another "W".
+            var woYMatch = Regex.Match(esOutputConfiguration.IndexFormat, @"W[^W]|[^W]W$");
+            if (woYMatch.Success)
+            {
+                indexFormatWoY = woYMatch.Value.StartsWith("W") ? woYMatch.Index : woYMatch.Index + 1;
+            }
+
             var formatIndexesSet = new SortedSet<FormatIndex>
             {
                 new FormatIndex(indexFormatQoY, FormatIndexType.QuarterOfYear),
