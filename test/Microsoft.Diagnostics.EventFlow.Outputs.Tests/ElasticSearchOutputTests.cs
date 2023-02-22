@@ -109,10 +109,10 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs.Tests
         [InlineData(2023, 4, 2, "yyyy.WW", "2023.w14")]
         [InlineData(2023, 2, 2, "yyyy.MM.w.W", "2023.02.w1.w5")]
         [InlineData(2023, 2, 2, "yyyy.MM.w.WW", "2023.02.w1.w05")]
-        [InlineData(2023, 2, 2, "yyyy.q.w", "2023.q1.w5")]
+        [InlineData(2023, 2, 2, "yyyy.q.w", "2023.q1.w1")]
         [InlineData(2023, 2, 2, "yyyy.q.W", "2023.q1.w5")]
         [InlineData(2023, 2, 2, "yyyy.q.WW", "2023.q1.w05")]
-        [InlineData(2023, 2, 2, "yyyy.W.WW", "2023.W.w14")]
+        [InlineData(2023, 2, 2, "yyyy.W.WW", "2023.w5.w05")]
         public void VerifyIndexFormatValues(int year, int month, int day, string formatString, string expectedValue)
         {
             var dateTimeOffset = new DateTimeOffset(year, month, day, 0, 0, 0, DateTimeOffset.UtcNow.Offset);
