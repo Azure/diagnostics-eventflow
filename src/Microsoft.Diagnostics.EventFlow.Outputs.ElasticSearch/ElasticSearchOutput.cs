@@ -36,7 +36,7 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
 
         private enum FormatIndexType {QuarterOfYear, WeekOfMonth, WeekOfYearDoubleDigit, WeekOfYear}
 
-        private class FormatIndex: IComparable<FormatIndex>
+        private class FormatIndex: IComparable<FormatIndex>, IEquatable<FormatIndex>
         {
             public FormatIndex(int index, FormatIndexType formatIndexType)
             {
@@ -54,6 +54,17 @@ namespace Microsoft.Diagnostics.EventFlow.Outputs
                 if (Index < other.Index) return 1;
                 return Index > other.Index? -1 : 0;
             }
+
+            public override bool Equals(object obj)
+            {
+                FormatIndex other = obj as FormatIndex;
+                if (other is null) return false;
+                return Index == other.Index;
+            }
+
+            public bool Equals(FormatIndex other) => Index == other.Index;
+
+            public override int GetHashCode() => Index.GetHashCode();
         }
 
         private FormatIndex[] formatIndexes;
