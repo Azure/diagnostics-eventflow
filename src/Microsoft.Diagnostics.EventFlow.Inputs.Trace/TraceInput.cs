@@ -81,6 +81,36 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             SubmitEventData(message, TraceEventType.Error);
         }
 
+        public override void Write(object o)
+        {
+            WriteLine(o.ToString());
+        }
+
+        public override void Write(object o, string category)
+        {
+            Write(o);
+        }
+
+        public override void Write(string message, string category)
+        {
+            WriteLine(message);
+        }
+
+        public override void WriteLine(object o)
+        {
+            WriteLine(o.ToString());
+        }
+
+        public override void WriteLine(object o, string category)
+        {
+            WriteLine(o);
+        }
+
+        public override void WriteLine(string message, string category)
+        {
+            WriteLine(message);
+        }
+
         public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, object data)
         {
             if (this.Filter != null && !this.Filter.ShouldTrace(eventCache, source, eventType, id, null, null, data, null))
