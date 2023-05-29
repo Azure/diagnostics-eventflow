@@ -88,12 +88,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         public override void Write(object o, string category)
         {
-            Write(o);
+            WriteLine(o, category);
         }
 
         public override void Write(string message, string category)
         {
-            WriteLine(message);
+            WriteLine(message, category);
         }
 
         public override void WriteLine(object o)
@@ -103,12 +103,12 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
 
         public override void WriteLine(object o, string category)
         {
-            WriteLine(o);
+            WriteLine(o.ToString(), category);
         }
 
         public override void WriteLine(string message, string category)
         {
-            WriteLine(message);
+            SubmitEventData(message, TraceEventType.Information, category: category);
         }
 
         public override void TraceData(TraceEventCache eventCache, string source, TraceEventType eventType, int id, object data)
@@ -220,7 +220,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
             this.healthReporter.ReportHealthy($"{nameof(TraceInput)} initialized.", TraceTag);
         }
 
-        private void SubmitEventData(string message, TraceEventType level, int? id = null, string source = null, string relatedActivityId = null)
+        private void SubmitEventData(string message, TraceEventType level, int? id = null, string source = null, string relatedActivityId = null, string category = null)
         {
             try
             {
@@ -242,6 +242,11 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs
                 if (!string.IsNullOrEmpty(relatedActivityId))
                 {
                     eventPayload["RelatedActivityID"] = relatedActivityId;
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    eventPayload["Category"] = category;
                 }
 
 #if !NETSTANDARD1_6
