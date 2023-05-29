@@ -305,6 +305,25 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
             }
         }
 
+        [Fact]
+        public void TraceInputShouldOverrideWriteLineWithCategory()
+        {
+            IConfiguration configuration = (new ConfigurationBuilder()).AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                ["type"] = "Trace",
+                ["traceLevel"] = "All"
+            }).Build();
+            var healthReporterMock = new Mock<IHealthReporter>();
+            var subject = new Mock<IObserver<EventData>>();
+            using (TraceInput target = new TraceInput(configuration, healthReporterMock.Object))
+            using (target.Subscribe(subject.Object))
+            {
+                target.WriteLine("UnitTest info", "UnitTest category");
+                subject.Verify(s => s.OnNext(It.Is<EventData>(data => data.Payload["Message"].Equals("UnitTest info"))), Times.Exactly(1));
+                subject.Verify(s => s.OnNext(It.Is<EventData>(data => data.Payload["Category"].Equals("UnitTest category"))), Times.Exactly(1));
+            }
+        }
+
         private static string GetRandomString()
         {
             string path = Path.GetRandomFileName();
