@@ -6,7 +6,7 @@
     <Authors>Microsoft</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</AssemblyName>
-    <VersionPrefix>2.0.1</VersionPrefix>
+    <VersionPrefix>2.0.2</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Event Hub;Event Hubs</PackageTags>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.10.2" />
+    <PackageReference Include="Azure.Identity" Version="1.10.3" />
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.6.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Validation" Version="2.4.18" />
