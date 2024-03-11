@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Defines core interfaces and types that comprise Microsoft.Diagnostics.EventFlow library.</Description>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <VersionPrefix>1.13.0</VersionPrefix>
+    <VersionPrefix>1.13.1</VersionPrefix>
     <Authors>Microsoft</Authors>
     <TargetFrameworks>netstandard1.6;netstandard2.0;net462;net471</TargetFrameworks>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Core</AssemblyName>
@@ -25,7 +25,6 @@
     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.7.0" />
     <PackageReference Include="System.Collections.Immutable" Version="1.4.0" />
     <PackageReference Include="Validation" Version="2.4.18" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Pegasus" Version="4.1.0" />
   </ItemGroup>
 
