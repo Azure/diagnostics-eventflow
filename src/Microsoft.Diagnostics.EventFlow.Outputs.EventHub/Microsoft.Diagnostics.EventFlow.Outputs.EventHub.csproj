@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.Core\Microsoft.Diagnostics.EventFlow.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow\Microsoft.Diagnostics.EventFlow.csproj" />
+    <ProjectReference Include="..\Microsoft.Diagnostics.EventFlow.Json\Microsoft.Diagnostics.EventFlow.Json.csproj" />
   </ItemGroup>
 
   <ItemGroup>
