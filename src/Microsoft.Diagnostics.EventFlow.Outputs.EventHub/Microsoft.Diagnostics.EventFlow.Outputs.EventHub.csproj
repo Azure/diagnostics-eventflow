@@ -6,7 +6,7 @@
     <Authors>Microsoft</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</AssemblyName>
-    <VersionPrefix>2.0.2</VersionPrefix>
+    <VersionPrefix>2.0.3</VersionPrefix>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>Microsoft.Diagnostics.EventFlow.Outputs.EventHub</PackageId>
     <PackageTags>Microsoft;Diagnostics;EventFlow;Outputs;Event Hub;Event Hubs</PackageTags>
