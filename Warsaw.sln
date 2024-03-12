@@ -84,7 +84,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.Event
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource", "src\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource\Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource.csproj", "{4B9EF551-2476-4494-9A5E-C52A97505CD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow", "src\Microsoft.Diagnostics.EventFlow\Microsoft.Diagnostics.EventFlow.csproj", "{343BA048-F187-4378-998B-1542E917F757}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Diagnostics.EventFlow.Json", "src\Microsoft.Diagnostics.EventFlow.Json\Microsoft.Diagnostics.EventFlow.Json.csproj", "{343BA048-F187-4378-998B-1542E917F757}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
