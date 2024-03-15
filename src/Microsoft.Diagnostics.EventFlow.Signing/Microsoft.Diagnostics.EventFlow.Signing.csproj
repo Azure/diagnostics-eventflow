@@ -66,6 +66,7 @@
     <ItemGroup>
       <FullAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.Json.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.dll;
@@ -83,10 +84,12 @@
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net462\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
       <Full471Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Json.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll;
                                ..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll;" />
       <CoreAssemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Json.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.dll;
@@ -100,6 +103,7 @@
                                ..\Microsoft.Diagnostics.EventFlow.Outputs.Oms\bin\$(Configuration)\netstandard1.6\Microsoft.Diagnostics.EventFlow.Outputs.Oms.dll;" />
       <Core20Assemblies Include="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Core.dll;
                                ..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll;
+                               ..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Json.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll;
                                ..\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\bin\$(Configuration)\netstandard2.0\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.dll;
@@ -136,6 +140,7 @@
     <!--Full framework assemblies-->
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net462"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net462"/>
+    <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Json.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\net462"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\net462"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\net462"/>
     <Copy SourceFiles="$(OutputPath)\full\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\bin\$(Configuration)\net462"/>
@@ -154,11 +159,13 @@
     <!--.Net Framework 4.7.1 assemblies-->
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\net471"/>
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\net471"/>
+    <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Json.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\net471"/>
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Outputs.ElasticSearch\bin\$(Configuration)\net471"/>
     <Copy SourceFiles="$(OutputPath)\full471\Microsoft.Diagnostics.EventFlow.ServiceFabric.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.ServiceFabric\bin\$(Configuration)\net471"/>
     <!--.Net core assemblies-->
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard1.6"/>
+    <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Json.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\netstandard1.6"/>
     <Copy SourceFiles="$(OutputPath)\core\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\bin\$(Configuration)\netstandard1.6"/>
@@ -173,6 +180,7 @@
     <!--.NET core 2.0 assemblies-->
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Core.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Core\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.EtwUtilities.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.EtwUtilities\bin\$(Configuration)\netstandard2.0"/>
+    <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Json.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Json\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.EventSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.EventSource\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.Etw.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.Etw\bin\$(Configuration)\netstandard2.0"/>
     <Copy SourceFiles="$(OutputPath)\core20\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource.dll" DestinationFolder="..\Microsoft.Diagnostics.EventFlow.Inputs.DiagnosticSource\bin\$(Configuration)\netstandard2.0"/>
