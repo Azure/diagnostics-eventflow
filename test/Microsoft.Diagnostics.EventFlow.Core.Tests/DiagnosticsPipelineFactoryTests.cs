@@ -367,12 +367,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""AzureMonitorLogs"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""Http"",
@@ -429,12 +429,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""AzureMonitorLogs"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""Http"",
@@ -493,12 +493,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""AzureMonitorLogs"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""Http"",
@@ -553,12 +553,12 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                         {
                             ""type"": ""OmsOutput"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""AzureMonitorLogs"",
                             ""workspaceId"": ""00000000-0000-0000-0000-000000000000"",
-                            ""workspaceKey"": ""Tm90IGEgd29ya3NwYWNlIGtleQ==""
+                            ""workspaceKey"": ""not a workspace key""
                         },
                         {
                             ""type"": ""Http"",
