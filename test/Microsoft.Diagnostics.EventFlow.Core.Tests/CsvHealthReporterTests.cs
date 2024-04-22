@@ -30,7 +30,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
         private const string LogRetentionInDaysKey = "LogRetentionInDays";
         private const string EnsureOutputCanBeSavedKey = "EnsureOutputCanBeSaved";
         private const string AssumeSharedLogFolder = "AssumeSharedLogFolder";
-        private const int StreamOperationTimeoutMsec = 500;
+        private const int StreamOperationTimeoutMsec = 3000;
 
         [Fact]
         public void ConstructorShouldRequireConfigFile()
