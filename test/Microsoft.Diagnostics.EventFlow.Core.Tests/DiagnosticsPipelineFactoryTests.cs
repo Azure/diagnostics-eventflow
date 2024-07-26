@@ -11,7 +11,7 @@ using Microsoft.Diagnostics.EventFlow.Configuration;
 using Microsoft.Diagnostics.EventFlow.Filters;
 using Microsoft.Diagnostics.EventFlow.HealthReporters;
 using Microsoft.Diagnostics.EventFlow.Inputs;
-#if NET7_0 || NET6_0 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET8_0 || NET6_0 || NETCOREAPP2_1 || NETCOREAPP3_1
 using Microsoft.Diagnostics.EventFlow.Inputs.ActivitySource;
 #endif
 using Microsoft.Diagnostics.EventFlow.Metadata;
@@ -512,7 +512,7 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
 
                     ""schemaVersion"": ""2016-08-11""
                 }";
-#elif NET6_0 || NET7_0
+#elif NET6_0 || NET8_0
             string pipelineConfiguration = @"
                 {
                     ""inputs"": [
@@ -598,14 +598,14 @@ namespace Microsoft.Diagnostics.EventFlow.Core.Tests
                             , i => Assert.IsType<PerformanceCounterInput>(i)
                             , i => Assert.IsType<EtwInput>(i)
 #endif
-#if NET7_0 || NET6_0 || NETCOREAPP2_1 || NETCOREAPP3_1
+#if NET8_0 || NET6_0 || NETCOREAPP2_1 || NETCOREAPP3_1
                             , i => Assert.IsType<ActivitySourceInput>(i)
 #endif
                         );
 
                         Assert.Collection(pipeline.Sinks,
                             s => Assert.IsType<StdOutput>(s.Output),
-#if (!NET462 && !NET6_0 && !NET7_0)
+#if (!NET462 && !NET6_0 && !NET8_0)
                             s => Assert.IsType<ElasticSearchOutput>(s.Output),
 #endif
                             s => Assert.IsType<OmsOutput>(s.Output),
