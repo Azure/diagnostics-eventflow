@@ -229,7 +229,7 @@ namespace Microsoft.Diagnostics.EventFlow.Inputs.Tests
                 Assert.Equal("EventCounters", data.Payload["EventName"]);
                 Assert.Equal("testCounter", data.Payload["Name"]);
                 Assert.Equal(2, data.Payload["Count"]);
-#if NETCOREAPP3_1 || NET6_0 || NET7_0
+#if NETCOREAPP3_1 || NET6_0 || NET8_0
                 Assert.Equal((double)5, data.Payload["Max"]);
                 Assert.Equal((double)1, data.Payload["Min"]);
 #else
